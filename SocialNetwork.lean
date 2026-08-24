@@ -6,7 +6,9 @@ import SocialNetwork.Bias
 import SocialNetwork.Consensus
 import SocialNetwork.Defs
 import SocialNetwork.Favouring
+import SocialNetwork.Greedy
 import SocialNetwork.Ladder
+import SocialNetwork.Skeleton
 import SocialNetwork.Trajectory
 
 /-!

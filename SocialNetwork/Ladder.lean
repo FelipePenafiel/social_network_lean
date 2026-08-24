@@ -78,8 +78,11 @@ structure IsSteepLadder (o : Opinion M) (u : Pressure N M) : Prop where
   dvd : ∀ a, ((M : ℤ) - 1) ∣ u a o
   /-- `u (a₁, o) < u (a₂, o) < … < u (a_N, o)` are pairwise distinct. -/
   injective : Function.Injective fun a : Actor N => u a o
-  /-- The smallest pressure for `o` is `0`. -/
+  /-- Some actor carries no pressure for `o`. -/
   exists_zero : ∃ a, u a o = 0
+  /-- … and it is the *smallest*: Definition 4 reads `0 = u (a₁, o) < u (a₂, o) < …`, so the
+  `o`-column is non-negative.  Without this the set would be strictly larger than `L̂^o`. -/
+  nonneg : ∀ a, 0 ≤ u a o
   other : ∀ a, ∀ p ≠ o, ((M : ℤ) - 1) * u a p = -u a o
 
 section Ladder
@@ -123,15 +126,6 @@ theorem IsLadder.injective (hM : 2 ≤ M) (hu : IsLadder o u) :
   intro i j hij
   exact hinj (Finset.mem_univ i) (Finset.mem_univ j) hij
 
-/-- Remark 5: `L^o ⊆ L̂^o`. -/
-theorem IsLadder.isSteepLadder (hM : 2 ≤ M) [NeZero N] (hu : IsLadder o u) :
-    IsSteepLadder o u where
-  isState := hu.isState
-  dvd := hu.dvd
-  injective := hu.injective hM
-  exists_zero := hu.exists_zero
-  other := hu.other
-
 /-- On a ladder every actor carries non-negative pressure for the supported opinion. -/
 theorem IsLadder.nonneg (hM : 2 ≤ M) (hu : IsLadder o u) (a : Actor N) : 0 ≤ u a o := by
   obtain ⟨k, hk⟩ := mem_ladderValues_iff.1 (hu.mem_ladderValues a)
@@ -147,6 +141,16 @@ theorem IsLadder.nonpos (hM : 2 ≤ M) (hu : IsLadder o u) (a : Actor N) {p : Op
   have h1 : ((M : ℤ) - 1) * u a p ≤ ((M : ℤ) - 1) * 0 := by
     rw [heq, mul_zero]; linarith
   exact le_of_mul_le_mul_left h1 hpos
+
+/-- Remark 5: `L^o ⊆ L̂^o`. -/
+theorem IsLadder.isSteepLadder (hM : 2 ≤ M) [NeZero N] (hu : IsLadder o u) :
+    IsSteepLadder o u where
+  isState := hu.isState
+  dvd := hu.dvd
+  injective := hu.injective hM
+  exists_zero := hu.exists_zero
+  nonneg := hu.nonneg hM
+  other := hu.other
 
 /-- A ladder supporting `o` is in particular a consensus state for `o` (Definition 2 is
 weaker than Definition 1). -/
@@ -212,6 +216,69 @@ theorem IsConsensus.express (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o u)
     · rw [express_of_ne_of_ne hb hp]
       have := hv.nonpos b p hp
       omega
+
+/-! ### Remark 5: steep ladders are stable under expressing a positive entry -/
+
+/-- In a steep ladder every entry outside the supported column is non-positive, so a strictly
+positive entry lies in the column `o`. -/
+theorem IsSteepLadder.opinion_eq_of_pos (hM : 2 ≤ M) (hu : IsSteepLadder o u) {a : Actor N}
+    {p : Opinion M} (hpos : 0 < u a p) : p = o := by
+  by_contra hp
+  have hM' := one_lt_of_two_le (M := M) hM
+  have h1 := hu.other a p hp
+  have h2 := hu.nonneg a
+  nlinarith
+
+/-- Expressing the supported opinion keeps a steep ladder steep: the `o`-column is translated
+by `M - 1` off the expressing actor, which is reset to `0`, and the values stay distinct and
+non-negative.
+
+This is the mechanism described in Remark 5: `L̂^o` is exactly the set reached from `L^o` by
+sequentially expressing `o`. -/
+theorem IsSteepLadder.express (hM : 2 ≤ M) (hu : IsSteepLadder o u) (a : Actor N) :
+    IsSteepLadder o (SocialNetwork.express a o u) := by
+  have hM2 : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+  refine ⟨hu.isState.express a o, ?_, ?_, ⟨a, express_self a o o u⟩, ?_, ?_⟩
+  · intro b
+    by_cases hb : b = a
+    · subst hb; simp
+    · rw [express_of_ne_of_eq hb]
+      obtain ⟨c, hc⟩ := hu.dvd b
+      exact ⟨c + 1, by rw [hc]; ring⟩
+  · intro b c hbc
+    simp only at hbc
+    by_cases hb : b = a <;> by_cases hc : c = a
+    · rw [hb, hc]
+    · rw [hb, express_self, express_of_ne_of_eq hc] at hbc
+      have := hu.nonneg c
+      omega
+    · rw [hc, express_self, express_of_ne_of_eq hb] at hbc
+      have := hu.nonneg b
+      omega
+    · rw [express_of_ne_of_eq hb, express_of_ne_of_eq hc] at hbc
+      exact hu.injective (show u b o = u c o by omega)
+  · intro b
+    by_cases hb : b = a
+    · subst hb; simp
+    · rw [express_of_ne_of_eq hb]
+      have := hu.nonneg b
+      omega
+  · intro b q hq
+    by_cases hb : b = a
+    · subst hb; simp
+    · rw [express_of_ne_of_ne hb hq, express_of_ne_of_eq hb]
+      have := hu.other b q hq
+      linarith
+
+/-- **Remark 5.**  For a steep ladder `û`, the event `{U_0 (A₁, O₁) > 0}` is contained in
+`{U_{T_1} ∈ L̂}`: an expression made from a strictly positive entry keeps the state in `L̂`.
+
+Only the deterministic half of Remark 5 is proved here; the lower bound `η` on the
+probability of `{U_0 (A₁, O₁) > 0}` is a separate computation. -/
+theorem IsSteepLadder.express_of_pos (hM : 2 ≤ M) (hu : IsSteepLadder o u) {a : Actor N}
+    {p : Opinion M} (hpos : 0 < u a p) : IsSteepLadder o (SocialNetwork.express a p u) := by
+  rw [hu.opinion_eq_of_pos hM hpos]
+  exact hu.express hM a
 
 end Ladder
 

@@ -45,7 +45,9 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | eq. (2) | state space `S` | `SocialNetwork.IsState` | ✅ |
 | after (2) | `S` is stable under every `π^{a,o}` | `SocialNetwork.IsState.express` | ✅ |
 | — | trust is conserved by listening, reset by expressing | `SocialNetwork.trust_express` | ✅ |
-| eq. (3) | generator `G` of the jump process | — | 🚧 |
+| eq. (3) | jump rates `exp (β u (a,o))` | `SocialNetwork.jumpRate` | ✅ |
+| eq. (3) | ↳ the induced jump law on `A × O` | `SocialNetwork.jumpPMF` | ✅ |
+| eq. (3) | generator `G` of the **continuous-time** jump process | — | 🚧 |
 | Thm 1.1 | non-explosion, `P(sup Tₘ = ∞) = 1` | — | 🚧 |
 | Thm 1.2 | existence and uniqueness of `μ^β` | — | 🚧 |
 | Def 1 | ladder sets `L^o`, `L` | `SocialNetwork.IsLadder` | ✅ |
@@ -105,13 +107,35 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | — | ↳ `C^o` carries a strictly positive entry (after Def 2) | `SocialNetwork.IsConsensus.exists_pos` | ✅ |
 | — | ↳ no actor expresses twice in that window | `SocialNetwork.actor_ne_actor_of_greedy` | ✅ |
 | — | ↳ the row of an actor that only listens to `o` | `SocialNetwork.state_add_of_hearing` | ✅ |
-| Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
-| — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | — | ⬜ |
-| Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | — | ⬜ |
-| Def 3 | skeleton process `Ũ^{β,u}`, `μ̃^β`, `R̃^{β,u}` | — | 🚧 |
+| — | ↳ `ξₙ^u` as a measurable subset of the sample space | `SocialNetwork.greedyEvent` | ✅ |
+| — | ↳ its measurability (it is a cylinder) | `…measurableSet_greedyEvent` | ✅ |
+| — | ↳ `⋂_{j≤n} ξⱼ^u` and its measurability | `…greedyEvents`, `…measurableSet_greedyEvents` | ✅ |
+| Prop 5 | ↳ same statement on a sample point | `…exists_rowSup_actor_lt_ofPath` | ✅ |
+| Prop 6 | ↳ same statement on the event `⋂ ξⱼ^u` | `…entry_mem_of_mem_greedyEvents` | ✅ |
+| Prop 7 | ↳ final step on the event `⋂ ξⱼ^v` | `…isLadder_state_of_mem_greedyEvents` | ✅ |
+| Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | `SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents` | ✅ |
+| Prop 8 | ↳ one-step bound `P(ξ₁^v) ≥ ζ_β`, uniform in `v` | `SocialNetwork.zeta_le_jumpPMF_argmaxFinset` | ✅ |
+| Prop 8 | ↳ the induction step along `partialTraj` | `SocialNetwork.zeta_le_partialTraj_succ` | ✅ |
+| Prop 8 | ↳ combined with Remark 4 | `SocialNetwork.one_sub_le_pathMeasure_greedyEvents` | ✅ |
+| — | ↳ the maximum `y (v)` and that `Y (v) ≠ ∅` | `SocialNetwork.entrySup`, `…exists_entrySup` | ✅ |
+| — | ↳ `ξₙ^u` says the expressed pair attains `y` | `SocialNetwork.isGreedyAt_iff_entrySup` | ✅ |
+| — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | `SocialNetwork.le_entrySup_sub_one` | ✅ |
+| Rmk 4 | `ζ_β` | `SocialNetwork.zeta`, `…zeta_pos`, `…zeta_le_one` | ✅ |
+| Rmk 4 | `ζ_β ≥ 1 - M N e^{-β/(M-1)}` | `SocialNetwork.one_sub_le_zeta` | ✅ |
+| Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | `SocialNetwork.one_sub_le_zeta_pow` | ✅ |
+| Def 3 | skeleton transition kernel `Ũ^{β,u}` | `SocialNetwork.skeletonKernel` | ✅ |
+| Def 3 | ↳ it is a Markov kernel | `…isMarkovKernel_skeletonKernel` | ✅ |
+| Def 3 | ↳ carried by the states reachable by one `π^{a,o}` | `…skeletonKernel_reachable` | ✅ |
+| Def 3 | ↳ `S` preserved with probability one | `…isState_skeletonKernel` | ✅ |
+| Def 3 | ↳ law of `(Aₙ, Oₙ)ₙ` (Ionescu–Tulcea) | `SocialNetwork.pathMeasure` | ✅ |
+| Def 3 | ↳ the process `Ũ_n^{β,u}`, and its measurability | `SocialNetwork.skeleton`, `…measurable_skeleton` | ✅ |
+| Def 3 | ↳ the return time `R̃^{β,u} (θ)` | `SocialNetwork.returnTime` | ✅ |
+| Def 3 | the invariant measure `μ̃^β` of the skeleton | — | 🚧 |
 | Def 4 | steep ladder sets `L̂^o`, `L̂` | `SocialNetwork.IsSteepLadder` | ✅ |
 | Rmk 5 | `L ⊆ L̂` | `SocialNetwork.IsLadder.isSteepLadder` | ✅ |
-| Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}`, bound `η` | — | 🚧 |
+| Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}` | `SocialNetwork.IsSteepLadder.express_of_pos` | ✅ |
+| Rmk 5 | ↳ `L̂^o` is stable under expressing `o` | `SocialNetwork.IsSteepLadder.express` | ✅ |
+| Rmk 5 | the bound `η` on `P(U_0(A₁,O₁) > 0)` | — | ⬜ |
 | Prop 9 | `μ̃^β (u) ≤ C' e^{-β(N-1)}` for `u ∉ L̂` | — | 🚧 |
 | Cor 10 | `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` | — | 🚧 |
 | Cor 11 | hitting-time corollary | — | 🚧 |
@@ -199,52 +223,178 @@ the proof.
 
 ## Infrastructure gaps
 
-The statements marked 🚧 are not blocked by the difficulty of the paper's arguments but by
-missing library support. Mathlib currently has no theory of **continuous-time Markov jump
-processes on a countable state space**. Concretely, the following are prerequisites and do
-not exist in usable form today:
+This section states, with exact Mathlib names, what the library provides and what it does
+not.  It was rewritten against the sources of the pinned revision
+(`lake-manifest.json`, Mathlib `v4.33.0` = `db584cd6`); do not trust it against a different
+revision without re-checking.
 
-1. **Construction of the process from a generator.** Given jump rates `q (u, v)` on a
-   countable set, build the jump chain / holding time representation and the associated
-   process `(U_t)`. Needed for eq. (3) and eq. (7).
-2. **Non-explosion criteria.** Theorem 1.1 is proved by sandwiching the jump times between
-   two Poisson processes; Mathlib has Poisson point processes but not the comparison
-   machinery for jump-time superpositions.
-3. **Invariant measures and Doeblin's condition.** The proof of Theorem 1.2 establishes a
-   uniform minorisation and concludes uniform ergodicity of the skeleton chain, then
-   transfers the invariant measure to continuous time via `μ ∝ μ̃ / q`. Mathlib has
-   `MeasureTheory.Measure.IsInvariant`-style notions but not the Doeblin ⇒ unique
-   invariant measure theorem for countable chains.
-4. **Kac's lemma**, used in Proposition 9 to convert `1/μ̃^β (u)` into an expected return
-   time.
-5. **Convergence in distribution to `Exp(1)`** with quantitative Kolmogorov-type bounds, as
-   in Theorem 3.
+The headline change since the first draft of this blueprint is that **the discrete-time
+construction is no longer a gap**.  Mathlib now proves the Ionescu-Tulcea theorem, and proves
+it for arbitrary measurable spaces.
 
-A realistic route is therefore to formalise the deterministic and combinatorial layer
-first (Section 2's state space, the ladder/consensus geometry, Propositions 5–7 and the
-Appendix A lemmas, which are statements about *trajectories* and not about their
-probabilities), then build the missing chain infrastructure, then close the probabilistic
-statements. The trajectory-level statements are the bulk of the paper's combinatorial
-content and are formalisable today.
+### Resolved in discrete time: constructing the process (was gap 1)
+
+`Mathlib/Probability/Kernel/IonescuTulcea/Traj.lean` provides
+
+```lean
+ProbabilityTheory.Kernel.traj (κ : (n : ℕ) → Kernel (Π i : Finset.Iic n, X i) (X (n + 1)))
+    [∀ n, IsMarkovKernel (κ n)] (a : ℕ) : Kernel (Π i : Finset.Iic a, X i) (Π n, X n)
+ProbabilityTheory.Kernel.trajMeasure (μ₀ : Measure (X 0)) (κ) : Measure (Π n, X n)
+```
+
+together with `instance : IsMarkovKernel (traj κ a)`, the projections
+`traj_map_frestrictLe`, `map_traj_succ_self`, the uniqueness statement `eq_traj`, the
+composition `traj_comp_partialTraj`, and integration lemmas (`lintegral_traj`,
+`integral_traj`, `condExp_traj`).  The finite-horizon kernels are
+`ProbabilityTheory.Kernel.partialTraj` in `IonescuTulcea/PartialTraj.lean`.
+
+Two points make this directly usable here:
+
+* **No standard-Borel hypothesis.**  The only assumption on the state spaces is
+  `[∀ n, MeasurableSpace (X n)]`.  (Only `condDistrib_trajMeasure` needs
+  `StandardBorelSpace`, and nothing here uses it.)
+* **The kernels may depend on the whole past**, which is what lets the chain be driven by the
+  expressed pairs `(Aₙ, Oₙ)` rather than by the matrices — see `SocialNetwork/Skeleton.lean`.
+  That choice is what makes Propositions 5, 6 and 7 transfer to the probabilistic setting
+  *pointwise*, with no almost-sure clause.
+
+Supporting API used in `SocialNetwork/Skeleton.lean`:
+`ProbabilityTheory.Kernel.ofFunOfCountable` (every function out of a countable space with
+measurable singletons is a kernel), `PMF.normalize`, `PMF.map`, `PMF.toMeasure` with
+`PMF.toMeasure.isProbabilityMeasure`, `ProbabilityTheory.Kernel.comap` with
+`IsMarkovKernel.comap`, the `Monoid (Kernel α α)` instance and the Chapman-Kolmogorov
+equations `ProbabilityTheory.Kernel.pow_add` and `pow_succ_apply_eq_lintegral`.
+
+Note that **no bridge `PMF → Kernel` exists**: `Mathlib/Probability/Kernel/` never mentions
+`PMF`.  Going through `PMF.toMeasure` and `Kernel.ofFunOfCountable` is three lines, but it is
+not library API.
+
+Measurability costs nothing here.  `Pressure N M = Actor N → Opinion M → ℤ` is `Countable`
+(`instance [Finite α] [∀ a, Countable (π a)] : Countable (∀ a, π a)`) and satisfies
+`MeasurableSingletonClass` (`Pi.instMeasurableSingletonClass`, `Int.instMeasurableSpace = ⊤`),
+so `MeasurableSingletonClass.toDiscreteMeasurableSpace` applies and *every* subset is
+measurable, *every* function measurable (`MeasurableSet.of_discrete`, `Measurable.of_discrete`).
+The same holds for `Jump N M` and for every space of finite histories.
+
+### Still missing in DISCRETE time
+
+These are what block Theorem 1.2, Proposition 9 and Corollaries 10 and 11 even though those
+statements live entirely on the skeleton.
+
+1. **Doeblin's condition ⇒ a unique invariant measure.**  `Kernel.Invariant κ μ := μ.bind κ = μ`
+   exists in `Mathlib/Probability/Kernel/Invariance.lean`, together with `Invariant.comp`,
+   `IsReversible` and `IsReversible.invariant` — and that is the entire file.  There is no
+   existence statement, no uniqueness statement, no convergence statement, and no file in
+   Mathlib uses `Kernel.Invariant`.  A search of the whole library for `Doeblin`,
+   `minorisation` and `minorization` returns nothing, and there is no total-variation distance
+   between measures (`totalVariation` exists only for signed and vector measures, as part of
+   the Jordan decomposition).  So even the existence of `μ̃^β` for a finite-state chain has to
+   be built from scratch.
+2. **Irreducibility has a definition but no theory.**
+   `ProbabilityTheory.Kernel.IsIrreducible (φ : Measure α) (κ : Kernel α α)` exists in
+   `Mathlib/Probability/Kernel/Irreducible.lean` (Meyn–Tweedie 4.2.1(ii)), but the file
+   contains only the class, two trivial instances, and `isIrreducible_of_le_measure`.  Nothing
+   connects it to invariant measures or to recurrence.
+3. **Kac's lemma**, used in Proposition 9 to turn `1/μ̃^β (u)` into `E [R̃^{β,u} (u)]`.  Absent:
+   a search for `Kac` finds only Kac–Moody algebras, and there is no `returnTime` anywhere.
+   `Mathlib/Dynamics/Ergodic/Conservative.lean` has Poincaré recurrence, but for a single
+   measure-preserving *map*, which does not apply to a kernel.
+4. **Recurrence for Markov chains**: nothing.  `Mathlib/Dynamics/Ergodic/` is entirely about
+   maps, not kernels.
+5. **Quantitative convergence to `Exp(1)`** (Theorem 3).  `TendstoInDistribution` now exists
+   (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`, with the continuous
+   mapping theorem and Slutsky), and `Mathlib/MeasureTheory/Measure/LevyProkhorovMetric.lean`
+   metrises weak convergence, so the *qualitative* statement is now expressible.  The
+   Kolmogorov-type quantitative bound the paper proves is not.
+
+What is available on the stopping-time side: `MeasureTheory.hittingAfter` and
+`MeasureTheory.hittingBtwn` (`Mathlib/Probability/Process/HittingTime.lean` — note the rename
+from the older `hitting`), `MeasureTheory.IsStoppingTime`, `stoppedProcess`,
+`Filtration.natural`.  `SocialNetwork.returnTime` is `hittingAfter` applied to the skeleton.
+Showing it is a stopping time needs a filtration on the path space; `Filtration.natural` wants
+`StronglyMeasurable`, hence a topology on the state space, so it would have to be built by
+hand.  Nothing below depends on it.
+
+### Still missing in CONTINUOUS time
+
+6. **Construction of the jump process from a generator.**  Given the rates
+   `q (u, v)` of equation (3) on a countable set, build the jump-chain / holding-time
+   representation and the process `(U_t)`.  Mathlib has no such construction, and no theory of
+   continuous-time Markov jump processes at all.  This is what blocks eq. (3)'s generator and
+   eq. (7).
+7. **Non-explosion** (Theorem 1.1).  The paper sandwiches the jump times between two Poisson
+   processes.  **Mathlib has no Poisson point process**: `Mathlib/Probability/Distributions/`
+   `Poisson/` contains the Poisson *distribution on `ℕ`* (`poissonMeasure`) and the Poisson
+   limit theorem, nothing more.  (An earlier draft of this blueprint claimed Mathlib had
+   Poisson point processes; that was wrong.)
+8. **Transfer of the invariant measure**, `μ^β (u) ∝ μ̃^β (u) / q^β (u)` of equation (13), and
+   the bijection between the stationary laws of the two processes.  This needs 6 first.
+
+### Why this matters less than it looks
+
+Theorems 2 and 3 live essentially on the **skeleton**: Theorem 2 is proved by first proving
+its analogue for `μ̃^β` (Proposition 9 and Corollaries 10, 11), and Theorem 3's regeneration
+argument (Propositions 12, 17, 18, Lemmas 13, 14) is a statement about the sequence of
+expressed pairs.  So the continuous-time gaps 6–8 do **not** block them; the discrete-time
+gaps 1–3 do.  Concretely, the shortest path to Theorem 2 is:
+
+> Doeblin ⇒ existence and uniqueness of `μ̃^β` (gap 1) → Kac (gap 3) → Proposition 9 → Theorem 2.
+
+Everything on that path is a statement about a **finite-state** chain, since `S` intersected
+with the reachable set from any `u ∈ S` is finite once the entries are bounded, and the
+minorisation the paper establishes is uniform.  None of it needs continuous time.
+
+## A definition corrected: `IsSteepLadder`
+
+Definition 4 reads
+
+```
+L̂^o = {u ∈ S : u (a, o) ∈ ℤ ∀ a;   0 = u (a₁, o) < u (a₂, o) < … < u (a_N, o), {a₁,…,a_N} = A;
+        and ∀ p ≠ o, u (a, p) = -u (a, o)/(M-1)}.
+```
+
+The chain `0 = u (a₁, o) < …` says two things: the values are pairwise distinct, **and** the
+smallest of them is `0`, so the whole column is non-negative.  The first version of
+`SocialNetwork.IsSteepLadder` recorded only "pairwise distinct" and "some value is `0`", which
+is strictly weaker — and the missing sign condition is not recoverable from the others, since
+`∑_p u (a, p) = 0` holds identically once `other` does, whatever the sign of `u (a, o)`.
+
+`IsSteepLadder` now carries the field `nonneg : ∀ a, 0 ≤ u a o`.  This costs nothing
+elsewhere: the only place that builds an `IsSteepLadder` is `IsLadder.isSteepLadder`, and the
+field is supplied by the already-proved `IsLadder.nonneg`.  It is what makes Remark 5
+(`SocialNetwork.IsSteepLadder.express_of_pos`) true.
 
 ## Immediate next steps
 
 1. ~~Model a trajectory as the data `(Aₙ, Oₙ)ₙ` and iterate `express`.~~ Done
    (`SocialNetwork.Trajectory`).
 2. ~~Prove Proposition 5 (pigeonhole).~~ Done (`SocialNetwork.exists_rowSup_actor_lt`).
-3. ~~Define the greedy event `ξₙ^u`.~~ Done (`SocialNetwork.IsGreedyAt`).
+3. ~~Define the greedy event `ξₙ^u`.~~ Done (`SocialNetwork.IsGreedyAt`), and it is now also a
+   measurable subset of the sample space (`SocialNetwork.greedyEvent`).
 4. ~~Prove Proposition 6.~~ Done (`SocialNetwork.entry_mem_of_greedy`).
-5. Finish Proposition 7. The **final step** (`C^o` to `L^o`) is done
-   (`SocialNetwork.isLadder_state`), and so is the vocabulary of Appendix A: Definition 5,
-   `τ(u)`, and the opening and closing steps of Lemma 20. What remains is the body of
-   Lemmas 19 and 20, and both need the repairs described in the section above — the
-   first-passage construction for Lemma 19, and the weakened invariant
+5. ~~Build the skeleton of Definition 3.~~ Done (`SocialNetwork/Skeleton.lean`): the rates of
+   equation (3), the transition kernel `Ũ^{β,u}` with `IsMarkovKernel`, the law of
+   `(Aₙ, Oₙ)ₙ` by Ionescu-Tulcea, the process `Ũ_n` and the return time `R̃^{β,u}`.
+6. ~~Prove the gap estimate behind Proposition 8 and the Bernoulli bound of Remark 4.~~ Done
+   (`SocialNetwork.le_entrySup_sub_one`, `SocialNetwork.one_sub_le_zeta_pow`).
+7. **Finish Proposition 8.**  This is now the first thing that is neither done nor blocked on
+   missing infrastructure.  It splits in two:
+   * the one-step bound `P (ξ₁^v) ≥ ζ_β` for every `v ∈ S`, which is the paper's computation
+     `|Y(v)| e^{βy} / (|Y(v)| e^{βy} + ∑_{v(b,o)<y} e^{βv(b,o)})` bounded below using
+     `|Y(v)| ≥ 1`, the gap estimate (done), and `|A × O| = MN`.  Everything it needs is in
+     place; it is a finite computation with `Finset.sum` over `Jump N M`.
+   * the iteration `P (⋂_{j≤m} ξⱼ^u) ≥ ζ_β^m`, by induction along
+     `ProbabilityTheory.Kernel.partialTraj` using `partialTraj_succ_eq_comp` and the
+     composition-product lemmas of `Kernel/Composition/CompProd.lean`.
+8. Finish Proposition 7: the bodies of Lemmas 19 and 20, which need the repairs described
+   above — the first-passage construction for Lemma 19, and the weakened invariant
    `max(0, n(u) + r - (k+1)/(M-1))` together with the staircase replenishment for Lemma 20.
    Worth settling with the authors before formalising, since the repairs change the written
    proofs rather than just their presentation.
-6. Assemble the biased model into a network state (one `Memory` per actor) and close the
-   remaining ⬜ entries of Section 3: `u (a, p) ∈ ℤ + γℤ`, and `0 ∉ S^α` when
-   `(M-1) α ≠ 0`.
-7. Prove the gap estimate behind Proposition 8: on the state space, two distinct entries
-   differ by at least `1` in scaled coordinates. The probabilistic conclusion then waits on
-   the infrastructure above, but the arithmetic half does not.
+9. The bound `η` of Remark 5, `P (U_0 (A₁, O₁) > 0) ≥ η` for `u ∈ L`: another finite
+   computation with the rates, now that the deterministic half of Remark 5 is proved.
+10. Assemble the biased model into a network state (one `Memory` per actor) and close the
+    remaining ⬜ entries of Section 3: `u (a, p) ∈ ℤ + γℤ`, and `0 ∉ S^α` when
+    `(M-1) α ≠ 0`.
+11. Everything past that — Theorem 1.2, Proposition 9, Corollaries 10 and 11, Theorem 2,
+    Theorem 3 — waits on Doeblin and Kac, in that order.  See "Infrastructure gaps".
