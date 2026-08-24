@@ -66,16 +66,16 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | eq. (5) | operator `π_α^{a,o}` | `SocialNetwork.Bias.Memory.hear` | ✅ |
 | Rmk 1 | `S^α` stable under `π_α^{a,o}` | `SocialNetwork.Bias.Memory.pressure_hear` | ✅ |
 | Rmk 1 | `∑_p u (a, p) = nₐ (M-1) α` | `SocialNetwork.Bias.Memory.sum_pressure_eq` | ✅ |
-| Rmk 1 | `u (a, p) ∈ ℤ + γℤ` | — | ⬜ |
+| Rmk 1 | `u (a, p) ∈ ℤ + γℤ` | `…Profile.pressure_mem_addSubgroup` | ✅ |
 | Rmk 1 | a row is null if `nₐ = 0` | `…Memory.pressure_eq_zero_of_heard_eq_zero` | ✅ |
-| Rmk 1 | … and only if, when `(M-1) α ≠ 0`; hence `0 ∉ S^α` | — | ⬜ |
-| — | the biased model assembled into a network state | — | ⬜ |
+| Rmk 1 | … and only if, when `(M-1) α ≠ 0`; hence `0 ∉ S^α` | `…IsBiasedState.pressure_ne_zero` | ✅ |
+| — | the biased model assembled into a network state | `SocialNetwork.Bias.Profile` | ✅ |
 | eq. (7) | generator `G̃` | — | 🚧 |
-| eq. (8) | `C_α^o` | — | ⬜ |
-| eq. (9) | `L_α^o` | — | ⬜ |
+| eq. (8) | `C_α^o` | `SocialNetwork.Bias.IsBiasedConsensus` | ✅ |
+| eq. (9) | `L_α^o` | `SocialNetwork.Bias.IsBiasedLadder` | ✅ |
 | Thm 4.1 | `α < 0`: all but one actor stop expressing, a.s. | — | 🚧 |
 | Thm 4.2 | `0 ≤ α < 1/(M-1)`: Thms 1, 2, 3 carry over | — | 🚧 |
-| Rmk 2 | degeneracy for `α > 1/(M-1)` and `α ≥ 1 + 1/(M-1)` | — | ⬜ |
+| Rmk 2 | degeneracy for `α > 1/(M-1)` and `α ≥ 1 + 1/(M-1)` | `…pressure_lt_pressure_hear_of_neg`, `…le_pressure_hear_of_le_neg_one` | ✅ |
 
 ## Section 4 — Observables
 
@@ -162,7 +162,7 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Prop 21–24 | biased analogues of Props 5–8 | — | ⬜ / 🚧 |
 | Thm 25 | biased analogue of Theorem 1 | — | 🚧 |
 | Prop 26 | biased analogue of Proposition 9 | — | 🚧 |
-| Rmk 8 | row structure for `0 < α < 1/(M-1)` | — | ⬜ |
+| Rmk 8 | `max_p u(a,p) ≥ (M-1)α` for a non-null row | `SocialNetwork.Bias.le_max_pressure` | 🟡 |
 | Thm 27 | biased analogue of Theorem 2 | — | 🚧 |
 | Lem 28, 29 | biased analogues of Lemmas 13, 14 | — | 🚧 |
 | Cor 30 | biased analogue of Corollary 15 | — | 🚧 |
