@@ -3,6 +3,7 @@ Copyright (c) 2026 Felipe Peñafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Bias
+import SocialNetwork.Consensus
 import SocialNetwork.Defs
 import SocialNetwork.Ladder
 import SocialNetwork.Trajectory

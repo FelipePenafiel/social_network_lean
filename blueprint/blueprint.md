@@ -99,6 +99,12 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | — | ↳ sharp upper bound `U_{T_N} ≤ N - 1` | `SocialNetwork.entry_le_of_greedy` | ✅ |
 | — | ↳ lower bound from the vanishing row sums | `SocialNetwork.neg_le_of_forall_le` | ✅ |
 | Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | — | ⬜ |
+| — | ↳ final step: from `C^o`, `N` greedy steps reach `L^o` | `SocialNetwork.isLadder_state` | ✅ |
+| — | ↳ a greedy step in `C^o` expresses `o` | `SocialNetwork.opinion_eq_of_greedy` | ✅ |
+| — | ↳ `C^o` is stable under expressing `o` | `SocialNetwork.IsConsensus.express` | ✅ |
+| — | ↳ `C^o` carries a strictly positive entry (after Def 2) | `SocialNetwork.IsConsensus.exists_pos` | ✅ |
+| — | ↳ no actor expresses twice in that window | `SocialNetwork.actor_ne_actor_of_greedy` | ✅ |
+| — | ↳ the row of an actor that only listens to `o` | `SocialNetwork.state_add_of_hearing` | ✅ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
 | — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | — | ⬜ |
 | Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | — | ⬜ |
@@ -170,8 +176,12 @@ content and are formalisable today.
 2. ~~Prove Proposition 5 (pigeonhole).~~ Done (`SocialNetwork.exists_rowSup_actor_lt`).
 3. ~~Define the greedy event `ξₙ^u`.~~ Done (`SocialNetwork.IsGreedyAt`).
 4. ~~Prove Proposition 6.~~ Done (`SocialNetwork.entry_mem_of_greedy`).
-5. Prove Proposition 7 via Appendix A (Definition 5 and Lemmas 19, 20): `(M+1)N` greedy
-   steps land in `L`.
+5. Prove Proposition 7 via Appendix A. Its **final step** — from a consensus state, `N`
+   greedy expressions reach a ladder — is done (`SocialNetwork.isLadder_state`); it is the
+   step the paper asserts "by definition". What remains is the road to a consensus state:
+   Definition 5 (`S^o`), the first-repeat time `τ(u)`, and Lemmas 19 and 20. Lemma 19 in
+   particular needs the floor bookkeeping `n(u) = ⌊m⌋`, `r = m - ⌊m⌋`, which in the scaled
+   coordinates used here is Euclidean division by `M - 1`.
 6. Assemble the biased model into a network state (one `Memory` per actor) and close the
    remaining ⬜ entries of Section 3: `u (a, p) ∈ ℤ + γℤ`, and `0 ∉ S^α` when
    `(M-1) α ≠ 0`.

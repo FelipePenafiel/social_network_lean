@@ -19,7 +19,9 @@ transition at `α = 0`.
 This repository is at an early stage. What is formalised today is the **deterministic
 layer**: the state space, the expression operator, the conservation law that makes the
 state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased
-model of Section 3 through its variable-length memory, and **Propositions 5 and 6**.
+model of Section 3 through its variable-length memory, **Propositions 5 and 6**, and the
+final step of Proposition 7 (from a consensus state, `N` greedy expressions reach a
+ladder).
 
 The probabilistic statements (Theorems 1–4) are **not** formalised, and are not merely a
 matter of effort: Mathlib has no theory of continuous-time Markov jump processes on a
@@ -48,6 +50,7 @@ SocialNetwork.lean            root module
 SocialNetwork/Defs.lean       pressure matrices, π^{a,o}, trust, public opinion, S
 SocialNetwork/Ladder.lean     ladder sets L^o, consensus sets C^o, steep ladders L̂^o
 SocialNetwork/Trajectory.lean realisations (Aₙ, Oₙ)ₙ and the deterministic layer of §5
+SocialNetwork/Consensus.lean  greedy dynamics from a consensus state reach a ladder
 SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) of eq. (6)
 blueprint/blueprint.md        paper ↔ Lean correspondence and status of every statement
 ```
