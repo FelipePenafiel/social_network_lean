@@ -2,10 +2,7 @@
 Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
-import SocialNetwork.Appendix
 import SocialNetwork.Bias
-import SocialNetwork.BiasedModel
-import SocialNetwork.BiasedResults
 import SocialNetwork.Consensus
 import SocialNetwork.ContinuousTime
 import SocialNetwork.Defs
