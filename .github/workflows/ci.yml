@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Get Mathlib build cache
+        # A cache miss is not fatal: the project imports only a small slice of Mathlib, so
+        # a from-source build still fits in the job timeout.
+        run: lake exe cache get || echo "cache unavailable, building from source"
+
+      - name: Build
+        run: lake build
+
+      - name: Reject sorry
+        run: |
+          if grep -rn --include='*.lean' -E '\bsorry\b' SocialNetwork.lean SocialNetwork/; then
+            echo "::error::the library must stay sorry-free; \
+            record unproved statements in blueprint/blueprint.md instead"
+            exit 1
+          fi
+          echo "no sorry in the library"
+
+      - name: Check axioms of the main results
+        run: |
+          cat > CheckAxioms.lean <<'EOF'
+          import SocialNetwork
+          #print axioms SocialNetwork.IsState.express
+          #print axioms SocialNetwork.trust_express
+          #print axioms SocialNetwork.IsLadder.isSteepLadder
+          #print axioms SocialNetwork.IsLadder.isConsensus
+          #print axioms SocialNetwork.Trajectory.isState_state
+          #print axioms SocialNetwork.rowSup_state_le
+          #print axioms SocialNetwork.Bias.Memory.pressure_hear
+          #print axioms SocialNetwork.Bias.Memory.sum_pressure_eq
+          EOF
+          lake env lean CheckAxioms.lean | tee axioms.txt
+          if grep -q 'sorryAx' axioms.txt; then
+            echo "::error::a main result depends on sorryAx"
+            exit 1
+          fi
