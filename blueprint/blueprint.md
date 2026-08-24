@@ -100,7 +100,7 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | `SocialNetwork.entry_mem_of_greedy` | ✅ |
 | — | ↳ sharp upper bound `U_{T_N} ≤ N - 1` | `SocialNetwork.entry_le_of_greedy` | ✅ |
 | — | ↳ lower bound from the vanishing row sums | `SocialNetwork.neg_le_of_forall_le` | ✅ |
-| Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | — | ⬜ |
+| Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | `SocialNetwork.isLadder_state_of_greedy` | 🟡 |
 | — | ↳ final step: from `C^o`, `N` greedy steps reach `L^o` | `SocialNetwork.isLadder_state` | ✅ |
 | — | ↳ a greedy step in `C^o` expresses `o` | `SocialNetwork.opinion_eq_of_greedy` | ✅ |
 | — | ↳ `C^o` is stable under expressing `o` | `SocialNetwork.IsConsensus.express` | ✅ |
@@ -135,9 +135,9 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Rmk 5 | `L ⊆ L̂` | `SocialNetwork.IsLadder.isSteepLadder` | ✅ |
 | Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}` | `SocialNetwork.IsSteepLadder.express_of_pos` | ✅ |
 | Rmk 5 | ↳ `L̂^o` is stable under expressing `o` | `SocialNetwork.IsSteepLadder.express` | ✅ |
-| Rmk 5 | the bound `η` on `P(U_0(A₁,O₁) > 0)` | — | ⬜ |
-| Prop 9 | `μ̃^β (u) ≤ C' e^{-β(N-1)}` for `u ∉ L̂` | — | 🚧 |
-| Cor 10 | `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` | — | 🚧 |
+| Rmk 5 | the bound `η` on `P(U_0(A₁,O₁) > 0)` | `SocialNetwork.eta_le_pathMeasure_positivePressure` | 🟡 |
+| Prop 9 | `μ̃^β (u) ≤ C' e^{-β(N-1)}` for `u ∉ L̂` | `…measure_le_of_notMem_steepLadderSet` | 🟡 |
+| Cor 10 | `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` | `SocialNetwork.measure_zero_le` | 🟡 |
 | Cor 11 | hitting-time corollary | `…tendsto_hittingTime_ladderSet_zero` | 🟡 |
 | Prop 12 | the exponential-approximation criterion of [LM22] | `SocialNetwork.exitTime_approx_exponential` | 🟡 |
 | Lem 13 | `P(R^{β,u}(L) > 2β) ≤ (M+1)²N² e^{-β/((M+1)N)}` | `SocialNetwork.probHittingGT_ladderSet_le` | 🟡 |
@@ -155,8 +155,8 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Def 5 | the first-repeat time `τ(u)` | `SocialNetwork.firstRepeat` | ✅ |
 | Def 5 | `τ(u) ∈ {2, …, N+1}` | `SocialNetwork.firstRepeat_le` | ✅ |
 | — | actors before `τ(u)` are distinct | `SocialNetwork.actor_injOn_lt_firstRepeat` | ✅ |
-| Lem 19 | `ξ^u_{τ(u)}` implies `Ũ_{τ(u)} ∈ ⋃_o S^o` | — | ⬜ (see below) |
-| Lem 20 | `⋂ ξ_j` implies `Ũ ∈ C^o` for `u ∈ S^o` | — | ⬜ (see below) |
+| Lem 19 | `ξ^u_{τ(u)}` implies `Ũ_{τ(u)} ∈ ⋃_o S^o` | `…isFavouring_state_firstRepeat` | 🟡 (see below) |
+| Lem 20 | `⋂ ξ_j` implies `Ũ ∈ C^o` for `u ∈ S^o` | `…isConsensus_state_of_favouring` | 🟡 (see below) |
 | — | ↳ a greedy step in `S^o` expresses `o` (opening step) | `…opinion_eq_of_isMax_of_favouring` | ✅ |
 | — | ↳ non-positive off-columns give `C^o` (closing step) | `SocialNetwork.isConsensus_of_nonpos` | ✅ |
 | Prop 21–24 | biased analogues of Props 5–8 | — | ⬜ / 🚧 |
