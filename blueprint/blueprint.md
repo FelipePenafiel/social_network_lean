@@ -113,7 +113,10 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Prop 5 | ↳ same statement on a sample point | `…exists_rowSup_actor_lt_ofPath` | ✅ |
 | Prop 6 | ↳ same statement on the event `⋂ ξⱼ^u` | `…entry_mem_of_mem_greedyEvents` | ✅ |
 | Prop 7 | ↳ final step on the event `⋂ ξⱼ^v` | `…isLadder_state_of_mem_greedyEvents` | ✅ |
-| Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
+| Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | `SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents` | ✅ |
+| Prop 8 | ↳ one-step bound `P(ξ₁^v) ≥ ζ_β`, uniform in `v` | `SocialNetwork.zeta_le_jumpPMF_argmaxFinset` | ✅ |
+| Prop 8 | ↳ the induction step along `partialTraj` | `SocialNetwork.zeta_le_partialTraj_succ` | ✅ |
+| Prop 8 | ↳ combined with Remark 4 | `SocialNetwork.one_sub_le_pathMeasure_greedyEvents` | ✅ |
 | — | ↳ the maximum `y (v)` and that `Y (v) ≠ ∅` | `SocialNetwork.entrySup`, `…exists_entrySup` | ✅ |
 | — | ↳ `ξₙ^u` says the expressed pair attains `y` | `SocialNetwork.isGreedyAt_iff_entrySup` | ✅ |
 | — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | `SocialNetwork.le_entrySup_sub_one` | ✅ |
@@ -130,7 +133,9 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Def 3 | the invariant measure `μ̃^β` of the skeleton | — | 🚧 |
 | Def 4 | steep ladder sets `L̂^o`, `L̂` | `SocialNetwork.IsSteepLadder` | ✅ |
 | Rmk 5 | `L ⊆ L̂` | `SocialNetwork.IsLadder.isSteepLadder` | ✅ |
-| Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}`, bound `η` | — | 🚧 |
+| Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}` | `SocialNetwork.IsSteepLadder.express_of_pos` | ✅ |
+| Rmk 5 | ↳ `L̂^o` is stable under expressing `o` | `SocialNetwork.IsSteepLadder.express` | ✅ |
+| Rmk 5 | the bound `η` on `P(U_0(A₁,O₁) > 0)` | — | ⬜ |
 | Prop 9 | `μ̃^β (u) ≤ C' e^{-β(N-1)}` for `u ∉ L̂` | — | 🚧 |
 | Cor 10 | `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` | — | 🚧 |
 | Cor 11 | hitting-time corollary | — | 🚧 |

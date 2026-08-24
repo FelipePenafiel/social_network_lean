@@ -77,6 +77,7 @@ measurable.  The same holds for `Jump N M` and for every space of finite histori
   greedy event.
 * `SocialNetwork.le_entrySup_sub_one` — the gap estimate behind Proposition 8.
 * `SocialNetwork.one_sub_le_zeta_pow` — Remark 4, Bernoulli's inequality for `ζ_β`.
+* `SocialNetwork.zeta_le_jumpPMF_argmaxFinset` — the one-step bound of Proposition 8.
 -/
 
 namespace SocialNetwork
@@ -678,5 +679,135 @@ theorem one_sub_le_zeta_pow (N M : ℕ) (β : ℝ) (m : ℕ) :
     exact h3.trans h2
 
 end Zeta
+
+/-! ### The one-step bound of Proposition 8
+
+The paper's computation reads
+
+```
+P (ξ₁^v) = |Y(v)| e^{β y(v)} / (|Y(v)| e^{β y(v)} + ∑_{v(b,o) < y(v)} e^{β v(b,o)}) ≥ ζ_β,
+```
+
+and it uses exactly three facts: `|Y(v)| ≥ 1`, the gap estimate `v (b, o) ≤ y (v) - 1` for the
+pairs that do not attain the maximum, and `|A × O| = M N` bounding their number. -/
+
+section OneStep
+
+variable [NeZero N] [NeZero M]
+
+/-- The paper's `Y (v) = {(a, o) ∈ A × O : v (a, o) = y (v)}`, as a `Finset`. -/
+noncomputable def argmaxFinset (v : Pressure N M) : Finset (Jump N M) :=
+  Finset.univ.filter fun p => v p.1 p.2 = entrySup v
+
+theorem mem_argmaxFinset {v : Pressure N M} {p : Jump N M} :
+    p ∈ argmaxFinset v ↔ v p.1 p.2 = entrySup v := by
+  simp [argmaxFinset]
+
+/-- `|Y (v)| ≥ 1`: the maximum is attained. -/
+theorem argmaxFinset_nonempty (v : Pressure N M) : (argmaxFinset v).Nonempty := by
+  obtain ⟨a, o, hao⟩ := exists_entrySup v
+  exact ⟨(a, o), mem_argmaxFinset.2 hao⟩
+
+/-- The greedy event at step `k` says exactly that the pair expressed then lies in
+`Y (Ũ_k^{β,u})`. -/
+theorem mem_greedyEvent_iff (u : Pressure N M) (k : ℕ) (ω : ℕ → Jump N M) :
+    ω ∈ greedyEvent u k ↔ ω k ∈ argmaxFinset (skeleton u k ω) := by
+  rw [mem_argmaxFinset]
+  exact isGreedyAt_iff_entrySup (Trajectory.ofPath ω) u k
+
+/-- **The one-step bound of Proposition 8.**  Whatever the current matrix `v`, the pair chosen
+at the next expression maximises the social pressure with probability at least `ζ_β`. -/
+theorem zeta_le_jumpPMF_argmaxFinset (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M) :
+    ENNReal.ofReal (zeta N M β) ≤ (jumpPMF β v).toMeasure (argmaxFinset v) := by
+  have hMpos : (0 : ℝ) < (M : ℝ) - 1 := by
+    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  -- the weight carried by a maximising pair
+  have hmax : ∀ p ∈ argmaxFinset v,
+      jumpRate β v p.1 p.2 = Real.exp (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1)) := by
+    intro p hp
+    unfold jumpRate
+    rw [mem_argmaxFinset.1 hp]
+  -- the weight carried by any other pair, using the gap estimate
+  have hnonmax : ∀ p ∈ Finset.univ \ argmaxFinset v,
+      jumpRate β v p.1 p.2
+        ≤ Real.exp (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1))
+          * Real.exp (-(β / ((M : ℝ) - 1))) := by
+    intro p hp
+    have hne : v p.1 p.2 ≠ entrySup v := fun hcon =>
+      (Finset.mem_sdiff.1 hp).2 (mem_argmaxFinset.2 hcon)
+    have hle : v p.1 p.2 ≤ entrySup v - 1 :=
+      le_entrySup_sub_one (lt_of_le_of_ne (le_entrySup v p.1 p.2) hne)
+    have hcast : ((v p.1 p.2 : ℤ) : ℝ) ≤ ((entrySup v : ℤ) : ℝ) - 1 := by exact_mod_cast hle
+    unfold jumpRate
+    rw [← Real.exp_add]
+    refine Real.exp_le_exp.2 ?_
+    have h1 : β * ((v p.1 p.2 : ℤ) : ℝ) ≤ β * (((entrySup v : ℤ) : ℝ) - 1) :=
+      mul_le_mul_of_nonneg_left hcast hβ
+    have h2 : β * ((v p.1 p.2 : ℤ) : ℝ) / ((M : ℝ) - 1)
+        ≤ β * (((entrySup v : ℤ) : ℝ) - 1) / ((M : ℝ) - 1) := by
+      rw [div_eq_mul_inv, div_eq_mul_inv]
+      exact mul_le_mul_of_nonneg_right h1 (inv_pos.2 hMpos).le
+    calc β * ((v p.1 p.2 : ℤ) : ℝ) / ((M : ℝ) - 1)
+        ≤ β * (((entrySup v : ℤ) : ℝ) - 1) / ((M : ℝ) - 1) := h2
+      _ = β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1) + -(β / ((M : ℝ) - 1)) := by ring
+  -- the two partial sums
+  have hS0 : (0 : ℝ) ≤ ∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le
+  have hT0 : (0 : ℝ) ≤ ∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le
+  obtain ⟨p₀, hp₀⟩ := argmaxFinset_nonempty v
+  have hAS : Real.exp (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1))
+      ≤ ∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2 := by
+    rw [← hmax p₀ hp₀]
+    exact Finset.single_le_sum (fun p _ => (jumpRate_pos β v p.1 p.2).le) hp₀
+  have hcard : (((Finset.univ \ argmaxFinset v).card : ℕ) : ℝ) ≤ (M : ℝ) * (N : ℝ) := by
+    have h := Finset.card_le_card (Finset.subset_univ (Finset.univ \ argmaxFinset v))
+    rw [Finset.card_univ, Fintype.card_prod, Fintype.card_fin, Fintype.card_fin,
+      Nat.mul_comm] at h
+    exact_mod_cast h
+  have hT : (∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2)
+      ≤ (M : ℝ) * (N : ℝ)
+        * (Real.exp (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1))
+          * Real.exp (-(β / ((M : ℝ) - 1)))) := by
+    have h1 := Finset.sum_le_card_nsmul (Finset.univ \ argmaxFinset v)
+      (fun p => jumpRate β v p.1 p.2)
+      (Real.exp (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1))
+        * Real.exp (-(β / ((M : ℝ) - 1)))) hnonmax
+    rw [nsmul_eq_mul] at h1
+    exact h1.trans (mul_le_mul_of_nonneg_right hcard (by positivity))
+  -- the real inequality
+  have hreal : zeta N M β
+      ≤ (∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2)
+        / ((∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2)
+          + ∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2) :=
+    zeta_le_div_of_le N M β (Real.exp_pos _) hAS hT0 hT
+  -- transport it to the measure
+  have hw : ∀ s : Finset (Jump N M),
+      (∑ p ∈ s, jumpWeight β v p) = ENNReal.ofReal (∑ p ∈ s, jumpRate β v p.1 p.2) := by
+    intro s
+    rw [ENNReal.ofReal_sum_of_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le]
+    rfl
+  have hsplit : (∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2)
+      + (∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2)
+      = ∑ p : Jump N M, jumpRate β v p.1 p.2 := by
+    rw [add_comm]
+    exact Finset.sum_sdiff (Finset.subset_univ _)
+  have hST : (0 : ℝ) < (∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2)
+      + ∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2 := by
+    have hpos := Real.exp_pos (β * ((entrySup v : ℤ) : ℝ) / ((M : ℝ) - 1))
+    linarith
+  have htsum : (∑' q : Jump N M, jumpWeight β v q)
+      = ENNReal.ofReal ((∑ p ∈ argmaxFinset v, jumpRate β v p.1 p.2)
+        + ∑ p ∈ Finset.univ \ argmaxFinset v, jumpRate β v p.1 p.2) := by
+    rw [tsum_eq_sum (s := Finset.univ) fun p hp => absurd (Finset.mem_univ p) hp,
+      hw Finset.univ, hsplit]
+  rw [PMF.toMeasure_apply_finset]
+  simp only [jumpPMF_apply]
+  rw [← Finset.sum_mul, hw (argmaxFinset v), htsum, ← ENNReal.ofReal_inv_of_pos hST,
+    ← ENNReal.ofReal_mul hS0, ← div_eq_mul_inv]
+  exact ENNReal.ofReal_le_ofReal hreal
+
+end OneStep
 
 end SocialNetwork
