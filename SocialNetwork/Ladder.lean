@@ -282,4 +282,67 @@ theorem IsSteepLadder.express_of_pos (hM : 2 ≤ M) (hu : IsSteepLadder o u) {a 
 
 end Ladder
 
+/-! ### The sets of Definitions 1, 2 and 4, as subsets of the state space
+
+The probabilistic statements of the paper speak of `L`, `C^o`, `C^{-o}`, `L̂` and `S` as sets —
+`μ^β (L) ≥ …`, `R^{β,u} (C^{-o})`, … — so we name them.  Every subset of `Pressure N M` is
+measurable, the space being countable and discrete, so no measurability hypothesis is ever
+needed on them. -/
+
+section Sets
+
+/-- The state space `S` of equation (2), as a set. -/
+def stateSet (N M : ℕ) : Set (Pressure N M) := {v | IsState v}
+
+/-- **Definition 1**: the ladder set `L = ⋃_{o ∈ O} L^o`. -/
+def ladderSet (N M : ℕ) : Set (Pressure N M) := {v | ∃ o, IsLadder o v}
+
+/-- **Definition 2**: the consensus set `C^o`. -/
+def consensusSet (N : ℕ) {M : ℕ} (o : Opinion M) : Set (Pressure N M) := {v | IsConsensus o v}
+
+/-- **Definition 2**: `C^{-o} = ⋃_{p ≠ o} C^p`, the consensus sets for an opinion other
+than `o`. -/
+def consensusSetOther (N : ℕ) {M : ℕ} (o : Opinion M) : Set (Pressure N M) :=
+  {v | ∃ p, p ≠ o ∧ IsConsensus p v}
+
+/-- **Definition 4**: the steep ladder set `L̂ = ⋃_{o ∈ O} L̂^o`. -/
+def steepLadderSet (N M : ℕ) : Set (Pressure N M) := {v | ∃ o, IsSteepLadder o v}
+
+variable {o : Opinion M} {u : Pressure N M}
+
+@[simp] theorem mem_stateSet : u ∈ stateSet N M ↔ IsState u := Iff.rfl
+@[simp] theorem mem_ladderSet : u ∈ ladderSet N M ↔ ∃ o, IsLadder o u := Iff.rfl
+@[simp] theorem mem_consensusSet : u ∈ consensusSet N o ↔ IsConsensus o u := Iff.rfl
+@[simp] theorem mem_consensusSetOther :
+    u ∈ consensusSetOther N o ↔ ∃ p, p ≠ o ∧ IsConsensus p u := Iff.rfl
+@[simp] theorem mem_steepLadderSet : u ∈ steepLadderSet N M ↔ ∃ o, IsSteepLadder o u := Iff.rfl
+
+theorem IsLadder.mem_ladderSet (hu : IsLadder o u) : u ∈ ladderSet N M := ⟨o, hu⟩
+
+theorem IsConsensus.mem_consensusSet (hu : IsConsensus o u) : u ∈ consensusSet N o := hu
+
+theorem IsSteepLadder.mem_steepLadderSet (hu : IsSteepLadder o u) : u ∈ steepLadderSet N M :=
+  ⟨o, hu⟩
+
+/-- **Remark 5**, at the level of sets: `L ⊆ L̂`. -/
+theorem ladderSet_subset_steepLadderSet (hM : 2 ≤ M) [NeZero N] :
+    ladderSet N M ⊆ steepLadderSet N M :=
+  fun _ ⟨o, hu⟩ => ⟨o, hu.isSteepLadder hM⟩
+
+/-- A ladder is a consensus state, at the level of sets. -/
+theorem ladder_subset_consensus (hM : 2 ≤ M) (hN : 2 ≤ N) (o : Opinion M) :
+    {v : Pressure N M | IsLadder o v} ⊆ consensusSet N o :=
+  fun _ hu => hu.isConsensus hM hN
+
+/-- The consensus sets for distinct opinions are disjoint from one another's `C^{-o}` only
+through the sign pattern; what we do record is that `C^o` and `C^{-o}` cover the states that
+are in consensus for some opinion. -/
+theorem mem_consensusSet_or_other {p : Opinion M} (hu : IsConsensus p u) (o : Opinion M) :
+    u ∈ consensusSet N o ∨ u ∈ consensusSetOther N o := by
+  by_cases hp : p = o
+  · exact Or.inl (hp ▸ hu)
+  · exact Or.inr ⟨p, hp, hu⟩
+
+end Sets
+
 end SocialNetwork
