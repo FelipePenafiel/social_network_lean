@@ -16,23 +16,33 @@ transition at `α = 0`.
 
 ## Status
 
-This repository is at an early stage. What is formalised today is the **deterministic
-layer**: the state space, the expression operator, the conservation law that makes the
-state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased
-model of Section 3 through its variable-length memory, **Propositions 5 and 6**, and the
-final step of Proposition 7 (from a consensus state, `N` greedy expressions reach a
-ladder), plus the vocabulary of Appendix A.
+What is formalised today is the **deterministic layer** together with the **discrete-time
+probabilistic layer**.
+
+Deterministic: the state space, the expression operator, the conservation law that makes the
+state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased model
+of Section 3 through its variable-length memory, **Propositions 5 and 6**, the final step of
+Proposition 7 (from a consensus state, `N` greedy expressions reach a ladder), the
+deterministic half of Remark 5, and the vocabulary of Appendix A.
+
+Probabilistic: the **skeleton process of Definition 3** — the jump rates of equation (3), the
+transition kernel `Ũ^{β,u}`, the law of the sequence `(Aₙ, Oₙ)ₙ` built by Ionescu-Tulcea, the
+process `Ũ_n` and the return time `R̃^{β,u}` — and **Proposition 8**, `P(⋂ ξⱼ^u) ≥ ζ_β^m`,
+with Remark 4's Bernoulli bound. The chain is driven by the expressed pairs rather than by the
+matrices, so a sample point *is* a `Trajectory` and Propositions 5, 6 and 7 apply to a
+realisation pointwise, with no almost-sure qualifier.
 
 Two points in the written proofs of Lemmas 19 and 20 do not compose into Lean proofs as
 they stand; the blueprint states both precisely, along with repairs that appear to work.
 Neither affects the paper's results.
 
-The probabilistic statements (Theorems 1–4) are **not** formalised, and are not merely a
-matter of effort: Mathlib has no theory of continuous-time Markov jump processes on a
-countable state space, no Doeblin-minorisation criterion for unique invariant measures,
-and no Kac lemma. `blueprint/blueprint.md` lists every numbered statement of the paper,
-its Lean counterpart if there is one, and, for the ones that are blocked, which piece of
-missing infrastructure blocks it.
+Theorems 1 to 4 are **not** formalised. In continuous time nothing is: Mathlib has no theory
+of Markov jump processes on a countable state space. In discrete time — which is where
+Theorems 2 and 3 essentially live — what is missing is Doeblin's condition (hence the
+existence and uniqueness of the skeleton's invariant measure `μ̃^β`) and Kac's lemma.
+`blueprint/blueprint.md` lists every numbered statement of the paper, its Lean counterpart if
+there is one, and, for the ones that are blocked, which piece of missing infrastructure blocks
+it, with exact Mathlib names.
 
 Read the blueprint before adding anything: it is the contract between the paper and the
 repository.
@@ -57,6 +67,8 @@ SocialNetwork/Trajectory.lean realisations (Aₙ, Oₙ)ₙ and the deterministic
 SocialNetwork/Consensus.lean  greedy dynamics from a consensus state reach a ladder
 SocialNetwork/Favouring.lean  Definition 5, the first-repeat time τ(u), Appendix A pieces
 SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) of eq. (6)
+SocialNetwork/Skeleton.lean   Definition 3: rates of eq. (3), Ũ^{β,u}, the law of (Aₙ,Oₙ)ₙ
+SocialNetwork/Greedy.lean     Proposition 8
 blueprint/blueprint.md        paper ↔ Lean correspondence and status of every statement
 ```
 
