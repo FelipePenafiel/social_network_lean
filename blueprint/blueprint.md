@@ -70,11 +70,11 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Rmk 1 | a row is null if `nₐ = 0` | `…Memory.pressure_eq_zero_of_heard_eq_zero` | ✅ |
 | Rmk 1 | … and only if, when `(M-1) α ≠ 0`; hence `0 ∉ S^α` | `…IsBiasedState.pressure_ne_zero` | ✅ |
 | — | the biased model assembled into a network state | `SocialNetwork.Bias.Profile` | ✅ |
-| eq. (7) | generator `G̃` | — | 🚧 |
+| eq. (7) | generator `G̃` | `SocialNetwork.Bias.biasedGenerator` | ✅ |
 | eq. (8) | `C_α^o` | `SocialNetwork.Bias.IsBiasedConsensus` | ✅ |
 | eq. (9) | `L_α^o` | `SocialNetwork.Bias.IsBiasedLadder` | ✅ |
-| Thm 4.1 | `α < 0`: all but one actor stop expressing, a.s. | — | 🚧 |
-| Thm 4.2 | `0 ≤ α < 1/(M-1)`: Thms 1, 2, 3 carry over | — | 🚧 |
+| Thm 4.1 | `α < 0`: all but one actor stop expressing, a.s. | `SocialNetwork.Bias.biasedAbsorption` | 🟡 |
+| Thm 4.2 | `0 ≤ α < 1/(M-1)`: Thms 1, 2, 3 carry over | Thms 25, 27, 31 below | 🟡 |
 | Rmk 2 | degeneracy for `α > 1/(M-1)` and `α ≥ 1 + 1/(M-1)` | `…pressure_lt_pressure_hear_of_neg`, `…le_pressure_hear_of_le_neg_one` | ✅ |
 
 ## Section 4 — Observables
@@ -143,9 +143,9 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Lem 13 | `P(R^{β,u}(L) > 2β) ≤ (M+1)²N² e^{-β/((M+1)N)}` | `SocialNetwork.probHittingGT_ladderSet_le` | 🟡 |
 | Lem 14 | two-sided exit-time bounds (Appendix B) | `…le_probHittingGT_consensusOther`, `…probHittingLE_consensusOther_le` | 🟡 |
 | Cor 15 | `c_β ≥ ½ N^{-3}(M+1)^{-3} e^{β/(M-1)}` | `SocialNetwork.le_characteristicTime` | 🟡 |
-| Thm 16 | `α < 0`: absorption | — | 🚧 |
-| Prop 17 | — | — | 🚧 |
-| Prop 18 | sequence of expressing actors `(Aₙ^u)` | — | 🚧 |
+| Thm 16 | `α < 0`: non-explosion | `SocialNetwork.Bias.biasedNonExplosion` | 🟡 |
+| Prop 17 | `P(U_{T_N}^{α,u} ∈ B_N^α) ≥ (NM)^{-N}` | `…measure_biasedBounded_ge` | 🟡 |
+| Prop 18 | one actor expresses forever, with positive chance | `…inf_measure_forall_eq_first_pos` | 🟡 |
 
 ## Appendices
 
@@ -159,14 +159,14 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Lem 20 | `⋂ ξ_j` implies `Ũ ∈ C^o` for `u ∈ S^o` | `…isConsensus_state_of_favouring` | 🟡 (see below) |
 | — | ↳ a greedy step in `S^o` expresses `o` (opening step) | `…opinion_eq_of_isMax_of_favouring` | ✅ |
 | — | ↳ non-positive off-columns give `C^o` (closing step) | `SocialNetwork.isConsensus_of_nonpos` | ✅ |
-| Prop 21–24 | biased analogues of Props 5–8 | — | ⬜ / 🚧 |
-| Thm 25 | biased analogue of Theorem 1 | — | 🚧 |
-| Prop 26 | biased analogue of Proposition 9 | — | 🚧 |
+| Prop 21–24 | biased analogues of Props 5–8 | `…exists_pressure_lt`, `…entry_mem_of_nearGreedy`, `…exists_horizon_isBiasedLadder`, `…biasedZeta_pow_le` | 🟡 |
+| Thm 25 | biased analogue of Theorem 1 | `…existsUnique_biasedInvariant` | 🟡 |
+| Prop 26 | biased analogue of Proposition 9 | `…biasedMeasure_le_of_notMem_steepLadder` | 🟡 |
 | Rmk 8 | `max_p u(a,p) ≥ (M-1)α` for a non-null row | `SocialNetwork.Bias.le_max_pressure` | 🟡 |
-| Thm 27 | biased analogue of Theorem 2 | — | 🚧 |
-| Lem 28, 29 | biased analogues of Lemmas 13, 14 | — | 🚧 |
-| Cor 30 | biased analogue of Corollary 15 | — | 🚧 |
-| Thm 31 | biased analogue of Theorem 3 | — | 🚧 |
+| Thm 27 | biased analogue of Theorem 2 | `…biasedMeasure_ladderSet_ge`, `…tendsto_biasedHittingTime` | 🟡 |
+| Lem 28, 29 | biased analogues of Lemmas 13, 14 | `…biasedProbHitting_le`, `…le_biasedProbHittingGT`, `…biasedProbHittingLE_le` | 🟡 |
+| Cor 30 | biased analogue of Corollary 15 | `…le_biasedCharacteristicTime` | 🟡 |
+| Thm 31 | biased analogue of Theorem 3 | `SocialNetwork.Bias.biasedMetastability` | 🟡 |
 
 ## Two points in Appendix A that the formalisation has to fill in
 
