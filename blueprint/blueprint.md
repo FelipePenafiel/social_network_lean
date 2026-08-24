@@ -45,7 +45,9 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | eq. (2) | state space `S` | `SocialNetwork.IsState` | ✅ |
 | after (2) | `S` is stable under every `π^{a,o}` | `SocialNetwork.IsState.express` | ✅ |
 | — | trust is conserved by listening, reset by expressing | `SocialNetwork.trust_express` | ✅ |
-| eq. (3) | generator `G` of the jump process | — | 🚧 |
+| eq. (3) | jump rates `exp (β u (a,o))` | `SocialNetwork.jumpRate` | ✅ |
+| eq. (3) | ↳ the induced jump law on `A × O` | `SocialNetwork.jumpPMF` | ✅ |
+| eq. (3) | generator `G` of the **continuous-time** jump process | — | 🚧 |
 | Thm 1.1 | non-explosion, `P(sup Tₘ = ∞) = 1` | — | 🚧 |
 | Thm 1.2 | existence and uniqueness of `μ^β` | — | 🚧 |
 | Def 1 | ladder sets `L^o`, `L` | `SocialNetwork.IsLadder` | ✅ |
@@ -106,9 +108,14 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | — | ↳ no actor expresses twice in that window | `SocialNetwork.actor_ne_actor_of_greedy` | ✅ |
 | — | ↳ the row of an actor that only listens to `o` | `SocialNetwork.state_add_of_hearing` | ✅ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
-| — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | — | ⬜ |
-| Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | — | ⬜ |
-| Def 3 | skeleton process `Ũ^{β,u}`, `μ̃^β`, `R̃^{β,u}` | — | 🚧 |
+| Def 3 | skeleton transition kernel `Ũ^{β,u}` | `SocialNetwork.skeletonKernel` | ✅ |
+| Def 3 | ↳ it is a Markov kernel | `…isMarkovKernel_skeletonKernel` | ✅ |
+| Def 3 | ↳ carried by the states reachable by one `π^{a,o}` | `…skeletonKernel_reachable` | ✅ |
+| Def 3 | ↳ `S` preserved with probability one | `…isState_skeletonKernel` | ✅ |
+| Def 3 | ↳ law of `(Aₙ, Oₙ)ₙ` (Ionescu–Tulcea) | `SocialNetwork.pathMeasure` | ✅ |
+| Def 3 | ↳ the process `Ũ_n^{β,u}`, and its measurability | `SocialNetwork.skeleton`, `…measurable_skeleton` | ✅ |
+| Def 3 | ↳ the return time `R̃^{β,u} (θ)` | `SocialNetwork.returnTime` | ✅ |
+| Def 3 | the invariant measure `μ̃^β` of the skeleton | — | 🚧 |
 | Def 4 | steep ladder sets `L̂^o`, `L̂` | `SocialNetwork.IsSteepLadder` | ✅ |
 | Rmk 5 | `L ⊆ L̂` | `SocialNetwork.IsLadder.isSteepLadder` | ✅ |
 | Rmk 5 | `{U_0(A₁,O₁) > 0} ⊆ {U_{T_1} ∈ L̂}`, bound `η` | — | 🚧 |

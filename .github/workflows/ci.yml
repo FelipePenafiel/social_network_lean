@@ -58,6 +58,9 @@ jobs:
           #print axioms SocialNetwork.rowSup_state_le
           #print axioms SocialNetwork.Bias.Memory.pressure_hear
           #print axioms SocialNetwork.Bias.Memory.sum_pressure_eq
+          #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
+          #print axioms SocialNetwork.skeletonKernel_reachable
+          #print axioms SocialNetwork.isState_skeletonKernel
           EOF
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then
