@@ -1,7 +1,7 @@
 # Blueprint — arXiv:2607.19651
 
 *Metastability and phase transition in a social network model with multiple opinions*,
-Felipe Peñafiel, Kádmo Laxa.
+Felipe Penafiel, Kádmo Laxa.
 
 This file is the working map between the numbered statements of the paper and their Lean
 counterparts. Every statement of the paper appears here, whether or not it has been
