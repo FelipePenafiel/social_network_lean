@@ -53,6 +53,8 @@ jobs:
           #print axioms SocialNetwork.exists_rowSup_actor_lt
           #print axioms SocialNetwork.entry_mem_of_greedy
           #print axioms SocialNetwork.isLadder_state
+          #print axioms SocialNetwork.firstRepeat_le
+          #print axioms SocialNetwork.isConsensus_of_nonpos
           #print axioms SocialNetwork.rowSup_state_le
           #print axioms SocialNetwork.Bias.Memory.pressure_hear
           #print axioms SocialNetwork.Bias.Memory.sum_pressure_eq

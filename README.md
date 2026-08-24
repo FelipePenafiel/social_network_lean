@@ -21,7 +21,11 @@ layer**: the state space, the expression operator, the conservation law that mak
 state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased
 model of Section 3 through its variable-length memory, **Propositions 5 and 6**, and the
 final step of Proposition 7 (from a consensus state, `N` greedy expressions reach a
-ladder).
+ladder), plus the vocabulary of Appendix A.
+
+Two points in the written proofs of Lemmas 19 and 20 do not compose into Lean proofs as
+they stand; the blueprint states both precisely, along with repairs that appear to work.
+Neither affects the paper's results.
 
 The probabilistic statements (Theorems 1–4) are **not** formalised, and are not merely a
 matter of effort: Mathlib has no theory of continuous-time Markov jump processes on a
@@ -51,6 +55,7 @@ SocialNetwork/Defs.lean       pressure matrices, π^{a,o}, trust, public opinion
 SocialNetwork/Ladder.lean     ladder sets L^o, consensus sets C^o, steep ladders L̂^o
 SocialNetwork/Trajectory.lean realisations (Aₙ, Oₙ)ₙ and the deterministic layer of §5
 SocialNetwork/Consensus.lean  greedy dynamics from a consensus state reach a ladder
+SocialNetwork/Favouring.lean  Definition 5, the first-repeat time τ(u), Appendix A pieces
 SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) of eq. (6)
 blueprint/blueprint.md        paper ↔ Lean correspondence and status of every statement
 ```
