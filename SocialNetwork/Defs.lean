@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2026 Felipe Peñafiel, Kádmo Laxa. All rights reserved.
+Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -13,7 +13,7 @@ import Mathlib.Tactic.Ring
 # Social pressure matrices and the expression operator
 
 Formalisation of Section 2 of *Metastability and phase transition in a social network model
-with multiple opinions* (Peñafiel–Laxa, arXiv:2607.19651).
+with multiple opinions* (Penafiel–Laxa, arXiv:2607.19651).
 
 ## Scaled coordinates
 

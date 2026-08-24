@@ -3,7 +3,7 @@
 A Lean 4 / Mathlib formalisation of
 
 > **Metastability and phase transition in a social network model with multiple opinions**
-> Felipe Peñafiel, Kádmo Laxa — [arXiv:2607.19651](https://arxiv.org/abs/2607.19651)
+> Felipe Penafiel, Kádmo Laxa — [arXiv:2607.19651](https://arxiv.org/abs/2607.19651)
 
 The paper studies a stochastic opinion dynamics model on a fully connected network of
 `N ≥ 3` actors expressing opinions from a set of `M ≥ 2` opinions. Each actor carries an
