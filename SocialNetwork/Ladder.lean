@@ -3,6 +3,7 @@ Copyright (c) 2026 Felipe Peñafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Defs
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Finset.Card
 
 /-!
@@ -168,6 +169,49 @@ theorem IsLadder.isConsensus (hM : 2 ≤ M) (hN : 2 ≤ N) (hu : IsLadder o u) :
     nlinarith [ha.symm]
   nonneg := hu.nonneg hM
   nonpos := hu.nonpos hM
+
+/-- A consensus state carries a strictly positive pressure for the favoured opinion. This
+is the remark made just after Definition 2: were column `o` identically zero, the vanishing
+row sums would force the whole matrix to vanish, which `C^o` excludes. -/
+theorem IsConsensus.exists_pos (hv : IsConsensus o u) : ∃ a, 0 < u a o := by
+  by_contra hno
+  refine hv.ne_zero (funext fun a => funext fun p => ?_)
+  have hnonpos : ∀ q, u a q ≤ 0 := by
+    intro q
+    by_cases hq : q = o
+    · subst hq; exact not_lt.mp fun h => hno ⟨a, h⟩
+    · exact hv.nonpos a q hq
+  have hsum : ∑ q, u a q = 0 := hv.isState.trust_eq_zero a
+  exact (Finset.sum_eq_zero_iff_of_nonpos fun q _ => hnonpos q).mp hsum p (Finset.mem_univ p)
+
+/-- Expressing the favoured opinion keeps the state in the consensus set. -/
+theorem IsConsensus.express (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o u) (a : Actor N) :
+    IsConsensus o (SocialNetwork.express a o u) := by
+  have hM2 : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+  refine ⟨hv.isState.express a o, ?_, ?_, ?_⟩
+  · obtain ⟨b, hb⟩ : ∃ b : Actor N, b ≠ a := by
+      have h0 : (0 : ℕ) < N := by omega
+      have h1 : (1 : ℕ) < N := by omega
+      by_cases ha : (a : ℕ) = 0
+      · refine ⟨⟨1, h1⟩, fun h => ?_⟩; rw [← h] at ha; simp at ha
+      · refine ⟨⟨0, h0⟩, fun h => ?_⟩; rw [← h] at ha; simp at ha
+    intro hzero
+    have h1 : SocialNetwork.express a o u b o = 0 := by rw [hzero]; rfl
+    rw [express_of_ne_of_eq hb] at h1
+    have := hv.nonneg b
+    omega
+  · intro b
+    by_cases hb : b = a
+    · subst hb; simp
+    · rw [express_of_ne_of_eq hb]
+      have := hv.nonneg b
+      omega
+  · intro b p hp
+    by_cases hb : b = a
+    · subst hb; simp
+    · rw [express_of_ne_of_ne hb hp]
+      have := hv.nonpos b p hp
+      omega
 
 end Ladder
 

@@ -32,8 +32,10 @@ entries differ by at least `1/(M-1)` — into the statement that distinct intege
 at least `1`.
 
 Standing assumptions of the paper: `N ≥ 3` actors, `M ≥ 2` opinions. These are carried as
-explicit hypotheses (`hN : 3 ≤ N`, `hM : 2 ≤ M`) on the statements that need them rather
-than as global variables, so that each result records exactly what it uses.
+explicit hypotheses on the statements that need them rather than as global variables, so
+that each result records exactly what it uses. In practice `hM : 2 ≤ M` is what the proofs
+so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows from `IsState`
+(it supplies an actor) and nothing yet uses more.
 
 ## Section 2 — Model and main results
 
@@ -88,11 +90,21 @@ than as global variables, so that each result records exactly what it uses.
 | --- | --- | --- | --- |
 | — | trajectories `(Aₙ, Oₙ)ₙ` and the states `U_{T_n}` | `SocialNetwork.Trajectory.state` | ✅ |
 | — | `S` is preserved along a trajectory | `SocialNetwork.Trajectory.isState_state` | ✅ |
-| Prop 5 | among `N` consecutive expressions one has `‖U(Aₙ,·)‖_∞ < N` | — | ⬜ |
+| Prop 5 | among `N` consecutive expressions one has `‖U(Aₙ,·)‖_∞ < N` | `SocialNetwork.exists_rowSup_actor_lt` | ✅ |
 | — | ↳ growth bound `‖U_{T_m}(a₀,·)‖_∞ ≤ m` | `SocialNetwork.rowSup_state_le` | ✅ |
-| — | ↳ pigeonhole core: `N + 1` distinct actors is impossible | — | ⬜ |
-| Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | — | ⬜ |
+| — | ↳ no early expression comes from the null-row actor `a₀` | `…actor_ne_of_rowSup_state_zero` | ✅ |
+| — | ↳ no actor expresses twice among the first `N` | `SocialNetwork.actor_ne_actor_of_lt` | ✅ |
+| — | the greedy event `ξₙ^u` | `SocialNetwork.IsGreedyAt` | ✅ |
+| Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | `SocialNetwork.entry_mem_of_greedy` | ✅ |
+| — | ↳ sharp upper bound `U_{T_N} ≤ N - 1` | `SocialNetwork.entry_le_of_greedy` | ✅ |
+| — | ↳ lower bound from the vanishing row sums | `SocialNetwork.neg_le_of_forall_le` | ✅ |
 | Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | — | ⬜ |
+| — | ↳ final step: from `C^o`, `N` greedy steps reach `L^o` | `SocialNetwork.isLadder_state` | ✅ |
+| — | ↳ a greedy step in `C^o` expresses `o` | `SocialNetwork.opinion_eq_of_greedy` | ✅ |
+| — | ↳ `C^o` is stable under expressing `o` | `SocialNetwork.IsConsensus.express` | ✅ |
+| — | ↳ `C^o` carries a strictly positive entry (after Def 2) | `SocialNetwork.IsConsensus.exists_pos` | ✅ |
+| — | ↳ no actor expresses twice in that window | `SocialNetwork.actor_ne_actor_of_greedy` | ✅ |
+| — | ↳ the row of an actor that only listens to `o` | `SocialNetwork.state_add_of_hearing` | ✅ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
 | — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | — | ⬜ |
 | Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | — | ⬜ |
@@ -115,9 +127,14 @@ than as global variables, so that each result records exactly what it uses.
 
 | Paper | Statement | Lean | Status |
 | --- | --- | --- | --- |
-| Def 5 | `S^o`, the matrices favouring `o` | — | ⬜ |
-| Lem 19 | `ξ^u_{τ(u)}` implies … | — | ⬜ |
-| Lem 20 | `⋂ ξ_j` implies … for `u ∈ S^o` | — | ⬜ |
+| Def 5 | `S^o`, the matrices favouring `o` | `SocialNetwork.IsFavouring` | ✅ |
+| Def 5 | the first-repeat time `τ(u)` | `SocialNetwork.firstRepeat` | ✅ |
+| Def 5 | `τ(u) ∈ {2, …, N+1}` | `SocialNetwork.firstRepeat_le` | ✅ |
+| — | actors before `τ(u)` are distinct | `SocialNetwork.actor_injOn_lt_firstRepeat` | ✅ |
+| Lem 19 | `ξ^u_{τ(u)}` implies `Ũ_{τ(u)} ∈ ⋃_o S^o` | — | ⬜ (see below) |
+| Lem 20 | `⋂ ξ_j` implies `Ũ ∈ C^o` for `u ∈ S^o` | — | ⬜ (see below) |
+| — | ↳ a greedy step in `S^o` expresses `o` (opening step) | `…opinion_eq_of_isMax_of_favouring` | ✅ |
+| — | ↳ non-positive off-columns give `C^o` (closing step) | `SocialNetwork.isConsensus_of_nonpos` | ✅ |
 | Prop 21–24 | biased analogues of Props 5–8 | — | ⬜ / 🚧 |
 | Thm 25 | biased analogue of Theorem 1 | — | 🚧 |
 | Prop 26 | biased analogue of Proposition 9 | — | 🚧 |
@@ -126,6 +143,59 @@ than as global variables, so that each result records exactly what it uses.
 | Lem 28, 29 | biased analogues of Lemmas 13, 14 | — | 🚧 |
 | Cor 30 | biased analogue of Corollary 15 | — | 🚧 |
 | Thm 31 | biased analogue of Theorem 3 | — | 🚧 |
+
+## Two points in Appendix A that the formalisation has to fill in
+
+Neither of these affects the results of the paper — the conclusions of Lemmas 19 and 20
+still appear to hold — but both are places where the written proof does not, as it stands,
+compose into a Lean proof. They are recorded here because they are what currently blocks
+those two entries above.
+
+### Lemma 19: the `⌊m⌋ + 1` distinct actors
+
+The proof writes "Therefore by (25), we obtain a sequence of `⌊m⌋ + 1` distinct actors
+`{a₀, …, a_{⌊m⌋}} ⊂ {A₁, …, A_{τ(u)-1}}` … such that `Ũ_{τ(u)-1}(aⱼ, O_{τ(u)}) ≥ j + (m -
+⌊m⌋)`" without giving the construction. A construction that works: read the actors
+`A_{τ(u)-1}, A_{τ(u)-2}, …, A_i` backwards in time (where `A_i = A_{τ(u)}` is the repeated
+actor). By (25) consecutive rows differ by exactly one expression, so their pressures for
+`O_{τ(u)}` form a walk that starts at `0` — the actor `A_{τ(u)-1}` was just reset — ends at
+`m`, and moves by `+1` when it passes an expression of `O_{τ(u)}` and by `-1/(M-1)`
+otherwise. For each `j`, take the *first* time the walk reaches level `≥ j + r`. A first
+passage can only happen on an up-step, which has size `1`, so the walk lands strictly below
+`j + 1 + r`; the `⌊m⌋ + 1` first-passage times are therefore distinct, and they name
+`⌊m⌋ + 1` distinct actors.
+
+Separately, Definition 5 requires `n(u) = ⌊m⌋ ≥ 1`, i.e. `m ≥ 1`. The proof rules out
+`m = 0` only through the case `τ(u) = 2`, but `m = 0` forces `Ũ_{τ(u)-1} = 0` for any
+`τ(u)` (the maximum of a matrix with vanishing row sums is `0` only if the matrix is), so
+the degenerate branch has to be taken on `m = 0` rather than on `τ(u) = 2`. The argument
+given for `τ(u) = 2` covers it unchanged.
+
+### Lemma 20: the induction invariant is not preserved by the reset row
+
+The induction carries, for every `k`,
+
+```
+∀ a ∈ A, ∀ p ≠ o,    Ũₖ(a, p) ≤ n(u) + r - (k+1)/(M-1).
+```
+
+The actor that expresses at step `k` has its whole row reset to `0`, so its entries for
+`p ≠ o` are exactly `0`. At the terminal `k = (M-1)(n(u)+1) - 1` the right-hand side is
+`n(u) + r - (n(u)+1) = r - 1`, which lies in `[-1, 0)`. The invariant therefore asserts
+`0 ≤ r - 1 < 0` for that actor.
+
+The *conclusion* survives: membership in `C^o` only needs the off-columns to be `≤ 0`, and
+`0` qualifies. Replacing the bound by `max(0, n(u) + r - (k+1)/(M-1))` gives an invariant
+that is preserved (a reset row satisfies it outright, and a listening row decreases by
+`1/(M-1)`), and still yields `≤ 0` at the terminal `k`.
+
+A second point in the same induction: the invariant also asserts that `n(u)` witness actors
+exist at every `k`. When the maximising actor is itself one of the witnesses — the typical
+case — expressing resets it, and only `n(u) - 1` of the witnesses survive with their
+pressures raised by `1`. The missing witness is replenished by the actors that have just
+expressed, which accumulate pressure for `o` and form a staircase; that is the mechanism
+already formalised in `SocialNetwork.isLadder_state`, but it is not the argument written in
+the proof.
 
 ## Infrastructure gaps
 
@@ -159,12 +229,22 @@ content and are formalisable today.
 
 ## Immediate next steps
 
-1. Model a trajectory as the data `(Aₙ, Oₙ)ₙ` of expressing actors/opinions and define
-   `U : ℕ → Pressure N M` by iterating `express`. This makes Propositions 5, 6, 7 and
-   Lemmas 19, 20 statements about `U`, provable without any probability.
-2. Prove Proposition 5 (pigeonhole).
-3. Prove Proposition 6.
-4. Add the biased model over a linear ordered field, using the memory profile `(nₐ, cₚ)` of
-   equation (6) as the primitive datum rather than the matrix itself; Remark 1 then becomes
-   a computation.
-5. Prove Proposition 7 via Appendix A.
+1. ~~Model a trajectory as the data `(Aₙ, Oₙ)ₙ` and iterate `express`.~~ Done
+   (`SocialNetwork.Trajectory`).
+2. ~~Prove Proposition 5 (pigeonhole).~~ Done (`SocialNetwork.exists_rowSup_actor_lt`).
+3. ~~Define the greedy event `ξₙ^u`.~~ Done (`SocialNetwork.IsGreedyAt`).
+4. ~~Prove Proposition 6.~~ Done (`SocialNetwork.entry_mem_of_greedy`).
+5. Finish Proposition 7. The **final step** (`C^o` to `L^o`) is done
+   (`SocialNetwork.isLadder_state`), and so is the vocabulary of Appendix A: Definition 5,
+   `τ(u)`, and the opening and closing steps of Lemma 20. What remains is the body of
+   Lemmas 19 and 20, and both need the repairs described in the section above — the
+   first-passage construction for Lemma 19, and the weakened invariant
+   `max(0, n(u) + r - (k+1)/(M-1))` together with the staircase replenishment for Lemma 20.
+   Worth settling with the authors before formalising, since the repairs change the written
+   proofs rather than just their presentation.
+6. Assemble the biased model into a network state (one `Memory` per actor) and close the
+   remaining ⬜ entries of Section 3: `u (a, p) ∈ ℤ + γℤ`, and `0 ∉ S^α` when
+   `(M-1) α ≠ 0`.
+7. Prove the gap estimate behind Proposition 8: on the state space, two distinct entries
+   differ by at least `1` in scaled coordinates. The probabilistic conclusion then waits on
+   the infrastructure above, but the arithmetic half does not.
