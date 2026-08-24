@@ -114,6 +114,12 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | Prop 6 | ↳ same statement on the event `⋂ ξⱼ^u` | `…entry_mem_of_mem_greedyEvents` | ✅ |
 | Prop 7 | ↳ final step on the event `⋂ ξⱼ^v` | `…isLadder_state_of_mem_greedyEvents` | ✅ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
+| — | ↳ the maximum `y (v)` and that `Y (v) ≠ ∅` | `SocialNetwork.entrySup`, `…exists_entrySup` | ✅ |
+| — | ↳ `ξₙ^u` says the expressed pair attains `y` | `SocialNetwork.isGreedyAt_iff_entrySup` | ✅ |
+| — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | `SocialNetwork.le_entrySup_sub_one` | ✅ |
+| Rmk 4 | `ζ_β` | `SocialNetwork.zeta`, `…zeta_pos`, `…zeta_le_one` | ✅ |
+| Rmk 4 | `ζ_β ≥ 1 - M N e^{-β/(M-1)}` | `SocialNetwork.one_sub_le_zeta` | ✅ |
+| Rmk 4 | `ζ_β^m ≥ 1 - m M N e^{-β/(M-1)}` (Bernoulli) | `SocialNetwork.one_sub_le_zeta_pow` | ✅ |
 | Def 3 | skeleton transition kernel `Ũ^{β,u}` | `SocialNetwork.skeletonKernel` | ✅ |
 | Def 3 | ↳ it is a Markov kernel | `…isMarkovKernel_skeletonKernel` | ✅ |
 | Def 3 | ↳ carried by the states reachable by one `π^{a,o}` | `…skeletonKernel_reachable` | ✅ |

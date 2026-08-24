@@ -61,6 +61,8 @@ measurable.  The same holds for `Jump N M` and for every space of finite histori
   return time `R̃^{β,u} (θ)` of Definition 3.
 * `SocialNetwork.greedyEvent`, `SocialNetwork.greedyEvents` — the paper's `ξₙ^u` and
   `⋂_{j ≤ n} ξⱼ^u`, as subsets of the sample space.
+* `SocialNetwork.entrySup`, `SocialNetwork.argmaxFinset` — the paper's `y (v)` and `Y (v)`.
+* `SocialNetwork.zeta` — the constant `ζ_β` of Proposition 8.
 
 ## Main results
 
@@ -73,6 +75,8 @@ measurable.  The same holds for `Jump N M` and for every space of finite histori
 * `SocialNetwork.entry_mem_of_mem_greedyEvents` — Proposition 6 on the greedy event.
 * `SocialNetwork.isLadder_state_of_mem_greedyEvents` — the last step of Proposition 7 on the
   greedy event.
+* `SocialNetwork.le_entrySup_sub_one` — the gap estimate behind Proposition 8.
+* `SocialNetwork.one_sub_le_zeta_pow` — Remark 4, Bernoulli's inequality for `ζ_β`.
 -/
 
 namespace SocialNetwork
@@ -512,5 +516,167 @@ theorem opinion_eq_of_mem_greedyEvents (hM : 2 ≤ M) (hN : 2 ≤ N) {o : Opinio
   opinion_eq_of_greedy (Trajectory.ofPath ω) hM hN hv (fun j hj => hω j hj) hk
 
 end Transfer
+
+/-! ### The arithmetic half of Proposition 8
+
+The paper's proof of Proposition 8 rests on the observation that every entry of a state lies in
+`ℤ + (1/(M-1)) ℤ = (1/(M-1)) ℤ`, so that an entry strictly below the maximum `y (v)` satisfies
+`v (b, o) - y (v) ≤ -1/(M-1)`.  In the scaled coordinates used throughout, the entries are
+integers by construction and this is the statement that two distinct integers differ by at
+least `1`. -/
+
+section GapEstimate
+
+variable [NeZero N] [NeZero M]
+
+/-- The paper's `y (v) = max {v (a, o) : a ∈ A, o ∈ O}`, the largest entry of the matrix. -/
+noncomputable def entrySup (v : Pressure N M) : ℤ :=
+  Finset.univ.sup' (univ_jump_nonempty N M) fun p : Jump N M => v p.1 p.2
+
+theorem le_entrySup (v : Pressure N M) (a : Actor N) (o : Opinion M) : v a o ≤ entrySup v :=
+  Finset.le_sup' (fun p : Jump N M => v p.1 p.2) (Finset.mem_univ (a, o))
+
+/-- The paper's `Y (v) = {(a, o) : v (a, o) = y (v)}` is not empty. -/
+theorem exists_entrySup (v : Pressure N M) : ∃ a o, v a o = entrySup v := by
+  obtain ⟨p, -, hp⟩ :=
+    Finset.exists_mem_eq_sup' (univ_jump_nonempty N M) fun p : Jump N M => v p.1 p.2
+  exact ⟨p.1, p.2, hp.symm⟩
+
+/-- **The gap estimate behind Proposition 8.**  An entry strictly below the maximum is below it
+by at least `1` in scaled coordinates, which is the paper's `v (b, o) - y (v) ≤ -1/(M-1)`.
+
+The whole content of the paper's lattice argument is that the entries lie on a lattice; in
+scaled coordinates that lattice is `ℤ`, and the estimate is `Int.lt_iff_add_one_le`. -/
+theorem le_entrySup_sub_one {v : Pressure N M} {b : Actor N} {o : Opinion M}
+    (h : v b o < entrySup v) : v b o ≤ entrySup v - 1 := by omega
+
+/-- The greedy event at a matrix `v` is exactly the event that the expressed pair attains
+`y (v)`. -/
+theorem isGreedyAt_iff_entrySup (T : Trajectory N M) (u : Pressure N M) (k : ℕ) :
+    IsGreedyAt T u k ↔ T.state u k (T.actor k) (T.opinion k) = entrySup (T.state u k) := by
+  constructor
+  · intro h
+    refine le_antisymm (le_entrySup _ _ _) ?_
+    obtain ⟨a, o, hao⟩ := exists_entrySup (T.state u k)
+    exact hao ▸ h a o
+  · intro h a o
+    rw [h]
+    exact le_entrySup _ _ _
+
+end GapEstimate
+
+/-! ### Remark 4: Bernoulli's inequality
+
+Proposition 8 bounds the probability of `⋂_{j=1}^{m} ξⱼ^u` below by `(ζ_β)^m`, where
+
+```
+ζ_β = e^{β/(M-1)} / (e^{β/(M-1)} + M N).
+```
+
+Remark 4 turns that into the linear bound `(ζ_β)^m ≥ 1 - m M N e^{-β/(M-1)}`.  That step is a
+statement about real numbers alone, and is proved here as such. -/
+
+section Zeta
+
+/-- The constant `ζ_β = e^{β/(M-1)} / (e^{β/(M-1)} + MN)` of Proposition 8. -/
+noncomputable def zeta (N M : ℕ) (β : ℝ) : ℝ :=
+  Real.exp (β / ((M : ℝ) - 1)) / (Real.exp (β / ((M : ℝ) - 1)) + (M : ℝ) * (N : ℝ))
+
+theorem zeta_pos (N M : ℕ) (β : ℝ) : 0 < zeta N M β := by
+  have h1 : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+  have h2 : (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) := by positivity
+  unfold zeta
+  exact div_pos h1 (by linarith)
+
+theorem zeta_le_one (N M : ℕ) (β : ℝ) : zeta N M β ≤ 1 := by
+  have h1 : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+  have h2 : (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) := by positivity
+  unfold zeta
+  rw [div_le_one (by linarith)]
+  linarith
+
+/-- The first half of Remark 4: `ζ_β ≥ 1 - MN e^{-β/(M-1)}`, which is `1/(1+x) ≥ 1 - x`. -/
+theorem one_sub_le_zeta (N M : ℕ) (β : ℝ) :
+    1 - (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) ≤ zeta N M β := by
+  have hEpos : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+  have hc : (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) := by positivity
+  unfold zeta
+  rw [Real.exp_neg, le_div_iff₀ (by linarith)]
+  have key : (1 - (M : ℝ) * (N : ℝ) * (Real.exp (β / ((M : ℝ) - 1)))⁻¹)
+        * (Real.exp (β / ((M : ℝ) - 1)) + (M : ℝ) * (N : ℝ))
+      = Real.exp (β / ((M : ℝ) - 1))
+        - ((M : ℝ) * (N : ℝ)) * ((M : ℝ) * (N : ℝ)) * (Real.exp (β / ((M : ℝ) - 1)))⁻¹
+        + ((M : ℝ) * (N : ℝ)) * (1 - (Real.exp (β / ((M : ℝ) - 1)))⁻¹
+            * Real.exp (β / ((M : ℝ) - 1))) := by ring
+  rw [key, inv_mul_cancel₀ hEpos.ne']
+  have hnn : (0 : ℝ)
+      ≤ ((M : ℝ) * (N : ℝ)) * ((M : ℝ) * (N : ℝ)) * (Real.exp (β / ((M : ℝ) - 1)))⁻¹ := by
+    positivity
+  linarith
+
+/-- The elementary inequality behind Proposition 8: if the maximising pairs carry total weight
+at least `A > 0` and the remaining pairs carry at most `M N A e^{-β/(M-1)}`, then the
+maximising pairs carry at least the fraction `ζ_β` of the total weight. -/
+theorem zeta_le_div_of_le (N M : ℕ) (β : ℝ) {A S T : ℝ} (hA : 0 < A) (hAS : A ≤ S)
+    (hT0 : 0 ≤ T) (hT : T ≤ (M : ℝ) * (N : ℝ) * (A * Real.exp (-(β / ((M : ℝ) - 1))))) :
+    zeta N M β ≤ S / (S + T) := by
+  have hE : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+  have hc : (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) := by positivity
+  have hS : (0 : ℝ) < S := lt_of_lt_of_le hA hAS
+  have hST : (0 : ℝ) < S + T := by linarith
+  rw [Real.exp_neg] at hT
+  have hinv : Real.exp (β / ((M : ℝ) - 1)) * (Real.exp (β / ((M : ℝ) - 1)))⁻¹ = 1 :=
+    mul_inv_cancel₀ hE.ne'
+  have key : Real.exp (β / ((M : ℝ) - 1)) * T ≤ (M : ℝ) * (N : ℝ) * A := by
+    calc Real.exp (β / ((M : ℝ) - 1)) * T
+        ≤ Real.exp (β / ((M : ℝ) - 1))
+            * ((M : ℝ) * (N : ℝ) * (A * (Real.exp (β / ((M : ℝ) - 1)))⁻¹)) :=
+          mul_le_mul_of_nonneg_left hT hE.le
+      _ = (M : ℝ) * (N : ℝ) * A
+            * (Real.exp (β / ((M : ℝ) - 1)) * (Real.exp (β / ((M : ℝ) - 1)))⁻¹) := by ring
+      _ = (M : ℝ) * (N : ℝ) * A := by rw [hinv, mul_one]
+  have key2 : (M : ℝ) * (N : ℝ) * A ≤ (M : ℝ) * (N : ℝ) * S := by
+    have h := mul_le_mul_of_nonneg_left hAS hc
+    linarith
+  unfold zeta
+  rw [div_le_div_iff₀ (by linarith) hST]
+  nlinarith [key, key2]
+
+/-- **Remark 4.**  Proposition 8 together with Bernoulli's inequality gives, for every `m` and
+every `β`,
+
+```
+(ζ_β)^m ≥ 1 - m M N e^{-β/(M-1)}.
+```
+
+This is the bound used in the proofs of Theorem 2 and Proposition 9.  It is stated here as the
+real inequality that it is, so that it does not wait on the probabilistic content of
+Proposition 8. -/
+theorem one_sub_le_zeta_pow (N M : ℕ) (β : ℝ) (m : ℕ) :
+    1 - (m : ℝ) * ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))))
+      ≤ (zeta N M β) ^ m := by
+  have hx0 : (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) := by positivity
+  have hz := one_sub_le_zeta N M β
+  have hzpos := zeta_pos N M β
+  rcases le_or_gt 1 ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) with h | h
+  · rcases Nat.eq_zero_or_pos m with rfl | hm
+    · simp
+    · have hm1 : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
+      have hpow : (0 : ℝ) < (zeta N M β) ^ m := pow_pos hzpos m
+      nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ (m : ℝ) - 1)
+        (by linarith :
+          (0 : ℝ) ≤ (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) - 1)]
+  · have h1 : (0 : ℝ) ≤ 1 - (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) := by linarith
+    have h2 : (1 - (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) ^ m
+        ≤ (zeta N M β) ^ m := pow_le_pow_left₀ h1 hz m
+    have h3 := one_add_mul_le_pow
+      (a := -((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))))) (by linarith) m
+    rw [show (1 : ℝ) + (m : ℝ) * (-((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))))
+          = 1 - (m : ℝ) * ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) by ring,
+        show (1 : ℝ) + -((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))))
+          = 1 - (M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) by ring] at h3
+    exact h3.trans h2
+
+end Zeta
 
 end SocialNetwork
