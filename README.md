@@ -17,8 +17,9 @@ transition at `α = 0`.
 ## Status
 
 This repository is at an early stage. What is formalised today is the **deterministic
-layer** of Section 2: the state space, the expression operator, the conservation law that
-makes the state space stable, and the ladder/consensus geometry of Definitions 1, 2 and 4.
+layer**: the state space, the expression operator, the conservation law that makes the
+state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased
+model of Section 3 through its variable-length memory, and **Proposition 5**.
 
 The probabilistic statements (Theorems 1–4) are **not** formalised, and are not merely a
 matter of effort: Mathlib has no theory of continuous-time Markov jump processes on a

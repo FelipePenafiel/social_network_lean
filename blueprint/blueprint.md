@@ -88,9 +88,10 @@ than as global variables, so that each result records exactly what it uses.
 | --- | --- | --- | --- |
 | — | trajectories `(Aₙ, Oₙ)ₙ` and the states `U_{T_n}` | `SocialNetwork.Trajectory.state` | ✅ |
 | — | `S` is preserved along a trajectory | `SocialNetwork.Trajectory.isState_state` | ✅ |
-| Prop 5 | among `N` consecutive expressions one has `‖U(Aₙ,·)‖_∞ < N` | — | ⬜ |
+| Prop 5 | among `N` consecutive expressions one has `‖U(Aₙ,·)‖_∞ < N` | `SocialNetwork.exists_rowSup_actor_lt` | ✅ |
 | — | ↳ growth bound `‖U_{T_m}(a₀,·)‖_∞ ≤ m` | `SocialNetwork.rowSup_state_le` | ✅ |
-| — | ↳ pigeonhole core: `N + 1` distinct actors is impossible | — | ⬜ |
+| — | ↳ no early expression comes from the null-row actor `a₀` | `…actor_ne_of_rowSup_state_zero` | ✅ |
+| — | ↳ no actor expresses twice among the first `N` | `SocialNetwork.actor_ne_actor_of_lt` | ✅ |
 | Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | — | ⬜ |
 | Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | — | ⬜ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
@@ -159,12 +160,20 @@ content and are formalisable today.
 
 ## Immediate next steps
 
-1. Model a trajectory as the data `(Aₙ, Oₙ)ₙ` of expressing actors/opinions and define
-   `U : ℕ → Pressure N M` by iterating `express`. This makes Propositions 5, 6, 7 and
-   Lemmas 19, 20 statements about `U`, provable without any probability.
-2. Prove Proposition 5 (pigeonhole).
-3. Prove Proposition 6.
-4. Add the biased model over a linear ordered field, using the memory profile `(nₐ, cₚ)` of
-   equation (6) as the primitive datum rather than the matrix itself; Remark 1 then becomes
-   a computation.
-5. Prove Proposition 7 via Appendix A.
+1. ~~Model a trajectory as the data `(Aₙ, Oₙ)ₙ` and iterate `express`.~~ Done
+   (`SocialNetwork.Trajectory`).
+2. ~~Prove Proposition 5 (pigeonhole).~~ Done (`SocialNetwork.exists_rowSup_actor_lt`).
+3. Define the greedy event `ξₙ^u` — that `(Aₙ, Oₙ)` maximises the pressure at time
+   `T_{n-1}` — as a predicate on trajectories. This is the last piece of vocabulary needed
+   before Propositions 6 and 7, and it is again purely deterministic.
+4. Prove Proposition 6: on `⋂_{j≤N} ξⱼ`, the whole matrix satisfies `-MN < U_{T_N} < N`.
+   The two cases of the paper's proof (`N` distinct actors, or a repeat) both reduce to
+   bounds already available from `rowSup_state_le`.
+5. Prove Proposition 7 via Appendix A (Definition 5 and Lemmas 19, 20): `(M+1)N` greedy
+   steps land in `L`.
+6. Assemble the biased model into a network state (one `Memory` per actor) and close the
+   remaining ⬜ entries of Section 3: `u (a, p) ∈ ℤ + γℤ`, and `0 ∉ S^α` when
+   `(M-1) α ≠ 0`.
+7. Prove the gap estimate behind Proposition 8: on the state space, two distinct entries
+   differ by at least `1` in scaled coordinates. The probabilistic conclusion then waits on
+   the infrastructure above, but the arithmetic half does not.
