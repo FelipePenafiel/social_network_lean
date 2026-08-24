@@ -3,7 +3,9 @@ Copyright (c) 2026 Felipe Peñafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Defs
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Finset.Lattice.Fold
+import Mathlib.Data.Fintype.EquivFin
 
 /-!
 # Trajectories
@@ -30,6 +32,9 @@ the paper's `A₁` and `O₁`, so `Trajectory.state u n` is the state after `n` 
   `‖U_{m+k} (a, ·)‖_∞ ≤ k` (unscaled), the growth bound driving the proof of Proposition 5.
 * `SocialNetwork.exists_rowSup_actor_lt` — **Proposition 5**: among the first `N`
   expressions, at least one comes from an actor carrying pressure below `N`.
+* `SocialNetwork.IsGreedyAt` — the paper's event `ξₙ^u`, as a predicate on trajectories.
+* `SocialNetwork.entry_mem_of_greedy` — **Proposition 6**: on `⋂_{j ≤ N} ξⱼ^u` the whole
+  matrix lies in `(-MN, N)` entrywise after `N` expressions.
 -/
 
 namespace SocialNetwork
@@ -234,5 +239,179 @@ theorem exists_rowSup_actor_lt (hM : 2 ≤ M) (hu : IsState u) :
   omega
 
 end Proposition5
+
+/-!
+## The greedy event and Proposition 6
+
+The paper's event `ξₙ^u` says that the `n`-th expression is made by one of the pairs
+`(a, o)` maximising the social pressure at that moment. It is a condition on the
+realisation, not on its probability, so it is a predicate on trajectories here.
+-/
+
+/-- The paper's event `ξₙ^u`: the expression at step `k` is made by an actor/opinion pair
+maximising the social pressure, i.e. `(Aₙ, Oₙ) ∈ argmax U_{T_{n-1}}`.
+
+With the index convention of this file, `IsGreedyAt T u k` is the paper's `ξ_{k+1}^u`. -/
+def IsGreedyAt (T : Trajectory N M) (u : Pressure N M) (k : ℕ) : Prop :=
+  ∀ a o, T.state u k a o ≤ T.state u k (T.actor k) (T.opinion k)
+
+section Proposition6
+
+variable (T : Trajectory N M) {u : Pressure N M}
+
+theorem le_rowSup_cast (v : Pressure N M) (a : Actor N) (p : Opinion M) :
+    v a p ≤ (rowSup v a : ℤ) := by
+  have h := le_rowSup v a p
+  omega
+
+/-- An entry of an actor whose row was null `k` steps ago is at most `k` (unscaled). -/
+theorem entry_le_of_state (hM : 2 ≤ M) (a : Actor N) (m : ℕ)
+    (hm : rowSup (T.state u m) a = 0) (k : ℕ) (p : Opinion M) :
+    T.state u (m + k) a p ≤ (k : ℤ) * ((M : ℤ) - 1) := by
+  have h1 : 1 ≤ M := by omega
+  have hcast : ((k * (M - 1) : ℕ) : ℤ) = (k : ℤ) * ((M : ℤ) - 1) := by
+    push_cast [Nat.cast_sub h1]; ring
+  calc T.state u (m + k) a p ≤ (rowSup (T.state u (m + k)) a : ℤ) := le_rowSup_cast _ a p
+    _ ≤ ((k * (M - 1) : ℕ) : ℤ) := by exact_mod_cast rowSup_state_le hM T u a m hm k
+    _ = (k : ℤ) * ((M : ℤ) - 1) := hcast
+
+/-- One expression raises no entry above `c + (M - 1)`, provided every entry was at most
+`c` and `c` is non-negative. Non-negativity is what covers the reset row, whose entries
+jump to `0`. -/
+theorem le_express_of_le (hM : 2 ≤ M) {v : Pressure N M} {c : ℤ} (hc : 0 ≤ c)
+    (h : ∀ a p, v a p ≤ c) (b : Actor N) (o : Opinion M) (a : Actor N) (p : Opinion M) :
+    express b o v a p ≤ c + ((M : ℤ) - 1) := by
+  have hM' : (1 : ℤ) ≤ (M : ℤ) - 1 := by
+    have : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+    omega
+  have hap := h a p
+  unfold express
+  split_ifs <;> linarith
+
+/-- Iterated form of `le_express_of_le`. -/
+theorem le_state_of_le (hM : 2 ≤ M) {m : ℕ} {c : ℤ} (hc : 0 ≤ c)
+    (h : ∀ a p, T.state u m a p ≤ c) (k : ℕ) (a : Actor N) (p : Opinion M) :
+    T.state u (m + k) a p ≤ c + (k : ℤ) * ((M : ℤ) - 1) := by
+  induction k generalizing a p with
+  | zero => simpa using h a p
+  | succ k ih =>
+      have hMnn : (0 : ℤ) ≤ (M : ℤ) - 1 := by
+        have : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+        omega
+      have hstep := le_express_of_le hM (v := T.state u (m + k))
+        (c := c + (k : ℤ) * ((M : ℤ) - 1)) (by positivity) (fun a p => ih a p)
+        (T.actor (m + k)) (T.opinion (m + k)) a p
+      rw [show m + (k + 1) = m + k + 1 from rfl, T.state_succ]
+      calc express (T.actor (m + k)) (T.opinion (m + k)) (T.state u (m + k)) a p
+          ≤ c + (k : ℤ) * ((M : ℤ) - 1) + ((M : ℤ) - 1) := hstep
+        _ = c + ((k : ℤ) + 1) * ((M : ℤ) - 1) := by ring
+        _ = c + ((k + 1 : ℕ) : ℤ) * ((M : ℤ) - 1) := by push_cast; ring
+
+/-- The sharp upper bound behind Proposition 6: after `N` greedy expressions every entry is
+at most `N - 1` in the paper's coordinates. -/
+theorem entry_le_of_greedy (hM : 2 ≤ M) (hgreedy : ∀ k, k < N → IsGreedyAt T u k)
+    (a : Actor N) (p : Opinion M) :
+    T.state u N a p ≤ ((N : ℤ) - 1) * ((M : ℤ) - 1) := by
+  have hMnn : (0 : ℤ) ≤ (M : ℤ) - 1 := by
+    have : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+    omega
+  by_cases hdist : ∀ j k, j < k → k < N → T.actor j ≠ T.actor k
+  · -- Every actor expresses exactly once, so every row was reset within the first `N` steps.
+    have hfinj : Function.Injective fun i : Fin N => T.actor (i : ℕ) := by
+      intro i j hij
+      rcases lt_trichotomy (i : ℕ) (j : ℕ) with h | h | h
+      · exact absurd hij (hdist _ _ h j.isLt)
+      · exact Fin.val_injective h
+      · exact absurd hij.symm (hdist _ _ h i.isLt)
+    obtain ⟨i, hi⟩ := Finite.surjective_of_injective hfinj a
+    have hi' : T.actor (i : ℕ) = a := hi
+    have hiN := i.isLt
+    have hz : rowSup (T.state u ((i : ℕ) + 1)) (T.actor (i : ℕ)) = 0 :=
+      rowSup_eq_zero_iff.2 fun q => T.state_succ_actor u _ q
+    have hidx : (i : ℕ) + 1 + (N - (i : ℕ) - 1) = N := by omega
+    have hle := entry_le_of_state T hM (T.actor (i : ℕ)) ((i : ℕ) + 1) hz
+      (N - (i : ℕ) - 1) p
+    rw [hidx, hi'] at hle
+    refine le_trans hle (mul_le_mul_of_nonneg_right ?_ hMnn)
+    have : (N - (i : ℕ) - 1 : ℕ) ≤ N - 1 := by omega
+    have hcast : ((N - 1 : ℕ) : ℤ) = (N : ℤ) - 1 := by
+      have : 1 ≤ N := by omega
+      push_cast [Nat.cast_sub this]; ring
+    calc ((N - (i : ℕ) - 1 : ℕ) : ℤ) ≤ ((N - 1 : ℕ) : ℤ) := by exact_mod_cast this
+      _ = (N : ℤ) - 1 := hcast
+  · -- Some actor expresses twice; greediness at that step caps the whole matrix.
+    have hrep : ∃ j k, j < k ∧ k < N ∧ T.actor j = T.actor k := by
+      by_contra hno
+      exact hdist fun j k hjk hk heq => hno ⟨j, k, hjk, hk, heq⟩
+    obtain ⟨j, k, hjk, hk, heq⟩ := hrep
+    have hz : rowSup (T.state u (j + 1)) (T.actor j) = 0 :=
+      rowSup_eq_zero_iff.2 fun q => T.state_succ_actor u j q
+    have hidx : j + 1 + (k - j - 1) = k := by omega
+    -- At step `k` the expressing actor's row is small, and greediness makes it the maximum.
+    have hmax : ∀ b q, T.state u k b q ≤ ((k - j - 1 : ℕ) : ℤ) * ((M : ℤ) - 1) := by
+      intro b q
+      have hb := entry_le_of_state T hM (T.actor j) (j + 1) hz (k - j - 1) (T.opinion k)
+      rw [hidx, heq] at hb
+      exact le_trans (hgreedy k hk b q) hb
+    have hnn : (0 : ℤ) ≤ ((k - j - 1 : ℕ) : ℤ) * ((M : ℤ) - 1) := by positivity
+    have hprop := le_state_of_le T hM hnn hmax (N - k) a p
+    rw [show k + (N - k) = N from by omega] at hprop
+    refine le_trans hprop ?_
+    have hnat : (k - j - 1) + (N - k) ≤ N - 1 := by omega
+    have hcast : ((N - 1 : ℕ) : ℤ) = (N : ℤ) - 1 := by
+      have : 1 ≤ N := by omega
+      push_cast [Nat.cast_sub this]; ring
+    have hsum : ((k - j - 1 : ℕ) : ℤ) + ((N - k : ℕ) : ℤ) ≤ (N : ℤ) - 1 := by
+      calc ((k - j - 1 : ℕ) : ℤ) + ((N - k : ℕ) : ℤ)
+          = (((k - j - 1) + (N - k) : ℕ) : ℤ) := by push_cast; ring
+        _ ≤ ((N - 1 : ℕ) : ℤ) := by exact_mod_cast hnat
+        _ = (N : ℤ) - 1 := hcast
+    nlinarith
+
+/-- Every entry is bounded below by `-(M-1)` times any upper bound on the entries, because
+each row of a state of `S` sums to zero. -/
+theorem neg_le_of_forall_le (hM : 2 ≤ M) {v : Pressure N M} (hv : IsState v) {c : ℤ}
+    (h : ∀ b q, v b q ≤ c) (a : Actor N) (o : Opinion M) :
+    -(((M : ℤ) - 1) * c) ≤ v a o := by
+  have h1 : 1 ≤ M := by omega
+  have hsplit : v a o + ∑ p ∈ Finset.univ.erase o, v a p = 0 := by
+    rw [Finset.add_sum_erase _ _ (Finset.mem_univ o)]
+    exact hv.trust_eq_zero a
+  have hcard : (Finset.univ.erase o).card = M - 1 := by
+    rw [Finset.card_erase_of_mem (Finset.mem_univ o), Finset.card_univ, Fintype.card_fin]
+  have hbound : ∑ p ∈ Finset.univ.erase o, v a p ≤ ((M : ℤ) - 1) * c := by
+    have hsum := Finset.sum_le_card_nsmul (Finset.univ.erase o) (fun p => v a p) c
+      (fun p _ => h a p)
+    rw [hcard, nsmul_eq_mul] at hsum
+    have hcast : (((M - 1 : ℕ)) : ℤ) = (M : ℤ) - 1 := by
+      push_cast [Nat.cast_sub h1]; ring
+    rwa [hcast] at hsum
+  linarith
+
+/-- **Proposition 6.** On the event `⋂_{j ≤ N} ξⱼ^u`, the whole matrix of social pressures
+after `N` expressions is confined to `(-MN, N)` entrywise, in the paper's coordinates. -/
+theorem entry_mem_of_greedy (hM : 2 ≤ M) (hu : IsState u)
+    (hgreedy : ∀ k, k < N → IsGreedyAt T u k) (a : Actor N) (p : Opinion M) :
+    -((M : ℤ) * (N : ℤ) * ((M : ℤ) - 1)) < T.state u N a p ∧
+      T.state u N a p < (N : ℤ) * ((M : ℤ) - 1) := by
+  have hM2 : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+  have hupper := entry_le_of_greedy T hM hgreedy
+  have hlower := neg_le_of_forall_le (v := T.state u N) hM (T.isState_state hu N) hupper a p
+  have hN : 1 ≤ N := by
+    obtain ⟨a₀, -⟩ := hu.exists_zero_row
+    have := a₀.isLt
+    omega
+  have hN1 : (1 : ℤ) ≤ (N : ℤ) := by exact_mod_cast hN
+  have hx : (1 : ℤ) ≤ (M : ℤ) - 1 := by linarith
+  have hy : (0 : ℤ) ≤ (N : ℤ) - 1 := by linarith
+  constructor
+  · -- `(M-1)(N-1)(M-1) < M N (M-1)`, so the lower bound from the row sums is enough.
+    have hkey : ((M : ℤ) - 1) * (((N : ℤ) - 1) * ((M : ℤ) - 1))
+        < (M : ℤ) * (N : ℤ) * ((M : ℤ) - 1) := by nlinarith [mul_nonneg hy (by linarith : (0:ℤ) ≤ (M:ℤ) - 1)]
+    linarith
+  · have hkey : ((N : ℤ) - 1) * ((M : ℤ) - 1) < (N : ℤ) * ((M : ℤ) - 1) := by nlinarith
+    linarith [hupper a p]
+
+end Proposition6
 
 end SocialNetwork

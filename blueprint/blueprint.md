@@ -32,8 +32,10 @@ entries differ by at least `1/(M-1)` — into the statement that distinct intege
 at least `1`.
 
 Standing assumptions of the paper: `N ≥ 3` actors, `M ≥ 2` opinions. These are carried as
-explicit hypotheses (`hN : 3 ≤ N`, `hM : 2 ≤ M`) on the statements that need them rather
-than as global variables, so that each result records exactly what it uses.
+explicit hypotheses on the statements that need them rather than as global variables, so
+that each result records exactly what it uses. In practice `hM : 2 ≤ M` is what the proofs
+so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows from `IsState`
+(it supplies an actor) and nothing yet uses more.
 
 ## Section 2 — Model and main results
 
@@ -92,7 +94,10 @@ than as global variables, so that each result records exactly what it uses.
 | — | ↳ growth bound `‖U_{T_m}(a₀,·)‖_∞ ≤ m` | `SocialNetwork.rowSup_state_le` | ✅ |
 | — | ↳ no early expression comes from the null-row actor `a₀` | `…actor_ne_of_rowSup_state_zero` | ✅ |
 | — | ↳ no actor expresses twice among the first `N` | `SocialNetwork.actor_ne_actor_of_lt` | ✅ |
-| Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | — | ⬜ |
+| — | the greedy event `ξₙ^u` | `SocialNetwork.IsGreedyAt` | ✅ |
+| Prop 6 | `⋂ ξ_j^u ⊆ {-MN < U_{T_N} < N}` | `SocialNetwork.entry_mem_of_greedy` | ✅ |
+| — | ↳ sharp upper bound `U_{T_N} ≤ N - 1` | `SocialNetwork.entry_le_of_greedy` | ✅ |
+| — | ↳ lower bound from the vanishing row sums | `SocialNetwork.neg_le_of_forall_le` | ✅ |
 | Prop 7 | `⋂_{j≤(M+1)N} ξ_j^u ⊆ {U_{T_{(M+1)N}} ∈ L}` | — | ⬜ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
 | — | ↳ gap estimate `v(b,o) - y(v) ≤ -1/(M-1)` | — | ⬜ |
@@ -163,12 +168,8 @@ content and are formalisable today.
 1. ~~Model a trajectory as the data `(Aₙ, Oₙ)ₙ` and iterate `express`.~~ Done
    (`SocialNetwork.Trajectory`).
 2. ~~Prove Proposition 5 (pigeonhole).~~ Done (`SocialNetwork.exists_rowSup_actor_lt`).
-3. Define the greedy event `ξₙ^u` — that `(Aₙ, Oₙ)` maximises the pressure at time
-   `T_{n-1}` — as a predicate on trajectories. This is the last piece of vocabulary needed
-   before Propositions 6 and 7, and it is again purely deterministic.
-4. Prove Proposition 6: on `⋂_{j≤N} ξⱼ`, the whole matrix satisfies `-MN < U_{T_N} < N`.
-   The two cases of the paper's proof (`N` distinct actors, or a repeat) both reduce to
-   bounds already available from `rowSup_state_le`.
+3. ~~Define the greedy event `ξₙ^u`.~~ Done (`SocialNetwork.IsGreedyAt`).
+4. ~~Prove Proposition 6.~~ Done (`SocialNetwork.entry_mem_of_greedy`).
 5. Prove Proposition 7 via Appendix A (Definition 5 and Lemmas 19, 20): `(M+1)N` greedy
    steps land in `L`.
 6. Assemble the biased model into a network state (one `Memory` per actor) and close the
