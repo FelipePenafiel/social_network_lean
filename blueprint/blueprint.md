@@ -107,6 +107,12 @@ so far require; `N ≥ 3` has not been needed, since `N ≥ 1` already follows f
 | — | ↳ `C^o` carries a strictly positive entry (after Def 2) | `SocialNetwork.IsConsensus.exists_pos` | ✅ |
 | — | ↳ no actor expresses twice in that window | `SocialNetwork.actor_ne_actor_of_greedy` | ✅ |
 | — | ↳ the row of an actor that only listens to `o` | `SocialNetwork.state_add_of_hearing` | ✅ |
+| — | ↳ `ξₙ^u` as a measurable subset of the sample space | `SocialNetwork.greedyEvent` | ✅ |
+| — | ↳ its measurability (it is a cylinder) | `…measurableSet_greedyEvent` | ✅ |
+| — | ↳ `⋂_{j≤n} ξⱼ^u` and its measurability | `…greedyEvents`, `…measurableSet_greedyEvents` | ✅ |
+| Prop 5 | ↳ same statement on a sample point | `…exists_rowSup_actor_lt_ofPath` | ✅ |
+| Prop 6 | ↳ same statement on the event `⋂ ξⱼ^u` | `…entry_mem_of_mem_greedyEvents` | ✅ |
+| Prop 7 | ↳ final step on the event `⋂ ξⱼ^v` | `…isLadder_state_of_mem_greedyEvents` | ✅ |
 | Prop 8 | `P(⋂_{j≤m} ξ_j^u) ≥ ζ_β^m` | — | 🚧 |
 | Def 3 | skeleton transition kernel `Ũ^{β,u}` | `SocialNetwork.skeletonKernel` | ✅ |
 | Def 3 | ↳ it is a Markov kernel | `…isMarkovKernel_skeletonKernel` | ✅ |

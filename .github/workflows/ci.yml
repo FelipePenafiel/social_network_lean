@@ -61,6 +61,9 @@ jobs:
           #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
           #print axioms SocialNetwork.skeletonKernel_reachable
           #print axioms SocialNetwork.isState_skeletonKernel
+          #print axioms SocialNetwork.measurableSet_greedyEvent
+          #print axioms SocialNetwork.entry_mem_of_mem_greedyEvents
+          #print axioms SocialNetwork.isLadder_state_of_mem_greedyEvents
           EOF
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then

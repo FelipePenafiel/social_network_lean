@@ -59,6 +59,8 @@ measurable.  The same holds for `Jump N M` and for every space of finite histori
   pairs, and its law on trajectories, via `ProbabilityTheory.Kernel.traj`.
 * `SocialNetwork.skeleton`, `SocialNetwork.returnTime` — the process `Ũ_n^{β,u}` and the
   return time `R̃^{β,u} (θ)` of Definition 3.
+* `SocialNetwork.greedyEvent`, `SocialNetwork.greedyEvents` — the paper's `ξₙ^u` and
+  `⋂_{j ≤ n} ξⱼ^u`, as subsets of the sample space.
 
 ## Main results
 
@@ -67,6 +69,10 @@ measurable.  The same holds for `Jump N M` and for every space of finite histori
   from `v` by a single `express`.
 * `SocialNetwork.isState_skeletonKernel` — the state space `S` is preserved with probability
   one, which is `SocialNetwork.Trajectory.isState_state` read one step at a time.
+* `SocialNetwork.measurableSet_greedyEvent` — `ξₙ^u` is measurable, being a cylinder.
+* `SocialNetwork.entry_mem_of_mem_greedyEvents` — Proposition 6 on the greedy event.
+* `SocialNetwork.isLadder_state_of_mem_greedyEvents` — the last step of Proposition 7 on the
+  greedy event.
 -/
 
 namespace SocialNetwork
@@ -392,5 +398,119 @@ theorem one_le_returnTime (u : Pressure N M) (θ : Set (Pressure N M)) (ω : ℕ
   MeasureTheory.le_hittingAfter ω
 
 end Skeleton
+
+/-! ### The greedy event `ξₙ^u`
+
+The paper's event
+
+```
+ξₙ^u := {(Aₙ, Oₙ) ∈ argmax_{(a,o)} U_{T_{n-1}}^{β,u} (a, o)}
+```
+
+is a condition on the realisation, which `SocialNetwork.IsGreedyAt` already expresses on a
+`Trajectory`.  Here it becomes a subset of the sample space, and it is measurable because it
+only constrains finitely many coordinates: it is a cylinder over a finite discrete space. -/
+
+section GreedyEvent
+
+/-- The paper's event `ξₙ^u`, as a subset of the sample space of the skeleton.
+
+With the index convention of `SocialNetwork.Trajectory`, `greedyEvent u k` is `ξ_{k+1}^u`. -/
+def greedyEvent (u : Pressure N M) (k : ℕ) : Set (ℕ → Jump N M) :=
+  {ω | IsGreedyAt (Trajectory.ofPath ω) u k}
+
+/-- The event `⋂_{j=1}^{n} ξⱼ^u` of Propositions 6, 7 and 8. -/
+def greedyEvents (u : Pressure N M) (n : ℕ) : Set (ℕ → Jump N M) :=
+  {ω | ∀ k < n, IsGreedyAt (Trajectory.ofPath ω) u k}
+
+theorem greedyEvents_eq_iInter (u : Pressure N M) (n : ℕ) :
+    greedyEvents u n = ⋂ k ∈ Set.Iio n, greedyEvent u k := by
+  ext ω
+  simp [greedyEvents, greedyEvent, Set.mem_Iio]
+
+/-- The greedy event at step `k` only constrains the first `k + 1` expressed pairs, so reading
+it off a truncated path gives the same answer. -/
+theorem isGreedyAt_ofHistory_frestrictLe (u : Pressure N M) (ω : ℕ → Jump N M) {n k : ℕ}
+    (hk : k ≤ n) :
+    IsGreedyAt
+        (Trajectory.ofHistory (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) u k
+      ↔ IsGreedyAt (Trajectory.ofPath ω) u k := by
+  have hstate :=
+    Trajectory.state_ofHistory_frestrictLe u ω (n := n) (k := k) (by omega)
+  have hactor : (Trajectory.ofHistory
+      (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)).actor k = (ω k).1 := by
+    rw [Trajectory.ofHistory_actor _ hk, Preorder.frestrictLe_apply]
+  have hopinion : (Trajectory.ofHistory
+      (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)).opinion k = (ω k).2 := by
+    rw [Trajectory.ofHistory_opinion _ hk, Preorder.frestrictLe_apply]
+  simp only [IsGreedyAt, hstate, hactor, hopinion, Trajectory.actor_ofPath,
+    Trajectory.opinion_ofPath]
+
+theorem greedyEvent_eq_preimage (u : Pressure N M) (k : ℕ) :
+    greedyEvent u k =
+      Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) k ⁻¹'
+        {h | IsGreedyAt (Trajectory.ofHistory h) u k} := by
+  ext ω
+  simp only [greedyEvent, Set.mem_setOf_eq, Set.mem_preimage]
+  exact (isGreedyAt_ofHistory_frestrictLe u ω (le_refl k)).symm
+
+theorem measurableSet_greedyEvent (u : Pressure N M) (k : ℕ) :
+    MeasurableSet (greedyEvent u k) := by
+  rw [greedyEvent_eq_preimage]
+  exact Preorder.measurable_frestrictLe k MeasurableSet.of_discrete
+
+theorem measurableSet_greedyEvents (u : Pressure N M) (n : ℕ) :
+    MeasurableSet (greedyEvents u n) := by
+  rw [greedyEvents_eq_iInter]
+  exact MeasurableSet.biInter (Set.to_countable _) fun k _ => measurableSet_greedyEvent u k
+
+end GreedyEvent
+
+/-! ### Propositions 5, 6 and 7 on the sample space
+
+Because the chain is driven by the expressed pairs, a sample point *is* a
+`SocialNetwork.Trajectory` and the matrix at time `T_n` *is* `Trajectory.state`.  The
+deterministic theorems of §5 therefore transfer verbatim and hold **pointwise** on the greedy
+event — there is no almost-sure clause anywhere below, and none is needed. -/
+
+section Transfer
+
+variable {u : Pressure N M} {ω : ℕ → Jump N M}
+
+/-- The state space `S` of equation (2) is preserved along every realisation. -/
+theorem isState_state_ofPath (hu : IsState u) (ω : ℕ → Jump N M) (n : ℕ) :
+    IsState ((Trajectory.ofPath ω).state u n) :=
+  (Trajectory.ofPath ω).isState_state hu n
+
+/-- **Proposition 5**, on every realisation: among the first `N` expressions at least one comes
+from an actor carrying pressure below `N`. -/
+theorem exists_rowSup_actor_lt_ofPath (hM : 2 ≤ M) (hu : IsState u) (ω : ℕ → Jump N M) :
+    ∃ k < N, rowSup ((Trajectory.ofPath ω).state u k) ((Trajectory.ofPath ω).actor k)
+      < N * (M - 1) :=
+  exists_rowSup_actor_lt (Trajectory.ofPath ω) hM hu
+
+/-- **Proposition 6**, on the event `⋂_{j=1}^{N} ξⱼ^u`: the whole matrix is confined to
+`(-MN, N)` entrywise after `N` expressions. -/
+theorem entry_mem_of_mem_greedyEvents (hM : 2 ≤ M) (hu : IsState u)
+    (hω : ω ∈ greedyEvents u N) (a : Actor N) (p : Opinion M) :
+    -((M : ℤ) * (N : ℤ) * ((M : ℤ) - 1)) < (Trajectory.ofPath ω).state u N a p ∧
+      (Trajectory.ofPath ω).state u N a p < (N : ℤ) * ((M : ℤ) - 1) :=
+  entry_mem_of_greedy (Trajectory.ofPath ω) hM hu (fun k hk => hω k hk) a p
+
+/-- **The last step of Proposition 7**, on the event `⋂_{j=1}^{N} ξⱼ^v`: from a consensus state
+for `o`, `N` greedy expressions land on a ladder supporting `o`. -/
+theorem isLadder_state_of_mem_greedyEvents (hM : 2 ≤ M) (hN : 2 ≤ N) {o : Opinion M}
+    {v : Pressure N M} (hv : IsConsensus o v) (hω : ω ∈ greedyEvents v N) :
+    IsLadder o ((Trajectory.ofPath ω).state v N) :=
+  isLadder_state (Trajectory.ofPath ω) hM hN hv (fun k hk => hω k hk)
+
+/-- Every expression on the greedy event of a consensus state expresses the consensus
+opinion. -/
+theorem opinion_eq_of_mem_greedyEvents (hM : 2 ≤ M) (hN : 2 ≤ N) {o : Opinion M}
+    {v : Pressure N M} (hv : IsConsensus o v) (hω : ω ∈ greedyEvents v N) {k : ℕ} (hk : k < N) :
+    (ω k).2 = o :=
+  opinion_eq_of_greedy (Trajectory.ofPath ω) hM hN hv (fun j hj => hω j hj) hk
+
+end Transfer
 
 end SocialNetwork
