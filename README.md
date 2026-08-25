@@ -16,33 +16,39 @@ transition at `α = 0`.
 
 ## Status
 
-What is formalised today is the **deterministic layer** together with the **discrete-time
-probabilistic layer**.
+The **deterministic layer** of the paper is formalised and proved: the state space, the
+expression operator and the conservation law behind it, the ladder/consensus geometry of
+Definitions 1, 2 and 4, Propositions 5 and 6, the final step of Proposition 7, and the
+vocabulary of Appendix A.
 
-Deterministic: the state space, the expression operator, the conservation law that makes the
-state space stable, the ladder/consensus geometry of Definitions 1, 2 and 4, the biased model
-of Section 3 through its variable-length memory, **Propositions 5 and 6**, the final step of
-Proposition 7 (from a consensus state, `N` greedy expressions reach a ladder), the
-deterministic half of Remark 5, and the vocabulary of Appendix A.
+The **discrete-time probabilistic layer** is built and proved: the jump rates of equation (3),
+the skeleton kernel of Definition 3 as a `Kernel (Pressure N M) (Pressure N M)`, the law of a
+realisation via Mathlib's Ionescu–Tulcea theorem, the greedy events `ξₙ^u` as measurable sets,
+and **Proposition 8** with Remark 4.
 
-Probabilistic: the **skeleton process of Definition 3** — the jump rates of equation (3), the
-transition kernel `Ũ^{β,u}`, the law of the sequence `(Aₙ, Oₙ)ₙ` built by Ionescu-Tulcea, the
-process `Ũ_n` and the return time `R̃^{β,u}` — and **Proposition 8**, `P(⋂ ξⱼ^u) ≥ ζ_β^m`,
-with Remark 4's Bernoulli bound. The chain is driven by the expressed pairs rather than by the
-matrices, so a sample point *is* a `Trajectory` and Propositions 5, 6 and 7 apply to a
-realisation pointwise, with no almost-sure qualifier.
+The **continuous-time process** is built — the jump-hold representation is a discrete-time
+chain carrying one real coordinate, so `Kernel.traj` constructs it — and with it the jump
+times, the process `U_t`, the transition semigroup and the hitting times `R^{β,u}(θ)`.
 
-Two points in the written proofs of Lemmas 19 and 20 do not compose into Lean proofs as
-they stand; the blueprint states both precisely, along with repairs that appear to work.
-Neither affects the paper's results.
+The **biased model of Section 3** is assembled: memory profiles, the operator `π_α^{a,o}`, the
+state space `S^α`, the generator `G̃` of equation (7), the sets of equations (8) and (9), and
+the biased skeleton and process.
 
-Theorems 1 to 4 are **not** formalised. In continuous time nothing is: Mathlib has no theory
-of Markov jump processes on a countable state space. In discrete time — which is where
-Theorems 2 and 3 essentially live — what is missing is Doeblin's condition (hence the
-existence and uniqueness of the skeleton's invariant measure `μ̃^β`) and Kac's lemma.
-`blueprint/blueprint.md` lists every numbered statement of the paper, its Lean counterpart if
-there is one, and, for the ones that are blocked, which piece of missing infrastructure blocks
-it, with exact Mathlib names.
+**Every numbered statement of the paper is now stated in Lean.**  The ones whose proofs are not
+formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for three
+distinct reasons, which the blueprint keeps apart: blocked on missing Mathlib theory (Doeblin's
+criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 19 and 20, whose
+written proofs do not compose — repairs are recorded), or simply routine and not yet done (four
+measurability lemmas and one arithmetic lemma).
+
+The library is **not** `sorry`-free, by design.  What CI enforces instead is that no
+declaration listed as complete in `.github/workflows/ci.yml` depends on `sorryAx`; every run
+also prints an inventory of the outstanding `sorry`s.
+
+Formalising surfaced three places where the paper needs correcting, none of which affects its
+results.  Two are in Appendix A (Lemmas 19 and 20); the third is that the second condition of
+equation (6) is not stable under `π_α^{a,o}`, though the justification the paper gives for it
+proves a stronger condition that is.  All three are stated precisely in the blueprint.
 
 Read the blueprint before adding anything: it is the contract between the paper and the
 repository.
@@ -67,8 +73,12 @@ SocialNetwork/Trajectory.lean realisations (Aₙ, Oₙ)ₙ and the deterministic
 SocialNetwork/Consensus.lean  greedy dynamics from a consensus state reach a ladder
 SocialNetwork/Favouring.lean  Definition 5, the first-repeat time τ(u), Appendix A pieces
 SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) of eq. (6)
-SocialNetwork/Skeleton.lean   Definition 3: rates of eq. (3), Ũ^{β,u}, the law of (Aₙ,Oₙ)ₙ
-SocialNetwork/Greedy.lean     Proposition 8
+SocialNetwork/Skeleton.lean   Definition 3: jump rates, skeleton kernel, law of a realisation
+SocialNetwork/Greedy.lean     Proposition 8 and Remark 4
+SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9
+SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
+SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
+SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 16, 25, 27, 31
 blueprint/blueprint.md        paper ↔ Lean correspondence and status of every statement
 ```
 
