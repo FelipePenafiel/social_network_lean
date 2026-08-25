@@ -1,0 +1,4 @@
+# Configuration for the latexmk command that builds the pdf version.
+$pdf_mode = 1;
+$pdflatex = 'xelatex -synctex=1';
+@default_files = ('print.tex');

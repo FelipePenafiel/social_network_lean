@@ -1,0 +1,93 @@
+name: Blueprint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: blueprint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build blueprint
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install graphviz
+        # plastexdepgraph draws the dependency graph with pygraphviz, which needs
+        # both the graphviz binaries and its development headers.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends graphviz libgraphviz-dev
+
+      - name: Install TeX
+        #   texlive-latex-base         expl3, geometry, hyperref
+        #   texlive-latex-recommended  mathtools, unicode-math
+        #   texlive-fonts-recommended  pzdr.tfm, which hyperref's xetex driver loads,
+        #                              and the msam/msbm metrics amssymb declares
+        #   fonts-lmodern              latinmodern-math.otf, the unicode-math default
+        #   texlive-xetex, latexmk     the compiler and the driver
+        # texlive-binaries, pulled in here, also supplies kpsewhich, which plasTeX
+        # uses to resolve \input for the web version.
+        #
+        # Do not trim this list by looking at which files appear in print.log: fonts
+        # loaded by name rather than by path leave no trace there, which is how
+        # texlive-fonts-recommended came to be dropped and the pdf step to fail.
+        run: |
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base texlive-latex-recommended texlive-fonts-recommended \
+            texlive-xetex fonts-lmodern latexmk
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install leanblueprint
+        run: pip install leanblueprint
+
+      - name: Build the pdf version
+        run: leanblueprint pdf
+
+      - name: Build the web version
+        run: leanblueprint web
+
+      - name: Check the Lean names cited in the blueprint
+        # A syntactic stand-in for `lake exe checkdecls`, which would need a
+        # compiled Lean project.  See blueprint/check_decls.py.
+        run: python3 blueprint/check_decls.py
+
+      - name: Assemble the site
+        run: |
+          mkdir -p site
+          cp -r blueprint/web site/blueprint
+          cp blueprint/print/print.pdf site/blueprint.pdf
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Only the default branch publishes.  Pull requests and manual dispatches on
+    # a branch build the blueprint without deploying it, so the build can be
+    # checked without changing what is published.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

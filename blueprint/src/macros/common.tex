@@ -1,0 +1,33 @@
+% Macros and settings used by both the pdf and the web version.
+
+% Theorem-like environments collected by the dependency graph.  They all share
+% the `theorem` counter and it is never reset, so a number identifies a
+% statement uniquely across the whole blueprint.
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Notation of the paper.
+\newcommand{\actors}{\mathcal{A}}
+\newcommand{\opinions}{\mathcal{O}}
+\newcommand{\express}[2]{\pi^{#1,#2}}
+\newcommand{\expressa}[2]{\pi_\alpha^{#1,#2}}
+\newcommand{\Sspace}{S}
+\newcommand{\Salpha}{S^\alpha}
+\newcommand{\ladder}{L}
+\newcommand{\steep}{\hat{L}}
+\newcommand{\Uproc}[1]{U^{\beta,#1}}
+\newcommand{\Uskel}[1]{\tilde{U}^{\beta,#1}}
+\newcommand{\Rhit}[1]{R^{\beta,#1}}
+\newcommand{\Rskel}[1]{\tilde{R}^{\beta,#1}}
+\newcommand{\muinv}{\mu^\beta}
+\newcommand{\muskel}{\tilde{\mu}^\beta}
+\newcommand{\jumprate}{q_\beta}
+\newcommand{\pressone}{\tfrac{1}{M-1}}
