@@ -79,8 +79,33 @@ SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remar
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
 SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 16, 25, 27, 31
-blueprint/blueprint.md        paper ↔ Lean correspondence and status of every statement
+blueprint/src/content.tex     the blueprint proper: every statement, with its Lean name
+blueprint/blueprint.md        the Mathlib infrastructure audit, with exact names and line numbers
 ```
+
+## Blueprint
+
+The blueprint is a [leanblueprint](https://github.com/PatrickMassot/leanblueprint)
+document: it states every numbered result of the paper, records the Lean name of
+each, and draws the dependency graph, in which a green node is formalised and a
+blue one is stated with a `sorry`.
+
+```sh
+pip install leanblueprint          # needs graphviz and its dev headers
+leanblueprint pdf                  # blueprint/print/print.pdf
+leanblueprint web                  # blueprint/web/index.html
+leanblueprint serve                # to read the web version locally
+python3 blueprint/check_decls.py   # every Lean name cited must exist
+```
+
+`blueprint/src/content.tex` is the source. `blueprint/blueprint.md` is a
+different document and is *not* superseded: it is the engineering audit of what
+Mathlib does and does not provide, with exact file and line references, which
+has no place in a mathematical blueprint.
+
+Once GitHub Pages is set to deploy from GitHub Actions, the blueprint is
+published at `https://FelipePenafiel.github.io/social_network_lean/blueprint/`
+and the pdf at `…/blueprint.pdf`.
 
 ## Building
 

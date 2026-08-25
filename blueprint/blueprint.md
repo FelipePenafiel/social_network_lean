@@ -3,6 +3,15 @@
 *Metastability and phase transition in a social network model with multiple opinions*,
 Felipe Penafiel, Kádmo Laxa.
 
+> **Where to look.** The statement-by-statement correspondence now also lives in
+> `blueprint/src/content.tex`, a [leanblueprint](https://github.com/PatrickMassot/leanblueprint)
+> document that renders as a web page with a dependency graph. The two overlap in
+> their tables. What is *only* here is the audit of Mathlib below — exact names,
+> files and line numbers for what the library does and does not provide — which
+> belongs to the engineering of this repository rather than to the mathematics of
+> the paper. Keep both in step, or tell the maintainer to fold the tables into the
+> LaTeX blueprint and leave this file the audit alone.
+
 This file is the working map between the numbered statements of the paper and their Lean
 counterparts. Every statement of the paper appears here, whether or not it has been
 formalised, so that the gap between the article and the repository is always explicit.
