@@ -8,10 +8,12 @@ to reconstruct fully qualified names, and compares that set with the
 
 It is used instead of `lake exe checkdecls` because it needs neither a Lean
 toolchain nor a compiled project, so the blueprint workflow stays independent of
-the build.  It will miss names that Lean generates rather than the source
-spelling out — structure projections, `to_additive` translations, instances
-declared without a name.  Add such a name to KNOWN_GENERATED below if the need
-arises, or run `lake exe checkdecls blueprint/lean_decls` for the exact check.
+the build.  Besides the declarations the source spells out, it collects the
+fields of `structure` blocks, since those become projections and the blueprint
+cites several of them.  It will still miss names Lean generates by other means —
+`to_additive` translations, anonymous instances, constructors.  Add such a name
+to KNOWN_GENERATED below if the need arises, or run
+`lake exe checkdecls blueprint/lean_decls` for the exact check.
 """
 
 from __future__ import annotations
@@ -28,6 +30,13 @@ DECL = re.compile(
 )
 NAMESPACE = re.compile(r"^namespace\s+([A-Za-z_][A-Za-z0-9_.']*)")
 END = re.compile(r"^end\s+([A-Za-z_][A-Za-z0-9_.']*)")
+STRUCTURE = re.compile(
+    r"^\s*(?:@\[[^\]]*\]\s*)?"
+    r"(?:private\s+|protected\s+|noncomputable\s+)*"
+    r"(?:structure|class)\s+([A-Za-z_][A-Za-z0-9_.']*)"
+)
+# A field of a `structure ... where` block: indented, an identifier, then `:`.
+FIELD = re.compile(r"^\s+([a-z_][A-Za-z0-9_']*)\s*:[^=]")
 
 # Names Lean generates that the sources do not spell out.
 KNOWN_GENERATED: set[str] = set()
@@ -37,7 +46,20 @@ def declarations(root: Path) -> set[str]:
     found: set[str] = set()
     for path in sorted(root.glob("*.lean")):
         stack: list[str] = []
+        structure: str | None = None
         for line in path.read_text(encoding="utf-8").splitlines():
+            if structure is not None:
+                # Fields are indented; the first non-indented, non-blank line ends
+                # the structure body.
+                if line.strip() and not line[0].isspace():
+                    structure = None
+                else:
+                    m = FIELD.match(line)
+                    if m:
+                        found.add(f"{structure}.{m.group(1)}")
+                    if structure is not None:
+                        continue
+
             m = NAMESPACE.match(line)
             if m:
                 stack.append(m.group(1))
@@ -50,7 +72,10 @@ def declarations(root: Path) -> set[str]:
             m = DECL.match(line)
             if m:
                 name = m.group(1)
-                found.add(".".join(stack + [name]) if stack else name)
+                full = ".".join(stack + [name]) if stack else name
+                found.add(full)
+                if STRUCTURE.match(line) and line.rstrip().endswith("where"):
+                    structure = full
     return found
 
 

@@ -43,7 +43,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The expression operator, eq.~(1)]
   \label{def:express}
-  \lean{SocialNetwork.express}
+  \lean{SocialNetwork.express, SocialNetwork.express_of_ne}
   \leanok
   When actor $a$ expresses opinion $o$, the matrix of social pressures is
   transformed by
@@ -59,7 +59,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The state space, eq.~(2)]
   \label{def:state}
-  \lean{SocialNetwork.IsState}
+  \lean{SocialNetwork.IsState, SocialNetwork.IsState.trust_eq_zero}
   \leanok
   \uses{def:express}
   \[
@@ -73,7 +73,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{lemma}[Conservation of trust]
   \label{lem:trust}
-  \lean{SocialNetwork.trust_express}
+  \lean{SocialNetwork.trust_express, SocialNetwork.trust_express_of_ne, SocialNetwork.trust_express_self}
   \leanok
   \uses{def:express}
   Expressing preserves the trust $T_a(u) = \sum_o u(a,o)$ of every actor except
@@ -100,11 +100,33 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   null, which supplies the second condition.
 \end{proof}
 
+\section{Observables}
+
+\begin{definition}[Public opinion and trust, Section~4]
+  \label{def:observables}
+  \lean{SocialNetwork.publicOpinion, SocialNetwork.trust}
+  \leanok
+  \uses{def:state}
+  For $o \in \opinions$ the \emph{public opinion} toward $o$ is the total
+  pressure exerted by the population, $P_o(u) = \sum_{a \in \actors} u(a,o)$,
+  and the \emph{trust} of an actor is $T_a(u) = \sum_{o \in \opinions} u(a,o)$.
+\end{definition}
+
+\begin{remark}[Trust vanishes on $\Sspace$, Remark~3]
+  \label{rem:trust-zero}
+  \lean{SocialNetwork.IsState.trust_eq_zero, SocialNetwork.Bias.Memory.sum_pressure_eq_zero_of_bias_zero}
+  \leanok
+  \uses{def:observables, def:state}
+  On $\Sspace$ the trust of every actor vanishes identically; this is the
+  normalisation built into Definition~\ref{def:state}.  The same holds in the biased
+  model exactly when $\alpha = 0$, by the identity of Remark~\ref{rem:biased-row}.
+\end{remark}
+
 \section{The jump process}
 
 \begin{definition}[The generator, eq.~(3)]
   \label{def:generator}
-  \lean{SocialNetwork.generator, SocialNetwork.jumpRate, SocialNetwork.totalRate}
+  \lean{SocialNetwork.generator, SocialNetwork.jumpRate, SocialNetwork.totalRate, SocialNetwork.jumpWeight}
   \leanok
   \uses{def:express, def:state}
   For $\beta \ge 0$, the polarization coefficient, the process
@@ -120,7 +142,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The skeleton, Definition~3]
   \label{def:skeleton}
-  \lean{SocialNetwork.skeletonKernel, SocialNetwork.jumpPMF, SocialNetwork.pathMeasure}
+  \lean{SocialNetwork.skeletonKernel, SocialNetwork.jumpPMF, SocialNetwork.pathMeasure, SocialNetwork.isMarkovKernel_skeletonKernel, SocialNetwork.skeletonKernel_reachable, SocialNetwork.isState_skeletonKernel, SocialNetwork.skeleton, SocialNetwork.measurable_skeleton, SocialNetwork.returnTime}
   \leanok
   \uses{def:generator}
   The skeleton process is $\Uskel{u}_n := \Uproc{u}_{T_n}$.  Its transition
@@ -132,6 +154,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{remark}[How the process is built in Lean]
   \label{rem:construction}
+  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.measurable_process, SocialNetwork.measurable_hittingTimeCts}
   \leanok
   \uses{def:skeleton}
   Mathlib has no theory of continuous-time Markov jump processes on a countable
@@ -221,7 +244,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[Ladder sets, Definition~1]
   \label{def:ladder}
-  \lean{SocialNetwork.IsLadder, SocialNetwork.ladderSet}
+  \lean{SocialNetwork.IsLadder, SocialNetwork.ladderSet, SocialNetwork.ladderValues, SocialNetwork.IsLadder.nonneg, SocialNetwork.IsLadder.nonpos}
   \leanok
   \uses{def:state}
   For $o \in \opinions$,
@@ -273,7 +296,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[Steep ladders, Definition~4]
   \label{def:steep}
-  \lean{SocialNetwork.IsSteepLadder, SocialNetwork.steepLadderSet}
+  \lean{SocialNetwork.IsSteepLadder, SocialNetwork.steepLadderSet, SocialNetwork.IsSteepLadder.express}
   \leanok
   \uses{def:state}
   \[
@@ -299,7 +322,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{lemma}[Steep ladders are stable, Remark~5]
   \label{lem:steep-stable}
-  \lean{SocialNetwork.IsSteepLadder.express_of_pos, SocialNetwork.mem_steepLadderSet_of_positivePressure}
+  \lean{SocialNetwork.IsSteepLadder.express_of_pos, SocialNetwork.mem_steepLadderSet_of_positivePressure, SocialNetwork.positivePressureEvent, SocialNetwork.measurableSet_positivePressureEvent}
   \leanok
   \uses{def:steep}
   For $\hat{l} \in \steep$,
@@ -391,7 +414,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The biased operator, eq.~(5)]
   \label{def:biased-express}
-  \lean{SocialNetwork.Bias.Profile.express, SocialNetwork.Bias.Profile.pressure_express}
+  \lean{SocialNetwork.Bias.Profile.express, SocialNetwork.Bias.Profile.pressure_express, SocialNetwork.Bias.Memory.hear, SocialNetwork.Bias.Memory.reset, SocialNetwork.Bias.Memory.pressure_hear}
   \leanok
   For $\alpha \in \mathbb{R}$, set $\gamma := \pressone - \alpha$ and
   \[
@@ -406,7 +429,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The biased state space, eq.~(6)]
   \label{def:biased-state}
-  \lean{SocialNetwork.Bias.Profile, SocialNetwork.Bias.IsBiasedState}
+  \lean{SocialNetwork.Bias.Profile, SocialNetwork.Bias.IsBiasedState, SocialNetwork.Bias.Memory, SocialNetwork.Bias.Memory.pressure, SocialNetwork.Bias.Memory.heard, SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge, SocialNetwork.Bias.sum_ge_of_injective}
   \leanok
   \uses{def:biased-express}
   An actor that has heard $n_a$ expressions since it last expressed, $c_p$ of
@@ -422,7 +445,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{remark}[Arithmetic of a row, Remark~1]
   \label{rem:biased-row}
-  \lean{SocialNetwork.Bias.IsBiasedState.express, SocialNetwork.Bias.Profile.pressure_mem_addSubgroup, SocialNetwork.Bias.Profile.sum_pressure_eq, SocialNetwork.Bias.IsBiasedState.pressure_ne_zero}
+  \lean{SocialNetwork.Bias.IsBiasedState.express, SocialNetwork.Bias.Profile.pressure_mem_addSubgroup, SocialNetwork.Bias.Profile.sum_pressure_eq, SocialNetwork.Bias.IsBiasedState.pressure_ne_zero, SocialNetwork.Bias.Memory.sum_pressure_eq, SocialNetwork.Bias.Memory.pressure_eq_zero_of_heard_eq_zero, SocialNetwork.Bias.Profile.pressure_eq_add_mul, SocialNetwork.Bias.Profile.heard_eq_zero_of_pressure_eq_zero}
   \leanok
   \uses{def:biased-state}
   $\Salpha$ is stable under every $\expressa{a}{o}$.  Moreover
@@ -459,7 +482,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The biased generator, eq.~(7)]
   \label{def:biased-generator}
-  \lean{SocialNetwork.Bias.biasedGenerator, SocialNetwork.Bias.biasedSkeletonKernel, SocialNetwork.Bias.biasedCtsPathMeasure}
+  \lean{SocialNetwork.Bias.biasedGenerator, SocialNetwork.Bias.biasedSkeletonKernel, SocialNetwork.Bias.biasedCtsPathMeasure, SocialNetwork.Bias.biasedJumpRate, SocialNetwork.Bias.biasedTotalRate, SocialNetwork.Bias.biasedJumpPMF, SocialNetwork.Bias.biasedPathMeasure, SocialNetwork.Bias.stateAfter, SocialNetwork.Bias.isBiasedState_stateAfter}
   \leanok
   \uses{def:biased-state}
   \[
@@ -470,7 +493,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[Biased consensus and ladders, eq.~(8) and (9)]
   \label{def:biased-sets}
-  \lean{SocialNetwork.Bias.IsBiasedConsensus, SocialNetwork.Bias.IsBiasedLadder, SocialNetwork.Bias.IsBiasedSteepLadder}
+  \lean{SocialNetwork.Bias.IsBiasedConsensus, SocialNetwork.Bias.IsBiasedLadder, SocialNetwork.Bias.IsBiasedSteepLadder, SocialNetwork.Bias.biasedStateSet, SocialNetwork.Bias.biasedLadderSet, SocialNetwork.Bias.biasedConsensusSetOther, SocialNetwork.Bias.biasedSteepLadderSet}
   \leanok
   \uses{def:biased-state}
   For $0 < \alpha < \pressone$,
@@ -485,7 +508,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{remark}[The smallest maximum of a non-null row, Remark~8]
   \label{rem:remark8}
-  \lean{SocialNetwork.Bias.le_max_pressure}
+  \lean{SocialNetwork.Bias.le_max_pressure, SocialNetwork.Bias.exists_count_ge}
   \leanok
   \uses{def:biased-state}
   For $0 < \alpha < \pressone$ and an actor with $n_a \ge 1$,
@@ -506,7 +529,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{theorem}[Phase transition, Theorem~4]
   \label{thm:phase}
-  \lean{SocialNetwork.Bias.biasedAbsorption}
+  \lean{SocialNetwork.Bias.biasedAbsorption, SocialNetwork.Bias.biasedProcess, SocialNetwork.Bias.biasedHittingTimeCts}
   \leanok
   \uses{def:biased-generator, def:biased-sets}
   \begin{enumerate}
@@ -538,7 +561,7 @@ the process pointwise.
 
 \begin{definition}[Realisations]
   \label{def:trajectory}
-  \lean{SocialNetwork.Trajectory, SocialNetwork.Trajectory.state, SocialNetwork.skeleton}
+  \lean{SocialNetwork.Trajectory, SocialNetwork.Trajectory.state, SocialNetwork.skeleton, SocialNetwork.Trajectory.state_succ, SocialNetwork.rowSup}
   \leanok
   \uses{def:express}
   A realisation is the sequence $(A_n, O_n)_n$ of expressing actors and
@@ -561,7 +584,7 @@ the process pointwise.
 
 \begin{proposition}[Low pressure recurs, Proposition~5]
   \label{prop:low-pressure}
-  \lean{SocialNetwork.exists_rowSup_actor_lt, SocialNetwork.exists_rowSup_actor_lt_ofPath}
+  \lean{SocialNetwork.exists_rowSup_actor_lt, SocialNetwork.exists_rowSup_actor_lt_ofPath, SocialNetwork.rowSup_state_le, SocialNetwork.actor_ne_of_rowSup_state_zero, SocialNetwork.actor_ne_actor_of_lt}
   \leanok
   \uses{def:trajectory, lem:state-along}
   For any $u \in \Sspace$,
@@ -580,7 +603,7 @@ the process pointwise.
 
 \begin{definition}[The greedy event]
   \label{def:greedy}
-  \lean{SocialNetwork.IsGreedyAt, SocialNetwork.greedyEvent, SocialNetwork.greedyEvents}
+  \lean{SocialNetwork.IsGreedyAt, SocialNetwork.greedyEvent, SocialNetwork.greedyEvents, SocialNetwork.measurableSet_greedyEvent, SocialNetwork.measurableSet_greedyEvents}
   \leanok
   \uses{def:trajectory}
   For $u \in \Sspace$ and $n \ge 1$,
@@ -595,7 +618,7 @@ the process pointwise.
 
 \begin{proposition}[Confinement, Proposition~6]
   \label{prop:confinement}
-  \lean{SocialNetwork.entry_mem_of_greedy, SocialNetwork.entry_mem_of_mem_greedyEvents}
+  \lean{SocialNetwork.entry_mem_of_greedy, SocialNetwork.entry_mem_of_mem_greedyEvents, SocialNetwork.entry_le_of_greedy, SocialNetwork.neg_le_of_forall_le}
   \leanok
   \uses{def:greedy, prop:low-pressure}
   For any $u \in \Sspace$,
@@ -612,7 +635,7 @@ the process pointwise.
 
 \begin{lemma}[From consensus to a ladder]
   \label{lem:consensus-ladder}
-  \lean{SocialNetwork.isLadder_state, SocialNetwork.isLadder_state_of_mem_greedyEvents}
+  \lean{SocialNetwork.isLadder_state, SocialNetwork.isLadder_state_of_mem_greedyEvents, SocialNetwork.opinion_eq_of_greedy, SocialNetwork.IsConsensus.express, SocialNetwork.actor_ne_actor_of_greedy, SocialNetwork.state_add_of_hearing, SocialNetwork.opinion_eq_of_mem_greedyEvents}
   \leanok
   \uses{def:greedy, def:consensus, def:ladder, lem:consensus-pos}
   If $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^v$ occurs then $\Uskel{v}_N \in \ladder^o$.
@@ -632,7 +655,7 @@ the process pointwise.
 
 \begin{proposition}[Reaching a ladder, Proposition~7]
   \label{prop:reach-ladder}
-  \lean{SocialNetwork.isLadder_state_of_greedy, SocialNetwork.greedyEvents_subset_ladder}
+  \lean{SocialNetwork.isLadder_state_of_greedy, SocialNetwork.greedyEvents_subset_ladder, SocialNetwork.one_sub_le_pathMeasure_ladder, SocialNetwork.consensusUnion}
   \leanok
   \uses{def:greedy, def:ladder}
   For any $u \in \Sspace$,
@@ -651,7 +674,7 @@ the process pointwise.
 
 \begin{lemma}[The gap estimate]
   \label{lem:gap}
-  \lean{SocialNetwork.entrySup, SocialNetwork.le_entrySup_sub_one}
+  \lean{SocialNetwork.entrySup, SocialNetwork.le_entrySup_sub_one, SocialNetwork.exists_entrySup, SocialNetwork.isGreedyAt_iff_entrySup}
   \leanok
   \uses{def:state}
   Write $y(v) = \max\{v(a,o)\}$.  For $b, o$ with $v(b,o) < y(v)$, the difference
@@ -668,7 +691,7 @@ the process pointwise.
 
 \begin{proposition}[Probability of a greedy run, Proposition~8]
   \label{prop:greedy-prob}
-  \lean{SocialNetwork.zeta, SocialNetwork.zeta_le_jumpPMF_argmaxFinset, SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents}
+  \lean{SocialNetwork.zeta, SocialNetwork.zeta_le_jumpPMF_argmaxFinset, SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents, SocialNetwork.zeta_le_partialTraj_succ, SocialNetwork.argmaxFinset, SocialNetwork.jumpPMF_apply}
   \leanok
   \uses{def:greedy, lem:gap, def:skeleton}
   For all $m \ge 1$,
@@ -699,7 +722,7 @@ the process pointwise.
 
 \begin{remark}[Bernoulli, Remark~4]
   \label{rem:bernoulli}
-  \lean{SocialNetwork.one_sub_le_zeta_pow, SocialNetwork.one_sub_le_pathMeasure_greedyEvents}
+  \lean{SocialNetwork.one_sub_le_zeta_pow, SocialNetwork.one_sub_le_pathMeasure_greedyEvents, SocialNetwork.zeta_pos, SocialNetwork.zeta_le_one, SocialNetwork.one_sub_le_zeta}
   \leanok
   \uses{prop:greedy-prob}
   For any $m \ge 1$ and $\beta \ge 0$,
@@ -905,7 +928,7 @@ the process pointwise.
 
 \begin{definition}[The first repeat time, Definition~5]
   \label{def:tau}
-  \lean{SocialNetwork.firstRepeat, SocialNetwork.firstRepeat_le}
+  \lean{SocialNetwork.firstRepeat, SocialNetwork.firstRepeat_le, SocialNetwork.actor_injOn_lt_firstRepeat, SocialNetwork.exists_repeat}
   \leanok
   \uses{def:trajectory}
   $\tau(u) := \inf\{ n \ge 1 : A_n \in \{A_1, \dots, A_{n-1}\} \}$, the number of
@@ -996,7 +1019,7 @@ the process pointwise.
 
 \begin{definition}[The near-greedy event, Remark~7]
   \label{def:near-greedy}
-  \lean{SocialNetwork.Bias.IsNearGreedyAt, SocialNetwork.Bias.nearGreedyEvents}
+  \lean{SocialNetwork.Bias.IsNearGreedyAt, SocialNetwork.Bias.nearGreedyEvents, SocialNetwork.Bias.IsBiasedGreedyAt, SocialNetwork.Bias.biasedGreedyEvents, SocialNetwork.Bias.measurableSet_nearGreedyEvents, SocialNetwork.Bias.measurableSet_biasedGreedyEvents}
   \leanok
   \uses{def:biased-state}
   \[
@@ -1204,6 +1227,23 @@ None of them affects the results.
   proof.
 \end{remark}
 
+\begin{remark}[Definition~4 needs a sign condition]
+  \label{rem:steep}
+  \uses{def:steep}
+  Definition~4 reads $0 = u(a_1,o) < u(a_2,o) < \dots < u(a_N,o)$, which says
+  two things: the values are pairwise distinct, \emph{and} the smallest is $0$.
+  A first formalisation of $\steep^o$ recorded only the first, together with
+  ``some value is $0$'', which is strictly weaker; and the missing sign condition
+  is not recoverable from the others, since the vanishing row sums hold
+  identically once the relation between the columns does, whatever the sign of
+  $u(a,o)$.
+
+  \texttt{SocialNetwork.IsSteepLadder} therefore carries a \texttt{nonneg}
+  field.  It costs nothing elsewhere: the only place that builds a steep ladder
+  from scratch is Remark~\ref{rem:ladder-steep}, and the non-negativity of a
+  ladder supplies it.  Without it Lemma~\ref{lem:steep-stable} is false.
+\end{remark}
+
 \begin{remark}[Equation~(6) is not stable]
   \label{rem:eq6}
   \uses{def:biased-state}
@@ -1294,3 +1334,43 @@ and none from which it follows in one step; the natural route is
 \texttt{Finset.orderEmbOfFin} plus ``a strictly monotone $\mathrm{Fin}\ N \to
 \mathbb{N}$ dominates the identity'', but \texttt{StrictMono.le\_apply} is
 stated only for endomorphisms.
+
+
+\section{Where to go next}
+
+In rough order of cost.
+
+\begin{enumerate}
+  \item The routine items above: the two measurability lemmas for
+    \texttt{process} and \texttt{hittingTimeCts}, the two for the biased greedy
+    events, and \texttt{sum\_ge\_of\_injective}.  None needs new theory, and
+    together they remove the only unproved statements here that are nobody's
+    fault.
+  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  The arithmetic is
+    available; what is missing is the comparison showing that the worst case
+    over $\steep$ is attained on $\ladder$.  This is the first genuinely
+    mathematical item that is blocked neither on Mathlib nor on the paper.
+  \item Remark~\ref{rem:remark8}, whose pigeonhole step is already done.
+  \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
+    Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
+    authors first, since the repairs change the written proofs.
+    Proposition~\ref{prop:reach-ladder} then follows by assembling them with
+    Lemma~\ref{lem:consensus-ladder}.
+  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure for
+    a countable-state Markov kernel.}  The keystone:
+    Theorems~\ref{thm:invariant} and~\ref{thm:invariant-skeleton}, and through
+    them Theorems~\ref{thm:concentration}, \ref{thm:metastability},
+    \ref{thm:biased-existence}, \ref{thm:biased-concentration} and
+    \ref{thm:biased-metastability}, all wait on it.  It is self-contained, of
+    independent value, and depends on nothing else in this list.
+  \item \textbf{Kac's lemma} for a countable-state chain, needed by
+    Proposition~\ref{prop:skeleton-concentration} and by nothing else here.
+  \item \textbf{Poisson point processes} and the superposition comparison, for
+    Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion}.  The
+    largest item, and the one the fewest results depend on.
+\end{enumerate}
+
+Items 5, 6 and 7 are contributions to Mathlib rather than to this repository.
+The engineering companion to this blueprint, \texttt{blueprint/blueprint.md},
+records exactly what the library does and does not provide, with names, files
+and line numbers, checked against the pinned revision.

@@ -79,8 +79,8 @@ SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remar
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
 SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 16, 25, 27, 31
-blueprint/src/content.tex     the blueprint proper: every statement, with its Lean name
-blueprint/blueprint.md        the Mathlib infrastructure audit, with exact names and line numbers
+blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
+blueprint/blueprint.md        what Mathlib provides and what it does not, with names and line numbers
 ```
 
 ## Blueprint
@@ -98,14 +98,16 @@ leanblueprint serve                # to read the web version locally
 python3 blueprint/check_decls.py   # every Lean name cited must exist
 ```
 
-`blueprint/src/content.tex` is the source. `blueprint/blueprint.md` is a
-different document and is *not* superseded: it is the engineering audit of what
-Mathlib does and does not provide, with exact file and line references, which
-has no place in a mathematical blueprint.
+`blueprint/src/content.tex` is the source, and it is the contract between the
+paper and this repository: a change to the code updates it in the same commit.
+`blueprint/blueprint.md` is its engineering companion and carries no statement
+tables — only the audit of what Mathlib does and does not provide, with exact
+names, files and line numbers, together with the commands to re-check it.
 
-Once GitHub Pages is set to deploy from GitHub Actions, the blueprint is
-published at `https://FelipePenafiel.github.io/social_network_lean/blueprint/`
-and the pdf at `…/blueprint.pdf`.
+The blueprint is published at
+<https://FelipePenafiel.github.io/social_network_lean/blueprint/> and the pdf at
+<https://FelipePenafiel.github.io/social_network_lean/blueprint.pdf>, from every
+push to `main`.
 
 ## Building
 
@@ -125,8 +127,10 @@ source, which takes hours.
 Two rules:
 
 1. Every new declaration that corresponds to a numbered statement of the paper cites it in
-   its docstring (`Proposition 5`, `eq. (6)`, …), and the blueprint table is updated in the
-   same commit.
+   its docstring (`Proposition 5`, `eq. (6)`, …), and `blueprint/src/content.tex` is updated
+   in the same commit — the `\lean` list of the statement, and `\leanok` on the proof once
+   the proof is there. `python3 blueprint/check_decls.py` checks that every name cited
+   exists.
 2. A definition must be readable against the paper. Where a reformulation is used for
    convenience — as with the scaled coordinates, or with `(M - 1) * u a p = - u a o`
    standing for `u (·, p) = - u (·, o) / (M - 1)` — say so in the docstring.
