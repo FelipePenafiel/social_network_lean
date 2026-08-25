@@ -31,17 +31,22 @@ jobs:
           sudo apt-get install -y --no-install-recommends graphviz libgraphviz-dev
 
       - name: Install TeX
-        # The exact set the blueprint needs, checked with kpsewhich:
         #   texlive-latex-base         expl3, geometry, hyperref
         #   texlive-latex-recommended  mathtools, unicode-math
-        #   fonts-lmodern              latinmodern-math.otf, which unicode-math loads
+        #   texlive-fonts-recommended  pzdr.tfm, which hyperref's xetex driver loads,
+        #                              and the msam/msbm metrics amssymb declares
+        #   fonts-lmodern              latinmodern-math.otf, the unicode-math default
         #   texlive-xetex, latexmk     the compiler and the driver
         # texlive-binaries, pulled in here, also supplies kpsewhich, which plasTeX
         # uses to resolve \input for the web version.
+        #
+        # Do not trim this list by looking at which files appear in print.log: fonts
+        # loaded by name rather than by path leave no trace there, which is how
+        # texlive-fonts-recommended came to be dropped and the pdf step to fail.
         run: |
           sudo apt-get install -y --no-install-recommends \
-            texlive-latex-base texlive-latex-recommended texlive-xetex \
-            fonts-lmodern latexmk
+            texlive-latex-base texlive-latex-recommended texlive-fonts-recommended \
+            texlive-xetex fonts-lmodern latexmk
 
       - uses: actions/setup-python@v5
         with:
