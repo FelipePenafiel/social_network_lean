@@ -31,12 +31,17 @@ jobs:
           sudo apt-get install -y --no-install-recommends graphviz libgraphviz-dev
 
       - name: Install TeX
-        # xelatex and latexmk for the pdf version; kpsewhich, which plasTeX uses
-        # to resolve \input, comes with texlive-binaries.
+        # The exact set the blueprint needs, checked with kpsewhich:
+        #   texlive-latex-base         expl3, geometry, hyperref
+        #   texlive-latex-recommended  mathtools, unicode-math
+        #   fonts-lmodern              latinmodern-math.otf, which unicode-math loads
+        #   texlive-xetex, latexmk     the compiler and the driver
+        # texlive-binaries, pulled in here, also supplies kpsewhich, which plasTeX
+        # uses to resolve \input for the web version.
         run: |
           sudo apt-get install -y --no-install-recommends \
-            texlive-xetex texlive-latex-extra texlive-fonts-recommended \
-            texlive-science latexmk
+            texlive-latex-base texlive-latex-recommended texlive-xetex \
+            fonts-lmodern latexmk
 
       - uses: actions/setup-python@v5
         with:
