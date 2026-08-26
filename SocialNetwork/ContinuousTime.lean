@@ -269,14 +269,119 @@ noncomputable def process (u : Pressure N M) (t : ℝ) (ω : ℕ → Step N M) :
 theorem process_zero_of_nonneg (u : Pressure N M) (ω : ℕ → Step N M) :
     process u 0 ω = (Trajectory.ofStepPath ω).state u (jumpCount ω 0) := rfl
 
+/-- `jumpCount ω t = k`, for `k ≠ 0`, exactly when `T_k ≤ t` and no jump time beyond the
+`k`-th is `≤ t`.
+
+**No counterpart in the paper**: this is an artefact of how the process is built here, the
+jump-hold representation together with the junk `sSup` returns outside its intended range.
+
+The restriction to `k ≠ 0` is not an artefact: `sSup` returns `0` on the empty set *and* on an
+unbounded one, so `jumpCount ω t = 0` also records the explosion event, and there is no such
+characterisation of it. -/
+theorem jumpCount_eq_iff (t : ℝ) (ω : ℕ → Step N M) {k : ℕ} (hk : k ≠ 0) :
+    jumpCount ω t = k ↔ jumpTime k ω ≤ t ∧ ∀ m : ℕ, jumpTime m ω ≤ t → m ≤ k := by
+  simp only [jumpCount, Set.mem_setOf_eq]
+  constructor
+  · intro h
+    have hbdd : BddAbove {n : ℕ | jumpTime n ω ≤ t} := by
+      by_contra hb
+      rw [Nat.sSup_of_not_bddAbove hb] at h
+      exact hk h.symm
+    have hne : {n : ℕ | jumpTime n ω ≤ t}.Nonempty := by
+      rcases Set.eq_empty_or_nonempty {n : ℕ | jumpTime n ω ≤ t} with he | hn
+      · exact absurd (by rw [← h, he]; simp) hk
+      · exact hn
+    have hmem := Nat.sSup_mem hne hbdd
+    rw [h] at hmem
+    exact ⟨hmem, fun m hm => by rw [← h]; exact le_csSup hbdd hm⟩
+  · rintro ⟨hmem, hub⟩
+    have hbdd : BddAbove {n : ℕ | jumpTime n ω ≤ t} := ⟨k, fun m hm => hub m hm⟩
+    exact le_antisymm (csSup_le ⟨k, hmem⟩ fun m hm => hub m hm) (le_csSup hbdd hmem)
+
+/-- Each level set of `jumpCount` is a countable Boolean combination of the events
+`{Tₘ ≤ t}`, hence measurable. -/
+theorem measurableSet_jumpCount_eq (t : ℝ) {k : ℕ} (hk : k ≠ 0) :
+    MeasurableSet {ω : ℕ → Step N M | jumpCount ω t = k} := by
+  have hset : {ω : ℕ → Step N M | jumpCount ω t = k}
+      = {ω : ℕ → Step N M | jumpTime k ω ≤ t} ∩
+        ⋂ m : ℕ, {ω : ℕ → Step N M | m ≤ k ∨ t < jumpTime m ω} := by
+    ext ω
+    simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter, jumpCount_eq_iff t ω hk]
+    constructor
+    · rintro ⟨h1, h2⟩
+      exact ⟨h1, fun m => (le_or_gt (jumpTime m ω) t).imp (h2 m) id⟩
+    · rintro ⟨h1, h2⟩
+      refine ⟨h1, fun m hm => ?_⟩
+      rcases h2 m with h | h
+      · exact h
+      · exact absurd hm (not_le.2 h)
+  rw [hset]
+  refine MeasurableSet.inter ?_ (MeasurableSet.iInter fun m => ?_)
+  · have h : {ω : ℕ → Step N M | jumpTime k ω ≤ t}
+        = jumpTime (N := N) (M := M) k ⁻¹' Set.Iic t := rfl
+    rw [h]
+    exact measurable_jumpTime k measurableSet_Iic
+  · rcases le_or_gt m k with hm | hm
+    · have h : {ω : ℕ → Step N M | m ≤ k ∨ t < jumpTime m ω} = Set.univ := by
+        ext ω; simp [hm]
+      rw [h]
+      exact MeasurableSet.univ
+    · have h : {ω : ℕ → Step N M | m ≤ k ∨ t < jumpTime m ω}
+          = jumpTime (N := N) (M := M) m ⁻¹' Set.Ioi t := by
+        ext ω; simp [Nat.not_le.2 hm]
+      rw [h]
+      exact measurable_jumpTime m measurableSet_Ioi
+
+theorem measurable_jumpCount (t : ℝ) :
+    Measurable fun ω : ℕ → Step N M => jumpCount ω t := by
+  refine measurable_to_countable' fun k => ?_
+  rcases eq_or_ne k 0 with rfl | hk
+  · have h : (fun ω : ℕ → Step N M => jumpCount ω t) ⁻¹' {0}
+        = (⋃ j : ℕ, {ω : ℕ → Step N M | jumpCount ω t = j + 1})ᶜ := by
+      ext ω
+      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_compl_iff, Set.mem_iUnion,
+        Set.mem_setOf_eq, not_exists]
+      constructor
+      · intro h j; omega
+      · intro h
+        by_contra hne
+        exact h (jumpCount ω t - 1) (by omega)
+    rw [h]
+    exact (MeasurableSet.iUnion fun j =>
+      measurableSet_jumpCount_eq t (show j + 1 ≠ 0 by omega)).compl
+  · exact measurableSet_jumpCount_eq t hk
+
+/-- The matrix after `k` expressions only reads the first `k + 1` steps, which live in a
+finite discrete space, so it is a measurable function of the realisation. -/
+theorem measurable_state_ofStepPath (u : Pressure N M) (k : ℕ) :
+    Measurable fun ω : ℕ → Step N M => (Trajectory.ofStepPath ω).state u k := by
+  have h : (fun ω : ℕ → Step N M => (Trajectory.ofStepPath ω).state u k)
+      = (fun h : (i : Finset.Iic k) → Step N M => (Trajectory.ofStepHistory h).state u k) ∘
+        Preorder.frestrictLe (π := fun _ : ℕ => Step N M) k := by
+    funext ω
+    exact (Trajectory.state_ofHistory_frestrictLe u (fun n => (ω n).1) (Nat.le_succ k)).symm
+  rw [h]
+  exact (measurable_stepHistoryState u k k).comp (Preorder.measurable_frestrictLe k)
+
 /-- The process is a measurable function of the realisation.
 
-This is a routine fact — `jumpCount` is a countable Boolean combination of the measurable
-events `{Tₙ ≤ t}` — but it is not the mathematical content of the paper, and it is not
-formalised here. -/
+**No counterpart in the paper**, which does not address measurability; what follows is the
+formalisation's own argument, not a formalisation of anything written there.
+
+`jumpCount` is a countable Boolean combination of the measurable events `{Tₙ ≤ t}`, so it is
+measurable into the countable discrete space `ℕ`; the matrix after a fixed number of
+expressions is measurable by `SocialNetwork.measurable_state_ofStepPath`; and the two combine
+because the index they are glued along is countable. -/
 theorem measurable_process (u : Pressure N M) (t : ℝ) :
     Measurable (process (N := N) (M := M) u t) := by
-  sorry
+  have hpair : Measurable
+      fun p : ℕ × (ℕ → Step N M) => (Trajectory.ofStepPath p.2).state u p.1 :=
+    measurable_from_prod_countable_right fun k => measurable_state_ofStepPath u k
+  have h : process (N := N) (M := M) u t
+      = (fun p : ℕ × (ℕ → Step N M) => (Trajectory.ofStepPath p.2).state u p.1) ∘
+        fun ω : ℕ → Step N M => (jumpCount ω t, ω) := rfl
+  rw [h]
+  exact hpair.comp ((measurable_jumpCount t).prodMk measurable_id)
 
 /-- The hitting time `R^{β,u} (θ) = inf {t ≥ 0 : U_t^{β,u} ∈ θ}` of the paper, valued in
 `ℝ≥0∞` so that `⊤` records that `θ` is never reached. -/
@@ -284,6 +389,21 @@ noncomputable def hittingTimeCts (u : Pressure N M) (θ : Set (Pressure N M))
     (ω : ℕ → Step N M) : ℝ≥0∞ :=
   sInf ((fun t : ℝ => ENNReal.ofReal t) '' {t : ℝ | 0 ≤ t ∧ process u t ω ∈ θ})
 
+/-- **Unproved, and not routine after all.**  The blueprint listed this next to
+`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  They do
+not sit at the same depth.  `process` is an infimum over nothing: it is evaluated at one `t`.
+This one is an infimum over the *uncountable* family `{t : 0 ≤ t}`, so it needs the path
+`t ↦ U_t (ω)` to be right-continuous, which reduces the infimum to a countable one.
+
+Right-continuity holds only where the jump times increase, and `holdingTime` is a plain real
+coordinate: it is positive `ctsPathMeasure`-almost surely, since `expMeasure` charges only
+`[0, ∞)`, but not for every `ω`.  On a realisation whose holding times are negative, or whose
+jump times accumulate from the right at some `t`, `jumpCount ω ·` is not right-continuous and
+the reduction fails pointwise.
+
+So the statement wants either an almost-sure formulation, or a proof that goes through the
+null set on which the path misbehaves.  Both are real work, and neither is the routine
+cylinder argument the blueprint promised. -/
 theorem measurable_hittingTimeCts (u : Pressure N M) (θ : Set (Pressure N M)) :
     Measurable (hittingTimeCts (N := N) (M := M) u θ) := by
   sorry

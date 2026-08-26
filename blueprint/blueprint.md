@@ -98,17 +98,41 @@ Proposition 7, Remark 5 and the bound of Proposition 8 that is already proved
 (`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`), and Theorem 2.1 follows from
 Proposition 9 by (13).
 
-## A smaller gap, outside probability
+## A smaller gap, outside probability — closed, but still a gap
 
 `N` distinct naturals sum to at least `0 + 1 + ⋯ + (N-1)`.  Mathlib has no lemma to this
-effect, and none from which it follows in one step.  The natural route is
+effect, and none from which it follows in one step.  The route it suggests is
 `Finset.orderEmbOfFin` (`Mathlib/Data/Finset/Sort.lean:194`) to enumerate the image in
 increasing order, plus "a strictly monotone `Fin N → ℕ` dominates the identity" — but
 `StrictMono.le_apply` (`Mathlib/Order/WellFounded.lean:248`) is stated only for
-endomorphisms `f : β → β`, so the `Fin N → ℕ` case has to be redone by hand.
+endomorphisms `f : β → β`, so the `Fin N → ℕ` case would have to be redone by hand.
 
-This is what `SocialNetwork.Bias.sum_ge_of_injective` needs, and it is the one unproved
-statement in the repository that is neither deep nor specific to this paper.
+`SocialNetwork.Bias.sum_range_card_le_sum` proves it a different way, and avoids that step
+entirely: induct on the largest element with `Finset.induction_on_max`
+(`Mathlib/Data/Finset/Max.lean:460`).  Adjoining a new maximum `a` to `s` adds `a` to the sum
+and `#s` to the bound, and `a ≥ #s` because `s ⊆ range a`.
+`SocialNetwork.Bias.sum_ge_of_injective` is the image of `f` read through it.
+
+The Mathlib gap itself is unchanged: this belongs upstream, in `Mathlib/Data/Finset/Card.lean`
+or beside `Finset.sum_range_id_mul_two`, not in a paper formalisation.
+
+## `measurable_hittingTimeCts` is not the routine lemma it was filed as
+
+An earlier draft listed `SocialNetwork.measurable_hittingTimeCts` alongside
+`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  They do
+not sit at the same depth, and `measurable_process` being done now makes the difference plain.
+
+`process` is evaluated at one `t`.  The hitting time is an infimum over the **uncountable**
+family `{t : 0 ≤ t}`, so it needs the path `t ↦ U_t (ω)` to be right-continuous — that is what
+reduces the infimum to a countable one.  Right-continuity holds where the jump times increase,
+and `holdingTime` is a plain real coordinate of the sample space: `expMeasure`
+(`Mathlib/Probability/Distributions/Exponential.lean:96`) charges only `[0, ∞)`, so it is
+positive *almost surely*, not for every `ω`.  On a realisation with a negative holding time,
+or whose jump times accumulate from the right at some `t`, `jumpCount ω ·` is not
+right-continuous and the reduction fails pointwise.
+
+So the statement wants an almost-sure formulation, or a proof that goes through the null set.
+Neither is a cylinder argument.
 
 ## How to re-check this file
 

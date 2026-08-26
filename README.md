@@ -38,8 +38,14 @@ the biased skeleton and process.
 formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for three
 distinct reasons, which the blueprint keeps apart: blocked on missing Mathlib theory (Doeblin's
 criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 19 and 20, whose
-written proofs do not compose — repairs are recorded), or simply routine and not yet done (four
-measurability lemmas and one arithmetic lemma).
+written proofs do not compose — repairs are recorded), or simply routine and not yet done.
+
+The routine list is now short.  `sum_ge_of_injective` (that `N` distinct naturals sum to at
+least `0 + 1 + ⋯ + (N-1)` — a Mathlib gap in its own right), the two measurability lemmas for
+the biased greedy events, and `measurable_process` are proved.  What is left of it is
+Remark 5's bound `η`, Remark 8, and `measurable_hittingTimeCts` — which turned out not to be
+routine at all, the hitting time being an infimum over an uncountable family of times, and so
+needing path regularity that holds only almost surely.  The blueprint says why.
 
 The library is **not** `sorry`-free, by design.  What CI enforces instead is that no
 declaration listed as complete in `.github/workflows/ci.yml` depends on `sorryAx`; every run
@@ -124,7 +130,7 @@ source, which takes hours.
 
 ## Contributing
 
-Two rules:
+Three rules:
 
 1. Every new declaration that corresponds to a numbered statement of the paper cites it in
    its docstring (`Proposition 5`, `eq. (6)`, …), and `blueprint/src/content.tex` is updated
@@ -134,6 +140,32 @@ Two rules:
 2. A definition must be readable against the paper. Where a reformulation is used for
    convenience — as with the scaled coordinates, or with `(M - 1) * u a p = - u a o`
    standing for `u (·, p) = - u (·, o) / (M - 1)` — say so in the docstring.
+3. A *proof* must **follow the paper's proof**. Where the paper argues a statement, the Lean
+   proof reproduces that argument — not a different route to the same conclusion. The point
+   of formalising is to check the reasoning; a proof that reaches the conclusion some other
+   way checks nothing about what the paper wrote, and leaves a green node claiming more than
+   it has earned.
+
+   The exception is **what the paper leaves implicit**: a step asserted with "note that" or
+   "by definition", measurability, the plumbing of the sample space. Supply what is needed —
+   there is nothing else to do — and mark it, so a reader can see which part of a green node
+   the paper actually wrote. Mark it in the docstring and in the blueprint's `\begin{proof}`,
+   in the form used by the proofs already there:
+
+   - `Follows the paper's proof of Proposition 5.`
+   - `Supplies a step the paper asserts: … .`
+   - `No counterpart in the paper: … .`
+
+   **Departing from a proof the paper does give needs a written reason, and the reason has
+   to be that the paper's route cannot be followed** — Mathlib lacks the theory, or the
+   written proof does not compose. Convenience is not a reason: a shorter route that
+   bypasses the paper's argument is a check not performed. A departure of the second kind
+   is a finding about the paper and belongs in "Three corrections to the paper", next to
+   Lemmas 19 and 20.
+
+   `blueprint/src/content.tex` carries an audit of every proof currently formalised against
+   the paper, under "What the formalised proofs check". Keep it current.
+
 
 ## Licence
 

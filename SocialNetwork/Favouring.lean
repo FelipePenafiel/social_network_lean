@@ -142,7 +142,10 @@ carries at least `n + r` there, which strictly exceeds the bound `n + r - 1/(M-1
 on every other column.
 
 Consequently a greedy expression from a state of `S^o` expresses `o` — the step the proof
-of Lemma 20 opens with. -/
+of Lemma 20 opens with.
+
+**Supplies a step the paper asserts**: the proof of Lemma 20 opens "then
+`Ũ_0 (A₁, O₁) = max u (a, o)` and `O₁ = o`", asserting `O₁ = o`. -/
 theorem opinion_eq_of_isMax_of_favouring (h : IsFavouringWith o u n ρ a) {b : Actor N}
     {p : Opinion M} (hmax : ∀ c q, u c q ≤ u b p) : p = o := by
   by_contra hp
@@ -162,7 +165,10 @@ matrix, is a consensus state for `o`: the vanishing row sums turn the sign condi
 other columns into non-negativity on column `o`.
 
 This is the step the proof of Lemma 20 closes with, once `k` is large enough that the bound
-`n + r - (k+1)/(M-1)` on the other columns has become negative. -/
+`n + r - (k+1)/(M-1)` on the other columns has become negative.
+
+**Supplies a step the paper asserts**: the proof of Lemma 20 ends "by taking
+`k = (M-1)(n(u)+1)-1` we conclude the proof", the passage to `C^o` being left to the reader. -/
 theorem isConsensus_of_nonpos (hu : IsState u) (hne : u ≠ 0)
     (h : ∀ b, ∀ p ≠ o, u b p ≤ 0) : IsConsensus o u := by
   refine ⟨hu, hne, fun b => ?_, h⟩

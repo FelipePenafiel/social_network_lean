@@ -68,6 +68,11 @@ jobs:
           -- Section 3: the biased model
           #print axioms SocialNetwork.Bias.Memory.pressure_hear
           #print axioms SocialNetwork.Bias.Memory.sum_pressure_eq
+          #print axioms SocialNetwork.Bias.sum_range_card_le_sum
+          #print axioms SocialNetwork.Bias.sum_ge_of_injective
+          #print axioms SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge
+          #print axioms SocialNetwork.Bias.measurableSet_nearGreedyEvents
+          #print axioms SocialNetwork.Bias.measurableSet_biasedGreedyEvents
           -- Definition 3: the skeleton
           #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
           #print axioms SocialNetwork.skeletonKernel_reachable
@@ -82,6 +87,11 @@ jobs:
           #print axioms SocialNetwork.zeta_le_jumpPMF_argmaxFinset
           #print axioms SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents
           #print axioms SocialNetwork.one_sub_le_pathMeasure_greedyEvents
+          -- The continuous-time process
+          #print axioms SocialNetwork.jumpCount_eq_iff
+          #print axioms SocialNetwork.measurable_jumpCount
+          #print axioms SocialNetwork.measurable_state_ofStepPath
+          #print axioms SocialNetwork.measurable_process
           EOF
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then

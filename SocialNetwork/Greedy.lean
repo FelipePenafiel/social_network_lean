@@ -258,7 +258,14 @@ P (⋂_{j=1}^{m} ξⱼ^u) ≥ (ζ_β)^m.
 ```
 
 The proof is the paper's: the one-step bound `P (ξ₁^v) ≥ ζ_β` holds uniformly in the current
-matrix `v`, and one conditions on the first `m - 1` expressions. -/
+matrix `v`, and one conditions on the first `m - 1` expressions.
+
+**Follows the paper's proof of Proposition 8** for the bound itself.  Two departures, both
+forced: the paper's separate treatment of `v = 0` is unnecessary here, the bound holding
+uniformly; and the iteration over `m`, which the paper does by conditioning on
+`Ũ_{m-1} = v` in eq. (10), goes through the finite-horizon kernels of the Ionescu–Tulcea
+construction, Mathlib offering no decomposition of that shape.  It is the same Markov
+property, taken through the formalism that exists. -/
 theorem zeta_pow_le_pathMeasure_greedyEvents (hM : 2 ≤ M) (hβ : 0 ≤ β) (m : ℕ) :
     ENNReal.ofReal (zeta N M β) ^ m ≤ pathMeasure β u (greedyEvents u m) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
