@@ -13,6 +13,27 @@ a \texttt{sorry}.  Chapter~\ref{chap:notes} explains why each unproved
 statement is unproved, and records three places where formalising the paper
 showed that the written text needs correcting.
 
+\begin{remark}[What a green node claims, and what it does not]
+  \label{rem:green}
+  A green node means the Lean proof is complete.  On its own it says nothing
+  about whether the \emph{paper's} proof has been checked.  Three different
+  things can stand behind one:
+
+  \begin{itemize}
+    \item the paper's argument, formalised --- the usual case;
+    \item a different route to the same statement, which confirms the statement
+      and leaves the paper's argument unexamined;
+    \item a statement the paper gives no proof of at all --- measurability, the
+      plumbing of the sample space, a step waved through as obvious.
+  \end{itemize}
+
+  The distinction is not pedantry: examining the paper's arguments is how
+  Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} came to be flagged, and a
+  silent detour around one is a check that was never performed.  So the proof
+  environments below describe the argument that is \emph{in Lean}, and where
+  that is not the paper's argument, or where the paper has none, they say so.
+\end{remark}
+
 \section{Conventions}
 
 The network has $N \ge 3$ actors, $\actors = \{1, \dots, N\}$, and $M \ge 2$
@@ -173,6 +194,11 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   obtained by replaying it, definitionally.  The deterministic results of
   Chapter~\ref{chap:proofs} therefore transfer to a realisation pointwise, with
   no almost-sure clause anywhere.
+
+  Per Remark~\ref{rem:green}, the measurability lemmas named above have
+  \textbf{no counterpart in the paper}, which does not address measurability;
+  \texttt{jumpCount\_eq\_iff} is likewise an artefact of this construction
+  rather than a formalisation of anything written there.
 \end{remark}
 
 \begin{theorem}[Existence, Theorem~1.1]
@@ -441,6 +467,13 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   primitive datum rather than the matrix, so the row formula holds by
   definition.  See Remark~\ref{rem:eq6} for a correction to the second
   condition.
+
+  \texttt{IsBiasedState.two\_mul\_totalHeard\_ge} formalises the paper's own
+  argument for the inequality: the $n_a$ are pairwise distinct, whence the
+  bound.  The step the paper leaves implicit --- that $N$ distinct naturals sum
+  to at least $0 + 1 + \dots + (N-1)$ --- is
+  \texttt{sum\_ge\_of\_injective}, and has \textbf{no counterpart in the paper}
+  (Remark~\ref{rem:green}).
 \end{definition}
 
 \begin{remark}[Arithmetic of a row, Remark~1]
@@ -1029,6 +1062,9 @@ the process pointwise.
   The slack of $\tfrac{1}{2\gamma}$ is what replaces the lattice gap $\pressone$
   of the unbiased model: it is what makes a uniform lower bound on
   $\mathbb{P}(\tilde{\xi}_n^{\alpha,u})$ available.
+
+  The two measurability lemmas named above have \textbf{no counterpart in the
+  paper} (Remark~\ref{rem:green}).
 \end{definition}
 
 \begin{proposition}[Proposition~22]
@@ -1323,7 +1359,9 @@ their presentation, so they are recorded rather than guessed at in Lean.
 \subsection*{Routine, and now done}
 
 Four statements were listed here as neither deep nor blocked.  They are now
-proved, and the paragraph is kept as the record of what they cost.
+proved, and the paragraph is kept as the record of what they cost.  All four
+fall in the third case of Remark~\ref{rem:green}: the paper proves none of
+them, so none of these is a check of anything it wrote.
 
 \begin{itemize}
   \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct

@@ -310,13 +310,17 @@ theorem nearGreedyEvents_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
   exact ⟨fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).2 (hω k hk),
     fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).1 (hω k hk)⟩
 
-/-- The near-greedy event constrains only the first `n` coordinates, so it is measurable. -/
+/-- The near-greedy event constrains only the first `n` coordinates, so it is measurable.
+
+**No counterpart in the paper**, which does not address measurability. -/
 theorem measurableSet_nearGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) :
     MeasurableSet (nearGreedyEvents γ u n) := by
   rw [nearGreedyEvents_eq_preimage]
   exact Preorder.measurable_frestrictLe n MeasurableSet.of_discrete
 
-/-- The greedy event constrains only the first `n` coordinates, so it is measurable. -/
+/-- The greedy event constrains only the first `n` coordinates, so it is measurable.
+
+**No counterpart in the paper**, which does not address measurability. -/
 theorem measurableSet_biasedGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) :
     MeasurableSet (biasedGreedyEvents γ u n) := by
   rw [biasedGreedyEvents_eq_preimage]

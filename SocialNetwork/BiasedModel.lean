@@ -154,6 +154,9 @@ theorem IsBiasedState.express {P : Profile N M} (hP : IsBiasedState P) (a : Acto
 
 /-- A finite set of `n` naturals has sum at least `0 + 1 + ⋯ + (n-1)`.
 
+**No counterpart in the paper**, which uses this implication without proving it — see
+`SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge`, whose argument *is* the paper's.
+
 Mathlib has no lemma to this effect.  The route it suggests — enumerate the set in increasing
 order with `Finset.orderEmbOfFin`, then observe that a strictly monotone `Fin n → ℕ` dominates
 the identity — needs that last step redone by hand, because `StrictMono.le_apply` is stated
@@ -187,7 +190,12 @@ theorem sum_ge_of_injective {f : Actor N → ℕ} (hf : Function.Injective f) :
     _ = ∑ a, f a := Finset.sum_image fun x _ y _ h => hf h
 
 /-- **Equation (6)**, the bound the paper states: `2 ∑_a nₐ ≥ N (N-1)`, cleared of its
-division by two.  It follows from the distinctness of the `nₐ`. -/
+division by two.  It follows from the distinctness of the `nₐ`.
+
+This is **the paper's own argument**: the actors cannot express simultaneously, so the `nₐ`
+count the time since `N` distinct moments and are pairwise distinct, whence the bound.  The
+step the paper leaves implicit — that `N` distinct naturals sum to at least `0 + 1 + ⋯ +
+(N-1)` — is `SocialNetwork.Bias.sum_ge_of_injective`. -/
 theorem IsBiasedState.two_mul_totalHeard_ge {P : Profile N M} (hP : IsBiasedState P) :
     N * (N - 1) ≤ 2 * P.totalHeard := by
   have h := sum_ge_of_injective hP.injective_heard

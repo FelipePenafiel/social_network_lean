@@ -130,7 +130,7 @@ source, which takes hours.
 
 ## Contributing
 
-Two rules:
+Three rules:
 
 1. Every new declaration that corresponds to a numbered statement of the paper cites it in
    its docstring (`Proposition 5`, `eq. (6)`, …), and `blueprint/src/content.tex` is updated
@@ -140,6 +140,25 @@ Two rules:
 2. A definition must be readable against the paper. Where a reformulation is used for
    convenience — as with the scaled coordinates, or with `(M - 1) * u a p = - u a o`
    standing for `u (·, p) = - u (·, o) / (M - 1)` — say so in the docstring.
+3. A *proof* must be readable against the paper too, and must say which of three things it
+   is. A green node means the Lean proof is complete; on its own it says nothing about
+   whether the paper's reasoning was checked, and that is most of what this repository is
+   for.
+
+   - **The paper's argument, formalised.** The default, and what to aim for. The
+     `\begin{proof}` in `blueprint/src/content.tex` paraphrases the argument that is
+     actually in Lean, and carries `\leanok`.
+   - **A different route to the same statement.** Allowed, and sometimes the better
+     engineering — but say so, in the docstring and in the blueprint's proof, with the
+     reason. Proving a result another way confirms the result and leaves the paper's own
+     argument unexamined. Examining it is how Lemmas 19 and 20 came to be flagged; a
+     silent detour is a check not performed.
+   - **No counterpart in the paper.** Measurability, the plumbing of the sample space, a
+     step the paper waves through as obvious. Say that too, so that a green node is never
+     read as a validated paper argument.
+
+   The three are not a ranking: the third is honest work, and the second is often right.
+   What is not allowed is leaving the reader unable to tell them apart.
 
 ## Licence
 

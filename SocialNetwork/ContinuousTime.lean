@@ -272,6 +272,9 @@ theorem process_zero_of_nonneg (u : Pressure N M) (ω : ℕ → Step N M) :
 /-- `jumpCount ω t = k`, for `k ≠ 0`, exactly when `T_k ≤ t` and no jump time beyond the
 `k`-th is `≤ t`.
 
+**No counterpart in the paper**: this is an artefact of how the process is built here, the
+jump-hold representation together with the junk `sSup` returns outside its intended range.
+
 The restriction to `k ≠ 0` is not an artefact: `sSup` returns `0` on the empty set *and* on an
 unbounded one, so `jumpCount ω t = 0` also records the explosion event, and there is no such
 characterisation of it. -/
@@ -361,6 +364,9 @@ theorem measurable_state_ofStepPath (u : Pressure N M) (k : ℕ) :
   exact (measurable_stepHistoryState u k k).comp (Preorder.measurable_frestrictLe k)
 
 /-- The process is a measurable function of the realisation.
+
+**No counterpart in the paper**, which does not address measurability; what follows is the
+formalisation's own argument, not a formalisation of anything written there.
 
 `jumpCount` is a countable Boolean combination of the measurable events `{Tₙ ≤ t}`, so it is
 measurable into the countable discrete space `ℕ`; the matrix after a fixed number of
