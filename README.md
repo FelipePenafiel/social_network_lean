@@ -140,25 +140,32 @@ Three rules:
 2. A definition must be readable against the paper. Where a reformulation is used for
    convenience — as with the scaled coordinates, or with `(M - 1) * u a p = - u a o`
    standing for `u (·, p) = - u (·, o) / (M - 1)` — say so in the docstring.
-3. A *proof* must be readable against the paper too, and must say which of three things it
-   is. A green node means the Lean proof is complete; on its own it says nothing about
-   whether the paper's reasoning was checked, and that is most of what this repository is
-   for.
+3. A *proof* must **follow the paper's proof**. Where the paper argues a statement, the Lean
+   proof reproduces that argument — not a different route to the same conclusion. The point
+   of formalising is to check the reasoning; a proof that reaches the conclusion some other
+   way checks nothing about what the paper wrote, and leaves a green node claiming more than
+   it has earned.
 
-   - **The paper's argument, formalised.** The default, and what to aim for. The
-     `\begin{proof}` in `blueprint/src/content.tex` paraphrases the argument that is
-     actually in Lean, and carries `\leanok`.
-   - **A different route to the same statement.** Allowed, and sometimes the better
-     engineering — but say so, in the docstring and in the blueprint's proof, with the
-     reason. Proving a result another way confirms the result and leaves the paper's own
-     argument unexamined. Examining it is how Lemmas 19 and 20 came to be flagged; a
-     silent detour is a check not performed.
-   - **No counterpart in the paper.** Measurability, the plumbing of the sample space, a
-     step the paper waves through as obvious. Say that too, so that a green node is never
-     read as a validated paper argument.
+   The exception is **what the paper leaves implicit**: a step asserted with "note that" or
+   "by definition", measurability, the plumbing of the sample space. Supply what is needed —
+   there is nothing else to do — and mark it, so a reader can see which part of a green node
+   the paper actually wrote. Mark it in the docstring and in the blueprint's `\begin{proof}`,
+   in the form used by the proofs already there:
 
-   The three are not a ranking: the third is honest work, and the second is often right.
-   What is not allowed is leaving the reader unable to tell them apart.
+   - `Follows the paper's proof of Proposition 5.`
+   - `Supplies a step the paper asserts: … .`
+   - `No counterpart in the paper: … .`
+
+   **Departing from a proof the paper does give needs a written reason, and the reason has
+   to be that the paper's route cannot be followed** — Mathlib lacks the theory, or the
+   written proof does not compose. Convenience is not a reason: a shorter route that
+   bypasses the paper's argument is a check not performed. A departure of the second kind
+   is a finding about the paper and belongs in "Three corrections to the paper", next to
+   Lemmas 19 and 20.
+
+   `blueprint/src/content.tex` carries an audit of every proof currently formalised against
+   the paper, under "What the formalised proofs check". Keep it current.
+
 
 ## Licence
 

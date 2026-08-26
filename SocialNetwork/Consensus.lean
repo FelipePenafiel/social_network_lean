@@ -157,7 +157,10 @@ theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus
   linarith
 
 /-- **The last step of Proposition 7.** Starting from a consensus state for `o`, `N` greedy
-expressions land the process exactly on a ladder supporting `o`. -/
+expressions land the process exactly on a ladder supporting `o`.
+
+**No counterpart in the paper**: Proposition 7 closes with "by definition", and it is not
+by definition — see the module docstring. -/
 theorem isLadder_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
     (hg : ∀ k, k < N → IsGreedyAt T v k) : IsLadder o (T.state v N) := by
   have hop : ∀ l, l < N → T.opinion l = o := fun l hl =>

@@ -153,7 +153,10 @@ theorem IsLadder.isSteepLadder (hM : 2 ≤ M) [NeZero N] (hu : IsLadder o u) :
   other := hu.other
 
 /-- A ladder supporting `o` is in particular a consensus state for `o` (Definition 2 is
-weaker than Definition 1). -/
+weaker than Definition 1).
+
+**No counterpart in the paper**: immediate from Definitions 1 and 2, but nowhere drawn
+there. -/
 theorem IsLadder.isConsensus (hM : 2 ≤ M) (hN : 2 ≤ N) (hu : IsLadder o u) :
     IsConsensus o u where
   isState := hu.isState
@@ -176,7 +179,10 @@ theorem IsLadder.isConsensus (hM : 2 ≤ M) (hN : 2 ≤ N) (hu : IsLadder o u) :
 
 /-- A consensus state carries a strictly positive pressure for the favoured opinion. This
 is the remark made just after Definition 2: were column `o` identically zero, the vanishing
-row sums would force the whole matrix to vanish, which `C^o` excludes. -/
+row sums would force the whole matrix to vanish, which `C^o` excludes.
+
+**Supplies a step the paper asserts**: "Note that for any `u ∈ C^o`, there exists at least
+one actor `a` such that `u (a, o) > 0`", said just after Definition 2 and not argued. -/
 theorem IsConsensus.exists_pos (hv : IsConsensus o u) : ∃ a, 0 < u a o := by
   by_contra hno
   refine hv.ne_zero (funext fun a => funext fun p => ?_)
@@ -274,7 +280,10 @@ theorem IsSteepLadder.express (hM : 2 ≤ M) (hu : IsSteepLadder o u) (a : Actor
 `{U_{T_1} ∈ L̂}`: an expression made from a strictly positive entry keeps the state in `L̂`.
 
 Only the deterministic half of Remark 5 is proved here; the lower bound `η` on the
-probability of `{U_0 (A₁, O₁) > 0}` is a separate computation. -/
+probability of `{U_0 (A₁, O₁) > 0}` is a separate computation.
+
+**Supplies a step the paper asserts**: Remark 5 writes the inclusion down and gives no
+argument. -/
 theorem IsSteepLadder.express_of_pos (hM : 2 ≤ M) (hu : IsSteepLadder o u) {a : Actor N}
     {p : Opinion M} (hpos : 0 < u a p) : IsSteepLadder o (SocialNetwork.express a p u) := by
   rw [hu.opinion_eq_of_pos hM hpos]

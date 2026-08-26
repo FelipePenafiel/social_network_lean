@@ -127,7 +127,10 @@ theorem trust_express_self (a : Actor N) (o : Opinion M) (u : Pressure N M) :
   simp [trust]
 
 /-- The conservation law behind the state space `S`: `π^{a,o}` preserves the trust of every
-actor except the expressing one, whose trust is reset to zero. -/
+actor except the expressing one, whose trust is reset to zero.
+
+**No counterpart in the paper**, which never states trust conservation; it is implicit in
+the row-sum condition of eq. (2). -/
 theorem trust_express (a b : Actor N) (o : Opinion M) (u : Pressure N M) :
     trust (express a o u) b = if b = a then 0 else trust u b := by
   by_cases hb : b = a
@@ -149,7 +152,10 @@ structure IsState (u : Pressure N M) : Prop where
 
 /-- The state space `S` is stable under every expression operator: this is the claim, made
 just after equation (2), that from any starting position the process remains in `S` forever
-once every actor has expressed an opinion at least once. -/
+once every actor has expressed an opinion at least once.
+
+**Supplies a step the paper asserts**: "Indeed, from any starting position … the process
+will remain in `S` forever", said just after eq. (2) and not argued. -/
 theorem IsState.express {u : Pressure N M} (hu : IsState u) (a : Actor N) (o : Opinion M) :
     IsState (SocialNetwork.express a o u) := by
   refine ⟨fun b => ?_, ⟨a, fun p => express_self a o p u⟩⟩

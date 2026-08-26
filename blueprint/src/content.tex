@@ -15,23 +15,25 @@ showed that the written text needs correcting.
 
 \begin{remark}[What a green node claims, and what it does not]
   \label{rem:green}
-  A green node means the Lean proof is complete.  On its own it says nothing
-  about whether the \emph{paper's} proof has been checked.  Three different
-  things can stand behind one:
+  A green node means the Lean proof is complete.  On its own it does not say
+  that the \emph{paper's} proof has been checked, and the two are not the same
+  thing: a statement can be reached by a route the paper does not take, and
+  some statements here --- measurability, the plumbing of the sample space ---
+  the paper never proves at all.
 
-  \begin{itemize}
-    \item the paper's argument, formalised --- the usual case;
-    \item a different route to the same statement, which confirms the statement
-      and leaves the paper's argument unexamined;
-    \item a statement the paper gives no proof of at all --- measurability, the
-      plumbing of the sample space, a step waved through as obvious.
-  \end{itemize}
+  The rule this development works under is that a Lean proof \textbf{follows the
+  paper's proof} wherever the paper gives one.  Reaching the conclusion another
+  way checks nothing about what was written, and checking what was written is
+  how Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} came to be flagged.  The
+  exception is what the paper leaves implicit --- a step asserted with ``note
+  that'' or ``by definition'', and everything measure-theoretic --- which has to
+  be supplied, and is then marked as supplied.
 
-  The distinction is not pedantry: examining the paper's arguments is how
-  Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} came to be flagged, and a
-  silent detour around one is a check that was never performed.  So the proof
-  environments below describe the argument that is \emph{in Lean}, and where
-  that is not the paper's argument, or where the paper has none, they say so.
+  So each proof environment below opens by saying which it is: it follows the
+  paper's proof of such and such, it supplies a step the paper asserts, or it
+  has no counterpart in the paper.
+  Section~\ref{sec:audit} audits every formalised proof on exactly that
+  question.
 \end{remark}
 
 \section{Conventions}
@@ -102,6 +104,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{No counterpart in the paper}, which never states trust
+  conservation; it is implicit in the row-sum condition of~(2) and in the
+  sentence that from any starting position the process remains in $\Sspace$
+  once every actor has expressed.
   The increments applied to a row that is not reset cancel: one opinion gains
   $1$ and the remaining $M-1$ opinions lose $\pressone$ each.
 \end{proof}
@@ -117,6 +123,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Supplies a step the paper asserts}: ``Indeed, from any
+  starting position \dots\ the process will remain in $\Sspace$ forever'', said
+  just after~(2) and not argued.
   Trust is conserved by Lemma~\ref{lem:trust}, and the expressing actor's row is
   null, which supplies the second condition.
 \end{proof}
@@ -303,6 +312,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Supplies a step the paper asserts}: ``Note that for any
+  $u \in C^o$, there exists at least one actor $a$ such that $u(a,o) > 0$'',
+  said just after Definition~\ref{def:consensus} and not argued.
   Were column $o$ identically zero, the vanishing row sums would force the whole
   matrix to vanish, which $C^o$ excludes.
 \end{proof}
@@ -316,6 +328,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{No counterpart in the paper}: the inclusion is immediate
+  from Definitions~\ref{def:ladder} and~\ref{def:consensus} but is nowhere
+  drawn there.
   On a ladder the $o$-column is non-negative and the others are the
   corresponding non-positive multiples.
 \end{proof}
@@ -358,6 +373,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Supplies a step the paper asserts}: Remark~5 writes
+  ``Note that $\ladder \subset \steep$ and for any $\hat{l} \in \steep$,
+  $\{\dots\} \subset \{\dots\}$'' and gives no argument.
   A positive entry must lie in the supported column, and expressing that opinion
   translates the column off the reset actor, preserving distinctness and the
   minimum $0$.
@@ -612,6 +630,8 @@ the process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{No counterpart in the paper}, which uses this silently
+  throughout Section~5.
   Induction on $n$ using Lemma~\ref{lem:state-stable}.
 \end{proof}
 
@@ -627,6 +647,7 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \leanok
+  \textbf{Follows the paper's proof of Proposition~5}, step for step.
   Suppose not.  Since $u \in \Sspace$ some actor $a_0$ has a null row, and a row
   grows by at most $1$ per expression, so $\|\Uskel{u}_m(a_0,\cdot)\|_\infty \le m$;
   hence $A_n \ne a_0$ for $n \le N$.  An actor that has just expressed has a null
@@ -659,6 +680,10 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \leanok
+  \textbf{Follows the paper's proof of Proposition~6}, in its two cases.
+  One step is supplied: where the paper passes from the bound at the repeat
+  time $m$ to ``this implies $\max \Uskel{u}_N < N$'', the Lean proof carries
+  the bound over the remaining $N - m$ expressions explicitly.
   If the $N$ expressing actors are distinct, every row was reset within the
   window and the argument of Proposition~\ref{prop:low-pressure} bounds the
   matrix by $N-1$.  Otherwise some actor repeats at a step $m$, and greediness at
@@ -675,6 +700,11 @@ the process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{No counterpart in the paper.}  Proposition~7 closes with
+  ``we consider that by definition, if $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^u$
+  occurs, then $\Uskel{u}_N \in \ladder^o$'', and it is not by definition ---
+  see Remark~\ref{rem:by-definition}.  The three stages below are the
+  formalisation's own.
   In $C^o$ a maximising entry lies in column $o$ by
   Lemma~\ref{lem:consensus-pos}, and expressing $o$ keeps the state in $C^o$, so
   every one of the $N$ expressions expresses $o$.  No actor expresses twice: one
@@ -716,6 +746,9 @@ the process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Follows the paper's proof of Proposition~8}, of which this is
+  one sentence, extracted so that Proposition~\ref{prop:greedy-prob} and the
+  biased model can share it.
   Every entry of a state of $\Sspace$ lies in
   $\mathbb{Z} + \pressone\mathbb{Z} = \pressone\mathbb{Z}$.  In the scaled
   coordinates of Remark~\ref{rem:scaling} this is the statement that two
@@ -736,6 +769,14 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \leanok
+  \textbf{Follows the paper's proof of Proposition~8} for the bound
+  itself.  Two departures, both forced.  The paper's separate treatment of
+  $v = 0$ is unnecessary here, the bound below holding uniformly.  And the
+  iteration over $m$, which the paper does by conditioning on
+  $\Uskel{u}_{m-1} = v$ in~(10), is done as an induction along the
+  finite-horizon kernels of the Ionescu--Tulcea construction, Mathlib having no
+  decomposition of that shape available; it is the same Markov property, taken
+  through the formalism that exists.
   Conditioning on $\Uskel{u}_{m-1} = v$ reduces the claim to a uniform lower
   bound on $\mathbb{P}(\xi_1^v)$.  For $v \ne 0$,
   \[
@@ -1015,6 +1056,9 @@ the process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Supplies a step the paper asserts}: the proof of
+  Lemma~\ref{lem:lemma20} opens ``then $\Uskel{u}_0(A_1,O_1) = \max u(a,o)$ and
+  $O_1 = o$'', asserting $O_1 = o$.
   The witness $a_{n(u)}$ carries at least $n(u) + r$ in column $o$, which
   strictly exceeds the bound $n(u) + r - \pressone$ imposed on every other
   column.
@@ -1030,6 +1074,9 @@ the process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
+  \textbf{Supplies a step the paper asserts}: the proof of
+  Lemma~\ref{lem:lemma20} ends ``by taking $k = (M-1)(n(u)+1)-1$ we conclude
+  the proof'', the passage to $C^o$ being left to the reader.
   The vanishing row sums turn the sign condition on the other columns into
   non-negativity on column $o$.
 \end{proof}
@@ -1312,6 +1359,73 @@ None of them affects the results.
 
 The unproved statements fall into three groups, and it is worth keeping them
 apart because they are unproved for three different reasons.
+
+\section{What the formalised proofs check}
+\label{sec:audit}
+
+Every proof currently formalised, audited against the paper on the question of
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirteen proofs
+carry \texttt{\textbackslash leanok}.
+
+\medskip
+\noindent\textbf{Follow the paper's proof} (four).
+Propositions~\ref{prop:low-pressure} and~\ref{prop:confinement}, the gap
+estimate of Lemma~\ref{lem:gap}, and the bound of
+Proposition~\ref{prop:greedy-prob}.  These are the only statements in the paper
+whose proofs are both given in full there and formalised here, and each Lean
+proof reproduces the written argument.  Two places carry a note: the passage
+from the repeat time to the global bound in Proposition~\ref{prop:confinement},
+which the paper compresses into ``this implies'', is carried out explicitly;
+and the iteration in Proposition~\ref{prop:greedy-prob} goes through the
+Ionescu--Tulcea kernels rather than the conditioning of~(10), Mathlib offering
+nothing of that shape.
+
+\medskip
+\noindent\textbf{Supply a step the paper asserts} (five).
+Lemmas~\ref{lem:state-stable}, \ref{lem:consensus-pos}, \ref{lem:steep-stable},
+\ref{lem:favouring-max} and~\ref{lem:closing}.  Each corresponds to a sentence
+in the paper of the form ``note that'', ``indeed'', or an unremarked clause
+inside a proof.  All five are true and none is hard; what they are not is
+checks of anything the paper argued.
+
+\medskip
+\noindent\textbf{No counterpart in the paper} (four).
+Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along}
+and~\ref{lem:consensus-ladder}, together with the measurability lemmas and the
+plumbing of the sample space, which are not numbered statements and so appear
+here only inside definitions and remarks.
+
+\medskip
+\noindent\textbf{No proof departs from the paper for convenience.}  That is the
+result of the audit, and the rule of Remark~\ref{rem:green} is written to keep
+it that way.
+
+\begin{remark}[``By definition'' in Proposition~\ref{prop:reach-ladder}]
+  \label{rem:by-definition}
+  One entry above deserves singling out.  The proof of Proposition~7 ends:
+
+  \begin{quote}
+    To conclude, we consider that by definition, if $v \in C^o$ and event
+    $\bigcap_{j=1}^N \xi_j^u$ occurs, then $\Uskel{u}_N \in \ladder^o$.
+  \end{quote}
+
+  It is not by definition.  Getting from a consensus state to the exact
+  staircase of Definition~\ref{def:ladder} takes three stages, none of them
+  formal: every one of the $N$ greedy expressions expresses $o$, and this has
+  to be propagated, since it is stability of $C^o$ under $\express{a}{o}$ that
+  keeps it true; no actor expresses twice, which is the argument of
+  Proposition~\ref{prop:low-pressure} run again against the growth of the
+  $o$-column; and the actor that expressed at step $i$ ends at exactly $N-1-i$
+  on column $o$, so that $i \mapsto N-1-i$ delivers Definition~\ref{def:ladder}
+  as a bijection.  In Lean this is a file of its own,
+  \texttt{SocialNetwork/Consensus.lean}.
+
+  Nothing is wrong with the claim --- unlike Lemmas~\ref{lem:lemma19}
+  and~\ref{lem:lemma20}, it is true as written and now proved.  What is
+  misleading is ``by definition'', which invites a reader to check nothing.
+  This is the mechanism behind the paper's fast consensus formation, and it
+  earns an argument.
+\end{remark}
 
 \subsection*{Blocked on Mathlib}
 

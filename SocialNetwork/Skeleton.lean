@@ -547,7 +547,10 @@ theorem exists_entrySup (v : Pressure N M) : ∃ a o, v a o = entrySup v := by
 by at least `1` in scaled coordinates, which is the paper's `v (b, o) - y (v) ≤ -1/(M-1)`.
 
 The whole content of the paper's lattice argument is that the entries lie on a lattice; in
-scaled coordinates that lattice is `ℤ`, and the estimate is `Int.lt_iff_add_one_le`. -/
+scaled coordinates that lattice is `ℤ`, and the estimate is `Int.lt_iff_add_one_le`.
+
+**Follows the paper's proof of Proposition 8**, of which this is one sentence, extracted so
+that Proposition 8 and the biased model can share it. -/
 theorem le_entrySup_sub_one {v : Pressure N M} {b : Actor N} {o : Opinion M}
     (h : v b o < entrySup v) : v b o ≤ entrySup v - 1 := by omega
 

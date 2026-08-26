@@ -68,7 +68,9 @@ theorem state_zero (u : Pressure N M) : T.state u 0 = u := by rw [state]
 theorem state_succ (u : Pressure N M) (n : ℕ) :
     T.state u (n + 1) = express (T.actor n) (T.opinion n) (T.state u n) := by rw [state]
 
-/-- The state space `S` is preserved along any trajectory. -/
+/-- The state space `S` is preserved along any trajectory.
+
+**No counterpart in the paper**, which uses this silently throughout Section 5. -/
 theorem isState_state {u : Pressure N M} (hu : IsState u) (n : ℕ) : IsState (T.state u n) := by
   induction n with
   | zero => rw [state_zero]; exact hu
@@ -199,10 +201,10 @@ theorem actor_ne_actor_of_lt (hM : 2 ≤ M)
 least one is made by an actor whose social pressure on the expressed opinion is smaller
 than `N`.
 
-The proof is the paper's: if every one of the first `N` expressions came from an actor
-carrying pressure at least `N`, then none of them can be the actor `a₀` whose row is null
-in `u`, nor can any two of them coincide — which exhibits `N + 1` distinct actors in a
-network of `N`. -/
+**Follows the paper's proof of Proposition 5**, step for step: if every one of the first `N`
+expressions came from an actor carrying pressure at least `N`, then none of them can be the
+actor `a₀` whose row is null in `u`, nor can any two of them coincide — which exhibits
+`N + 1` distinct actors in a network of `N`. -/
 theorem exists_rowSup_actor_lt (hM : 2 ≤ M) (hu : IsState u) :
     ∃ k < N, rowSup (T.state u k) (T.actor k) < N * (M - 1) := by
   by_contra hcon
@@ -389,7 +391,11 @@ theorem neg_le_of_forall_le (hM : 2 ≤ M) {v : Pressure N M} (hv : IsState v) {
   linarith
 
 /-- **Proposition 6.** On the event `⋂_{j ≤ N} ξⱼ^u`, the whole matrix of social pressures
-after `N` expressions is confined to `(-MN, N)` entrywise, in the paper's coordinates. -/
+after `N` expressions is confined to `(-MN, N)` entrywise, in the paper's coordinates.
+
+**Follows the paper's proof of Proposition 6**, in its two cases.  One step is supplied:
+where the paper passes from the bound at the repeat time to "this implies
+max U_{T_N} < N", the bound is here carried over the remaining expressions explicitly. -/
 theorem entry_mem_of_greedy (hM : 2 ≤ M) (hu : IsState u)
     (hgreedy : ∀ k, k < N → IsGreedyAt T u k) (a : Actor N) (p : Opinion M) :
     -((M : ℤ) * (N : ℤ) * ((M : ℤ) - 1)) < T.state u N a p ∧
