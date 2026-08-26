@@ -1336,7 +1336,7 @@ proved, and the paragraph is kept as the record of what they cost.
     stated only for endomorphisms.  Induction on the largest element
     (\texttt{Finset.induction\_on\_max}) sidesteps it: adjoining a new maximum
     $a$ to $s$ adds $a$ to the sum and $\#s$ to the bound, and $a \ge \#s$
-    because $s \subseteq \mathtt{range}\ a$.  The general form is
+    because $s$ is contained in \texttt{range a}.  The general form is
     \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
   \item The two measurability lemmas for the biased greedy events,
     \texttt{measurableSet\_nearGreedyEvents} and
@@ -1344,7 +1344,7 @@ proved, and the paragraph is kept as the record of what they cost.
     already used for the unbiased model, transported through
     \texttt{SocialNetwork.Bias.ofHistoryPath}.
   \item \texttt{SocialNetwork.measurable\_process}.  The characterisation is
-    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, $\mathtt{jumpCount}\ \omega\ t = k$
+    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, \texttt{jumpCount w t} equals $k$
     exactly when $T_k \le t$ and no later jump time is $\le t$.  The level set at
     $0$ is then the complement of the others, and \texttt{jumpCount} is
     measurable into $\mathbb{N}$; gluing it to
@@ -1366,9 +1366,9 @@ right-continuous, which is what reduces that infimum to a countable one.
 
 Right-continuity holds only where the jump times increase, and the holding time
 is a plain real coordinate of the sample space: it is positive almost surely,
-$\mathtt{expMeasure}$ charging only $[0,\infty)$, but not for every $\omega$.  On
+\texttt{expMeasure} charging only $[0,\infty)$, but not for every $\omega$.  On
 a realisation with a negative holding time, or whose jump times accumulate from
-the right at some $t$, $\mathtt{jumpCount}\ \omega\ \cdot$ is not
+the right at some $t$, \texttt{jumpCount w} is not
 right-continuous and the reduction fails pointwise.  The statement therefore
 wants an almost-sure formulation, or a proof that handles the null set on which
 the path misbehaves --- either way, real work, and not the cylinder argument
