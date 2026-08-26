@@ -57,6 +57,8 @@ first condition implies the paper's bound, so nothing is lost:
   `(M-1) α ≠ 0`, proved.
 * `SocialNetwork.Bias.pressure_lt_pressure_hear_of_neg` — **Remark 2**, the degeneracy for
   `α > 1/(M-1)`, proved.
+* `SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge` — **equation (6)**, the bound
+  `2 ∑_a nₐ ≥ N (N-1)`, proved, via `SocialNetwork.Bias.sum_range_card_le_sum`.
 * `SocialNetwork.Bias.le_max_pressure` — **Remark 8**, the lower bound `(M-1) α` on the
   maximum of a non-null row, unproved.
 -/
@@ -150,15 +152,39 @@ theorem IsBiasedState.express {P : Profile N M} (hP : IsBiasedState P) (a : Acto
   · rw [Profile.heard_express_of_ne hb, Profile.heard_express_of_ne hc] at hbc
     exact hP.injective_heard (by omega)
 
+/-- A finite set of `n` naturals has sum at least `0 + 1 + ⋯ + (n-1)`.
+
+Mathlib has no lemma to this effect.  The route it suggests — enumerate the set in increasing
+order with `Finset.orderEmbOfFin`, then observe that a strictly monotone `Fin n → ℕ` dominates
+the identity — needs that last step redone by hand, because `StrictMono.le_apply` is stated
+only for endomorphisms `β → β`.  Induction on the largest element avoids it altogether:
+adjoining a new maximum `a` to `s` adds `a` to the sum and `#s` to the bound, and `a ≥ #s`
+because `s ⊆ range a`. -/
+theorem sum_range_card_le_sum (s : Finset ℕ) : ∑ i ∈ Finset.range s.card, i ≤ ∑ x ∈ s, x := by
+  induction s using Finset.induction_on_max with
+  | empty => simp
+  | insert a s ha ih =>
+      have hmem : a ∉ s := fun h => lt_irrefl a (ha a h)
+      have hcard : s.card ≤ a := by
+        have hsub : s ⊆ Finset.range a := fun x hx => Finset.mem_range.2 (ha x hx)
+        simpa using Finset.card_le_card hsub
+      rw [Finset.card_insert_of_notMem hmem, Finset.sum_insert hmem, Finset.sum_range_succ]
+      omega
+
 /-- The sum of `N` pairwise distinct naturals is at least `0 + 1 + ⋯ + (N-1)`.
 
-**Unproved.**  Mathlib has no lemma to this effect, and no lemma from which it follows in one
-step: the natural route is to enumerate the image in increasing order with
-`Finset.orderEmbOfFin` and observe that a strictly monotone `Fin N → ℕ` dominates the
-identity, but `StrictMono.le_apply` is stated only for endomorphisms `β → β`. -/
+The `N` values are distinct, so they form a `Finset ℕ` of cardinality `N` with the same sum;
+`SocialNetwork.Bias.sum_range_card_le_sum` bounds it. -/
 theorem sum_ge_of_injective {f : Actor N → ℕ} (hf : Function.Injective f) :
     ∑ i ∈ Finset.range N, i ≤ ∑ a, f a := by
-  sorry
+  classical
+  have hcard : (Finset.univ.image f).card = N := by
+    rw [Finset.card_image_of_injective _ hf]
+    simp
+  calc ∑ i ∈ Finset.range N, i
+      = ∑ i ∈ Finset.range (Finset.univ.image f).card, i := by rw [hcard]
+    _ ≤ ∑ x ∈ Finset.univ.image f, x := sum_range_card_le_sum _
+    _ = ∑ a, f a := Finset.sum_image fun x _ y _ h => hf h
 
 /-- **Equation (6)**, the bound the paper states: `2 ∑_a nₐ ≥ N (N-1)`, cleared of its
 division by two.  It follows from the distinctness of the `nₐ`. -/

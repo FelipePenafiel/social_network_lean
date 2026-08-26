@@ -102,10 +102,33 @@ theorem stateAfter_congr (u : Profile N M) {ω ω' : ℕ → Jump N M} :
       intro h
       rw [stateAfter_succ, stateAfter_succ, ih fun k hk => h k (by omega), h n (by omega)]
 
+/-- Read a finite history `(A₁, O₁), …, (A_{n+1}, O_{n+1})` back as a realisation, by repeating
+the last pair forever.  Only the entries of index `≤ n` are ever used.  This is
+`SocialNetwork.Trajectory.ofHistory` without the detour through `Trajectory`, the biased chain
+being driven by profiles rather than by matrices. -/
+def ofHistoryPath {n : ℕ} (h : (i : Finset.Iic n) → Jump N M) : ℕ → Jump N M :=
+  fun k => h ⟨min k n, Finset.mem_Iic.2 (min_le_right k n)⟩
+
+theorem ofHistoryPath_apply {n : ℕ} (h : (i : Finset.Iic n) → Jump N M) {j : ℕ} (hj : j ≤ n) :
+    ofHistoryPath h j = h ⟨j, Finset.mem_Iic.2 hj⟩ := by
+  have hmin : (⟨min j n, Finset.mem_Iic.2 (min_le_right j n)⟩ : Finset.Iic n)
+      = ⟨j, Finset.mem_Iic.2 hj⟩ := Subtype.ext (min_eq_left hj)
+  simp only [ofHistoryPath, hmin]
+
 /-- Replay a finite history, repeating its last pair forever. -/
 def stateAfterHistory (u : Profile N M) {n : ℕ} (h : (i : Finset.Iic n) → Jump N M)
     (k : ℕ) : Profile N M :=
-  stateAfter u (fun j => h ⟨min j n, Finset.mem_Iic.2 (min_le_right j n)⟩) k
+  stateAfter u (ofHistoryPath h) k
+
+/-- Truncating a realisation to its first `n + 1` entries and reading the result back as a
+realisation changes no profile up to time `n + 1`.  This is what makes the greedy events of
+the biased model cylinders. -/
+theorem stateAfter_ofHistoryPath_frestrictLe (u : Profile N M) (ω : ℕ → Jump N M) {n k : ℕ}
+    (hk : k ≤ n + 1) :
+    stateAfter u (ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) k
+      = stateAfter u ω k :=
+  stateAfter_congr u k fun j hj => by
+    rw [ofHistoryPath_apply _ (show j ≤ n by omega), Preorder.frestrictLe_apply]
 
 end Replay
 
@@ -246,15 +269,58 @@ def biasedGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) : Set (ℕ → Jum
 def nearGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) : Set (ℕ → Jump N M) :=
   {ω | ∀ k < n, IsNearGreedyAt γ u ω k}
 
+/-- The greedy event at step `k` only constrains the first `k + 1` expressed pairs, so reading
+it off a truncated realisation gives the same answer. -/
+theorem isBiasedGreedyAt_ofHistoryPath_frestrictLe (γ : ℝ) (u : Profile N M)
+    (ω : ℕ → Jump N M) {n k : ℕ} (hk : k ≤ n) :
+    IsBiasedGreedyAt γ u
+        (ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) k
+      ↔ IsBiasedGreedyAt γ u ω k := by
+  have hstate := stateAfter_ofHistoryPath_frestrictLe u ω (n := n) (k := k) (by omega)
+  have hjump : ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω) k = ω k := by
+    rw [ofHistoryPath_apply _ hk, Preorder.frestrictLe_apply]
+  simp only [IsBiasedGreedyAt, hstate, hjump]
+
+/-- The near-greedy event at step `k` only constrains the first `k + 1` expressed pairs. -/
+theorem isNearGreedyAt_ofHistoryPath_frestrictLe (γ : ℝ) (u : Profile N M)
+    (ω : ℕ → Jump N M) {n k : ℕ} (hk : k ≤ n) :
+    IsNearGreedyAt γ u
+        (ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) k
+      ↔ IsNearGreedyAt γ u ω k := by
+  have hstate := stateAfter_ofHistoryPath_frestrictLe u ω (n := n) (k := k) (by omega)
+  have hjump : ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω) k = ω k := by
+    rw [ofHistoryPath_apply _ hk, Preorder.frestrictLe_apply]
+  simp only [IsNearGreedyAt, hstate, hjump]
+
+theorem biasedGreedyEvents_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
+    biasedGreedyEvents γ u n =
+      Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹'
+        {h | ∀ k < n, IsBiasedGreedyAt γ u (ofHistoryPath h) k} := by
+  ext ω
+  simp only [biasedGreedyEvents, Set.mem_setOf_eq, Set.mem_preimage]
+  exact ⟨fun hω k hk => (isBiasedGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).2 (hω k hk),
+    fun hω k hk => (isBiasedGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).1 (hω k hk)⟩
+
+theorem nearGreedyEvents_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
+    nearGreedyEvents γ u n =
+      Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹'
+        {h | ∀ k < n, IsNearGreedyAt γ u (ofHistoryPath h) k} := by
+  ext ω
+  simp only [nearGreedyEvents, Set.mem_setOf_eq, Set.mem_preimage]
+  exact ⟨fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).2 (hω k hk),
+    fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).1 (hω k hk)⟩
+
 /-- The near-greedy event constrains only the first `n` coordinates, so it is measurable. -/
 theorem measurableSet_nearGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) :
     MeasurableSet (nearGreedyEvents γ u n) := by
-  sorry
+  rw [nearGreedyEvents_eq_preimage]
+  exact Preorder.measurable_frestrictLe n MeasurableSet.of_discrete
 
 /-- The greedy event constrains only the first `n` coordinates, so it is measurable. -/
 theorem measurableSet_biasedGreedyEvents (γ : ℝ) (u : Profile N M) (n : ℕ) :
     MeasurableSet (biasedGreedyEvents γ u n) := by
-  sorry
+  rw [biasedGreedyEvents_eq_preimage]
+  exact Preorder.measurable_frestrictLe n MeasurableSet.of_discrete
 
 end GreedyEvents
 

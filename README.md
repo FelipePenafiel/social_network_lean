@@ -38,8 +38,14 @@ the biased skeleton and process.
 formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for three
 distinct reasons, which the blueprint keeps apart: blocked on missing Mathlib theory (Doeblin's
 criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 19 and 20, whose
-written proofs do not compose — repairs are recorded), or simply routine and not yet done (four
-measurability lemmas and one arithmetic lemma).
+written proofs do not compose — repairs are recorded), or simply routine and not yet done.
+
+The routine list is now short.  `sum_ge_of_injective` (that `N` distinct naturals sum to at
+least `0 + 1 + ⋯ + (N-1)` — a Mathlib gap in its own right), the two measurability lemmas for
+the biased greedy events, and `measurable_process` are proved.  What is left of it is
+Remark 5's bound `η`, Remark 8, and `measurable_hittingTimeCts` — which turned out not to be
+routine at all, the hitting time being an infimum over an uncountable family of times, and so
+needing path regularity that holds only almost surely.  The blueprint says why.
 
 The library is **not** `sorry`-free, by design.  What CI enforces instead is that no
 declaration listed as complete in `.github/workflows/ci.yml` depends on `sorryAx`; every run

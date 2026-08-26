@@ -154,7 +154,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{remark}[How the process is built in Lean]
   \label{rem:construction}
-  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.measurable_process, SocialNetwork.measurable_hittingTimeCts}
+  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process, SocialNetwork.measurable_hittingTimeCts}
   \leanok
   \uses{def:skeleton}
   Mathlib has no theory of continuous-time Markov jump processes on a countable
@@ -429,7 +429,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{definition}[The biased state space, eq.~(6)]
   \label{def:biased-state}
-  \lean{SocialNetwork.Bias.Profile, SocialNetwork.Bias.IsBiasedState, SocialNetwork.Bias.Memory, SocialNetwork.Bias.Memory.pressure, SocialNetwork.Bias.Memory.heard, SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge, SocialNetwork.Bias.sum_ge_of_injective}
+  \lean{SocialNetwork.Bias.Profile, SocialNetwork.Bias.IsBiasedState, SocialNetwork.Bias.Memory, SocialNetwork.Bias.Memory.pressure, SocialNetwork.Bias.Memory.heard, SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge, SocialNetwork.Bias.sum_range_card_le_sum, SocialNetwork.Bias.sum_ge_of_injective}
   \leanok
   \uses{def:biased-express}
   An actor that has heard $n_a$ expressions since it last expressed, $c_p$ of
@@ -1019,7 +1019,7 @@ the process pointwise.
 
 \begin{definition}[The near-greedy event, Remark~7]
   \label{def:near-greedy}
-  \lean{SocialNetwork.Bias.IsNearGreedyAt, SocialNetwork.Bias.nearGreedyEvents, SocialNetwork.Bias.IsBiasedGreedyAt, SocialNetwork.Bias.biasedGreedyEvents, SocialNetwork.Bias.measurableSet_nearGreedyEvents, SocialNetwork.Bias.measurableSet_biasedGreedyEvents}
+  \lean{SocialNetwork.Bias.IsNearGreedyAt, SocialNetwork.Bias.nearGreedyEvents, SocialNetwork.Bias.IsBiasedGreedyAt, SocialNetwork.Bias.biasedGreedyEvents, SocialNetwork.Bias.ofHistoryPath, SocialNetwork.Bias.stateAfter_ofHistoryPath_frestrictLe, SocialNetwork.Bias.measurableSet_nearGreedyEvents, SocialNetwork.Bias.measurableSet_biasedGreedyEvents}
   \leanok
   \uses{def:biased-state}
   \[
@@ -1320,20 +1320,59 @@ Proposition~\ref{prop:reach-ladder}.  See Remarks~\ref{rem:lemma19}
 and~\ref{rem:lemma20}: the repairs change the written arguments rather than
 their presentation, so they are recorded rather than guessed at in Lean.
 
-\subsection*{Routine, not done}
+\subsection*{Routine, and now done}
 
-Neither deep nor blocked: \texttt{SocialNetwork.measurable\_process} and
-\texttt{measurable\_hittingTimeCts} (\texttt{jumpCount} is a countable Boolean
-combination of the events $\{T_n \le t\}$), the two measurability lemmas for the
-biased greedy events, Lemma~\ref{lem:eta}, and Remark~\ref{rem:remark8}.
+Four statements were listed here as neither deep nor blocked.  They are now
+proved, and the paragraph is kept as the record of what they cost.
 
-One of these is a \textbf{Mathlib gap in its own right}:
-\texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct naturals
-sum to at least $0 + 1 + \dots + (N-1)$.  Mathlib has no lemma to this effect
-and none from which it follows in one step; the natural route is
-\texttt{Finset.orderEmbOfFin} plus ``a strictly monotone $\mathrm{Fin}\ N \to
-\mathbb{N}$ dominates the identity'', but \texttt{StrictMono.le\_apply} is
-stated only for endomorphisms.
+\begin{itemize}
+  \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
+    naturals sum to at least $0 + 1 + \dots + (N-1)$.  This was a
+    \textbf{Mathlib gap in its own right}, and still is: Mathlib has no lemma to
+    this effect and none from which it follows in one step.  The route it
+    suggests --- enumerate with \texttt{Finset.orderEmbOfFin}, then use ``a
+    strictly monotone $\mathrm{Fin}\ N \to \mathbb{N}$ dominates the identity''
+    --- needs that last step redone by hand, \texttt{StrictMono.le\_apply} being
+    stated only for endomorphisms.  Induction on the largest element
+    (\texttt{Finset.induction\_on\_max}) sidesteps it: adjoining a new maximum
+    $a$ to $s$ adds $a$ to the sum and $\#s$ to the bound, and $a \ge \#s$
+    because $s \subseteq \mathtt{range}\ a$.  The general form is
+    \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
+  \item The two measurability lemmas for the biased greedy events,
+    \texttt{measurableSet\_nearGreedyEvents} and
+    \texttt{measurableSet\_biasedGreedyEvents}.  Both are the cylinder argument
+    already used for the unbiased model, transported through
+    \texttt{SocialNetwork.Bias.ofHistoryPath}.
+  \item \texttt{SocialNetwork.measurable\_process}.  The characterisation is
+    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, $\mathtt{jumpCount}\ \omega\ t = k$
+    exactly when $T_k \le t$ and no later jump time is $\le t$.  The level set at
+    $0$ is then the complement of the others, and \texttt{jumpCount} is
+    measurable into $\mathbb{N}$; gluing it to
+    \texttt{measurable\_state\_ofStepPath} along that countable index gives the
+    result.
+\end{itemize}
+
+Still here, and still routine: Lemma~\ref{lem:eta} and
+Remark~\ref{rem:remark8}.
+
+\subsection*{Not routine after all}
+
+\texttt{SocialNetwork.measurable\_hittingTimeCts} was listed above, next to
+\texttt{measurable\_process}, on the grounds that both only see
+\texttt{jumpCount}.  They do not sit at the same depth.  \texttt{process} is
+evaluated at one $t$; the hitting time is an infimum over the \emph{uncountable}
+family $\{t \ge 0\}$, so it needs the path $t \mapsto \Uproc{u}_t(\omega)$ to be
+right-continuous, which is what reduces that infimum to a countable one.
+
+Right-continuity holds only where the jump times increase, and the holding time
+is a plain real coordinate of the sample space: it is positive almost surely,
+$\mathtt{expMeasure}$ charging only $[0,\infty)$, but not for every $\omega$.  On
+a realisation with a negative holding time, or whose jump times accumulate from
+the right at some $t$, $\mathtt{jumpCount}\ \omega\ \cdot$ is not
+right-continuous and the reduction fails pointwise.  The statement therefore
+wants an almost-sure formulation, or a proof that handles the null set on which
+the path misbehaves --- either way, real work, and not the cylinder argument
+promised here.
 
 
 \section{Where to go next}
@@ -1341,11 +1380,10 @@ stated only for endomorphisms.
 In rough order of cost.
 
 \begin{enumerate}
-  \item The routine items above: the two measurability lemmas for
-    \texttt{process} and \texttt{hittingTimeCts}, the two for the biased greedy
-    events, and \texttt{sum\_ge\_of\_injective}.  None needs new theory, and
-    together they remove the only unproved statements here that are nobody's
-    fault.
+  \item \texttt{SocialNetwork.measurable\_hittingTimeCts}, on the terms of the
+    previous subsection: decide between an almost-sure statement and a proof
+    that goes through the null set, then carry it out.  This is the last of the
+    unproved statements here that are nobody's fault.
   \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  The arithmetic is
     available; what is missing is the comparison showing that the worst case
     over $\steep$ is attained on $\ladder$.  This is the first genuinely
