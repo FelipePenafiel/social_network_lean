@@ -73,6 +73,10 @@ jobs:
           #print axioms SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge
           #print axioms SocialNetwork.Bias.measurableSet_nearGreedyEvents
           #print axioms SocialNetwork.Bias.measurableSet_biasedGreedyEvents
+          #print axioms SocialNetwork.Bias.pressure_eq_of_bias
+          #print axioms SocialNetwork.Bias.le_max_pressure
+          #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
+          #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
           -- Definition 3: the skeleton
           #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
           #print axioms SocialNetwork.skeletonKernel_reachable
@@ -87,6 +91,17 @@ jobs:
           #print axioms SocialNetwork.zeta_le_jumpPMF_argmaxFinset
           #print axioms SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents
           #print axioms SocialNetwork.one_sub_le_pathMeasure_greedyEvents
+          #print axioms SocialNetwork.pathMeasure_preimage_zero
+          #print axioms SocialNetwork.sum_range_add_le_sum
+          #print axioms SocialNetwork.sum_Ico_exp_le_sum_jumpRate
+          #print axioms SocialNetwork.sum_jumpRate_compl_le
+          #print axioms SocialNetwork.eta_le_jumpPMF_posFinset
+          #print axioms SocialNetwork.eta_le_pathMeasure_positivePressure
+          #print axioms SocialNetwork.IsSteepLadder.state_of_isPositiveAt
+          #print axioms SocialNetwork.eta_le_partialTraj_succ
+          #print axioms SocialNetwork.eta_pow_le_historyMeasure
+          #print axioms SocialNetwork.eta_pow_le_pathMeasure_positiveEvents
+          #print axioms SocialNetwork.eta_pow_le_pathMeasure_steepLadder
           -- The continuous-time process
           #print axioms SocialNetwork.jumpCount_eq_iff
           #print axioms SocialNetwork.measurable_jumpCount

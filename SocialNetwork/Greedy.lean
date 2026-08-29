@@ -46,6 +46,8 @@ coordinate maximises the pressure, and the one-step bound applies there.
 * `SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents` — **Proposition 8**.
 * `SocialNetwork.one_sub_le_pathMeasure_greedyEvents` — Proposition 8 together with Remark 4,
   in the linear form `P (⋂_{j≤m} ξⱼ^u) ≥ 1 - m M N e^{-β/(M-1)}` that Theorem 2 uses.
+* `SocialNetwork.pathMeasure_preimage_zero` — the law of the first expressed pair is
+  `jumpPMF β u`; this is what carries a one-expression bound onto the sample space.
 -/
 
 namespace SocialNetwork
@@ -198,6 +200,32 @@ noncomputable def historyMeasure (β : ℝ) (u : Pressure N M) (n : ℕ) :
     Measure ((i : Finset.Iic n) → Jump N M) :=
   Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β u) 0 n ∘ₘ
     ((jumpPMF β u).toMeasure.map toHistoryZero)
+
+/-- The law of the first expressed pair under `P^{β,u}` is the Gibbs law of equation (3) at
+`u`: the Ionescu-Tulcea construction starts from `jumpPMF β u`, and the first coordinate of a
+realisation is the single coordinate of the initial history.
+
+**No counterpart in the paper**: plumbing of the sample space.  It is what lets a bound on one
+expression — the one-step bound of Proposition 8, or the bound `η` of Remark 5 — be read as a
+bound on the law of realisations. -/
+theorem pathMeasure_preimage_zero (β : ℝ) (u : Pressure N M) (s : Set (Jump N M)) :
+    pathMeasure β u ((fun ω : ℕ → Jump N M => ω 0) ⁻¹' s) = (jumpPMF β u).toMeasure s := by
+  have hmap : (pathMeasure β u).map
+      (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) 0) = historyMeasure β u 0 := by
+    unfold historyMeasure
+    rw [pathMeasure_def, Measure.map_comp _ _ (Preorder.measurable_frestrictLe 0),
+      Kernel.traj_map_frestrictLe]
+  have hfactor : (fun ω : ℕ → Jump N M => ω 0) ⁻¹' s
+      = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) 0 ⁻¹'
+        ((fun h : (i : Finset.Iic 0) → Jump N M =>
+          h ⟨0, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' s) := rfl
+  have hpre : toHistoryZero ⁻¹' ((fun h : (i : Finset.Iic 0) → Jump N M =>
+      h ⟨0, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' s) = s := rfl
+  rw [hfactor, ← Measure.map_apply (Preorder.measurable_frestrictLe 0)
+      MeasurableSet.of_discrete, hmap]
+  unfold historyMeasure
+  rw [Kernel.partialTraj_self, Measure.id_comp,
+    Measure.map_apply measurable_toHistoryZero MeasurableSet.of_discrete, hpre]
 
 theorem zeta_le_historyMeasure_zero (hM : 2 ≤ M) (hβ : 0 ≤ β) :
     ENNReal.ofReal (zeta N M β) ≤ historyMeasure β u 0 (greedyHistory u 0) := by
