@@ -312,6 +312,25 @@ theorem exists_count_ge (hM : 0 < M) (m : Memory M) : ∃ p, m.heard ≤ M * m.c
   rw [show (∑ p : Opinion M, m.count p) = m.heard from rfl] at hsum
   omega
 
+/-- The identity behind Remark 8, in the paper's decomposition.  With `cₚ` expressions of `p`
+heard out of `nₐ` in total,
+
+```
+cₚ (1 + γ) - γ nₐ = cₚ (M-1) α + γ (M cₚ - nₐ).
+```
+
+This is the paper's `k (1+γ) - γ nₐ = k (M-1) α + γ (M - r)`, written without introducing the
+remainder: with `nₐ = (k-1) M + r` the two right-hand sides agree term by term, since
+`M k - nₐ = M - r`. -/
+theorem pressure_eq_of_bias {γ α : ℝ}
+    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (m : Memory M) (p : Opinion M) :
+    m.pressure γ p
+      = (m.count p : ℝ) * (((M : ℝ) - 1) * α)
+        + γ * ((M : ℝ) * (m.count p : ℝ) - (m.heard : ℝ)) := by
+  have hα : ((M : ℝ) - 1) * α = 1 - ((M : ℝ) - 1) * γ := by linarith
+  show (m.count p : ℝ) * (1 + γ) - γ * (m.heard : ℝ) = _
+  rw [hα]; ring
+
 /-- **Remark 8.**  For `0 < α < 1/(M-1)` and an actor with `nₐ ≥ 1`,
 
 ```
@@ -322,14 +341,44 @@ with equality exactly for an actor that has heard one expression of each opinion
 particular the jump rate out of any non-null state is at least `e^{β (M-1) α}`, which is what
 replaces the bound `e^{β/(M-1)}` of the unbiased model.
 
-**Unproved.**  The pigeonhole step is `SocialNetwork.Bias.exists_count_ge`; what remains is the
-arithmetic `⌈nₐ/M⌉ (1+γ) - γ nₐ = k (M-1) α + γ (M - r) ≥ (M-1) α` in the paper's
-decomposition `nₐ = (k-1) M + r`. -/
+Follows the paper's proof: the pigeonhole step is `SocialNetwork.Bias.exists_count_ge`, which
+supplies an opinion heard at least `k = ⌈nₐ/M⌉` times, and the arithmetic is
+`SocialNetwork.Bias.pressure_eq_of_bias`.  Both terms of that identity are then non-negative —
+`M cₚ ≥ nₐ` is the pigeonhole bound and `γ > 0`, which is the paper's `γ (M - r) ≥ 0` — and the
+first is at least `(M-1) α` because `cₚ ≥ 1`, which is the paper's `k ≥ 1`.
+
+**Supplies a step the paper asserts**: that `k ≥ 1`, which the written proof reads off `nₐ ≥ 1`
+without comment.  Here it comes from `nₐ ≤ M cₚ`: were `cₚ` zero, no expression would have been
+heard at all. -/
 theorem le_max_pressure (hM : 2 ≤ M) {γ α : ℝ} (hγ : 0 < γ)
     (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) {P : Profile N M}
     {a : Actor N} (ha : 1 ≤ P.heard a) :
     ∃ p, ((M : ℝ) - 1) * α ≤ P.pressure γ a p := by
-  sorry
+  obtain ⟨p, hp⟩ := exists_count_ge (by omega : 0 < M) (P a)
+  refine ⟨p, ?_⟩
+  -- `k ≥ 1`: the actor has heard something, and every expression it heard concerned some
+  -- opinion, so the opinion the pigeonhole selects was heard at least once.
+  have hc1 : 1 ≤ (P a).count p := by
+    rcases Nat.eq_zero_or_pos ((P a).count p) with hc | hc
+    · rw [hc, Nat.mul_zero] at hp
+      have : 1 ≤ (P a).heard := ha
+      omega
+    · exact hc
+  have hM1 : (1 : ℝ) ≤ (M : ℝ) - 1 := by
+    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  have hcR : (1 : ℝ) ≤ ((P a).count p : ℝ) := by exact_mod_cast hc1
+  have hnR : ((P a).heard : ℝ) ≤ (M : ℝ) * ((P a).count p : ℝ) := by exact_mod_cast hp
+  have hαM : 0 < ((M : ℝ) - 1) * α := mul_pos (by linarith) hα
+  show ((M : ℝ) - 1) * α ≤ (P a).pressure γ p
+  rw [pressure_eq_of_bias h]
+  -- `γ (M cₚ - nₐ) ≥ 0`, the paper's `γ (M - r) ≥ 0`
+  have hrem : 0 ≤ γ * ((M : ℝ) * ((P a).count p : ℝ) - ((P a).heard : ℝ)) :=
+    mul_nonneg hγ.le (by linarith)
+  -- `cₚ (M-1) α ≥ (M-1) α`, the paper's `k (M-1) α ≥ (M-1) α`
+  have hlead : ((M : ℝ) - 1) * α ≤ ((P a).count p : ℝ) * (((M : ℝ) - 1) * α) := by
+    nlinarith [mul_nonneg (sub_nonneg.2 hcR) hαM.le]
+  linarith
 
 end Remark8
 
@@ -393,12 +442,84 @@ confines the process. -/
 def biasedBounded (N M : ℕ) (γ : ℝ) : Set (Profile N M) :=
   {P | IsBiasedState P ∧ ∀ a p, P.pressure γ a p ≤ (N : ℝ)}
 
-/-- **Remark 5 for the biased model** (Appendix C): `L_α ⊆ L̂_α`. -/
-theorem biasedLadderSet_subset_biasedSteepLadderSet (hγ : 0 < γ) [NeZero N] :
-    biasedLadderSet N M γ ⊆ biasedSteepLadderSet N M γ := by
-  sorry
-
 end Sets
+
+/-! ### Remark 5 for the biased model: `L_α ⊆ L̂_α` -/
+
+section BiasedLadder
+
+variable {γ : ℝ} {o : Opinion M} {P : Profile N M}
+
+/-- On a biased ladder the pressure an actor carries for the supported opinion is one of the
+`N` values `0, 1, …, N-1`.  This is the `column` field read at a single actor. -/
+theorem IsBiasedLadder.exists_eq_natCast (hP : IsBiasedLadder γ o P) (a : Actor N) :
+    ∃ k : Actor N, P.pressure γ a o = ((k : ℕ) : ℝ) := by
+  have hmem : P.pressure γ a o
+      ∈ Finset.image (fun b : Actor N => P.pressure γ b o) Finset.univ :=
+    Finset.mem_image_of_mem _ (Finset.mem_univ a)
+  rw [hP.column] at hmem
+  obtain ⟨k, -, hk⟩ := Finset.mem_image.1 hmem
+  exact ⟨k, hk.symm⟩
+
+/-- On a biased ladder the `o`-column is integer-valued. -/
+theorem IsBiasedLadder.isInt (hP : IsBiasedLadder γ o P) (a : Actor N) :
+    ∃ k : ℤ, P.pressure γ a o = (k : ℝ) := by
+  obtain ⟨k, hk⟩ := hP.exists_eq_natCast a
+  exact ⟨((k : ℕ) : ℤ), by rw [hk]; push_cast; ring⟩
+
+/-- On a biased ladder every actor carries non-negative pressure for the supported opinion. -/
+theorem IsBiasedLadder.nonneg (hP : IsBiasedLadder γ o P) (a : Actor N) :
+    0 ≤ P.pressure γ a o := by
+  obtain ⟨k, hk⟩ := hP.exists_eq_natCast a
+  rw [hk]
+  exact Nat.cast_nonneg _
+
+/-- On a biased ladder some actor carries no pressure for the supported opinion: the value `0`
+is one of the `N` the column realises. -/
+theorem IsBiasedLadder.exists_zero [NeZero N] (hP : IsBiasedLadder γ o P) :
+    ∃ a, P.pressure γ a o = 0 := by
+  have h0 : (0 : ℝ) ∈ Finset.image (fun k : Actor N => ((k : ℕ) : ℝ)) Finset.univ :=
+    Finset.mem_image.2 ⟨⟨0, Nat.pos_of_ne_zero (NeZero.ne N)⟩, Finset.mem_univ _, by simp⟩
+  rw [← hP.column] at h0
+  obtain ⟨a, -, ha⟩ := Finset.mem_image.1 h0
+  exact ⟨a, ha⟩
+
+/-- On a biased ladder the `o`-column is injective: it realises `N` distinct values.  This is
+the unbiased `SocialNetwork.IsLadder.injective` transported to the memory representation. -/
+theorem IsBiasedLadder.injective (hP : IsBiasedLadder γ o P) :
+    Function.Injective fun a : Actor N => P.pressure γ a o := by
+  have hstep : Function.Injective fun k : Actor N => ((k : ℕ) : ℝ) := by
+    intro i j hij
+    have hcast : ((i : ℕ) : ℝ) = ((j : ℕ) : ℝ) := hij
+    exact Fin.val_injective (by exact_mod_cast hcast)
+  have hcard : (Finset.image (fun a : Actor N => P.pressure γ a o) Finset.univ).card
+      = (Finset.univ : Finset (Actor N)).card := by
+    rw [hP.column, Finset.card_image_of_injective _ hstep]
+  have hinj : Set.InjOn (fun a : Actor N => P.pressure γ a o)
+      (Finset.univ : Finset (Actor N)) := Finset.card_image_iff.1 hcard
+  exact fun i j hij => hinj (Finset.mem_univ i) (Finset.mem_univ j) hij
+
+/-- **Remark 5 for the biased model** (Appendix C): `L_α^o ⊆ L̂_α^o`.
+
+**No counterpart in the paper**, which states the inclusion for the unbiased model only and
+transfers it to Appendix C without comment.  The argument is the unbiased one of
+`SocialNetwork.IsLadder.isSteepLadder`: a column taking each of `0, 1, …, N-1` exactly once is
+in particular an injective, non-negative, integer-valued column whose minimum is `0`. -/
+theorem IsBiasedLadder.isBiasedSteepLadder [NeZero N] (hP : IsBiasedLadder γ o P) :
+    IsBiasedSteepLadder γ o P where
+  isBiasedState := hP.isBiasedState
+  isInt := hP.isInt
+  injective := hP.injective
+  exists_zero := hP.exists_zero
+  nonneg := hP.nonneg
+  other := hP.other
+
+/-- **Remark 5 for the biased model** (Appendix C): `L_α ⊆ L̂_α`. -/
+theorem biasedLadderSet_subset_biasedSteepLadderSet [NeZero N] :
+    biasedLadderSet N M γ ⊆ biasedSteepLadderSet N M γ :=
+  fun _ ⟨o, hP⟩ => ⟨o, hP.isBiasedSteepLadder⟩
+
+end BiasedLadder
 
 end Bias
 

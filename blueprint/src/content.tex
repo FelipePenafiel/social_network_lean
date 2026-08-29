@@ -383,7 +383,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{lemma}[The bound $\eta$, Remark~5]
   \label{lem:eta}
-  \lean{SocialNetwork.eta, SocialNetwork.eta_le_pathMeasure_positivePressure}
+  \lean{SocialNetwork.eta, SocialNetwork.eta_le_pathMeasure_positivePressure, SocialNetwork.eta_le_jumpPMF_posFinset, SocialNetwork.posFinset, SocialNetwork.sum_Ico_exp_le_sum_jumpRate, SocialNetwork.sum_jumpRate_compl_le, SocialNetwork.eta_le_div_of_le, SocialNetwork.sum_range_add_le_sum, SocialNetwork.sum_range_eq_one_add_sum_Ico, SocialNetwork.pathMeasure_preimage_zero}
   \leanok
   \uses{def:ladder, def:steep, lem:steep-stable}
   For $\hat{l} \in \steep$ and $l \in \ladder$,
@@ -396,12 +396,30 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{lemma}
 \begin{proof}
+  \leanok
   On a ladder the $N$ pressures for the supported opinion are exactly
   $0, 1, \dots, N-1$, so the numerator collects the rates of the $N-1$ actors
   carrying positive pressure; the remaining entries are non-positive, hence of
-  rate at most $1$, and there are at most $MN$ of them.  \textbf{Not
-  formalised}: what is missing is the comparison showing the worst case over
-  $\steep$ is attained on $\ladder$.
+  rate at most $1$, and there are at most $MN$ of them.
+
+  \textbf{Supplies a step the paper asserts}: that the worst case over $\steep$
+  is attained on $\ladder$.  Remark~5 writes the two inequalities in one line and
+  argues neither.  The comparison is
+  \texttt{SocialNetwork.sum\_Ico\_exp\_le\_sum\_jumpRate}: on a steep ladder the
+  $o$-column is $N$ pairwise distinct non-negative integers one of which is $0$,
+  so the positive ones are $N-1$ distinct integers $\ge 1$; being distinct they
+  dominate $1, 2, \dots, N-1$ term by term once sorted, and $j \mapsto e^{\beta
+  j}$ is increasing.  Every entry outside the $o$-column is non-positive by
+  Definition~\ref{def:steep}, so it contributes nothing to the numerator and at
+  most $1$ to the denominator.  The domination step is
+  \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, the monotone-function form of
+  the Mathlib gap recorded below for
+  \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
+
+  What is \emph{not} proved is the iterate $\eta^m$,
+  \texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}: it needs the
+  conditioning of Proposition~\ref{prop:greedy-prob} again, on an event that
+  moves with the state.
 \end{proof}
 
 \begin{theorem}[Concentration of $\muinv$, Theorem~2]
@@ -557,9 +575,25 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   together with $\steep_\alpha$, the biased steep ladders of Appendix~C.
 \end{definition}
 
+\begin{remark}[$\ladder_\alpha \subset \steep_\alpha$]
+  \label{rem:biased-ladder-steep}
+  \lean{SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder, SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet, SocialNetwork.Bias.IsBiasedLadder.injective, SocialNetwork.Bias.IsBiasedLadder.exists_zero, SocialNetwork.Bias.IsBiasedLadder.nonneg, SocialNetwork.Bias.IsBiasedLadder.isInt, SocialNetwork.Bias.IsBiasedLadder.exists_eq_natCast}
+  \leanok
+  \uses{def:biased-sets}
+  Every biased ladder is a biased steep ladder.
+\end{remark}
+\begin{proof}
+  \leanok
+  \textbf{No counterpart in the paper}, which states
+  Remark~\ref{rem:ladder-steep} for the unbiased model only and transfers it to
+  Appendix~C without comment.  The argument is the unbiased one: a column taking
+  each of $0, 1, \dots, N-1$ exactly once is in particular an injective,
+  non-negative, integer-valued column whose minimum is $0$.
+\end{proof}
+
 \begin{remark}[The smallest maximum of a non-null row, Remark~8]
   \label{rem:remark8}
-  \lean{SocialNetwork.Bias.le_max_pressure, SocialNetwork.Bias.exists_count_ge}
+  \lean{SocialNetwork.Bias.le_max_pressure, SocialNetwork.Bias.exists_count_ge, SocialNetwork.Bias.pressure_eq_of_bias}
   \leanok
   \uses{def:biased-state}
   For $0 < \alpha < \pressone$ and an actor with $n_a \ge 1$,
@@ -569,11 +603,19 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $e^{\beta/(M-1)}$ in the unbiased model.
 \end{remark}
 \begin{proof}
+  \leanok
   Writing $n_a = (k-1)M + r$ with $k = \lceil n_a/M \rceil$, some opinion has
   been heard at least $k$ times, so
   $\max_p u(a,p) \ge k(1+\gamma) - \gamma n_a = k(M-1)\alpha + \gamma(M-r)
-   \ge (M-1)\alpha$.  \textbf{Partly formalised}: the pigeonhole step is
-  \texttt{SocialNetwork.Bias.exists\_count\_ge}; the arithmetic is not.
+   \ge (M-1)\alpha$.  \textbf{Follows the paper's proof}: the pigeonhole step is
+  \texttt{SocialNetwork.Bias.exists\_count\_ge} and the identity is
+  \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, written as
+  $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma(M c_p - n_a)$ so that
+  the remainder $r$ need not be introduced: $M c_p - n_a = M - r$ under the
+  paper's decomposition.  Both terms are then non-negative, $\gamma > 0$ and
+  $M c_p \ge n_a$, and the first is at least $(M-1)\alpha$ because $c_p \ge 1$.
+  \textbf{Supplies a step the paper asserts}: that $k \ge 1$, read off $n_a \ge 1$
+  without comment; here it follows from $n_a \le M c_p$.
 \end{proof}
 
 \section{The phase transition}
@@ -1364,34 +1406,45 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirteen proofs
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-one proofs
 carry \texttt{\textbackslash leanok}.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (four).
+\noindent\textbf{Follow the paper's proof} (seven).
 Propositions~\ref{prop:low-pressure} and~\ref{prop:confinement}, the gap
-estimate of Lemma~\ref{lem:gap}, and the bound of
-Proposition~\ref{prop:greedy-prob}.  These are the only statements in the paper
-whose proofs are both given in full there and formalised here, and each Lean
-proof reproduces the written argument.  Two places carry a note: the passage
+estimate of Lemma~\ref{lem:gap}, the bound of
+Proposition~\ref{prop:greedy-prob}, and Remarks~\ref{rem:biased-row},
+\ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
+paper whose proofs are both given there and formalised here, and each Lean
+proof reproduces the written argument.  Four places carry a note: the passage
 from the repeat time to the global bound in Proposition~\ref{prop:confinement},
 which the paper compresses into ``this implies'', is carried out explicitly;
-and the iteration in Proposition~\ref{prop:greedy-prob} goes through the
+the iteration in Proposition~\ref{prop:greedy-prob} goes through the
 Ionescu--Tulcea kernels rather than the conditioning of~(10), Mathlib offering
-nothing of that shape.
+nothing of that shape; Remark~\ref{rem:bernoulli} names Bernoulli's inequality
+as the route and the degenerate case $MNe^{-\beta/(M-1)} \ge 1$ is supplied; and
+Remark~\ref{rem:remark8} keeps the count $c_p$ the pigeonhole returns instead of
+rounding it down to the paper's $k = \lceil n_a/M \rceil$, which only makes the
+intermediate bound larger, and supplies $k \ge 1$.
 
 \medskip
-\noindent\textbf{Supply a step the paper asserts} (five).
+\noindent\textbf{Supply a step the paper asserts} (nine).
 Lemmas~\ref{lem:state-stable}, \ref{lem:consensus-pos}, \ref{lem:steep-stable},
-\ref{lem:favouring-max} and~\ref{lem:closing}.  Each corresponds to a sentence
+\ref{lem:favouring-max}, \ref{lem:closing} and~\ref{lem:eta},
+Remarks~\ref{rem:ladder-steep} and~\ref{rem:degenerate}, and the bound
+$\tau(u) \le N+1$ of Definition~\ref{def:tau}.  Each corresponds to a sentence
 in the paper of the form ``note that'', ``indeed'', or an unremarked clause
-inside a proof.  All five are true and none is hard; what they are not is
-checks of anything the paper argued.
+inside a proof --- ``Note that $\ladder \subset \steep$'', ``Note that
+$\tau(u) \in \{2, \dots, N+1\}$''.  All nine are true and none is deep; what
+they are not is checks of anything the paper argued.  Lemma~\ref{lem:eta} is the
+substantial one: the paper writes the two inequalities defining $\eta$ in a
+single line and argues neither.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (four).
+\noindent\textbf{No counterpart in the paper} (five).
 Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along}
-and~\ref{lem:consensus-ladder}, together with the measurability lemmas and the
+and~\ref{lem:consensus-ladder} and Remark~\ref{rem:biased-ladder-steep},
+together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear
 here only inside definitions and remarks.
 
@@ -1472,10 +1525,13 @@ their presentation, so they are recorded rather than guessed at in Lean.
 
 \subsection*{Routine, and now done}
 
-Four statements were listed here as neither deep nor blocked.  They are now
-proved, and the paragraph is kept as the record of what they cost.  All four
-fall in the third case of Remark~\ref{rem:green}: the paper proves none of
-them, so none of these is a check of anything it wrote.
+Six statements were listed here as neither deep nor blocked.  They are now
+proved, and the paragraph is kept as the record of what they cost.  The first
+four fall in the third case of Remark~\ref{rem:green}: the paper proves none of
+them, so none of these is a check of anything it wrote.  The last two, added
+when the first four were cleared, do not: Remark~\ref{rem:remark8} is argued in
+the paper and the Lean proof follows it, and Lemma~\ref{lem:eta} supplies an
+argument the paper asserts.
 
 \begin{itemize}
   \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
@@ -1502,10 +1558,30 @@ them, so none of these is a check of anything it wrote.
     measurable into $\mathbb{N}$; gluing it to
     \texttt{measurable\_state\_ofStepPath} along that countable index gives the
     result.
+  \item Remark~\ref{rem:remark8}.  The pigeonhole step was already there; what
+    was left was the identity
+    $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma (M c_p - n_a)$,
+    \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, after which both terms
+    are visibly non-negative.  Cheap, as advertised.
+  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
+    one item on this list that checks something the paper wrote down without
+    argument.  Two thirds of it is bookkeeping --- the positive entries of a
+    steep ladder are exactly the non-minimal entries of the supported column,
+    the rest are non-positive and there are at most $MN$ of them, and the
+    fraction $S/(S+T)$ is monotone in the right directions.  The remaining third
+    is the comparison itself, and it needs the monotone form of the same Mathlib
+    gap as \texttt{sum\_range\_card\_le\_sum}: $N-1$ distinct naturals $\ge 1$
+    dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
+    \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
+    on the largest element.
 \end{itemize}
 
-Still here, and still routine: Lemma~\ref{lem:eta} and
-Remark~\ref{rem:remark8}.
+Still here, and still routine: the iterate $\eta^m$,
+\texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}.  It is
+Proposition~\ref{prop:greedy-prob}'s induction along the Ionescu--Tulcea
+kernels, run against Remark~\ref{rem:ladder-steep} and Lemma~\ref{lem:eta}
+instead of the one-step greedy bound; the event moves with the state, so the
+finite-horizon step needs restating, but nothing new is needed to prove it.
 
 \subsection*{Not routine after all}
 
@@ -1536,11 +1612,11 @@ In rough order of cost.
     previous subsection: decide between an almost-sure statement and a proof
     that goes through the null set, then carry it out.  This is the last of the
     unproved statements here that are nobody's fault.
-  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  The arithmetic is
-    available; what is missing is the comparison showing that the worst case
-    over $\steep$ is attained on $\ladder$.  This is the first genuinely
-    mathematical item that is blocked neither on Mathlib nor on the paper.
-  \item Remark~\ref{rem:remark8}, whose pigeonhole step is already done.
+  \item The iterate $\eta^m$,
+    \texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}, now that
+    Lemma~\ref{lem:eta} gives the one-step bound: rerun the induction of
+    Proposition~\ref{prop:greedy-prob} along the finite-horizon kernels, on the
+    event $\{ \Uskel{\hat{l}}_k \in \steep \ \forall k \le m \}$.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
     Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
     authors first, since the repairs change the written proofs.

@@ -23,9 +23,10 @@ formalisation has to fill in", exactly where the written proofs fail to compose,
 repairs appear to work.  Both repairs change the written arguments rather than their
 presentation, so they are recorded rather than guessed at.
 
-This file also states the bound `η` of Remark 5, whose deterministic half — expressing a pair
-that carries positive pressure keeps a steep ladder steep — is proved, while the probabilistic
-half is not.
+This file also proves the bound `η` of Remark 5, in both halves: the deterministic one —
+expressing a pair that carries positive pressure keeps a steep ladder steep — and the
+probabilistic one, that such a pair is expressed with probability at least `η`.  What is still
+unproved is only the *iterate* `η^m`, which needs the conditioning of Proposition 8 again.
 
 ## Main definitions
 
@@ -41,7 +42,9 @@ half is not.
 * `SocialNetwork.isLadder_state_of_greedy` — **Proposition 7**, unproved.
 * `SocialNetwork.mem_steepLadderSet_of_positivePressure` — the deterministic half of
   Remark 5, proved.
-* `SocialNetwork.eta_le_pathMeasure_positivePressure` — the bound `η` of Remark 5, unproved.
+* `SocialNetwork.eta_le_pathMeasure_positivePressure` — the bound `η` of Remark 5, proved.
+* `SocialNetwork.sum_Ico_exp_le_sum_jumpRate` — the comparison it rests on: the worst case
+  over `L̂` is attained on `L`.
 -/
 
 namespace SocialNetwork
@@ -190,6 +193,60 @@ theorem eta_nonneg (N M : ℕ) {β : ℝ} : 0 ≤ eta N M β := by
   refine div_nonneg (Finset.sum_nonneg fun j _ => (Real.exp_pos _).le) ?_
   exact add_nonneg (Finset.sum_nonneg fun j _ => (Real.exp_pos _).le) (Nat.cast_nonneg _)
 
+/-- The denominator of `η` is `1` more than its numerator: `∑_{j=0}^{N-1} e^{βj}` is
+`e^0 = 1` plus `∑_{j=1}^{N-1} e^{βj}`. -/
+theorem sum_range_eq_one_add_sum_Ico (hN : 1 ≤ N) (β : ℝ) :
+    (∑ j ∈ Finset.range N, Real.exp (β * (j : ℝ)))
+      = 1 + ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) := by
+  rw [Finset.range_eq_Ico, Finset.sum_eq_sum_Ico_succ_bot (by omega : 0 < N)]
+  simp
+
+/-- A monotone function summed over a finite set of naturals all at least `m` is at least its
+sum over `m, m+1, …, m + #s - 1`.
+
+**No counterpart in the paper**, and a Mathlib gap of the same kind as
+`SocialNetwork.Bias.sum_range_card_le_sum`, which is the case `m = 0`, `f = id`.  The proof is
+the same: induction on the largest element.  Adjoining a new maximum `a` to `s` adds `f a` to
+the sum and `f (m + #s)` to the bound, and `m + #s ≤ a` because `s ⊆ Ico m a`. -/
+theorem sum_range_add_le_sum {f : ℕ → ℝ} (hf : Monotone f) (m : ℕ) :
+    ∀ s : Finset ℕ, (∀ x ∈ s, m ≤ x) →
+      ∑ i ∈ Finset.range s.card, f (m + i) ≤ ∑ x ∈ s, f x := by
+  intro s
+  induction s using Finset.induction_on_max with
+  | empty => intro _; simp
+  | insert a s ha ih =>
+      intro hs
+      have hmem : a ∉ s := fun h => lt_irrefl a (ha a h)
+      have hma : m ≤ a := hs a (Finset.mem_insert_self a s)
+      have hsub : ∀ x ∈ s, m ≤ x := fun x hx => hs x (Finset.mem_insert_of_mem hx)
+      have hcard : m + s.card ≤ a := by
+        have h1 : s ⊆ Finset.Ico m a := fun x hx => Finset.mem_Ico.2 ⟨hsub x hx, ha x hx⟩
+        have h2 := Finset.card_le_card h1
+        rw [Nat.card_Ico] at h2
+        omega
+      rw [Finset.card_insert_of_notMem hmem, Finset.sum_insert hmem, Finset.sum_range_succ]
+      have hih := ih hsub
+      have hfa : f (m + s.card) ≤ f a := hf hcard
+      linarith
+
+/-- The elementary inequality behind `η`: if the pairs carrying positive pressure have total
+rate at least `∑_{j=1}^{N-1} e^{βj}` and the remaining pairs at most `MN`, then the first carry
+at least the fraction `η` of the total rate.  This is `SocialNetwork.zeta_le_div_of_le` for
+Remark 5. -/
+theorem eta_le_div_of_le (N M : ℕ) {β S T : ℝ}
+    (hA : 0 < ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)))
+    (hAS : (∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ))) ≤ S)
+    (hT0 : 0 ≤ T) (hT : T ≤ ((M * N : ℕ) : ℝ))
+    (hden : (∑ j ∈ Finset.range N, Real.exp (β * (j : ℝ)))
+      = 1 + ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ))) :
+    eta N M β ≤ S / (S + T) := by
+  have hS : 0 < S := lt_of_lt_of_le hA hAS
+  have hST : 0 < S + T := by linarith
+  have hMN : (0 : ℝ) ≤ ((M * N : ℕ) : ℝ) := Nat.cast_nonneg _
+  unfold eta
+  rw [hden, div_le_div_iff₀ (by linarith) hST]
+  nlinarith [mul_le_mul_of_nonneg_right hAS hT0, mul_le_mul_of_nonneg_left hT hS.le]
+
 variable [NeZero N] [NeZero M]
 
 /-- The event `{U_0^{β,u} (A₁, O₁) > 0}` of Remark 5: the first expressed pair carries
@@ -224,18 +281,210 @@ theorem mem_steepLadderSet_of_positivePressure (hM : 2 ≤ M) {o : Opinion M}
   rw [hstate]
   exact hl.express_of_pos hM hω
 
+/-- `Y⁺ (v) = {(a, p) ∈ A × O : v (a, p) > 0}`, the pairs carrying strictly positive social
+pressure: the pairs whose expression Remark 5 keeps on a steep ladder. -/
+def posFinset (v : Pressure N M) : Finset (Jump N M) :=
+  Finset.univ.filter fun p => 0 < v p.1 p.2
+
+omit [NeZero N] [NeZero M] in
+theorem mem_posFinset {v : Pressure N M} {p : Jump N M} :
+    p ∈ posFinset v ↔ 0 < v p.1 p.2 := by simp [posFinset]
+
+omit [NeZero N] [NeZero M] in
+theorem positivePressureEvent_eq_preimage (l : Pressure N M) :
+    positivePressureEvent l
+      = (fun ω : ℕ → Jump N M => ω 0) ⁻¹' (posFinset l : Set (Jump N M)) := by
+  ext ω
+  simp [positivePressureEvent, posFinset]
+
+omit [NeZero N] [NeZero M] in
+/-- On a steep ladder the pairs carrying positive pressure have total rate at least
+`∑_{j=1}^{N-1} e^{βj}`.
+
+**This is the comparison Remark 5 makes**: the worst case over `L̂` is attained on `L`.  On a
+steep ladder the `o`-column is `N` pairwise distinct non-negative integers, one of them `0`, so
+the `N-1` positive ones are `N-1` distinct integers `≥ 1`; being distinct, they dominate
+`1, 2, …, N-1` term by term once sorted, and `j ↦ e^{βj}` is increasing.  On a ladder they are
+exactly `1, …, N-1`, which is the worst case.  Every other entry is non-positive, by the
+`other` field of Definition 4, so it contributes nothing to this sum. -/
+theorem sum_Ico_exp_le_sum_jumpRate (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β)
+    {o : Opinion M} {l : Pressure N M} (hl : IsSteepLadder o l) :
+    ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ))
+      ≤ ∑ p ∈ posFinset l, jumpRate β l p.1 p.2 := by
+  have hMZ : (0 : ℤ) < (M : ℤ) - 1 := one_lt_of_two_le hM
+  have hMR : (0 : ℝ) < (M : ℝ) - 1 := by
+    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  -- the `o`-column in the unscaled coordinates of the paper: `l (a, o) = (M-1) c a`
+  have hexists : ∀ a : Actor N, ∃ k : ℕ, l a o = ((M : ℤ) - 1) * (k : ℤ) := by
+    intro a
+    obtain ⟨k, hk⟩ := hl.dvd a
+    have h0 : (0 : ℤ) ≤ ((M : ℤ) - 1) * k := hk ▸ hl.nonneg a
+    have hknn : 0 ≤ k := by nlinarith
+    exact ⟨k.toNat, by rw [hk, Int.toNat_of_nonneg hknn]⟩
+  choose c hc using hexists
+  have hcinj : Function.Injective c := fun a b hab =>
+    hl.injective (show l a o = l b o by rw [hc a, hc b, hab])
+  have hrate : ∀ a : Actor N, jumpRate β l a o = Real.exp (β * (c a : ℝ)) := by
+    intro a
+    have hcast : ((l a o : ℤ) : ℝ) = ((M : ℝ) - 1) * (c a : ℝ) := by
+      rw [hc a]; push_cast; ring
+    unfold jumpRate
+    rw [hcast]
+    congr 1
+    rw [div_eq_iff (ne_of_gt hMR)]
+    ring
+  -- the positive pairs are the actors off the bottom of the `o`-column
+  obtain ⟨a₀, ha₀⟩ := hl.exists_zero
+  have hpaeq : (Finset.univ.filter fun a : Actor N => 0 < l a o) = Finset.univ.erase a₀ := by
+    ext a
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_erase, and_true]
+    constructor
+    · intro hpos hcon
+      rw [hcon, ha₀] at hpos
+      exact lt_irrefl 0 hpos
+    · intro hne
+      rcases lt_or_eq_of_le (hl.nonneg a) with hlt | heq
+      · exact hlt
+      · exact absurd (hl.injective (show l a o = l a₀ o by rw [← heq, ha₀])) hne
+  have hcard : (Finset.univ.filter fun a : Actor N => 0 < l a o).card = N - 1 := by
+    rw [hpaeq, Finset.card_erase_of_mem (Finset.mem_univ a₀), Finset.card_univ,
+      Fintype.card_fin]
+  -- rewrite the sum over pairs as a sum over those actors
+  have hposF : posFinset l
+      = (Finset.univ.filter fun a : Actor N => 0 < l a o).image (fun a => (a, o)) := by
+    ext p
+    simp only [mem_posFinset, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
+    constructor
+    · intro hp
+      have h2 : p.2 = o := hl.opinion_eq_of_pos hM hp
+      exact ⟨p.1, by rw [← h2]; exact hp, by rw [← h2]⟩
+    · rintro ⟨a, hapos, rfl⟩
+      exact hapos
+  have hstep : ∑ p ∈ posFinset l, jumpRate β l p.1 p.2
+      = ∑ a ∈ Finset.univ.filter (fun a : Actor N => 0 < l a o),
+          Real.exp (β * (c a : ℝ)) := by
+    rw [hposF, Finset.sum_image fun a _ b _ hab => by simpa using hab]
+    exact Finset.sum_congr rfl fun a _ => hrate a
+  -- the values `c a` are pairwise distinct naturals, all at least `1`
+  have hsum : ∑ a ∈ Finset.univ.filter (fun a : Actor N => 0 < l a o),
+        Real.exp (β * (c a : ℝ))
+      = ∑ x ∈ (Finset.univ.filter fun a : Actor N => 0 < l a o).image c,
+        Real.exp (β * (x : ℝ)) := by
+    rw [Finset.sum_image fun a _ b _ hab => hcinj hab]
+  have hcardimg : ((Finset.univ.filter fun a : Actor N => 0 < l a o).image c).card = N - 1 := by
+    rw [Finset.card_image_of_injective _ hcinj, hcard]
+  have hge1 : ∀ x ∈ (Finset.univ.filter fun a : Actor N => 0 < l a o).image c, 1 ≤ x := by
+    intro x hx
+    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.1 hx
+    have hapos : 0 < l a o := (Finset.mem_filter.1 ha).2
+    rcases Nat.eq_zero_or_pos (c a) with h0 | h0
+    · exfalso
+      have hzero : l a o = 0 := by rw [hc a, h0]; simp
+      linarith
+    · exact h0
+  have hmono : Monotone fun j : ℕ => Real.exp (β * (j : ℝ)) := fun i j hij =>
+    Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left (by exact_mod_cast hij) hβ)
+  have hkey := sum_range_add_le_sum hmono 1 _ hge1
+  rw [hcardimg] at hkey
+  rw [hstep, hsum, Finset.sum_Ico_eq_sum_range]
+  exact hkey
+
+omit [NeZero N] [NeZero M] in
+/-- The pairs that carry no positive pressure have total rate at most `MN`: each of them has a
+non-positive entry, hence a rate at most `1`, and there are at most `MN` of them.
+
+**Supplies a step the paper asserts**: the denominator of `η` is written down in Remark 5
+without argument.  It is the same counting as in Proposition 8. -/
+theorem sum_jumpRate_compl_le {β : ℝ} (hβ : 0 ≤ β) (hM : 2 ≤ M) (v : Pressure N M) :
+    ∑ p ∈ Finset.univ \ posFinset v, jumpRate β v p.1 p.2 ≤ ((M * N : ℕ) : ℝ) := by
+  have hMR : (0 : ℝ) < (M : ℝ) - 1 := by
+    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  have hle : ∀ p ∈ Finset.univ \ posFinset v, jumpRate β v p.1 p.2 ≤ 1 := by
+    intro p hp
+    have hnp : v p.1 p.2 ≤ 0 :=
+      not_lt.1 fun hcon => (Finset.mem_sdiff.1 hp).2 (mem_posFinset.2 hcon)
+    have hcast : ((v p.1 p.2 : ℤ) : ℝ) ≤ 0 := by exact_mod_cast hnp
+    have hexp : β * ((v p.1 p.2 : ℤ) : ℝ) / ((M : ℝ) - 1) ≤ 0 := by
+      rw [div_le_iff₀ hMR]
+      nlinarith
+    calc jumpRate β v p.1 p.2 = Real.exp (β * ((v p.1 p.2 : ℤ) : ℝ) / ((M : ℝ) - 1)) := rfl
+      _ ≤ Real.exp 0 := Real.exp_le_exp.2 hexp
+      _ = 1 := Real.exp_zero
+  have hcard : (((Finset.univ \ posFinset v).card : ℕ) : ℝ) ≤ ((M * N : ℕ) : ℝ) := by
+    have h := Finset.card_le_card (Finset.subset_univ (Finset.univ \ posFinset v))
+    rw [Finset.card_univ, Fintype.card_prod, Fintype.card_fin, Fintype.card_fin,
+      Nat.mul_comm] at h
+    exact_mod_cast h
+  calc ∑ p ∈ Finset.univ \ posFinset v, jumpRate β v p.1 p.2
+      ≤ (Finset.univ \ posFinset v).card • (1 : ℝ) :=
+        Finset.sum_le_card_nsmul _ _ _ hle
+    _ = (((Finset.univ \ posFinset v).card : ℕ) : ℝ) := by simp
+    _ ≤ ((M * N : ℕ) : ℝ) := hcard
+
+/-- **Remark 5**, the bound `η`, at the level of one expression: from any steep ladder the
+first expressed pair carries positive pressure with probability at least `η`. -/
+theorem eta_le_jumpPMF_posFinset (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {o : Opinion M} {l : Pressure N M} (hl : IsSteepLadder o l) :
+    ENNReal.ofReal (eta N M β) ≤ (jumpPMF β l).toMeasure (posFinset l) := by
+  have hS0 : (0 : ℝ) ≤ ∑ p ∈ posFinset l, jumpRate β l p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (jumpRate_pos β l p.1 p.2).le
+  have hT0 : (0 : ℝ) ≤ ∑ p ∈ Finset.univ \ posFinset l, jumpRate β l p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (jumpRate_pos β l p.1 p.2).le
+  have hApos : 0 < ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) :=
+    Finset.sum_pos (fun j _ => Real.exp_pos _)
+      ⟨1, Finset.mem_Ico.2 ⟨le_rfl, by omega⟩⟩
+  have hAS := sum_Ico_exp_le_sum_jumpRate hM hβ hl
+  have hT := sum_jumpRate_compl_le hβ hM l
+  have hSpos : (0 : ℝ) < ∑ p ∈ posFinset l, jumpRate β l p.1 p.2 :=
+    lt_of_lt_of_le hApos hAS
+  have hreal : eta N M β
+      ≤ (∑ p ∈ posFinset l, jumpRate β l p.1 p.2)
+        / ((∑ p ∈ posFinset l, jumpRate β l p.1 p.2)
+          + ∑ p ∈ Finset.univ \ posFinset l, jumpRate β l p.1 p.2) :=
+    eta_le_div_of_le N M hApos hAS hT0 hT
+      (sum_range_eq_one_add_sum_Ico (N := N) (by omega) β)
+  -- transport the real inequality to the Gibbs law of equation (3)
+  have hw : ∀ s : Finset (Jump N M),
+      (∑ p ∈ s, jumpWeight β l p) = ENNReal.ofReal (∑ p ∈ s, jumpRate β l p.1 p.2) := by
+    intro s
+    rw [ENNReal.ofReal_sum_of_nonneg fun p _ => (jumpRate_pos β l p.1 p.2).le]
+    rfl
+  have hsplit : (∑ p ∈ posFinset l, jumpRate β l p.1 p.2)
+      + (∑ p ∈ Finset.univ \ posFinset l, jumpRate β l p.1 p.2)
+      = ∑ p : Jump N M, jumpRate β l p.1 p.2 := by
+    rw [add_comm]
+    exact Finset.sum_sdiff (Finset.subset_univ _)
+  have hST : (0 : ℝ) < (∑ p ∈ posFinset l, jumpRate β l p.1 p.2)
+      + ∑ p ∈ Finset.univ \ posFinset l, jumpRate β l p.1 p.2 := by linarith
+  have htsum : (∑' q : Jump N M, jumpWeight β l q)
+      = ENNReal.ofReal ((∑ p ∈ posFinset l, jumpRate β l p.1 p.2)
+        + ∑ p ∈ Finset.univ \ posFinset l, jumpRate β l p.1 p.2) := by
+    rw [tsum_eq_sum (s := Finset.univ) fun p hp => absurd (Finset.mem_univ p) hp,
+      hw Finset.univ, hsplit]
+  rw [PMF.toMeasure_apply_finset]
+  simp only [jumpPMF_apply]
+  rw [← Finset.sum_mul, hw (posFinset l), htsum, ← ENNReal.ofReal_inv_of_pos hST,
+    ← ENNReal.ofReal_mul hS0, ← div_eq_mul_inv]
+  exact ENNReal.ofReal_le_ofReal hreal
+
 /-- **Remark 5**, the bound `η`: from any steep ladder the first expressed pair carries
 positive pressure with probability at least `η`.
 
-The paper's argument is a comparison: the worst case over `L̂` is attained on `L`, where the
-`N` pressures for the supported opinion are exactly `0, 1, …, N-1`.
+Follows the paper's argument, which is a comparison: the worst case over `L̂` is attained on
+`L`, where the `N` pressures for the supported opinion are exactly `0, 1, …, N-1`.  That
+comparison is `SocialNetwork.sum_Ico_exp_le_sum_jumpRate`; the denominator is
+`SocialNetwork.sum_jumpRate_compl_le`, and the two are combined by the elementary inequality
+`SocialNetwork.eta_le_div_of_le`.
 
-**Unproved.**  What is missing is the comparison itself; the arithmetic of `η` is available
-through `SocialNetwork.jumpPMF_apply`. -/
+**Supplies a step the paper asserts**: that the worst case over `L̂` is attained on `L`.  Remark
+5 writes the two inequalities down in a single line and argues neither. -/
 theorem eta_le_pathMeasure_positivePressure (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {o : Opinion M} {l : Pressure N M} (hl : IsSteepLadder o l) :
     ENNReal.ofReal (eta N M β) ≤ pathMeasure β l (positivePressureEvent l) := by
-  sorry
+  rw [positivePressureEvent_eq_preimage l, pathMeasure_preimage_zero]
+  exact eta_le_jumpPMF_posFinset hM hN hβ hl
 
 /-- Iterating Remark 5: from a steep ladder, the skeleton stays on `L̂` for `m` steps with
 probability at least `η^m`.  This is the estimate that Proposition 9 uses to keep the process
