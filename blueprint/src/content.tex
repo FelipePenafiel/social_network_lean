@@ -416,10 +416,35 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   the Mathlib gap recorded below for
   \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
 
-  What is \emph{not} proved is the iterate $\eta^m$,
-  \texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}: it needs the
-  conditioning of Proposition~\ref{prop:greedy-prob} again, on an event that
-  moves with the state.
+\end{proof}
+
+\begin{lemma}[Remark~5 iterated]
+  \label{lem:eta-pow}
+  \lean{SocialNetwork.eta_pow_le_pathMeasure_steepLadder, SocialNetwork.eta_pow_le_pathMeasure_positiveEvents, SocialNetwork.IsPositiveAt, SocialNetwork.positiveEvents, SocialNetwork.positiveHistory, SocialNetwork.IsSteepLadder.state_of_isPositiveAt, SocialNetwork.eta_le_partialTraj_succ, SocialNetwork.eta_pow_le_historyMeasure}
+  \leanok
+  \uses{lem:eta, lem:steep-stable}
+  For $\hat{l} \in \steep$ and any $m$,
+  \[
+    \mathbb{P}\bigl( \Uskel{\hat{l}}_k \in \steep \ \text{for all } k \le m \bigr)
+      \ge \eta^m .
+  \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper asserts}: the iteration itself.  Remark~5
+  states the one-step bound; the sketch of Proposition~9 uses the $m$-step one
+  --- ``by Remark 5 we show that starting from $l \in \ladder$, a sequence of
+  events $\{\Uproc{l}_{T_{j-1}}(A_j,O_j) > 0\}$'' --- without deriving it.
+
+  It is the induction of Proposition~\ref{prop:greedy-prob} along the
+  finite-horizon kernels, run on the event that every expression so far was made
+  from a positive entry.  One thing differs, and it is what makes the event move
+  with the state: $\zeta_\beta$ bounds the greedy step at \emph{every} matrix, so
+  that induction needs nothing of the history it conditions on, whereas $\eta$
+  holds only on $\steep$, so this one has to know that the history has kept the
+  state there.  That is exactly what the event says, by
+  Lemma~\ref{lem:steep-stable} iterated
+  (\texttt{SocialNetwork.IsSteepLadder.state\_of\_isPositiveAt}).
 \end{proof}
 
 \begin{theorem}[Concentration of $\muinv$, Theorem~2]
@@ -862,13 +887,15 @@ the process pointwise.
   $\muskel(u) \le C' e^{-\beta(N-1)}$ with $C' = (NM)^{(M+1)N+1}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:reach-ladder, lem:eta, prop:greedy-prob}
+  \uses{prop:reach-ladder, lem:eta, lem:eta-pow, prop:greedy-prob}
   By Kac's lemma $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]
   \ge \sum_{m \ge (M+1)N} \mathbb{P}(\Rskel{u}(u) \ge m)$.  A run of events
   $\xi_j^u$ takes the process to $\ladder$ without visiting $u$
   (Proposition~\ref{prop:reach-ladder}) with the probability of
-  Proposition~\ref{prop:greedy-prob}, and Lemma~\ref{lem:eta} then keeps it in
-  $\steep$.  \textbf{Not formalised}: Mathlib has no Kac lemma.
+  Proposition~\ref{prop:greedy-prob}, and Lemma~\ref{lem:eta-pow} then keeps it
+  in $\steep$.  \textbf{Not formalised}: Mathlib has no Kac lemma.  Everything
+  else this proof needs, other than
+  Proposition~\ref{prop:reach-ladder}, is now in place.
 \end{proof}
 
 \begin{corollary}[Corollary~10]
@@ -1406,7 +1433,7 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-one proofs
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-two proofs
 carry \texttt{\textbackslash leanok}.
 
 \medskip
@@ -1428,17 +1455,20 @@ rounding it down to the paper's $k = \lceil n_a/M \rceil$, which only makes the
 intermediate bound larger, and supplies $k \ge 1$.
 
 \medskip
-\noindent\textbf{Supply a step the paper asserts} (nine).
+\noindent\textbf{Supply a step the paper asserts} (ten).
 Lemmas~\ref{lem:state-stable}, \ref{lem:consensus-pos}, \ref{lem:steep-stable},
-\ref{lem:favouring-max}, \ref{lem:closing} and~\ref{lem:eta},
-Remarks~\ref{rem:ladder-steep} and~\ref{rem:degenerate}, and the bound
+\ref{lem:favouring-max}, \ref{lem:closing}, \ref{lem:eta}
+and~\ref{lem:eta-pow}, Remarks~\ref{rem:ladder-steep}
+and~\ref{rem:degenerate}, and the bound
 $\tau(u) \le N+1$ of Definition~\ref{def:tau}.  Each corresponds to a sentence
 in the paper of the form ``note that'', ``indeed'', or an unremarked clause
 inside a proof --- ``Note that $\ladder \subset \steep$'', ``Note that
-$\tau(u) \in \{2, \dots, N+1\}$''.  All nine are true and none is deep; what
-they are not is checks of anything the paper argued.  Lemma~\ref{lem:eta} is the
-substantial one: the paper writes the two inequalities defining $\eta$ in a
-single line and argues neither.
+$\tau(u) \in \{2, \dots, N+1\}$''.  All ten are true and none is deep; what
+they are not is checks of anything the paper argued.  Lemmas~\ref{lem:eta}
+and~\ref{lem:eta-pow} are the substantial ones: the paper writes the two
+inequalities defining $\eta$ in a single line and argues neither, and uses the
+$m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
+without deriving it.
 
 \medskip
 \noindent\textbf{No counterpart in the paper} (five).
@@ -1525,13 +1555,13 @@ their presentation, so they are recorded rather than guessed at in Lean.
 
 \subsection*{Routine, and now done}
 
-Six statements were listed here as neither deep nor blocked.  They are now
+Seven statements were listed here as neither deep nor blocked.  They are now
 proved, and the paragraph is kept as the record of what they cost.  The first
 four fall in the third case of Remark~\ref{rem:green}: the paper proves none of
-them, so none of these is a check of anything it wrote.  The last two, added
-when the first four were cleared, do not: Remark~\ref{rem:remark8} is argued in
-the paper and the Lean proof follows it, and Lemma~\ref{lem:eta} supplies an
-argument the paper asserts.
+them, so none of these is a check of anything it wrote.  The last three, added
+as the earlier ones were cleared, do not: Remark~\ref{rem:remark8} is argued in
+the paper and the Lean proof follows it, and Lemmas~\ref{lem:eta}
+and~\ref{lem:eta-pow} supply arguments the paper asserts.
 
 \begin{itemize}
   \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
@@ -1574,14 +1604,18 @@ argument the paper asserts.
     dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
     \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
     on the largest element.
+  \item Lemma~\ref{lem:eta-pow}, the iterate $\eta^m$.  As advertised: the
+    induction of Proposition~\ref{prop:greedy-prob} along the Ionescu--Tulcea
+    kernels, transcribed against the one-step bound of Lemma~\ref{lem:eta}, with
+    the event that every expression so far was made from a positive entry in
+    place of the greedy one.  The one real difference is that $\eta$, unlike
+    $\zeta_\beta$, is not uniform in the matrix, so the finite-horizon step has
+    to carry the steepness of the state the history reaches.
 \end{itemize}
 
-Still here, and still routine: the iterate $\eta^m$,
-\texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}.  It is
-Proposition~\ref{prop:greedy-prob}'s induction along the Ionescu--Tulcea
-kernels, run against Remark~\ref{rem:ladder-steep} and Lemma~\ref{lem:eta}
-instead of the one-step greedy bound; the event moves with the state, so the
-finite-horizon step needs restating, but nothing new is needed to prove it.
+Nothing is left on this list.  What is unproved here is blocked on Mathlib, on
+the paper, or --- for \texttt{measurable\_hittingTimeCts} --- on a choice about
+the statement, recorded next.
 
 \subsection*{Not routine after all}
 
@@ -1612,11 +1646,6 @@ In rough order of cost.
     previous subsection: decide between an almost-sure statement and a proof
     that goes through the null set, then carry it out.  This is the last of the
     unproved statements here that are nobody's fault.
-  \item The iterate $\eta^m$,
-    \texttt{SocialNetwork.eta\_pow\_le\_pathMeasure\_steepLadder}, now that
-    Lemma~\ref{lem:eta} gives the one-step bound: rerun the induction of
-    Proposition~\ref{prop:greedy-prob} along the finite-horizon kernels, on the
-    event $\{ \Uskel{\hat{l}}_k \in \steep \ \forall k \le m \}$.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
     Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
     authors first, since the repairs change the written proofs.
@@ -1636,7 +1665,7 @@ In rough order of cost.
     largest item, and the one the fewest results depend on.
 \end{enumerate}
 
-Items 5, 6 and 7 are contributions to Mathlib rather than to this repository.
+Items 3, 4 and 5 are contributions to Mathlib rather than to this repository.
 The engineering companion to this blueprint, \texttt{blueprint/blueprint.md},
 records exactly what the library does and does not provide, with names, files
 and line numbers, checked against the pinned revision.

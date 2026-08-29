@@ -23,10 +23,10 @@ formalisation has to fill in", exactly where the written proofs fail to compose,
 repairs appear to work.  Both repairs change the written arguments rather than their
 presentation, so they are recorded rather than guessed at.
 
-This file also proves the bound `η` of Remark 5, in both halves: the deterministic one —
-expressing a pair that carries positive pressure keeps a steep ladder steep — and the
-probabilistic one, that such a pair is expressed with probability at least `η`.  What is still
-unproved is only the *iterate* `η^m`, which needs the conditioning of Proposition 8 again.
+This file also proves Remark 5 entire: the deterministic half — expressing a pair that carries
+positive pressure keeps a steep ladder steep — the probabilistic half, that such a pair is
+expressed with probability at least `η`, and the iterate `η^m`, which reruns the conditioning
+of Proposition 8 against a one-step bound that holds only on `L̂`.
 
 ## Main definitions
 
@@ -45,6 +45,8 @@ unproved is only the *iterate* `η^m`, which needs the conditioning of Propositi
 * `SocialNetwork.eta_le_pathMeasure_positivePressure` — the bound `η` of Remark 5, proved.
 * `SocialNetwork.sum_Ico_exp_le_sum_jumpRate` — the comparison it rests on: the worst case
   over `L̂` is attained on `L`.
+* `SocialNetwork.eta_pow_le_pathMeasure_steepLadder` — Remark 5 iterated: the skeleton stays
+  on `L̂` for `m` steps with probability at least `η^m`.
 -/
 
 namespace SocialNetwork
@@ -486,14 +488,263 @@ theorem eta_le_pathMeasure_positivePressure (hM : 2 ≤ M) (hN : 3 ≤ N) {β : 
   rw [positivePressureEvent_eq_preimage l, pathMeasure_preimage_zero]
   exact eta_le_jumpPMF_posFinset hM hN hβ hl
 
+/-! #### Iterating Remark 5
+
+Remark 5 gives one expression: from a steep ladder, the next pair carries positive pressure
+with probability at least `η`, and the state that results is again a steep ladder.  Iterating
+it is Proposition 8's induction run against a different one-step bound, and it goes the same
+way — along the finite-horizon kernels `ProbabilityTheory.Kernel.partialTraj` of the
+Ionescu-Tulcea construction, which is what `SocialNetwork.zeta_le_partialTraj_succ` does for
+the greedy event.
+
+One thing differs, and it is what makes the event move with the state.  The greedy bound
+`ζ_β` holds at *every* matrix, so the induction step of Proposition 8 needs nothing of the
+history it conditions on.  The bound `η` holds only on `L̂`, so the step here has to know that
+the history it conditions on has kept the state there — which is exactly what the event under
+the induction says, by `SocialNetwork.IsSteepLadder.state_of_isPositiveAt`. -/
+
+section Iterate
+
+variable {β : ℝ} {o : Opinion M} {l : Pressure N M}
+
+/-- The expression at step `k` is made by a pair carrying strictly positive social pressure.
+This is to Remark 5 what `SocialNetwork.IsGreedyAt` is to Proposition 8: a condition on the
+realisation, so a predicate on trajectories. -/
+def IsPositiveAt (T : Trajectory N M) (u : Pressure N M) (k : ℕ) : Prop :=
+  0 < T.state u k (T.actor k) (T.opinion k)
+
+omit [NeZero N] [NeZero M] in
+theorem isPositiveAt_iff (T : Trajectory N M) (u : Pressure N M) (k : ℕ) :
+    IsPositiveAt T u k ↔ 0 < T.state u k (T.actor k) (T.opinion k) := Iff.rfl
+
+omit [NeZero N] [NeZero M] in
+/-- **The deterministic half of Remark 5, iterated**: while every expression is made from a
+positive entry, the state stays on the steep ladder it started on.  This is
+`SocialNetwork.IsSteepLadder.express_of_pos` run along a trajectory. -/
+theorem IsSteepLadder.state_of_isPositiveAt (hM : 2 ≤ M) (hl : IsSteepLadder o l)
+    (T : Trajectory N M) (n : ℕ) (hpos : ∀ k < n, IsPositiveAt T l k) :
+    IsSteepLadder o (T.state l n) := by
+  induction n with
+  | zero => rw [Trajectory.state_zero]; exact hl
+  | succ n ih =>
+      rw [Trajectory.state_succ]
+      exact (ih fun k hk => hpos k (by omega)).express_of_pos hM (hpos n (by omega))
+
+/-- The event that each of the first `m` expressions is made from a positive entry. -/
+def positiveEvents (u : Pressure N M) (m : ℕ) : Set (ℕ → Jump N M) :=
+  {ω | ∀ k < m, IsPositiveAt (Trajectory.ofPath ω) u k}
+
+/-- The same event, read on histories of the first `n + 1` expressed pairs. -/
+def positiveHistory (u : Pressure N M) (n : ℕ) : Set ((i : Finset.Iic n) → Jump N M) :=
+  {h | ∀ k ≤ n, IsPositiveAt (Trajectory.ofHistory h) u k}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_positiveHistory (u : Pressure N M) (n : ℕ) :
+    MeasurableSet (positiveHistory u n) := MeasurableSet.of_discrete
+
+omit [NeZero N] [NeZero M] in
+/-- The condition at step `k` only constrains the first `k + 1` expressed pairs, so reading it
+off a truncated path gives the same answer. -/
+theorem isPositiveAt_ofHistory_frestrictLe (u : Pressure N M) (ω : ℕ → Jump N M) {n k : ℕ}
+    (hk : k ≤ n) :
+    IsPositiveAt
+        (Trajectory.ofHistory (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) u k
+      ↔ IsPositiveAt (Trajectory.ofPath ω) u k := by
+  have hstate := Trajectory.state_ofHistory_frestrictLe u ω (n := n) (k := k) (by omega)
+  have hactor : (Trajectory.ofHistory
+      (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)).actor k = (ω k).1 := by
+    rw [Trajectory.ofHistory_actor _ hk, Preorder.frestrictLe_apply]
+  have hopinion : (Trajectory.ofHistory
+      (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)).opinion k = (ω k).2 := by
+    rw [Trajectory.ofHistory_opinion _ hk, Preorder.frestrictLe_apply]
+  simp only [IsPositiveAt, hstate, hactor, hopinion, Trajectory.actor_ofPath,
+    Trajectory.opinion_ofPath]
+
+omit [NeZero N] [NeZero M] in
+/-- `positiveEvents u (n+1)` is the cylinder over `positiveHistory u n`. -/
+theorem positiveEvents_eq_preimage (u : Pressure N M) (n : ℕ) :
+    positiveEvents u (n + 1)
+      = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹' positiveHistory u n := by
+  ext ω
+  constructor
+  · exact fun hω k hk => (isPositiveAt_ofHistory_frestrictLe u ω hk).2 (hω k (by omega))
+  · exact fun hω k hk =>
+      (isPositiveAt_ofHistory_frestrictLe u ω (show k ≤ n by omega)).1 (hω k (by omega))
+
+omit [NeZero N] [NeZero M] in
+/-- On `positiveHistory l n` the state stays on the steep ladder `l` started on, for every time
+up to `n + 1`.  This is what makes the one-step bound `η` available at the induction step. -/
+theorem isSteepLadder_state_ofHistory (hM : 2 ≤ M) (hl : IsSteepLadder o l) {n : ℕ}
+    {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ positiveHistory l n) {k : ℕ}
+    (hk : k ≤ n + 1) : IsSteepLadder o ((Trajectory.ofHistory h).state l k) :=
+  hl.state_of_isPositiveAt hM _ k fun j hj => hh j (by omega)
+
+omit [NeZero N] [NeZero M] in
+/-- If a history of length `n + 2` restricts to one in `positiveHistory l n` and its last
+coordinate carries positive pressure at the matrix that replaying the restriction reaches, then
+it lies in `positiveHistory l (n + 1)`. -/
+theorem mem_positiveHistory_succ {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
+    {h : (i : Finset.Iic n) → Jump N M}
+    (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h)
+    (hh : h ∈ positiveHistory l n)
+    (hlast : x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩
+      ∈ posFinset ((Trajectory.ofHistory h).state l (n + 1))) :
+    x ∈ positiveHistory l (n + 1) := by
+  intro k hk
+  rw [isPositiveAt_iff]
+  rcases Nat.lt_or_ge k (n + 1) with hlt | hge
+  · have hkn : k ≤ n := by omega
+    have hprev := (isPositiveAt_iff _ _ _).1 (hh k hkn)
+    rw [ofHistory_state_eq hx l (k := k) (by omega), ofHistory_actor_eq hx hkn,
+      ofHistory_opinion_eq hx hkn]
+    exact hprev
+  · have hkeq : k = n + 1 := le_antisymm hk hge
+    subst hkeq
+    rw [ofHistory_state_eq hx l (k := n + 1) le_rfl,
+      Trajectory.ofHistory_actor _ (le_refl (n + 1)),
+      Trajectory.ofHistory_opinion _ (le_refl (n + 1))]
+    exact mem_posFinset.1 hlast
+
+/-- **The induction step.**  Given a history that has kept the state on the steep ladder `l`
+started on, the next expression is made from a positive entry with probability at least `η`.
+
+This is `SocialNetwork.zeta_le_partialTraj_succ` with the one-step bound of Proposition 8
+replaced by that of Remark 5; the steepness the latter needs is
+`SocialNetwork.isSteepLadder_state_ofHistory`. -/
+theorem eta_le_partialTraj_succ (hM : 2 ≤ M) (hN : 3 ≤ N) (hβ : 0 ≤ β)
+    (hl : IsSteepLadder o l) (n : ℕ) {h : (i : Finset.Iic n) → Jump N M}
+    (hh : h ∈ positiveHistory l n) :
+    ENNReal.ofReal (eta N M β)
+      ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+          (positiveHistory l (n + 1)) := by
+  -- the past is almost surely `h`
+  have hmapA : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (drivingKernel β l) n (n + 1) h).map
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n))
+      = Measure.dirac h := by
+    rw [Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Jump N M) h
+      (Nat.le_succ n), Kernel.partialTraj_self, Kernel.id_apply]
+  have hAone : Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h}) = 1 := by
+    have hm := Measure.map_apply
+      (μ := Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h)
+      (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Jump N M) (Nat.le_succ n))
+      (measurableSet_singleton h)
+    rw [hmapA] at hm
+    rw [← hm]
+    exact Measure.dirac_apply_of_mem rfl
+  have hAcompl : Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})ᶜ = 0 :=
+    (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2 hAone
+  -- the last coordinate follows the Gibbs law of equation (3) at the matrix `h` reaches
+  have hmapB : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (drivingKernel β l) n (n + 1) h).map
+      (fun x : (i : Finset.Iic (n + 1)) → Jump N M => x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
+      = drivingKernel β l n h := by
+    rw [← Kernel.map_apply _ Measurable.of_discrete, Kernel.map_partialTraj_succ_self]
+  have hB : ENNReal.ofReal (eta N M β)
+      ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+          ((fun x : (i : Finset.Iic (n + 1)) → Jump N M =>
+              x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+            (posFinset ((Trajectory.ofHistory h).state l (n + 1)))) := by
+    rw [← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete, hmapB,
+      drivingKernel_apply]
+    exact eta_le_jumpPMF_posFinset hM hN hβ (isSteepLadder_state_ofHistory hM hl hh le_rfl)
+  exact le_measure_of_inter hAcompl hB fun x hx => mem_positiveHistory_succ hx.1 hh hx.2
+
+theorem eta_le_historyMeasure_zero (hM : 2 ≤ M) (hN : 3 ≤ N) (hβ : 0 ≤ β)
+    (hl : IsSteepLadder o l) :
+    ENNReal.ofReal (eta N M β) ≤ historyMeasure β l 0 (positiveHistory l 0) := by
+  have hpre : toHistoryZero ⁻¹' positiveHistory l 0 = (posFinset l : Set (Jump N M)) := by
+    ext z
+    have hact : (Trajectory.ofHistory (toHistoryZero z)).actor 0 = z.1 :=
+      Trajectory.ofHistory_actor _ (le_refl 0)
+    have hopi : (Trajectory.ofHistory (toHistoryZero z)).opinion 0 = z.2 :=
+      Trajectory.ofHistory_opinion _ (le_refl 0)
+    constructor
+    · intro hz
+      have h0 := (isPositiveAt_iff _ _ _).1 (hz 0 le_rfl)
+      rw [Trajectory.state_zero, hact, hopi] at h0
+      exact mem_posFinset.2 h0
+    · intro hz k hk
+      have hk0 : k = 0 := Nat.le_zero.1 hk
+      subst hk0
+      rw [isPositiveAt_iff, Trajectory.state_zero, hact, hopi]
+      exact mem_posFinset.1 hz
+  unfold historyMeasure
+  rw [Kernel.partialTraj_self, Measure.id_comp,
+    Measure.map_apply measurable_toHistoryZero MeasurableSet.of_discrete, hpre]
+  exact eta_le_jumpPMF_posFinset hM hN hβ hl
+
+theorem eta_pow_le_historyMeasure (hM : 2 ≤ M) (hN : 3 ≤ N) (hβ : 0 ≤ β)
+    (hl : IsSteepLadder o l) (n : ℕ) :
+    ENNReal.ofReal (eta N M β) ^ (n + 1) ≤ historyMeasure β l n (positiveHistory l n) := by
+  induction n with
+  | zero => simpa using eta_le_historyMeasure_zero hM hN hβ hl
+  | succ n ih =>
+      have hstep : historyMeasure β l (n + 1) (positiveHistory l (n + 1))
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+              (positiveHistory l (n + 1)) ∂(historyMeasure β l n) := by
+        unfold historyMeasure
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply (measurableSet_positiveHistory l (n + 1)) (Kernel.aemeasurable _)]
+      rw [hstep]
+      calc ENNReal.ofReal (eta N M β) ^ (n + 1 + 1)
+          = ENNReal.ofReal (eta N M β) * ENNReal.ofReal (eta N M β) ^ (n + 1) := by ring
+        _ ≤ ENNReal.ofReal (eta N M β) * historyMeasure β l n (positiveHistory l n) := by gcongr
+        _ = ∫⁻ h, (positiveHistory l n).indicator
+              (fun _ => ENNReal.ofReal (eta N M β)) h ∂(historyMeasure β l n) := by
+            rw [lintegral_indicator (measurableSet_positiveHistory l n), setLIntegral_const]
+        _ ≤ ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (drivingKernel β l) n (n + 1) h
+              (positiveHistory l (n + 1)) ∂(historyMeasure β l n) := by
+            refine lintegral_mono fun h => ?_
+            by_cases hh : h ∈ positiveHistory l n
+            · rw [Set.indicator_of_mem hh]
+              exact eta_le_partialTraj_succ hM hN hβ hl n hh
+            · rw [Set.indicator_of_notMem hh]
+              exact zero_le
+
+/-- **Remark 5, iterated**: from a steep ladder, the first `m` expressions are all made from a
+positive entry with probability at least `η^m`. -/
+theorem eta_pow_le_pathMeasure_positiveEvents (hM : 2 ≤ M) (hN : 3 ≤ N) (hβ : 0 ≤ β)
+    (hl : IsSteepLadder o l) (m : ℕ) :
+    ENNReal.ofReal (eta N M β) ^ m ≤ pathMeasure β l (positiveEvents l m) := by
+  rcases Nat.eq_zero_or_pos m with rfl | hm
+  · have huniv : positiveEvents l 0 = Set.univ := by
+      ext ω
+      simp [positiveEvents]
+    rw [pow_zero, huniv, measure_univ]
+  · obtain ⟨n, rfl⟩ : ∃ n, m = n + 1 := ⟨m - 1, by omega⟩
+    have hmap : (pathMeasure β l).map
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n) = historyMeasure β l n := by
+      unfold historyMeasure
+      rw [pathMeasure_def, Measure.map_comp _ _ (Preorder.measurable_frestrictLe n),
+        Kernel.traj_map_frestrictLe]
+    rw [positiveEvents_eq_preimage, ← Measure.map_apply (Preorder.measurable_frestrictLe n)
+      (measurableSet_positiveHistory l n), hmap]
+    exact eta_pow_le_historyMeasure hM hN hβ hl n
+
+end Iterate
+
 /-- Iterating Remark 5: from a steep ladder, the skeleton stays on `L̂` for `m` steps with
 probability at least `η^m`.  This is the estimate that Proposition 9 uses to keep the process
-away from a state `u ∉ L̂`. -/
+away from a state `u ∉ L̂`.
+
+Follows the paper, which writes, in the sketch of Proposition 9, ``by Remark 5 we show that
+starting from `l ∈ L`, a sequence of events `{U_{T_{j-1}} (A_j, O_j) > 0}`'' keeps the process
+on `L̂`.  The two halves of Remark 5 are `SocialNetwork.IsSteepLadder.state_of_isPositiveAt`
+and `SocialNetwork.eta_pow_le_pathMeasure_positiveEvents`; the inclusion between the two events
+is the only step here.
+
+**Supplies a step the paper asserts**: the iteration itself.  Remark 5 states the one-step
+bound and the sketch of Proposition 9 uses the `m`-step one without deriving it. -/
 theorem eta_pow_le_pathMeasure_steepLadder (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {o : Opinion M} {l : Pressure N M} (hl : IsSteepLadder o l) (m : ℕ) :
     ENNReal.ofReal (eta N M β) ^ m
       ≤ pathMeasure β l {ω : ℕ → Jump N M | ∀ k ≤ m, skeleton l k ω ∈ steepLadderSet N M} := by
-  sorry
+  refine le_trans (eta_pow_le_pathMeasure_positiveEvents hM hN hβ hl m) (measure_mono ?_)
+  intro ω hω k hk
+  exact ⟨o, hl.state_of_isPositiveAt hM (Trajectory.ofPath ω) k fun j hj => hω j (by omega)⟩
 
 end Remark5
 

@@ -97,6 +97,11 @@ jobs:
           #print axioms SocialNetwork.sum_jumpRate_compl_le
           #print axioms SocialNetwork.eta_le_jumpPMF_posFinset
           #print axioms SocialNetwork.eta_le_pathMeasure_positivePressure
+          #print axioms SocialNetwork.IsSteepLadder.state_of_isPositiveAt
+          #print axioms SocialNetwork.eta_le_partialTraj_succ
+          #print axioms SocialNetwork.eta_pow_le_historyMeasure
+          #print axioms SocialNetwork.eta_pow_le_pathMeasure_positiveEvents
+          #print axioms SocialNetwork.eta_pow_le_pathMeasure_steepLadder
           -- The continuous-time process
           #print axioms SocialNetwork.jumpCount_eq_iff
           #print axioms SocialNetwork.measurable_jumpCount

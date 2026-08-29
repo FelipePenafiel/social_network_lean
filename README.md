@@ -24,7 +24,7 @@ vocabulary of Appendix A.
 The **discrete-time probabilistic layer** is built and proved: the jump rates of equation (3),
 the skeleton kernel of Definition 3 as a `Kernel (Pressure N M) (Pressure N M)`, the law of a
 realisation via Mathlib's Ionescu–Tulcea theorem, the greedy events `ξₙ^u` as measurable sets,
-**Proposition 8** with Remark 4, and the bound `η` of **Remark 5**.
+**Proposition 8** with Remark 4, and **Remark 5** — the bound `η` and its iterate `η^m`.
 
 The **continuous-time process** is built — the jump-hold representation is a discrete-time
 chain carrying one real coordinate, so `Kernel.traj` constructs it — and with it the jump
@@ -42,18 +42,20 @@ written proofs do not compose — repairs are recorded), or simply routine and n
 
 The routine list is now empty.  `sum_ge_of_injective` (that `N` distinct naturals sum to at
 least `0 + 1 + ⋯ + (N-1)` — a Mathlib gap in its own right), the two measurability lemmas for
-the biased greedy events, `measurable_process`, **Remark 8** and **the bound `η` of Remark 5**
-are proved.  The bound `η` was the last item on that list that was mathematics rather than
-bookkeeping: it needs the comparison showing that the worst case over `L̂` is attained on `L`,
+the biased greedy events, `measurable_process`, **Remark 8** and **Remark 5 entire** are
+proved.  Remark 5 was the last item on that list that was mathematics rather than bookkeeping.
+Its bound `η` needs the comparison showing that the worst case over `L̂` is attained on `L`,
 which the paper writes down and does not argue, and that comparison rests on the monotone form
 of the same Mathlib gap — that `N-1` distinct naturals `≥ 1` dominate `1, 2, …, N-1` term by
-term under any increasing function.
+term under any increasing function.  Its iterate `η^m`, which the sketch of Proposition 9 uses
+without deriving, reruns Proposition 8's induction along the Ionescu–Tulcea kernels; unlike
+`ζ_β`, `η` is not uniform in the matrix, so the finite-horizon step has to carry the steepness
+of the state the history reaches.
 
 What is left over from that list is `measurable_hittingTimeCts`, which turned out not to be
 routine at all: the hitting time is an infimum over an uncountable family of times, and so
-needs path regularity that holds only almost surely.  The blueprint says why.  The one genuinely
-routine item still open is the *iterate* `η^m`, which reruns Proposition 8's induction along the
-Ionescu–Tulcea kernels against the one-step bound now available.
+needs path regularity that holds only almost surely.  The blueprint says why, and what has to
+be decided before it can be done.
 
 The library is **not** `sorry`-free, by design.  What CI enforces instead is that no
 declaration listed as complete in `.github/workflows/ci.yml` depends on `sorryAx`; every run
