@@ -1247,9 +1247,20 @@ the process pointwise.
   $\inf\{ n \ge 1 : \|U^{\alpha,u}_{T_{n-1}}(A_n^\alpha, \cdot)\|_\infty < N \} \le N$.
 \end{proposition}
 \begin{proof}
+  \leanok
   \uses{prop:low-pressure}
   The proof of Proposition~\ref{prop:low-pressure} is combinatorial and does not
-  see the bias.  \textbf{Not formalised}.
+  see the bias.  \textbf{Follows the paper's proof of Proposition~5}, which
+  Section~5.4 invokes verbatim: if each of the first $N$ expressions came from an
+  actor carrying pressure at least $N$, then none of them is the actor whose row
+  is null, and no two of them coincide, exhibiting $N+1$ distinct actors in a
+  network of $N$.
+
+  One step is supplied.  The quantity that is reset by expressing and then grows
+  by at most one per step is, in the unbiased model,
+  $\|U(a, \cdot)\|_\infty$; here it is $n_a$, the number of expressions heard.
+  The passage between them is $u(a,p) = c_p(1+\gamma) - \gamma n_a \le n_a$,
+  since $c_p \le n_a$ --- immediate from equation~(6), but not recorded there.
 \end{proof}
 
 \begin{definition}[The near-greedy event, Remark~7]

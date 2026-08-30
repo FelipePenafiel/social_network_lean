@@ -334,6 +334,23 @@ section Propositions
 
 variable [NeZero N] [NeZero M]
 
+/-- Along a realisation an actor hears at most one expression per step, so `nₐ` grows by at
+most one; it is reset, not incremented, in the step where the actor expresses. -/
+theorem heard_stateAfter_le (u : Profile N M) (ω : ℕ → Jump N M) (a : Actor N) (m k : ℕ) :
+    (stateAfter u ω (m + k)).heard a ≤ (stateAfter u ω m).heard a + k := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+      rw [show m + (k + 1) = m + k + 1 by ring, stateAfter_succ]
+      by_cases ha : a = (ω (m + k)).1
+      · rw [ha, Profile.heard_express_self]; omega
+      · rw [Profile.heard_express_of_ne ha]; omega
+
+/-- Expressing resets the number of expressions heard. -/
+theorem heard_stateAfter_expressed (u : Profile N M) (ω : ℕ → Jump N M) (j : ℕ) :
+    (stateAfter u ω (j + 1)).heard (ω j).1 = 0 := by
+  rw [stateAfter_succ, Profile.heard_express_self]
+
 /-- **Proposition 21.**  Among the first `N` expressions of the biased model, at least one
 comes from an actor whose social pressure on the expressed opinion is below `N`.
 
@@ -341,7 +358,52 @@ The proof is that of Proposition 5, which is combinatorial and does not see the 
 theorem exists_pressure_lt (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {u : Profile N M}
     (hu : IsBiasedState u) (ω : ℕ → Jump N M) :
     ∃ k < N, ∀ o, (stateAfter u ω k).pressure γ (ω k).1 o < (N : ℝ) := by
-  sorry
+  by_contra hcon
+  push_neg at hcon
+  -- every one of the first `N` expressions comes from an actor that has heard `≥ N`
+  have hbig : ∀ k, k < N → N ≤ (stateAfter u ω k).heard (ω k).1 := by
+    intro k hk
+    obtain ⟨o, ho⟩ := hcon k hk
+    have h := le_trans ho (Profile.pressure_le_heard hγ (stateAfter u ω k) (ω k).1 o)
+    exact_mod_cast h
+  obtain ⟨a₀, ha₀⟩ := hu.exists_zero_row
+  -- the actor with the null row has heard at most `k < N` by time `k`, so never expresses
+  have hne : ∀ k, k < N → (ω k).1 ≠ a₀ := by
+    intro k hk hEq
+    have h1 := heard_stateAfter_le u ω a₀ 0 k
+    rw [Nat.zero_add, stateAfter_zero, ha₀, Nat.zero_add] at h1
+    have h2 := hbig k hk
+    rw [hEq] at h2
+    omega
+  -- an actor that expressed at step `j` has heard only `k - j - 1 < N` by step `k`
+  have hpair : ∀ j k, j < k → k < N → (ω j).1 ≠ (ω k).1 := by
+    intro j k hjk hk hEq
+    have h0 := heard_stateAfter_expressed u ω j
+    have h1 := heard_stateAfter_le u ω (ω j).1 (j + 1) (k - j - 1)
+    rw [h0, Nat.zero_add, show j + 1 + (k - j - 1) = k by omega, hEq] at h1
+    have h2 := hbig k hk
+    omega
+  -- `a₀` and the first `N` expressing actors are `N + 1` distinct actors
+  have hinj : Function.Injective
+      fun i : Fin (N + 1) => if (i : ℕ) < N then (ω (i : ℕ)).1 else a₀ := by
+    intro i j hij
+    have hi' := i.isLt
+    have hj' := j.isLt
+    simp only at hij
+    by_cases hi : (i : ℕ) < N <;> by_cases hj : (j : ℕ) < N
+    · rw [if_pos hi, if_pos hj] at hij
+      rcases lt_trichotomy (i : ℕ) (j : ℕ) with h | h | h
+      · exact absurd hij (hpair _ _ h hj)
+      · exact Fin.val_injective h
+      · exact absurd hij.symm (hpair _ _ h hi)
+    · rw [if_pos hi, if_neg hj] at hij
+      exact absurd hij (hne _ hi)
+    · rw [if_neg hi, if_pos hj] at hij
+      exact absurd hij.symm (hne _ hj)
+    · exact Fin.val_injective (by omega)
+  have hcard := Fintype.card_le_of_injective _ hinj
+  simp only [Fintype.card_fin] at hcard
+  omega
 
 /-- **Proposition 22.**  On `⋂_{j=1}^{N} ξ̃_j^{α,u}`, the whole matrix is confined to
 `(-MN, N)` entrywise after `N` expressions. -/

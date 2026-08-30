@@ -80,6 +80,10 @@ jobs:
           #print axioms SocialNetwork.Bias.measurableSet_nearGreedyEvents
           #print axioms SocialNetwork.Bias.measurableSet_biasedGreedyEvents
           #print axioms SocialNetwork.Bias.pressure_eq_of_bias
+          #print axioms SocialNetwork.Bias.Profile.pressure_le_heard
+          #print axioms SocialNetwork.Bias.heard_stateAfter_le
+          #print axioms SocialNetwork.Bias.heard_stateAfter_expressed
+          #print axioms SocialNetwork.Bias.exists_pressure_lt
           #print axioms SocialNetwork.Bias.le_max_pressure
           #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
           #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
