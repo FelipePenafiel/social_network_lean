@@ -1117,11 +1117,28 @@ the process pointwise.
   $B_N^\alpha = \{ u \in \Salpha : \max_{a,o} u(a,o) \le N \}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:confinement}
+  \leanok
+  \uses{prop:confinement, prop:greedy-prob}
   As Proposition~\ref{prop:confinement},
   $\bigcap_{j=1}^N \xi_j^{\alpha,u} \subset \{U^{\alpha,u}_{T_N} \in B_N^\alpha\}$,
   and each $\xi_j^{\alpha,u}$ is the most probable of $NM$ choices.
-  \textbf{Not formalised}.
+  \textbf{Follows the paper's proof of Proposition~17}, in its two halves.
+
+  The inclusion is Proposition~\ref{prop:confinement}'s argument with $n_a$ in
+  place of $\|U(a,\cdot)\|_\infty$, in its two cases: either the first $N$
+  expressions come from $N$ distinct actors, and every row was reset, or some
+  actor expresses at $j < k < N$ and greediness at $k$ caps the whole profile at
+  $n_a = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.
+  Unlike Proposition~\ref{prop:biased-confinement}, the chain closes here:
+  greediness is \emph{exact}, so the maximum at the repeat time is the expressing
+  actor's own entry, with no slack of $1/(2\gamma)$ to absorb.
+
+  The probability is the one-step bound: with $\beta \ge 0$ the maximising pairs
+  carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
+  weight, and the iteration is the one of
+  Proposition~\ref{prop:greedy-prob}.  That iteration is run once in Lean, for
+  an arbitrary choice of admissible pairs at each profile, and instantiated both
+  here and at Proposition~\ref{prop:biased-greedy-prob}.
 \end{proof}
 
 \begin{proposition}[Proposition~18]

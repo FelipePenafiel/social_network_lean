@@ -88,6 +88,10 @@ jobs:
           #print axioms SocialNetwork.Bias.biasedZeta_le_partialTraj_succ
           #print axioms SocialNetwork.Bias.biasedZeta_pow_le_historyMeasure
           #print axioms SocialNetwork.Bias.biasedZeta_pow_le
+          #print axioms SocialNetwork.Bias.pow_le_pathMeasure_stepEvents
+          #print axioms SocialNetwork.Bias.inv_le_biasedJumpPMF_biasedArgmaxFinset
+          #print axioms SocialNetwork.Bias.pressure_stateAfter_le_of_biasedGreedy
+          #print axioms SocialNetwork.Bias.measure_biasedBounded_ge
           #print axioms SocialNetwork.Bias.le_max_pressure
           #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
           #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
