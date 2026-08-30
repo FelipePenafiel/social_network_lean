@@ -999,9 +999,39 @@ the process pointwise.
   $c_\beta \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{M-1}}$.
 \end{corollary}
 \begin{proof}
-  Rearrange $e^{-1} = \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
-  \ge e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}}$ from
-  Lemma~\ref{lem:exit-bounds}.  \textbf{Not formalised}.
+  \leanok
+  \uses{lem:exit-bounds, lem:ladder-nonempty}
+  Apply Lemma~\ref{lem:exit-bounds}, part 1, at $t = c_\beta$ to the ladder
+  $l$ of Lemma~\ref{lem:ladder-nonempty}, so that
+  \[
+    e^{-1} \;=\; \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
+    \;\ge\; e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}} ,
+  \]
+  and rearrange.  \emph{Formalised, but not sorry-free}: the proof above is
+  complete in Lean, and inherits \texttt{sorryAx} from
+  Lemma~\ref{lem:exit-bounds} alone.  Its only addition to the paper is the
+  witness: the statement quantifies over $l \in L^o$, so it is vacuous
+  unless $L^o \ne \emptyset$, which the paper does not record.
+\end{proof}
+
+\begin{lemma}[$L^o$ is inhabited]
+  \label{lem:ladder-nonempty}
+  \lean{SocialNetwork.ladderOf, SocialNetwork.isLadder_ladderOf,
+    SocialNetwork.exists_isLadder, SocialNetwork.ladderSet_nonempty}
+  \leanok
+  \uses{def:ladder}
+  For every $o \in O$ the set $L^o$ is non-empty: the matrix
+  $l(a, o) = a$, $l(a, p) = -a/(M-1)$ for $p \ne o$, is a ladder supporting
+  $o$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Each row sums to $a - (M-1)\tfrac{a}{M-1} = 0$, actor $1$ carries the null
+  row, the column for $o$ is the staircase $\{0, \dots, N-1\}$ by
+  construction, and the other columns are the prescribed multiples.
+  \textbf{Supplies a step the paper asserts}: every statement of the form
+  ``for any $l \in L^o$'' concluding something about $L^o$ --- Corollary~15
+  is the first --- is vacuous without it.
 \end{proof}
 
 \section{The negative-bias regime}

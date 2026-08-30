@@ -57,6 +57,9 @@ jobs:
           #print axioms SocialNetwork.trust_express
           #print axioms SocialNetwork.IsLadder.isSteepLadder
           #print axioms SocialNetwork.IsLadder.isConsensus
+          #print axioms SocialNetwork.isLadder_ladderOf
+          #print axioms SocialNetwork.exists_isLadder
+          #print axioms SocialNetwork.ladderSet_nonempty
           -- Section 5: the deterministic layer
           #print axioms SocialNetwork.Trajectory.isState_state
           #print axioms SocialNetwork.exists_rowSup_actor_lt

@@ -289,6 +289,44 @@ theorem IsSteepLadder.express_of_pos (hM : 2 ≤ M) (hu : IsSteepLadder o u) {a 
   rw [hu.opinion_eq_of_pos hM hpos]
   exact hu.express hM a
 
+/-! ### A ladder exists
+
+The paper never says so, but every statement that starts "for any `l ∈ L^o`" and concludes
+something about `L^o` — Corollary 15 is the first — is vacuous unless `L^o` is inhabited.
+The staircase itself is the witness. -/
+
+/-- The canonical ladder supporting `o`: actor `a` carries the pressure `a` for `o` (that is
+`(M - 1) a` in scaled coordinates) and `-a / (M - 1)` (that is `-a`) for every other opinion.
+
+**No counterpart in the paper**, which uses `L^o ≠ ∅` without remarking on it. -/
+def ladderOf (N : ℕ) {M : ℕ} (o : Opinion M) : Pressure N M := fun a p =>
+  if p = o then ((M : ℤ) - 1) * (a : ℕ) else -((a : ℕ) : ℤ)
+
+theorem isLadder_ladderOf [NeZero N] (o : Opinion M) : IsLadder o (ladderOf N o) where
+  isState :=
+    { trust_eq_zero := by
+        intro a
+        have h : ∀ p : Opinion M, ladderOf N o a p
+            = -((a : ℕ) : ℤ) + if p = o then (M : ℤ) * (a : ℕ) else 0 := by
+          intro p
+          unfold ladderOf
+          split <;> ring
+        rw [trust, Finset.sum_congr rfl fun p _ => h p, Finset.sum_add_distrib,
+          Finset.sum_ite_eq' Finset.univ o fun _ => (M : ℤ) * (a : ℕ)]
+        simp [Finset.card_univ]
+      exists_zero_row := ⟨0, by intro p; unfold ladderOf; split <;> simp⟩ }
+  column := by
+    unfold ladderOf ladderValues
+    simp
+  other := by
+    intro a p hp
+    unfold ladderOf
+    rw [if_neg hp, if_pos rfl]
+    ring
+
+theorem exists_isLadder [NeZero N] (o : Opinion M) : ∃ l : Pressure N M, IsLadder o l :=
+  ⟨ladderOf N o, isLadder_ladderOf o⟩
+
 end Ladder
 
 /-! ### The sets of Definitions 1, 2 and 4, as subsets of the state space
@@ -327,6 +365,10 @@ variable {o : Opinion M} {u : Pressure N M}
 @[simp] theorem mem_steepLadderSet : u ∈ steepLadderSet N M ↔ ∃ o, IsSteepLadder o u := Iff.rfl
 
 theorem IsLadder.mem_ladderSet (hu : IsLadder o u) : u ∈ ladderSet N M := ⟨o, hu⟩
+
+/-- `L^o`, and hence `L`, is inhabited: `SocialNetwork.ladderOf` is in it. -/
+theorem ladderSet_nonempty [NeZero N] [NeZero M] : (ladderSet N M).Nonempty :=
+  ⟨ladderOf N (0 : Opinion M), (0 : Opinion M), isLadder_ladderOf _⟩
 
 theorem IsConsensus.mem_consensusSet (hu : IsConsensus o u) : u ∈ consensusSet N o := hu
 
