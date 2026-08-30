@@ -406,7 +406,20 @@ theorem exists_pressure_lt (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < �
   omega
 
 /-- **Proposition 22.**  On `⋂_{j=1}^{N} ξ̃_j^{α,u}`, the whole matrix is confined to
-`(-MN, N)` entrywise after `N` expressions. -/
+`(-MN, N)` entrywise after `N` expressions.
+
+**Unproved, and it does not follow from Proposition 6 as Appendix C asserts.**  Proposition 6
+splits on whether the first `N` expressions come from distinct actors.  The distinct case
+transports unchanged.  In the repeat case, an actor expressing at steps `j < k < N` has heard
+`k - j - 1` expressions at step `k`, and greediness makes its entry the maximum of the whole
+matrix, so the matrix is capped at `(k - j - 1) + (N - k) = N - j - 1 ≤ N - 1`.  Under `ξ̃`
+the expressed pair is only within `1/(2γ)` of the maximum, so the same chain gives
+`N - 1 + 1/(2γ)`, which is below `N` only for `γ ≥ 1/2`.  In this regime
+`γ = 1/(M-1) - α < 1/(M-1)`, so that fails for every `M ≥ 3`.
+
+The statement is not obviously false: `u (a, p) ≤ n_a` makes the slack self-correcting, since
+a large maximum forces an actor that has heard a lot to express, which resets it.  The
+blueprint records what a proof would have to use, and what weaker constant would do instead. -/
 theorem entry_mem_of_nearGreedy (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
     {u : Profile N M} (hu : IsBiasedState u) :
     nearGreedyEvents γ u N ⊆

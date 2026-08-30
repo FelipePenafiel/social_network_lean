@@ -1290,7 +1290,8 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \uses{prop:confinement}
-  \textbf{Not formalised}.
+  \textbf{Not formalised, and it does not follow from Proposition~6 as the
+  text asserts.}  See Remark~\ref{rem:prop22}.
 \end{proof}
 
 \begin{proposition}[Proposition~23]
@@ -1491,6 +1492,47 @@ None of them affects the results.
   field.  It costs nothing elsewhere: the only place that builds a steep ladder
   from scratch is Remark~\ref{rem:ladder-steep}, and the non-negativity of a
   ladder supplies it.  Without it Lemma~\ref{lem:steep-stable} is false.
+\end{remark}
+
+\begin{remark}[Proposition~22 does not follow from Proposition~6]
+  \label{rem:prop22}
+  \uses{def:near-greedy, prop:confinement}
+  Appendix~C says only that ``the proof of Propositions 22, 23 and 24 follows
+  as the proofs of Propositions 6, 7 and 8''.  For Proposition~24 that is
+  right.  For Proposition~22 the transported argument does not reach the
+  stated bound, and the gap is exactly the slack $1/(2\gamma)$ that
+  distinguishes $\tilde{\xi}$ from $\xi$.
+
+  Proposition~6 runs in two cases.  If the first $N$ expressions come from $N$
+  distinct actors then every row was reset, so every entry is at most $N-1$;
+  that case transports unchanged, with $n_a$ in place of
+  $\|U(a,\cdot)\|_\infty$.  If some actor expresses at steps $j < k < N$, then
+  at step $k$ it has heard $k - j - 1$ expressions, and greediness makes its
+  entry the maximum of the whole matrix, so every entry is at most $k-j-1$;
+  over the remaining $N-k$ steps each entry grows by at most one, giving
+  $(k-j-1) + (N-k) = N-j-1 \le N-1$.
+
+  Under $\tilde{\xi}$ the expressed pair is only within $1/(2\gamma)$ of the
+  maximum, so the second case gives
+  \[
+    U^{\alpha,u}_{T_N}(a,p) \;<\; N - j - 1 + \tfrac{1}{2\gamma}
+    \;\le\; N - 1 + \tfrac{1}{2\gamma},
+  \]
+  which is $< N$ only when $\gamma \ge 1/2$.  In the regime of Appendix~C,
+  $\gamma = 1/(M-1) - \alpha$ with $\alpha > 0$, so $\gamma < 1/(M-1)$: for
+  every $M \ge 3$ the transported bound never gives $N$.
+
+  The statement is not obviously false --- the slack is self-correcting, since
+  $u(a,p) \le n_a$ means a large maximum forces an actor that has heard a lot
+  to express, and expressing resets it.  A run started from
+  $n = (0,1,2)$ with $M = N = 3$, $\gamma = 1/4$ does climb to $3$ after two
+  expressions and is then pushed back to $2$ by the third, because the only
+  pair within $1/(2\gamma) = 2$ of the maximum belongs to the actor carrying
+  it.  What is missing is a proof that uses that feedback; the chain of
+  Proposition~6, which never looks at the steps after $k$, cannot supply one.
+  Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
+  through Propositions~23 and~17 --- both only need a bound depending on
+  $\alpha, M, N$ --- would settle it.
 \end{remark}
 
 \begin{remark}[Equation~(6) is not stable]
