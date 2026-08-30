@@ -489,10 +489,45 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
    \le C_1 \beta^3 e^{-C_2 \beta}$.
 \end{theorem}
 \begin{proof}
-  \uses{prop:exit-exponential, lem:hitting-2beta, lem:exit-bounds, cor:cbeta}
+  \leanok
+  \uses{prop:exit-exponential, lem:hitting-2beta, lem:exit-bounds, cor:cbeta,
+    lem:ladder-nonempty}
   Apply Proposition~\ref{prop:exit-exponential} with the bounds of
   Lemmas~\ref{lem:hitting-2beta} and~\ref{lem:exit-bounds} and
-  Corollary~\ref{cor:cbeta}.  \textbf{Not formalised}.
+  Corollary~\ref{cor:cbeta}.  \emph{Formalised, but neither sorry-free nor
+  axiom-free}: the assembly below is complete in Lean, and what it inherits is
+  \texttt{sorryAx} from Lemmas~\ref{lem:hitting-2beta}
+  and~\ref{lem:exit-bounds} together with the [LM22] axiom of
+  Proposition~\ref{prop:exit-exponential}.
+
+  Section~5.3 checks the four assumptions in half a page; each is one lemma:
+  \begin{itemize}
+    \item \eqref{eq:h15} at $s_1 = 1$,
+      $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(M-1)}$
+      (\texttt{measure\_hittingTime\_le\_one}), from part 1 of
+      Lemma~\ref{lem:exit-bounds} through $1 - e^{-x} \le x$;
+    \item \eqref{eq:h16} at $s_2 = 2\beta$
+      (\texttt{probHittingGT\_ladderOther\_le}), from
+      Lemma~\ref{lem:hitting-2beta};
+    \item \eqref{eq:h17} at $\delta = 1/((M+1)N)$
+      (\texttt{max\_le\_of\_isCharacteristicTime}), from
+      Corollary~\ref{cor:cbeta};
+    \item \eqref{eq:h18} at $\theta = 1/(2(M-1))$
+      (\texttt{measure\_hittingTime\_le\_two\_mul}), from part 2 of
+      Lemma~\ref{lem:exit-bounds}.
+  \end{itemize}
+
+  Three steps the text leaves implicit had to be supplied.  The paper cites
+  Lemma~\ref{lem:hitting-2beta}, which is about $\ladder$, for a condition
+  about $\ladder^o \cup C^{-o}$; the two are related by
+  $\ladder \subseteq \ladder^o \cup C^{-o}$, since a ladder for $p \ne o$ is a
+  consensus state for $p$.  Steps \eqref{eq:h17} and \eqref{eq:h18} both rest
+  on $\sup_{\beta \ge 0} \beta e^{-\beta/a} = a e^{-1}$, stated without proof
+  in (20); it follows from $x \le e^{x-1}$.  And the threshold $\beta_1$ above
+  which $\varepsilon_1 + \varepsilon_2 \le 1/2$ is made explicit, from
+  $e^{-\beta/a} \le a/\beta$.  Finally, Proposition~\ref{prop:exit-exponential}
+  fixes $o$ while Theorem~3 quantifies over it, so the constants are taken
+  uniform over the finitely many opinions.
 \end{proof}
 
 \chapter{Communication bias and the phase transition}
@@ -952,9 +987,30 @@ the process pointwise.
   from two states of $C^o$ agree to the same order.
 \end{proposition}
 \begin{proof}
-  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Not formalised}:
-  Mathlib has neither that criterion nor the quantitative Kolmogorov-type
-  bounds it produces.
+  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Declared as an
+  axiom}, not proved.  It is not a result of this paper: its content is a
+  metastability estimate for a general time-homogeneous strong Markov
+  process, and nothing inside this library can discharge it.  Making it an
+  \texttt{axiom} rather than a \texttt{sorry} states that plainly, and the CI
+  fails if any result claimed complete reaches it.
+
+  The Lean statement is not the paper's display verbatim.  In the paper
+  $\varepsilon_1, \varepsilon_2, s_1, s_2$ are introduced before $\beta$, but
+  Section~5.3 instantiates them at $s_2 = 2\beta$ and
+  $\varepsilon_2 = (M+1)^2N^2 e^{-\beta/((M+1)N)}$, and notes that
+  $\varepsilon_1 + \varepsilon_2 < 1/2$ holds only ``for $\beta$ sufficiently
+  big''.  Bound as constants ahead of $\beta$ the hypotheses are
+  \emph{unsatisfiable}, so in Lean they are functions of $\beta$ and
+  \eqref{eq:h15}--\eqref{eq:h18} are required only above a threshold
+  $\beta_1$.
+
+  The axiom is also attached to \emph{this} process on purpose.  Stated for
+  an arbitrary family of measures and an arbitrary hitting time it would be
+  \textbf{inconsistent}: the zero measure with $\ladder^o = \emptyset$
+  satisfies \eqref{eq:h15}--\eqref{eq:h18} vacuously and falsifies the
+  conclusion at $t = 0$.  What excludes that is the strong Markov property,
+  which is the content of [LM22] and is not expressible here.  Theorem~31
+  therefore needs its own twin; one axiom cannot serve both models.
 \end{proof}
 
 \begin{lemma}[Lemma~13]
@@ -999,9 +1055,39 @@ the process pointwise.
   $c_\beta \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{M-1}}$.
 \end{corollary}
 \begin{proof}
-  Rearrange $e^{-1} = \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
-  \ge e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}}$ from
-  Lemma~\ref{lem:exit-bounds}.  \textbf{Not formalised}.
+  \leanok
+  \uses{lem:exit-bounds, lem:ladder-nonempty}
+  Apply Lemma~\ref{lem:exit-bounds}, part 1, at $t = c_\beta$ to the ladder
+  $l$ of Lemma~\ref{lem:ladder-nonempty}, so that
+  \[
+    e^{-1} \;=\; \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
+    \;\ge\; e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}} ,
+  \]
+  and rearrange.  \emph{Formalised, but not sorry-free}: the proof above is
+  complete in Lean, and inherits \texttt{sorryAx} from
+  Lemma~\ref{lem:exit-bounds} alone.  Its only addition to the paper is the
+  witness: the statement quantifies over $l \in L^o$, so it is vacuous
+  unless $L^o \ne \emptyset$, which the paper does not record.
+\end{proof}
+
+\begin{lemma}[$L^o$ is inhabited]
+  \label{lem:ladder-nonempty}
+  \lean{SocialNetwork.ladderOf, SocialNetwork.isLadder_ladderOf,
+    SocialNetwork.exists_isLadder, SocialNetwork.ladderSet_nonempty}
+  \leanok
+  \uses{def:ladder}
+  For every $o \in O$ the set $L^o$ is non-empty: the matrix
+  $l(a, o) = a$, $l(a, p) = -a/(M-1)$ for $p \ne o$, is a ladder supporting
+  $o$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Each row sums to $a - (M-1)\tfrac{a}{M-1} = 0$, actor $1$ carries the null
+  row, the column for $o$ is the staircase $\{0, \dots, N-1\}$ by
+  construction, and the other columns are the prescribed multiples.
+  \textbf{Supplies a step the paper asserts}: every statement of the form
+  ``for any $l \in L^o$'' concluding something about $L^o$ --- Corollary~15
+  is the first --- is vacuous without it.
 \end{proof}
 
 \section{The negative-bias regime}
@@ -1031,11 +1117,28 @@ the process pointwise.
   $B_N^\alpha = \{ u \in \Salpha : \max_{a,o} u(a,o) \le N \}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:confinement}
+  \leanok
+  \uses{prop:confinement, prop:greedy-prob}
   As Proposition~\ref{prop:confinement},
   $\bigcap_{j=1}^N \xi_j^{\alpha,u} \subset \{U^{\alpha,u}_{T_N} \in B_N^\alpha\}$,
   and each $\xi_j^{\alpha,u}$ is the most probable of $NM$ choices.
-  \textbf{Not formalised}.
+  \textbf{Follows the paper's proof of Proposition~17}, in its two halves.
+
+  The inclusion is Proposition~\ref{prop:confinement}'s argument with $n_a$ in
+  place of $\|U(a,\cdot)\|_\infty$, in its two cases: either the first $N$
+  expressions come from $N$ distinct actors, and every row was reset, or some
+  actor expresses at $j < k < N$ and greediness at $k$ caps the whole profile at
+  $n_a = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.
+  Unlike Proposition~\ref{prop:biased-confinement}, the chain closes here:
+  greediness is \emph{exact}, so the maximum at the repeat time is the expressing
+  actor's own entry, with no slack of $1/(2\gamma)$ to absorb.
+
+  The probability is the one-step bound: with $\beta \ge 0$ the maximising pairs
+  carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
+  weight, and the iteration is the one of
+  Proposition~\ref{prop:greedy-prob}.  That iteration is run once in Lean, for
+  an arbitrary choice of admissible pairs at each profile, and instantiated both
+  here and at Proposition~\ref{prop:biased-greedy-prob}.
 \end{proof}
 
 \begin{proposition}[Proposition~18]
@@ -1161,9 +1264,20 @@ the process pointwise.
   $\inf\{ n \ge 1 : \|U^{\alpha,u}_{T_{n-1}}(A_n^\alpha, \cdot)\|_\infty < N \} \le N$.
 \end{proposition}
 \begin{proof}
+  \leanok
   \uses{prop:low-pressure}
   The proof of Proposition~\ref{prop:low-pressure} is combinatorial and does not
-  see the bias.  \textbf{Not formalised}.
+  see the bias.  \textbf{Follows the paper's proof of Proposition~5}, which
+  Section~5.4 invokes verbatim: if each of the first $N$ expressions came from an
+  actor carrying pressure at least $N$, then none of them is the actor whose row
+  is null, and no two of them coincide, exhibiting $N+1$ distinct actors in a
+  network of $N$.
+
+  One step is supplied.  The quantity that is reset by expressing and then grows
+  by at most one per step is, in the unbiased model,
+  $\|U(a, \cdot)\|_\infty$; here it is $n_a$, the number of expressions heard.
+  The passage between them is $u(a,p) = c_p(1+\gamma) - \gamma n_a \le n_a$,
+  since $c_p \le n_a$ --- immediate from equation~(6), but not recorded there.
 \end{proof}
 
 \begin{definition}[The near-greedy event, Remark~7]
@@ -1193,7 +1307,8 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \uses{prop:confinement}
-  \textbf{Not formalised}.
+  \textbf{Not formalised, and it does not follow from Proposition~6 as the
+  text asserts.}  See Remark~\ref{rem:prop22}.
 \end{proof}
 
 \begin{proposition}[Proposition~23]
@@ -1222,9 +1337,20 @@ the process pointwise.
    \bigl( e^{\frac{\beta}{2\gamma}} + MN \bigr)$.
 \end{proposition}
 \begin{proof}
+  \leanok
   \uses{prop:greedy-prob}
   As Proposition~\ref{prop:greedy-prob}, with the lattice gap replaced by the
-  slack of Definition~\ref{def:near-greedy}.  \textbf{Not formalised}.
+  slack of Definition~\ref{def:near-greedy}.  \textbf{Follows the paper's proof
+  of Proposition~8}, which Appendix~C invokes for this statement.
+
+  The one-step bound is the same computation: the maximising pair carries weight
+  $e^{\beta y}$, every pair outside $\tilde{Y}_\gamma$ carries at most
+  $e^{\beta y} e^{-\beta/(2\gamma)}$, and there are at most $MN$ of them.  What
+  the lattice supplied in the unbiased model --- a gap of $1/(M-1)$ below the
+  maximum --- the event $\tilde{\xi}$ supplies by construction, which is what
+  Remark~7 is for.  As in Proposition~\ref{prop:greedy-prob} the iteration goes
+  through the finite-horizon kernels of the Ionescu--Tulcea construction rather
+  than the conditioning of~(10).
 \end{proof}
 
 \begin{theorem}[Theorem~25]
@@ -1330,7 +1456,8 @@ the process pointwise.
 \chapter{Notes on the formalisation}
 \label{chap:notes}
 
-\section{Three corrections to the paper}
+\section{Corrections to the paper}
+\label{sec:corrections}
 
 Formalising surfaced three places where the written text needs correcting.
 None of them affects the results.
@@ -1396,6 +1523,47 @@ None of them affects the results.
   ladder supplies it.  Without it Lemma~\ref{lem:steep-stable} is false.
 \end{remark}
 
+\begin{remark}[Proposition~22 does not follow from Proposition~6]
+  \label{rem:prop22}
+  \uses{def:near-greedy, prop:confinement}
+  Appendix~C says only that ``the proof of Propositions 22, 23 and 24 follows
+  as the proofs of Propositions 6, 7 and 8''.  For Proposition~24 that is
+  right.  For Proposition~22 the transported argument does not reach the
+  stated bound, and the gap is exactly the slack $1/(2\gamma)$ that
+  distinguishes $\tilde{\xi}$ from $\xi$.
+
+  Proposition~6 runs in two cases.  If the first $N$ expressions come from $N$
+  distinct actors then every row was reset, so every entry is at most $N-1$;
+  that case transports unchanged, with $n_a$ in place of
+  $\|U(a,\cdot)\|_\infty$.  If some actor expresses at steps $j < k < N$, then
+  at step $k$ it has heard $k - j - 1$ expressions, and greediness makes its
+  entry the maximum of the whole matrix, so every entry is at most $k-j-1$;
+  over the remaining $N-k$ steps each entry grows by at most one, giving
+  $(k-j-1) + (N-k) = N-j-1 \le N-1$.
+
+  Under $\tilde{\xi}$ the expressed pair is only within $1/(2\gamma)$ of the
+  maximum, so the second case gives
+  \[
+    U^{\alpha,u}_{T_N}(a,p) \;<\; N - j - 1 + \tfrac{1}{2\gamma}
+    \;\le\; N - 1 + \tfrac{1}{2\gamma},
+  \]
+  which is $< N$ only when $\gamma \ge 1/2$.  In the regime of Appendix~C,
+  $\gamma = 1/(M-1) - \alpha$ with $\alpha > 0$, so $\gamma < 1/(M-1)$: for
+  every $M \ge 3$ the transported bound never gives $N$.
+
+  The statement is not obviously false --- the slack is self-correcting, since
+  $u(a,p) \le n_a$ means a large maximum forces an actor that has heard a lot
+  to express, and expressing resets it.  A run started from
+  $n = (0,1,2)$ with $M = N = 3$, $\gamma = 1/4$ does climb to $3$ after two
+  expressions and is then pushed back to $2$ by the third, because the only
+  pair within $1/(2\gamma) = 2$ of the maximum belongs to the actor carrying
+  it.  What is missing is a proof that uses that feedback; the chain of
+  Proposition~6, which never looks at the steps after $k$, cannot supply one.
+  Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
+  through Propositions~23 and~17 --- both only need a bound depending on
+  $\alpha, M, N$ --- would settle it.
+\end{remark}
+
 \begin{remark}[Equation~(6) is not stable]
   \label{rem:eq6}
   \uses{def:biased-state}
@@ -1433,15 +1601,19 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-two proofs
-carry \texttt{\textbackslash leanok}.
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-seven
+proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
+bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
+of its own, so it counts twenty-eight entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (seven).
-Propositions~\ref{prop:low-pressure} and~\ref{prop:confinement}, the gap
-estimate of Lemma~\ref{lem:gap}, the bound of
-Proposition~\ref{prop:greedy-prob}, and Remarks~\ref{rem:biased-row},
-\ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
+\noindent\textbf{Follow the paper's proof} (twelve).
+Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
+\ref{prop:biased-low-pressure}, \ref{prop:biased-bounded}
+and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
+the bound of Proposition~\ref{prop:greedy-prob},
+Corollary~\ref{cor:cbeta}, Theorem~\ref{thm:metastability}, and
+Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
 paper whose proofs are both given there and formalised here, and each Lean
 proof reproduces the written argument.  Four places carry a note: the passage
 from the repeat time to the global bound in Proposition~\ref{prop:confinement},
@@ -1453,6 +1625,23 @@ as the route and the degenerate case $MNe^{-\beta/(M-1)} \ge 1$ is supplied; and
 Remark~\ref{rem:remark8} keeps the count $c_p$ the pigeonhole returns instead of
 rounding it down to the paper's $k = \lceil n_a/M \rceil$, which only makes the
 intermediate bound larger, and supplies $k \ge 1$.
+
+Three more carry notes.  Proposition~\ref{prop:biased-low-pressure} is the
+proof of Proposition~5 run on $n_a$ rather than on
+$\|U(a,\cdot)\|_\infty$, the passage between them being
+$u(a,p) \le n_a$, which equation~(6) gives but does not state.
+Theorem~\ref{thm:metastability} is Section~5.3's verification of
+\eqref{eq:h15}--\eqref{eq:h18}, with three steps supplied: the inclusion
+$\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum of~(20), and the
+threshold $\beta_1$; and its Proposition~\ref{prop:exit-exponential} is an
+axiom, not a theorem.  Corollary~\ref{cor:cbeta} is the paper's rearrangement,
+but needs $\ladder^o \ne \emptyset$, which is
+Lemma~\ref{lem:ladder-nonempty}.  Propositions~\ref{prop:biased-bounded}
+and~\ref{prop:biased-greedy-prob} are the arguments of
+Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
+Appendix~C invokes; the iteration common to the two is run once in Lean, for an
+arbitrary choice of admissible pairs at each profile, since that is all either
+uses.
 
 \medskip
 \noindent\textbf{Supply a step the paper asserts} (ten).
@@ -1471,17 +1660,23 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (five).
-Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along}
-and~\ref{lem:consensus-ladder} and Remark~\ref{rem:biased-ladder-steep},
+\noindent\textbf{No counterpart in the paper} (six).
+Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
+\ref{lem:consensus-ladder} and~\ref{lem:ladder-nonempty} and
+Remark~\ref{rem:biased-ladder-steep},
 together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear
 here only inside definitions and remarks.
 
 \medskip
-\noindent\textbf{No proof departs from the paper for convenience.}  That is the
-result of the audit, and the rule of Remark~\ref{rem:green} is written to keep
-it that way.
+\noindent\textbf{No proof departs from the paper for convenience, and no proof
+of a statement of the paper has been invented here.}  That is the result of the
+audit, and the rule of Remark~\ref{rem:green} is written to keep it that way.
+Where the paper's route does not close --- Lemmas~19 and~20, and
+Proposition~22 --- the statement is left unproved and the obstruction is
+recorded in Section~\ref{sec:corrections} above, rather than repaired by an
+argument the authors have not seen.  \texttt{FOR-THE-AUTHORS.md} at the root of
+the repository collects those, and the decisions they call for, in one place.
 
 \begin{remark}[``By definition'' at the end of Proposition~7]
   \label{rem:by-definition}

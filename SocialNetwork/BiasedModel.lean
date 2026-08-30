@@ -109,6 +109,22 @@ theorem Profile.heard_express_of_ne {a b : Actor N} (hb : b ≠ a) (o : Opinion 
     (P : Profile N M) : (Profile.express a o P).heard b = P.heard b + 1 := by
   simp [Profile.heard, Profile.express_of_ne hb]
 
+/-- The pressure an actor carries for any single opinion is at most the number `nₐ` of
+expressions it has heard: `cₚ (1+γ) - γ nₐ ≤ nₐ (1+γ) - γ nₐ = nₐ`, since `cₚ ≤ nₐ`.
+
+**No counterpart in the paper**, which reads the bound off equation (6) without stating it.
+It is what lets the proof of Proposition 5 run unchanged in the biased model: the quantity
+that grows by one per expression heard, and is reset by expressing, is `nₐ`. -/
+theorem Profile.pressure_le_heard {γ : ℝ} (hγ : 0 < γ) (P : Profile N M) (a : Actor N)
+    (p : Opinion M) : P.pressure γ a p ≤ (P.heard a : ℝ) := by
+  have hcount : ((P a).count p : ℝ) ≤ ((P a).heard : ℝ) := by
+    have : (P a).count p ≤ (P a).heard :=
+      Finset.single_le_sum (f := fun q => (P a).count q) (fun _ _ => Nat.zero_le _)
+        (Finset.mem_univ p)
+    exact_mod_cast this
+  simp only [Profile.pressure, Profile.heard, Memory.pressure]
+  nlinarith
+
 /-- **Equation (5)** at the level of the pressure matrix: expressing resets the expressing
 actor's row and moves every other row by `+1` on the expressed opinion and `-γ` elsewhere.
 This is `SocialNetwork.Bias.Memory.pressure_hear` read on the network. -/

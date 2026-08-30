@@ -25,7 +25,7 @@ from pathlib import Path
 DECL = re.compile(
     r"^\s*(?:@\[[^\]]*\]\s*)?"
     r"(?:private\s+|protected\s+|noncomputable\s+)*"
-    r"(?:theorem|lemma|def|abbrev|structure|inductive|instance|class)\s+"
+    r"(?:theorem|lemma|axiom|def|abbrev|structure|inductive|instance|class)\s+"
     r"([A-Za-z_][A-Za-z0-9_.'!?]*)"
 )
 NAMESPACE = re.compile(r"^namespace\s+([A-Za-z_][A-Za-z0-9_.']*)")
