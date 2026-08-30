@@ -110,6 +110,12 @@ jobs:
           #print axioms SocialNetwork.measurable_jumpCount
           #print axioms SocialNetwork.measurable_state_ofStepPath
           #print axioms SocialNetwork.measurable_process
+          -- Section 5.3: the arithmetic behind the constants of Proposition 12
+          #print axioms SocialNetwork.mul_exp_neg_le_exp_neg_one
+          #print axioms SocialNetwork.mul_exp_neg_div_le
+          #print axioms SocialNetwork.one_le_eight_mul_exp_neg_one
+          #print axioms SocialNetwork.const_bounds
+          #print axioms SocialNetwork.hittingTimeCts_mono
           EOF
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then
