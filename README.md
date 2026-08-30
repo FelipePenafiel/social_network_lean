@@ -96,6 +96,15 @@ form "for any `l ∈ L^o`" — is vacuous unless `L^o` is inhabited, which the p
 of Section 5.3 that are asserted rather than argued: the inclusion `L ⊆ L^o ∪ C^{-o}`, the
 supremum `sup β e^{-β/a} = a e^{-1}`, and the threshold above which `ε₁ + ε₂ ≤ 1/2`.
 
+[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) collects, in one place, everything formalising has
+not been able to close: the three written proofs that do not compose (Lemmas 19 and 20, and
+Proposition 22), the statements that had to be changed to be usable, the one axiom and the
+second one Theorem 31 will need, and the steps the text asserts that had to be supplied.  It
+also records the rule this repository works under: **no proof of a statement of the paper has
+been invented here.**  Where the written argument does not close, the statement is left
+unproved and the obstruction is written down, rather than repaired by an argument the authors
+have not seen.
+
 Read the blueprint before adding anything: it is the contract between the paper and the
 repository.
 

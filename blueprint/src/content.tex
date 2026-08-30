@@ -1428,7 +1428,8 @@ the process pointwise.
 \chapter{Notes on the formalisation}
 \label{chap:notes}
 
-\section{Three corrections to the paper}
+\section{Corrections to the paper}
+\label{sec:corrections}
 
 Formalising surfaced three places where the written text needs correcting.
 None of them affects the results.
@@ -1572,15 +1573,18 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-two proofs
-carry \texttt{\textbackslash leanok}.
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-five
+proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
+bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
+of its own, so it counts twenty-six entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (seven).
-Propositions~\ref{prop:low-pressure} and~\ref{prop:confinement}, the gap
-estimate of Lemma~\ref{lem:gap}, the bound of
-Proposition~\ref{prop:greedy-prob}, and Remarks~\ref{rem:biased-row},
-\ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
+\noindent\textbf{Follow the paper's proof} (ten).
+Propositions~\ref{prop:low-pressure}, \ref{prop:confinement}
+and~\ref{prop:biased-low-pressure}, the gap estimate of Lemma~\ref{lem:gap},
+the bound of Proposition~\ref{prop:greedy-prob},
+Corollary~\ref{cor:cbeta}, Theorem~\ref{thm:metastability}, and
+Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
 paper whose proofs are both given there and formalised here, and each Lean
 proof reproduces the written argument.  Four places carry a note: the passage
 from the repeat time to the global bound in Proposition~\ref{prop:confinement},
@@ -1592,6 +1596,18 @@ as the route and the degenerate case $MNe^{-\beta/(M-1)} \ge 1$ is supplied; and
 Remark~\ref{rem:remark8} keeps the count $c_p$ the pigeonhole returns instead of
 rounding it down to the paper's $k = \lceil n_a/M \rceil$, which only makes the
 intermediate bound larger, and supplies $k \ge 1$.
+
+Three more carry notes.  Proposition~\ref{prop:biased-low-pressure} is the
+proof of Proposition~5 run on $n_a$ rather than on
+$\|U(a,\cdot)\|_\infty$, the passage between them being
+$u(a,p) \le n_a$, which equation~(6) gives but does not state.
+Theorem~\ref{thm:metastability} is Section~5.3's verification of
+\eqref{eq:h15}--\eqref{eq:h18}, with three steps supplied: the inclusion
+$\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum of~(20), and the
+threshold $\beta_1$; and its Proposition~\ref{prop:exit-exponential} is an
+axiom, not a theorem.  Corollary~\ref{cor:cbeta} is the paper's rearrangement,
+but needs $\ladder^o \ne \emptyset$, which is
+Lemma~\ref{lem:ladder-nonempty}.
 
 \medskip
 \noindent\textbf{Supply a step the paper asserts} (ten).
@@ -1610,17 +1626,23 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (five).
-Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along}
-and~\ref{lem:consensus-ladder} and Remark~\ref{rem:biased-ladder-steep},
+\noindent\textbf{No counterpart in the paper} (six).
+Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
+\ref{lem:consensus-ladder} and~\ref{lem:ladder-nonempty} and
+Remark~\ref{rem:biased-ladder-steep},
 together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear
 here only inside definitions and remarks.
 
 \medskip
-\noindent\textbf{No proof departs from the paper for convenience.}  That is the
-result of the audit, and the rule of Remark~\ref{rem:green} is written to keep
-it that way.
+\noindent\textbf{No proof departs from the paper for convenience, and no proof
+of a statement of the paper has been invented here.}  That is the result of the
+audit, and the rule of Remark~\ref{rem:green} is written to keep it that way.
+Where the paper's route does not close --- Lemmas~19 and~20, and
+Proposition~22 --- the statement is left unproved and the obstruction is
+recorded in Section~\ref{sec:corrections} above, rather than repaired by an
+argument the authors have not seen.  \texttt{FOR-THE-AUTHORS.md} at the root of
+the repository collects those, and the decisions they call for, in one place.
 
 \begin{remark}[``By definition'' at the end of Proposition~7]
   \label{rem:by-definition}
