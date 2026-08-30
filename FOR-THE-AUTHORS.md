@@ -80,6 +80,13 @@ chain never looks past step `k`, so it cannot supply one — or a weaker constan
 `α`, `M` and `N`.  If you take the weaker constant, it has to be carried through
 those two statements.
 
+*The contrast is sharp, and worth having in front of you.*  **Proposition 17 is
+now proved**, and its deterministic half is the same two-case argument over the
+same quantity `nₐ`.  It closes because its event `ξ` is *exact* greediness: the
+maximum at the repeat time is the expressing actor's own entry, and there is
+nothing to absorb.  Proposition 22 differs from it only by the slack, and that
+is precisely what the argument cannot carry.
+
 ---
 
 ## 2. Statements that had to be changed
@@ -147,6 +154,10 @@ blueprint's audit section classifies every formalised proof this way.
   decomposition of that shape.  Same Markov property, different formalism.
 * **Proposition 21.**  The quantity that resets and grows by one per step is `nₐ`,
   not the row supremum; the passage is `u (a, p) = cₚ(1+γ) - γnₐ ≤ nₐ`.
+* **Propositions 17 and 24.**  Appendix C invokes the proofs of Propositions 6
+  and 8 in one sentence each, and for these two that is right.  The iteration
+  common to both is run once in Lean, for an arbitrary choice of admissible
+  pairs at each profile, since neither uses anything else about its event.
 * **Theorem 3 / Section 5.3.**  Three steps: the inclusion `L ⊆ L^o ∪ C^{-o}`
   (the paper cites a bound about `L` for a condition about `L^o ∪ C^{-o}`); the
   supremum `sup_{β≥0} β e^{-β/a} = a e^{-1}` of step (20); and an explicit

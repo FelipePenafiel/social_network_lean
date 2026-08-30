@@ -1601,15 +1601,16 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-five
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-seven
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts twenty-six entries.
+of its own, so it counts twenty-eight entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (ten).
-Propositions~\ref{prop:low-pressure}, \ref{prop:confinement}
-and~\ref{prop:biased-low-pressure}, the gap estimate of Lemma~\ref{lem:gap},
+\noindent\textbf{Follow the paper's proof} (twelve).
+Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
+\ref{prop:biased-low-pressure}, \ref{prop:biased-bounded}
+and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
 Corollary~\ref{cor:cbeta}, Theorem~\ref{thm:metastability}, and
 Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
@@ -1635,7 +1636,12 @@ $\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum of~(20), and the
 threshold $\beta_1$; and its Proposition~\ref{prop:exit-exponential} is an
 axiom, not a theorem.  Corollary~\ref{cor:cbeta} is the paper's rearrangement,
 but needs $\ladder^o \ne \emptyset$, which is
-Lemma~\ref{lem:ladder-nonempty}.
+Lemma~\ref{lem:ladder-nonempty}.  Propositions~\ref{prop:biased-bounded}
+and~\ref{prop:biased-greedy-prob} are the arguments of
+Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
+Appendix~C invokes; the iteration common to the two is run once in Lean, for an
+arbitrary choice of admissible pairs at each profile, since that is all either
+uses.
 
 \medskip
 \noindent\textbf{Supply a step the paper asserts} (ten).

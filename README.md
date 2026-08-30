@@ -32,7 +32,9 @@ times, the process `U_t`, the transition semigroup and the hitting times `R^{β,
 
 The **biased model of Section 3** is assembled: memory profiles, the operator `π_α^{a,o}`, the
 state space `S^α`, the generator `G̃` of equation (7), the sets of equations (8) and (9), and
-the biased skeleton and process.
+the biased skeleton and process.  **Propositions 21, 17 and 24 are proved**, by the transports
+Appendix C and Section 5.4 assert — of Propositions 5, 6 and 8 respectively.  Proposition 22 is
+the one transport that does not work; see [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md).
 
 **Every numbered statement of the paper is now stated in Lean.**  The ones whose proofs are not
 formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for four
