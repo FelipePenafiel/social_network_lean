@@ -489,10 +489,45 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
    \le C_1 \beta^3 e^{-C_2 \beta}$.
 \end{theorem}
 \begin{proof}
-  \uses{prop:exit-exponential, lem:hitting-2beta, lem:exit-bounds, cor:cbeta}
+  \leanok
+  \uses{prop:exit-exponential, lem:hitting-2beta, lem:exit-bounds, cor:cbeta,
+    lem:ladder-nonempty}
   Apply Proposition~\ref{prop:exit-exponential} with the bounds of
   Lemmas~\ref{lem:hitting-2beta} and~\ref{lem:exit-bounds} and
-  Corollary~\ref{cor:cbeta}.  \textbf{Not formalised}.
+  Corollary~\ref{cor:cbeta}.  \emph{Formalised, but neither sorry-free nor
+  axiom-free}: the assembly below is complete in Lean, and what it inherits is
+  \texttt{sorryAx} from Lemmas~\ref{lem:hitting-2beta}
+  and~\ref{lem:exit-bounds} together with the [LM22] axiom of
+  Proposition~\ref{prop:exit-exponential}.
+
+  Section~5.3 checks the four assumptions in half a page; each is one lemma:
+  \begin{itemize}
+    \item \eqref{eq:h15} at $s_1 = 1$,
+      $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(M-1)}$
+      (\texttt{measure\_hittingTime\_le\_one}), from part 1 of
+      Lemma~\ref{lem:exit-bounds} through $1 - e^{-x} \le x$;
+    \item \eqref{eq:h16} at $s_2 = 2\beta$
+      (\texttt{probHittingGT\_ladderOther\_le}), from
+      Lemma~\ref{lem:hitting-2beta};
+    \item \eqref{eq:h17} at $\delta = 1/((M+1)N)$
+      (\texttt{max\_le\_of\_isCharacteristicTime}), from
+      Corollary~\ref{cor:cbeta};
+    \item \eqref{eq:h18} at $\theta = 1/(2(M-1))$
+      (\texttt{measure\_hittingTime\_le\_two\_mul}), from part 2 of
+      Lemma~\ref{lem:exit-bounds}.
+  \end{itemize}
+
+  Three steps the text leaves implicit had to be supplied.  The paper cites
+  Lemma~\ref{lem:hitting-2beta}, which is about $\ladder$, for a condition
+  about $\ladder^o \cup C^{-o}$; the two are related by
+  $\ladder \subseteq \ladder^o \cup C^{-o}$, since a ladder for $p \ne o$ is a
+  consensus state for $p$.  Steps \eqref{eq:h17} and \eqref{eq:h18} both rest
+  on $\sup_{\beta \ge 0} \beta e^{-\beta/a} = a e^{-1}$, stated without proof
+  in (20); it follows from $x \le e^{x-1}$.  And the threshold $\beta_1$ above
+  which $\varepsilon_1 + \varepsilon_2 \le 1/2$ is made explicit, from
+  $e^{-\beta/a} \le a/\beta$.  Finally, Proposition~\ref{prop:exit-exponential}
+  fixes $o$ while Theorem~3 quantifies over it, so the constants are taken
+  uniform over the finitely many opinions.
 \end{proof}
 
 \chapter{Communication bias and the phase transition}
@@ -952,9 +987,30 @@ the process pointwise.
   from two states of $C^o$ agree to the same order.
 \end{proposition}
 \begin{proof}
-  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Not formalised}:
-  Mathlib has neither that criterion nor the quantitative Kolmogorov-type
-  bounds it produces.
+  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Declared as an
+  axiom}, not proved.  It is not a result of this paper: its content is a
+  metastability estimate for a general time-homogeneous strong Markov
+  process, and nothing inside this library can discharge it.  Making it an
+  \texttt{axiom} rather than a \texttt{sorry} states that plainly, and the CI
+  fails if any result claimed complete reaches it.
+
+  The Lean statement is not the paper's display verbatim.  In the paper
+  $\varepsilon_1, \varepsilon_2, s_1, s_2$ are introduced before $\beta$, but
+  Section~5.3 instantiates them at $s_2 = 2\beta$ and
+  $\varepsilon_2 = (M+1)^2N^2 e^{-\beta/((M+1)N)}$, and notes that
+  $\varepsilon_1 + \varepsilon_2 < 1/2$ holds only ``for $\beta$ sufficiently
+  big''.  Bound as constants ahead of $\beta$ the hypotheses are
+  \emph{unsatisfiable}, so in Lean they are functions of $\beta$ and
+  \eqref{eq:h15}--\eqref{eq:h18} are required only above a threshold
+  $\beta_1$.
+
+  The axiom is also attached to \emph{this} process on purpose.  Stated for
+  an arbitrary family of measures and an arbitrary hitting time it would be
+  \textbf{inconsistent}: the zero measure with $\ladder^o = \emptyset$
+  satisfies \eqref{eq:h15}--\eqref{eq:h18} vacuously and falsifies the
+  conclusion at $t = 0$.  What excludes that is the strong Markov property,
+  which is the content of [LM22] and is not expressible here.  Theorem~31
+  therefore needs its own twin; one axiom cannot serve both models.
 \end{proof}
 
 \begin{lemma}[Lemma~13]

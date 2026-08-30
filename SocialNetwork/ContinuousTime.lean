@@ -706,6 +706,15 @@ theorem measure_hittingTime_le_one (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ
   have := Real.add_one_le_exp (-(2 * Kc * E))
   linarith
 
+/-- `e^{-β/a} ≤ a/β`, from `x ≤ e^x`.  Used to pin down a threshold `β₁` above which
+`ε₁ + ε₂ ≤ 1/2`, the constraint the paper only asks to hold "for `β` sufficiently big". -/
+theorem exp_neg_div_le {a β : ℝ} (ha : 0 < a) (hβ : 0 < β) : Real.exp (-β / a) ≤ a / β := by
+  have hpos : 0 < β / a := div_pos hβ ha
+  have h : β / a ≤ Real.exp (β / a) := by have := Real.add_one_le_exp (β / a); linarith
+  have hinv : (Real.exp (β / a))⁻¹ ≤ (β / a)⁻¹ := inv_anti₀ hpos h
+  rw [show -β / a = -(β / a) by ring, Real.exp_neg]
+  rwa [inv_div] at hinv
+
 /-- `1 ≤ 8 e^{-1}`, the only numeric fact the paper's constants rest on. -/
 theorem one_le_eight_mul_exp_neg_one : (1 : ℝ) ≤ 8 * Real.exp (-1) := by
   have h2 : (0 : ℝ) < Real.exp 1 := Real.exp_pos 1
@@ -939,7 +948,106 @@ theorem metastability (hM : 2 ≤ M) (hN : 3 ≤ N) :
           |(expHittingTimeCts β u (consensusSetOther N o)).toReal /
               (expHittingTimeCts β v (consensusSetOther N o)).toReal - 1|
             ≤ C₁ * β ^ 3 * Real.exp (-C₂ * β) := by
-  sorry
+  have hn : (3 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hm : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hKcpos : (0 : ℝ) < ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (by omega : 0 < N)) (Nat.pow_pos (Nat.succ_pos M))
+  have hQpos : (0 : ℝ) < (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (Nat.succ_pos M)) (Nat.pow_pos (by omega : 0 < N))
+  have hDpos : (0 : ℝ) < (((M + 1) * N : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.succ_pos M) (by omega : 0 < N)
+  have hC4 : (0 : ℝ) < (((M + 1) ^ 4 * N ^ 3 : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (Nat.succ_pos M)) (Nat.pow_pos (by omega : 0 < N))
+  have hCpos : (0 : ℝ) < 8 * Real.exp (-1) * (((M + 1) ^ 4 * N ^ 3 : ℕ) : ℝ) := by positivity
+  have hδpos : (0 : ℝ) < 1 / (((M + 1) * N : ℕ) : ℝ) := by positivity
+  have hθpos : (0 : ℝ) < 1 / (2 * ((M : ℝ) - 1)) := by positivity
+  -- the threshold above which `ε₁ + ε₂ ≤ 1/2`
+  set β₁ : ℝ := max 1 (max (8 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * ((M : ℝ) - 1))
+    (4 * (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * (((M + 1) * N : ℕ) : ℝ))) with hβ₁def
+  have hβ₁one : (1 : ℝ) ≤ β₁ := le_max_left _ _
+  have hpos' : ∀ β : ℝ, β₁ ≤ β → (0 : ℝ) < β := fun β hβ =>
+    lt_of_lt_of_le zero_lt_one (le_trans hβ₁one hβ)
+  have hsum : ∀ β : ℝ, β₁ ≤ β →
+      2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / ((M : ℝ) - 1))
+        + (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ))
+      ≤ 1 / 2 := by
+    intro β hβ
+    have hβpos := hpos' β hβ
+    have b1 : 8 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * ((M : ℝ) - 1) ≤ β :=
+      le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hβ
+    have b2 : 4 * (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * (((M + 1) * N : ℕ) : ℝ) ≤ β :=
+      le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hβ
+    have e1 : 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / ((M : ℝ) - 1))
+        ≤ 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * (((M : ℝ) - 1) / β) :=
+      mul_le_mul_of_nonneg_left (exp_neg_div_le hM1 hβpos) (by positivity)
+    have e2 : (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ))
+        ≤ (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * ((((M + 1) * N : ℕ) : ℝ) / β) :=
+      mul_le_mul_of_nonneg_left (exp_neg_div_le hDpos hβpos) (by positivity)
+    have f1 : 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * (((M : ℝ) - 1) / β) ≤ 1 / 4 := by
+      rw [show 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * (((M : ℝ) - 1) / β)
+          = (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * ((M : ℝ) - 1)) / β by ring,
+        div_le_iff₀ hβpos]
+      linarith
+    have f2 : (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * ((((M + 1) * N : ℕ) : ℝ) / β) ≤ 1 / 4 := by
+      rw [show (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * ((((M + 1) * N : ℕ) : ℝ) / β)
+          = ((((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * (((M + 1) * N : ℕ) : ℝ)) / β by ring,
+        div_le_iff₀ hβpos]
+      linarith
+    linarith
+  -- Proposition 12, opinion by opinion
+  have key : ∀ o : Opinion M, ∃ β₀ K' : ℝ, β₁ ≤ β₀ ∧ 0 < β₀ ∧ 0 < K' ∧
+      ∀ β : ℝ, β₀ ≤ β → ∀ u : Pressure N M, IsConsensus o u →
+      (∀ t : ℝ, 0 ≤ t →
+        |(probHittingGT β u (consensusSetOther N o)
+            (ENNReal.ofReal t * expHittingTimeCts β u (consensusSetOther N o))).toReal
+          - Real.exp (-t)|
+        ≤ K' * β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
+            (1 / (2 * ((M : ℝ) - 1))) * β)) ∧
+      ∀ v : Pressure N M, IsConsensus o v →
+        |(expHittingTimeCts β u (consensusSetOther N o)).toReal /
+            (expHittingTimeCts β v (consensusSetOther N o)).toReal - 1|
+          ≤ K' * β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
+              (1 / (2 * ((M : ℝ) - 1))) * β) := by
+    intro o
+    exact exitTime_approx_exponential hM hN o
+      (fun β => 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / ((M : ℝ) - 1)))
+      (fun β => (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)))
+      (fun _ => 1) (fun β => 2 * β)
+      hCpos hδpos hCpos hθpos
+      (fun β hβ => ⟨by positivity, by positivity, one_pos, by linarith [hpos' β hβ]⟩)
+      hsum
+      (fun β hβ l hl => measure_hittingTime_le_one hM hN (hpos' β hβ).le hl)
+      (fun β hβ u hu => probHittingGT_ladderOther_le hM hN (hpos' β hβ).le o hu)
+      (fun β hβ c hc => max_le_of_isCharacteristicTime hM hN (hpos' β hβ).le hc)
+      (fun β hβ u hu => measure_hittingTime_le_two_mul hM hN (hpos' β hβ) hu)
+  choose b k hbβ₁ hbpos hkpos hmain using key
+  obtain ⟨B, hB⟩ : ∃ B : ℝ, ∀ o : Opinion M, b o ≤ B := Finite.exists_le b
+  obtain ⟨Kb, hKb⟩ : ∃ Kb : ℝ, ∀ o : Opinion M, k o ≤ Kb := Finite.exists_le k
+  refine ⟨max B 1, max Kb 1, min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
+    (1 / (2 * ((M : ℝ) - 1))), lt_of_lt_of_le zero_lt_one (le_max_right _ _),
+    lt_of_lt_of_le zero_lt_one (le_max_right _ _), lt_min (lt_min (by positivity) (by norm_num))
+    hθpos, ?_, ?_⟩
+  · -- `C₂ < 1/2`, because `δ/3 = 1/(3(M+1)N) ≤ 1/27`
+    refine lt_of_le_of_lt (le_trans (min_le_left _ _) (min_le_left _ _)) ?_
+    have hD9 : (9 : ℝ) ≤ (((M + 1) * N : ℕ) : ℝ) := by push_cast; nlinarith
+    rw [div_lt_iff₀ (by norm_num : (0:ℝ) < 3), one_div]
+    rw [inv_lt_iff_one_lt_mul₀ hDpos]
+    nlinarith
+  · intro β hβ o u hu
+    have hbβ : b o ≤ β := le_trans (hB o) (le_trans (le_max_left _ _) hβ)
+    obtain ⟨h1, h2⟩ := hmain o β hbβ u hu
+    have hfac : (0 : ℝ) ≤ β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3)
+        (1 / 2)) (1 / (2 * ((M : ℝ) - 1))) * β) := by
+      have : (0 : ℝ) < β := lt_of_lt_of_le (lt_of_lt_of_le (hbpos o) (le_refl _)) hbβ
+      positivity
+    have hup : k o * β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
+          (1 / (2 * ((M : ℝ) - 1))) * β)
+        ≤ max Kb 1 * β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
+          (1 / (2 * ((M : ℝ) - 1))) * β) := by
+      rw [mul_assoc, mul_assoc]
+      exact mul_le_mul_of_nonneg_right (le_trans (hKb o) (le_max_left _ _)) hfac
+    exact ⟨fun t ht => le_trans (h1 t ht) hup, fun v hv => le_trans (h2 v hv) hup⟩
 
 end Theorem3
 

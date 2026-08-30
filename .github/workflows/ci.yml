@@ -39,10 +39,13 @@ jobs:
         run: |
           echo "### Unproved statements" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          grep -rn --include='*.lean' -E '\bsorry\b' SocialNetwork/ \
+          # Anchored on a bare `sorry` line: the word also occurs in prose, in the
+          # docstrings that explain why a statement is unproved.
+          grep -rn --include='*.lean' -E '^[[:space:]]*sorry[[:space:]]*$' SocialNetwork/ \
             | sed 's/:.*sorry.*/: sorry/' >> "$GITHUB_STEP_SUMMARY" || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          n=$(grep -rc --include='*.lean' -E '\bsorry\b' SocialNetwork/ | awk -F: '{s+=$2} END {print s+0}')
+          n=$(grep -rc --include='*.lean' -E '^[[:space:]]*sorry[[:space:]]*$' SocialNetwork/ \
+            | awk -F: '{s+=$2} END {print s+0}')
           echo "total: $n" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Check axioms of the completed results
@@ -122,4 +125,24 @@ jobs:
             echo "::error::a result declared complete depends on sorryAx"
             exit 1
           fi
-          echo "every completed result is sorry-free"
+          # `exitTime_approx_exponential` is Theorem 5.3 of [LM22], declared as an axiom
+          # because nothing in this library can discharge it.  Results listed above claim to
+          # be proved outright, so none of them may reach it either.
+          if grep -q 'exitTime_approx_exponential' axioms.txt; then
+            echo "::error::a result declared complete depends on the [LM22] axiom"
+            exit 1
+          fi
+          echo "every completed result is sorry-free, and free of the [LM22] axiom"
+
+      - name: Inventory of the results that rest on the [LM22] axiom
+        # Not a gate: this records which statements are complete *modulo* the one external
+        # citation, so that the trust surface stays visible in the build log.
+        run: |
+          cat > CheckCited.lean <<'EOF'
+          import SocialNetwork
+          #print axioms SocialNetwork.metastability
+          EOF
+          echo "### Proved modulo Theorem 5.3 of [LM22]" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          lake env lean CheckCited.lean | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

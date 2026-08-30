@@ -35,10 +35,18 @@ state space `S^α`, the generator `G̃` of equation (7), the sets of equations (
 the biased skeleton and process.
 
 **Every numbered statement of the paper is now stated in Lean.**  The ones whose proofs are not
-formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for three
+formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for four
 distinct reasons, which the blueprint keeps apart: blocked on missing Mathlib theory (Doeblin's
 criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 19 and 20, whose
-written proofs do not compose — repairs are recorded), or simply routine and not yet done.
+written proofs do not compose — repairs are recorded), not a result of this paper at all
+(Proposition 12; see below), or simply routine and not yet done.
+
+A proof does **not** have to wait for its ancestors.  A result whose own proof is written but
+whose upstream lemmas are still `sorry` compiles fine, inherits `sorryAx` from them, and turns
+green the moment they do — with no edit.  Writing the downstream proof first is also the only
+test of whether the upstream *statements* are strong enough: **Theorem 3** is proved this way,
+and doing so is what exposed that the previous statement of Proposition 12 could never be
+instantiated.
 
 The routine list is now empty.  `sum_ge_of_injective` (that `N` distinct naturals sum to at
 least `0 + 1 + ⋯ + (N-1)` — a Mathlib gap in its own right), the two measurability lemmas for
@@ -57,14 +65,36 @@ routine at all: the hitting time is an infimum over an uncountable family of tim
 needs path regularity that holds only almost surely.  The blueprint says why, and what has to
 be decided before it can be done.
 
-The library is **not** `sorry`-free, by design.  What CI enforces instead is that no
-declaration listed as complete in `.github/workflows/ci.yml` depends on `sorryAx`; every run
-also prints an inventory of the outstanding `sorry`s.
+### The one axiom
 
-Formalising surfaced three places where the paper needs correcting, none of which affects its
-results.  Two are in Appendix A (Lemmas 19 and 20); the third is that the second condition of
+`SocialNetwork.exitTime_approx_exponential` — **Proposition 12** — is an `axiom`, not a
+`sorry`.  It is not a result of arXiv:2607.19651: the paper derives it from Theorem 5.3 of
+[LM22], a metastability estimate for a general time-homogeneous strong Markov process, and
+nothing inside this library can discharge it.  Declaring it says so plainly, and keeps it from
+sitting in the inventory of `sorry`s as if it were work someone could pick up.
+
+It is attached to *this* process on purpose.  Stated abstractly, over an arbitrary family of
+measures and an arbitrary hitting time, it would be **inconsistent**: the zero measure with an
+empty ladder set satisfies (15)–(18) vacuously and falsifies the conclusion at `t = 0`.  What
+rules that out is the strong Markov property, which is exactly the content of [LM22].  Theorem
+31 will therefore need its own twin for the biased process.
+
+**Theorem 3** is now proved from it, together with the four assumptions (15)–(18) checked for
+this model as Section 5.3 does.
+
+The library is **not** `sorry`-free, by design.  What CI enforces is that no declaration listed
+as complete in `.github/workflows/ci.yml` depends on `sorryAx` — **or on the [LM22] axiom**.  A
+separate step records which results are complete modulo that one citation, so the trust surface
+stays visible.  Every run also prints an inventory of the outstanding `sorry`s.
+
+Formalising surfaced places where the paper needs correcting, none of which affects its
+results.  Two are in Appendix A (Lemmas 19 and 20); one is that the second condition of
 equation (6) is not stable under `π_α^{a,o}`, though the justification the paper gives for it
-proves a stronger condition that is.  All three are stated precisely in the blueprint.
+proves a stronger condition that is; and one is that Corollary 15 — like every statement of the
+form "for any `l ∈ L^o`" — is vacuous unless `L^o` is inhabited, which the paper never records.
+`ladderOf` is the witness.  All are stated precisely in the blueprint, as are the three steps
+of Section 5.3 that are asserted rather than argued: the inclusion `L ⊆ L^o ∪ C^{-o}`, the
+supremum `sup β e^{-β/a} = a e^{-1}`, and the threshold above which `ε₁ + ε₂ ≤ 1/2`.
 
 Read the blueprint before adding anything: it is the contract between the paper and the
 repository.
