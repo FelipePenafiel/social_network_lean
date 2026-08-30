@@ -1320,9 +1320,20 @@ the process pointwise.
    \bigl( e^{\frac{\beta}{2\gamma}} + MN \bigr)$.
 \end{proposition}
 \begin{proof}
+  \leanok
   \uses{prop:greedy-prob}
   As Proposition~\ref{prop:greedy-prob}, with the lattice gap replaced by the
-  slack of Definition~\ref{def:near-greedy}.  \textbf{Not formalised}.
+  slack of Definition~\ref{def:near-greedy}.  \textbf{Follows the paper's proof
+  of Proposition~8}, which Appendix~C invokes for this statement.
+
+  The one-step bound is the same computation: the maximising pair carries weight
+  $e^{\beta y}$, every pair outside $\tilde{Y}_\gamma$ carries at most
+  $e^{\beta y} e^{-\beta/(2\gamma)}$, and there are at most $MN$ of them.  What
+  the lattice supplied in the unbiased model --- a gap of $1/(M-1)$ below the
+  maximum --- the event $\tilde{\xi}$ supplies by construction, which is what
+  Remark~7 is for.  As in Proposition~\ref{prop:greedy-prob} the iteration goes
+  through the finite-horizon kernels of the Ionescu--Tulcea construction rather
+  than the conditioning of~(10).
 \end{proof}
 
 \begin{theorem}[Theorem~25]

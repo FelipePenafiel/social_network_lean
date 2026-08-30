@@ -4,6 +4,7 @@ Released under the Apache 2.0 license.
 -/
 import SocialNetwork.BiasedModel
 import SocialNetwork.ContinuousTime
+import SocialNetwork.Greedy
 
 /-!
 # Section 3 and Appendix C: the results for the biased model
@@ -204,6 +205,10 @@ theorem tsum_biasedJumpWeight_ne_top (γ β : ℝ) (P : Profile N M) :
 noncomputable def biasedJumpPMF (γ β : ℝ) (P : Profile N M) : PMF (Jump N M) :=
   PMF.normalize (biasedJumpWeight γ β P) (tsum_biasedJumpWeight_ne_zero γ β P)
     (tsum_biasedJumpWeight_ne_top γ β P)
+
+theorem biasedJumpPMF_apply (γ β : ℝ) (P : Profile N M) (p : Jump N M) :
+    biasedJumpPMF γ β P p
+      = biasedJumpWeight γ β P p * (∑' q : Jump N M, biasedJumpWeight γ β P q)⁻¹ := rfl
 
 /-- The transition kernel of the biased skeleton. -/
 noncomputable def biasedSkeletonKernel (γ β : ℝ) : Kernel (Profile N M) (Profile N M) :=
@@ -438,15 +443,360 @@ theorem exists_horizon_isBiasedLadder (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (
 noncomputable def biasedZeta (N M : ℕ) (γ β : ℝ) : ℝ :=
   Real.exp (β / (2 * γ)) / (Real.exp (β / (2 * γ)) + ((M * N : ℕ) : ℝ))
 
+/-- The maximum social pressure over all pairs: the biased counterpart of
+`SocialNetwork.entrySup`. -/
+noncomputable def pressureSup (γ : ℝ) (P : Profile N M) : ℝ :=
+  Finset.univ.sup' (univ_jump_nonempty N M) fun p : Jump N M => P.pressure γ p.1 p.2
+
+theorem le_pressureSup (γ : ℝ) (P : Profile N M) (a : Actor N) (o : Opinion M) :
+    P.pressure γ a o ≤ pressureSup γ P :=
+  Finset.le_sup' (fun p : Jump N M => P.pressure γ p.1 p.2) (Finset.mem_univ (a, o))
+
+theorem exists_pressureSup (γ : ℝ) (P : Profile N M) :
+    ∃ a o, P.pressure γ a o = pressureSup γ P := by
+  obtain ⟨p, -, hp⟩ :=
+    Finset.exists_mem_eq_sup' (univ_jump_nonempty N M) fun p : Jump N M => P.pressure γ p.1 p.2
+  exact ⟨p.1, p.2, hp.symm⟩
+
+/-- The pairs the near-greedy event admits: those within `1/(2γ)` of the maximum.  This is to
+`ξ̃` what `SocialNetwork.argmaxFinset` is to `ξ`. -/
+noncomputable def nearArgmaxFinset (γ : ℝ) (P : Profile N M) : Finset (Jump N M) :=
+  Finset.univ.filter fun p => pressureSup γ P - 1 / (2 * γ) < P.pressure γ p.1 p.2
+
+theorem mem_nearArgmaxFinset {γ : ℝ} {P : Profile N M} {p : Jump N M} :
+    p ∈ nearArgmaxFinset γ P ↔ pressureSup γ P - 1 / (2 * γ) < P.pressure γ p.1 p.2 := by
+  simp [nearArgmaxFinset]
+
+/-- `Ỹ_γ (P)` is not empty: the maximising pair is in it, the slack being positive. -/
+theorem nearArgmaxFinset_nonempty {γ : ℝ} (hγ : 0 < γ) (P : Profile N M) :
+    (nearArgmaxFinset γ P).Nonempty := by
+  obtain ⟨a, o, hao⟩ := exists_pressureSup γ P
+  refine ⟨(a, o), mem_nearArgmaxFinset.2 ?_⟩
+  have : (0 : ℝ) < 1 / (2 * γ) := by positivity
+  simp only [hao]
+  linarith
+
+/-- The near-greedy event at step `k` says exactly that the pair expressed then lies in
+`Ỹ_γ (Ũ_k^{α,u})`. -/
+theorem isNearGreedyAt_iff_mem (γ : ℝ) (u : Profile N M) (ω : ℕ → Jump N M) (k : ℕ) :
+    IsNearGreedyAt γ u ω k ↔ ω k ∈ nearArgmaxFinset γ (stateAfter u ω k) := by
+  rw [mem_nearArgmaxFinset]
+  constructor
+  · intro h
+    obtain ⟨a, o, hao⟩ := exists_pressureSup γ (stateAfter u ω k)
+    rw [← hao]
+    exact h a o
+  · intro h a o
+    have := le_pressureSup γ (stateAfter u ω k) a o
+    linarith
+
+/-- The elementary inequality behind Proposition 24, the twin of
+`SocialNetwork.zeta_le_div_of_le` with the lattice gap `1/(M-1)` replaced by the slack
+`1/(2γ)` that the event `ξ̃` carries. -/
+theorem biasedZeta_le_div_of_le (N M : ℕ) (γ β : ℝ) {A S T : ℝ} (hA : 0 < A) (hAS : A ≤ S)
+    (hT0 : 0 ≤ T) (hT : T ≤ ((M * N : ℕ) : ℝ) * (A * Real.exp (-(β / (2 * γ))))) :
+    biasedZeta N M γ β ≤ S / (S + T) := by
+  have hE : (0 : ℝ) < Real.exp (β / (2 * γ)) := Real.exp_pos _
+  have hc : (0 : ℝ) ≤ ((M * N : ℕ) : ℝ) := by positivity
+  have hS : (0 : ℝ) < S := lt_of_lt_of_le hA hAS
+  have hST : (0 : ℝ) < S + T := by linarith
+  rw [Real.exp_neg] at hT
+  have hinv : Real.exp (β / (2 * γ)) * (Real.exp (β / (2 * γ)))⁻¹ = 1 := mul_inv_cancel₀ hE.ne'
+  have key : Real.exp (β / (2 * γ)) * T ≤ ((M * N : ℕ) : ℝ) * A := by
+    calc Real.exp (β / (2 * γ)) * T
+        ≤ Real.exp (β / (2 * γ)) * (((M * N : ℕ) : ℝ) * (A * (Real.exp (β / (2 * γ)))⁻¹)) :=
+          mul_le_mul_of_nonneg_left hT hE.le
+      _ = ((M * N : ℕ) : ℝ) * A * (Real.exp (β / (2 * γ)) * (Real.exp (β / (2 * γ)))⁻¹) := by
+          ring
+      _ = ((M * N : ℕ) : ℝ) * A := by rw [hinv, mul_one]
+  have key2 : ((M * N : ℕ) : ℝ) * A ≤ ((M * N : ℕ) : ℝ) * S := mul_le_mul_of_nonneg_left hAS hc
+  unfold biasedZeta
+  rw [div_le_div_iff₀ (by linarith) hST]
+  nlinarith [key, key2]
+
+/-- **The one-step bound of Proposition 24.**  Whatever the current profile, the pair chosen at
+the next expression is within `1/(2γ)` of the maximum with probability at least `ζ_{α,β}`.
+
+**Follows the paper's proof of Proposition 8**, with the lattice gap `1/(M-1)` replaced by the
+slack the event carries.  That substitution is the whole point of Remark 7: in the biased model
+the entries no longer lie on a lattice, so the gap has to be put into the event by hand. -/
+theorem biasedZeta_le_biasedJumpPMF_nearArgmaxFinset {γ β : ℝ} (hγ : 0 < γ) (hβ : 0 ≤ β)
+    (P : Profile N M) :
+    ENNReal.ofReal (biasedZeta N M γ β)
+      ≤ (biasedJumpPMF γ β P).toMeasure (nearArgmaxFinset γ P) := by
+  -- a maximising pair, and the weight it carries
+  obtain ⟨a₀, o₀, ha₀⟩ := exists_pressureSup γ P
+  have hmaxrate : biasedJumpRate γ β P a₀ o₀ = Real.exp (β * pressureSup γ P) := by
+    unfold biasedJumpRate
+    rw [ha₀]
+  have hp₀ : (a₀, o₀) ∈ nearArgmaxFinset γ P := by
+    refine mem_nearArgmaxFinset.2 ?_
+    have : (0 : ℝ) < 1 / (2 * γ) := by positivity
+    simp only [ha₀]
+    linarith
+  -- every other pair is below the maximum by at least the slack
+  have hnonmax : ∀ p ∈ Finset.univ \ nearArgmaxFinset γ P,
+      biasedJumpRate γ β P p.1 p.2
+        ≤ Real.exp (β * pressureSup γ P) * Real.exp (-(β / (2 * γ))) := by
+    intro p hp
+    have hle : P.pressure γ p.1 p.2 ≤ pressureSup γ P - 1 / (2 * γ) :=
+      not_lt.1 fun hcon => (Finset.mem_sdiff.1 hp).2 (mem_nearArgmaxFinset.2 hcon)
+    unfold biasedJumpRate
+    rw [← Real.exp_add]
+    refine Real.exp_le_exp.2 ?_
+    have h1 : β * P.pressure γ p.1 p.2 ≤ β * (pressureSup γ P - 1 / (2 * γ)) :=
+      mul_le_mul_of_nonneg_left hle hβ
+    have h2 : β * (pressureSup γ P - 1 / (2 * γ))
+        = β * pressureSup γ P + -(β / (2 * γ)) := by ring
+    linarith [h2 ▸ h1]
+  -- the two partial sums
+  have hS0 : (0 : ℝ) ≤ ∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le
+  have hT0 : (0 : ℝ) ≤ ∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2 :=
+    Finset.sum_nonneg fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le
+  have hAS : Real.exp (β * pressureSup γ P)
+      ≤ ∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2 := by
+    rw [← hmaxrate]
+    exact Finset.single_le_sum (fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le) hp₀
+  have hcard : (((Finset.univ \ nearArgmaxFinset γ P).card : ℕ) : ℝ) ≤ ((M * N : ℕ) : ℝ) := by
+    have h := Finset.card_le_card (Finset.subset_univ (Finset.univ \ nearArgmaxFinset γ P))
+    rw [Finset.card_univ, Fintype.card_prod, Fintype.card_fin, Fintype.card_fin,
+      Nat.mul_comm] at h
+    exact_mod_cast h
+  have hT : (∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+      ≤ ((M * N : ℕ) : ℝ)
+        * (Real.exp (β * pressureSup γ P) * Real.exp (-(β / (2 * γ)))) := by
+    have h1 := Finset.sum_le_card_nsmul (Finset.univ \ nearArgmaxFinset γ P)
+      (fun p => biasedJumpRate γ β P p.1 p.2)
+      (Real.exp (β * pressureSup γ P) * Real.exp (-(β / (2 * γ)))) hnonmax
+    rw [nsmul_eq_mul] at h1
+    exact h1.trans (mul_le_mul_of_nonneg_right hcard (by positivity))
+  have hreal : biasedZeta N M γ β
+      ≤ (∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+        / ((∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+          + ∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2) :=
+    biasedZeta_le_div_of_le N M γ β (Real.exp_pos _) hAS hT0 hT
+  -- transport it to the measure
+  have hw : ∀ s : Finset (Jump N M),
+      (∑ p ∈ s, biasedJumpWeight γ β P p)
+        = ENNReal.ofReal (∑ p ∈ s, biasedJumpRate γ β P p.1 p.2) := by
+    intro s
+    rw [ENNReal.ofReal_sum_of_nonneg fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le]
+    rfl
+  have hsplit : (∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+      + (∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+      = ∑ p : Jump N M, biasedJumpRate γ β P p.1 p.2 := by
+    rw [add_comm]
+    exact Finset.sum_sdiff (Finset.subset_univ _)
+  have hST : (0 : ℝ) < (∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+      + ∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2 := by
+    have hpos := Real.exp_pos (β * pressureSup γ P)
+    linarith
+  have htsum : (∑' q : Jump N M, biasedJumpWeight γ β P q)
+      = ENNReal.ofReal ((∑ p ∈ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2)
+        + ∑ p ∈ Finset.univ \ nearArgmaxFinset γ P, biasedJumpRate γ β P p.1 p.2) := by
+    rw [tsum_eq_sum (s := Finset.univ) fun p hp => absurd (Finset.mem_univ p) hp,
+      hw Finset.univ, hsplit]
+  rw [PMF.toMeasure_apply_finset]
+  simp only [biasedJumpPMF_apply]
+  rw [← Finset.sum_mul, hw (nearArgmaxFinset γ P), htsum, ← ENNReal.ofReal_inv_of_pos hST,
+    ← ENNReal.ofReal_mul hS0, ← div_eq_mul_inv]
+  exact ENNReal.ofReal_le_ofReal hreal
+
+theorem biasedDrivingKernel_apply (γ β : ℝ) (u : Profile N M) (n : ℕ)
+    (h : (i : Finset.Iic n) → Jump N M) :
+    biasedDrivingKernel γ β u n h
+      = (biasedJumpPMF γ β (stateAfterHistory u h (n + 1))).toMeasure := rfl
+
+/-- The near-greedy event read on histories of the first `n + 1` expressed pairs. -/
+def nearGreedyHistory (γ : ℝ) (u : Profile N M) (n : ℕ) :
+    Set ((i : Finset.Iic n) → Jump N M) :=
+  {h | ∀ k ≤ n, IsNearGreedyAt γ u (ofHistoryPath h) k}
+
+theorem measurableSet_nearGreedyHistory (γ : ℝ) (u : Profile N M) (n : ℕ) :
+    MeasurableSet (nearGreedyHistory γ u n) := MeasurableSet.of_discrete
+
+/-- `⋂_{j=1}^{n+1} ξ̃_j^{α,u}` is the cylinder over `nearGreedyHistory γ u n`. -/
+theorem nearGreedyEvents_succ_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
+    nearGreedyEvents γ u (n + 1)
+      = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹' nearGreedyHistory γ u n := by
+  ext ω
+  constructor
+  · exact fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk).2 (hω k (by omega))
+  · exact fun hω k hk =>
+      (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω (show k ≤ n by omega)).1 (hω k (by omega))
+
+theorem ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
+    {h : (i : Finset.Iic n) → Jump N M}
+    (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h) {j : ℕ}
+    (hj : j ≤ n) : ofHistoryPath x j = ofHistoryPath h j := by
+  rw [ofHistoryPath_apply _ (show j ≤ n + 1 by omega), ofHistoryPath_apply _ hj, ← hx,
+    Preorder.frestrictLe₂_apply]
+
+theorem stateAfter_ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
+    {h : (i : Finset.Iic n) → Jump N M}
+    (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h)
+    (u : Profile N M) {k : ℕ} (hk : k ≤ n + 1) :
+    stateAfter u (ofHistoryPath x) k = stateAfter u (ofHistoryPath h) k :=
+  stateAfter_congr u k fun j hj => ofHistoryPath_eq hx (by omega)
+
+/-- If a history of length `n + 2` restricts to a near-greedy history `h` and its last
+coordinate is within `1/(2γ)` of the maximum at the profile `h` reaches, then it is
+near-greedy. -/
+theorem mem_nearGreedyHistory_succ {γ : ℝ} {u : Profile N M} {n : ℕ}
+    {x : (i : Finset.Iic (n + 1)) → Jump N M} {h : (i : Finset.Iic n) → Jump N M}
+    (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h)
+    (hh : h ∈ nearGreedyHistory γ u n)
+    (hlast : x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩
+      ∈ nearArgmaxFinset γ (stateAfterHistory u h (n + 1))) :
+    x ∈ nearGreedyHistory γ u (n + 1) := by
+  intro k hk
+  rcases Nat.lt_or_ge k (n + 1) with hlt | hge
+  · have hkn : k ≤ n := by omega
+    have hprev := hh k hkn
+    rw [isNearGreedyAt_iff_mem] at hprev ⊢
+    rw [stateAfter_ofHistoryPath_eq hx u (k := k) (by omega), ofHistoryPath_eq hx hkn]
+    exact hprev
+  · have hkeq : k = n + 1 := le_antisymm hk hge
+    subst hkeq
+    rw [isNearGreedyAt_iff_mem, stateAfter_ofHistoryPath_eq hx u (k := n + 1) le_rfl,
+      ofHistoryPath_apply _ (le_refl (n + 1))]
+    exact hlast
+
+/-- **The induction step of Proposition 24.**  Given a near-greedy history of the first `n + 1`
+expressions, the next expression is near-greedy too with probability at least `ζ_{α,β}`. -/
+theorem biasedZeta_le_partialTraj_succ {γ β : ℝ} {u : Profile N M} (hγ : 0 < γ) (hβ : 0 ≤ β)
+    (n : ℕ) {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ nearGreedyHistory γ u n) :
+    ENNReal.ofReal (biasedZeta N M γ β)
+      ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
+          (nearGreedyHistory γ u (n + 1)) := by
+  have hmapA : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (biasedDrivingKernel γ β u) n (n + 1) h).map
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n))
+      = Measure.dirac h := by
+    rw [Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Jump N M) h
+      (Nat.le_succ n), Kernel.partialTraj_self, Kernel.id_apply]
+  have hAone : Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+      (biasedDrivingKernel γ β u) n (n + 1) h
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h}) = 1 := by
+    have hm := Measure.map_apply
+      (μ := Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (biasedDrivingKernel γ β u) n (n + 1) h)
+      (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Jump N M) (Nat.le_succ n))
+      (measurableSet_singleton h)
+    rw [hmapA] at hm
+    rw [← hm]
+    exact Measure.dirac_apply_of_mem rfl
+  have hAcompl : Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+      (biasedDrivingKernel γ β u) n (n + 1) h
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})ᶜ = 0 :=
+    (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2 hAone
+  have hmapB : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (biasedDrivingKernel γ β u) n (n + 1) h).map
+      (fun x : (i : Finset.Iic (n + 1)) → Jump N M => x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
+      = biasedDrivingKernel γ β u n h := by
+    rw [← Kernel.map_apply _ Measurable.of_discrete, Kernel.map_partialTraj_succ_self]
+  have hB : ENNReal.ofReal (biasedZeta N M γ β)
+      ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+          (biasedDrivingKernel γ β u) n (n + 1) h
+          ((fun x : (i : Finset.Iic (n + 1)) → Jump N M =>
+              x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+            (nearArgmaxFinset γ (stateAfterHistory u h (n + 1)))) := by
+    rw [← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete, hmapB,
+      biasedDrivingKernel_apply]
+    exact biasedZeta_le_biasedJumpPMF_nearArgmaxFinset hγ hβ _
+  exact le_measure_of_inter hAcompl hB fun x hx => mem_nearGreedyHistory_succ hx.1 hh hx.2
+
+/-- The law of the first `n + 1` expressed pairs of the biased chain. -/
+noncomputable def biasedHistoryMeasure (γ β : ℝ) (u : Profile N M) (n : ℕ) :
+    Measure ((i : Finset.Iic n) → Jump N M) :=
+  Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) 0 n ∘ₘ
+    ((biasedJumpPMF γ β u).toMeasure.map toHistoryZero)
+
+theorem biasedZeta_le_historyMeasure_zero {γ β : ℝ} {u : Profile N M} (hγ : 0 < γ)
+    (hβ : 0 ≤ β) :
+    ENNReal.ofReal (biasedZeta N M γ β)
+      ≤ biasedHistoryMeasure γ β u 0 (nearGreedyHistory γ u 0) := by
+  have hpre : toHistoryZero ⁻¹' nearGreedyHistory γ u 0
+      = (nearArgmaxFinset γ u : Set (Jump N M)) := by
+    ext z
+    have hz : ofHistoryPath (toHistoryZero z) 0 = z := rfl
+    constructor
+    · intro hzz
+      have h0 := (isNearGreedyAt_iff_mem γ u (ofHistoryPath (toHistoryZero z)) 0).1 (hzz 0 le_rfl)
+      rwa [hz, stateAfter_zero] at h0
+    · intro hzz k hk
+      have hk0 : k = 0 := Nat.le_zero.1 hk
+      subst hk0
+      rw [isNearGreedyAt_iff_mem, hz, stateAfter_zero]
+      exact hzz
+  unfold biasedHistoryMeasure
+  rw [Kernel.partialTraj_self, Measure.id_comp,
+    Measure.map_apply measurable_toHistoryZero MeasurableSet.of_discrete, hpre]
+  exact biasedZeta_le_biasedJumpPMF_nearArgmaxFinset hγ hβ u
+
+theorem biasedZeta_pow_le_historyMeasure {γ β : ℝ} {u : Profile N M} (hγ : 0 < γ) (hβ : 0 ≤ β)
+    (n : ℕ) :
+    ENNReal.ofReal (biasedZeta N M γ β) ^ (n + 1)
+      ≤ biasedHistoryMeasure γ β u n (nearGreedyHistory γ u n) := by
+  induction n with
+  | zero => simpa using biasedZeta_le_historyMeasure_zero hγ hβ
+  | succ n ih =>
+      have hstep : biasedHistoryMeasure γ β u (n + 1) (nearGreedyHistory γ u (n + 1))
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+              (biasedDrivingKernel γ β u) n (n + 1) h
+              (nearGreedyHistory γ u (n + 1)) ∂(biasedHistoryMeasure γ β u n) := by
+        unfold biasedHistoryMeasure
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply (measurableSet_nearGreedyHistory γ u (n + 1))
+            (Kernel.aemeasurable _)]
+      rw [hstep]
+      calc ENNReal.ofReal (biasedZeta N M γ β) ^ (n + 1 + 1)
+          = ENNReal.ofReal (biasedZeta N M γ β)
+              * ENNReal.ofReal (biasedZeta N M γ β) ^ (n + 1) := by ring
+        _ ≤ ENNReal.ofReal (biasedZeta N M γ β)
+              * biasedHistoryMeasure γ β u n (nearGreedyHistory γ u n) := by gcongr
+        _ = ∫⁻ h, (nearGreedyHistory γ u n).indicator
+              (fun _ => ENNReal.ofReal (biasedZeta N M γ β)) h
+              ∂(biasedHistoryMeasure γ β u n) := by
+            rw [lintegral_indicator (measurableSet_nearGreedyHistory γ u n), setLIntegral_const]
+        _ ≤ ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+              (biasedDrivingKernel γ β u) n (n + 1) h
+              (nearGreedyHistory γ u (n + 1)) ∂(biasedHistoryMeasure γ β u n) := by
+            refine lintegral_mono fun h => ?_
+            by_cases hh : h ∈ nearGreedyHistory γ u n
+            · rw [Set.indicator_of_mem hh]
+              exact biasedZeta_le_partialTraj_succ hγ hβ n hh
+            · rw [Set.indicator_of_notMem hh]
+              exact zero_le
+
 /-- **Proposition 24.**  `P (⋂_{j=1}^{m} ξ̃_j^{α,u}) ≥ (ζ_{α,β})^m`.
 
-The proof is that of Proposition 8, with the lattice gap `1/(M-1)` replaced by the slack
-`1/(2γ)` built into the event `ξ̃`. -/
+**Follows the paper's proof of Proposition 8**, which Appendix C invokes for this statement.
+The lattice gap `1/(M-1)` is replaced by the slack `1/(2γ)` that the event `ξ̃` carries — the
+substitution Remark 7 is designed for, the entries of the biased model no longer lying on a
+lattice.  As in the unbiased case the iteration goes through the finite-horizon kernels of the
+Ionescu–Tulcea construction rather than the conditioning of eq. (10), Mathlib offering no
+decomposition of that shape. -/
 theorem biasedZeta_pow_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ) (hβ : 0 ≤ β)
     (u : Profile N M) (m : ℕ) :
     ENNReal.ofReal (biasedZeta N M γ β) ^ m
       ≤ biasedPathMeasure γ β u (nearGreedyEvents γ u m) := by
-  sorry
+  rcases Nat.eq_zero_or_pos m with rfl | hm
+  · have huniv : nearGreedyEvents γ u 0 = Set.univ := by
+      ext ω
+      simp [nearGreedyEvents]
+    rw [pow_zero, huniv, measure_univ]
+  · obtain ⟨n, rfl⟩ : ∃ n, m = n + 1 := ⟨m - 1, by omega⟩
+    have hmap : (biasedPathMeasure γ β u).map
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n)
+        = biasedHistoryMeasure γ β u n := by
+      unfold biasedHistoryMeasure biasedPathMeasure
+      rw [Measure.map_comp _ _ (Preorder.measurable_frestrictLe n),
+        Kernel.traj_map_frestrictLe]
+    rw [nearGreedyEvents_succ_eq_preimage, ← Measure.map_apply
+      (Preorder.measurable_frestrictLe n) (measurableSet_nearGreedyHistory γ u n), hmap]
+    exact biasedZeta_pow_le_historyMeasure hγ hβ n
 
 end Propositions
 

@@ -84,6 +84,10 @@ jobs:
           #print axioms SocialNetwork.Bias.heard_stateAfter_le
           #print axioms SocialNetwork.Bias.heard_stateAfter_expressed
           #print axioms SocialNetwork.Bias.exists_pressure_lt
+          #print axioms SocialNetwork.Bias.biasedZeta_le_biasedJumpPMF_nearArgmaxFinset
+          #print axioms SocialNetwork.Bias.biasedZeta_le_partialTraj_succ
+          #print axioms SocialNetwork.Bias.biasedZeta_pow_le_historyMeasure
+          #print axioms SocialNetwork.Bias.biasedZeta_pow_le
           #print axioms SocialNetwork.Bias.le_max_pressure
           #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
           #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
