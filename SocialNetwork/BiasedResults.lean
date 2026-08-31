@@ -1292,7 +1292,27 @@ theorem le_biasedCharacteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} 
     (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 ≤ β) {o : Opinion M} {c : ℝ}
     (hc : IsBiasedCharacteristicTime (N := N) γ β o c) :
     (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹ * Real.exp (β / (2 * γ)) ≤ c := by
-  sorry
+  obtain ⟨hcpos, hchar⟩ := hc
+  have hKpos : (0 : ℝ) < ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by
+    have hN0 : 0 < N := by omega
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos hN0) (Nat.pow_pos (Nat.succ_pos M))
+  have h29 := le_biasedProbHittingGT hM hN hγ hγ' hβ
+    (isBiasedLadder_biasedLadderOf (N := N) γ o) hcpos
+  rw [hchar _ (isBiasedLadder_biasedLadderOf (N := N) γ o)] at h29
+  have h' := Real.exp_le_exp.mp
+    ((ENNReal.ofReal_le_ofReal_iff (Real.exp_pos _).le).mp h29)
+  rw [neg_div, Real.exp_neg] at h'
+  have hFpos : (0 : ℝ) < Real.exp (β / (2 * γ)) := Real.exp_pos _
+  have key : (1 : ℝ) ≤ 2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) *
+      (Real.exp (β / (2 * γ)))⁻¹ := by linarith
+  have hFle : Real.exp (β / (2 * γ)) ≤ 2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by
+    have := mul_le_mul_of_nonneg_right key hFpos.le
+    rwa [one_mul, inv_mul_cancel_right₀ hFpos.ne'] at this
+  have hKne : ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) ≠ 0 := hKpos.ne'
+  have hstep := mul_le_mul_of_nonneg_left hFle
+    (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹)
+  rwa [show (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹ *
+    (2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) = c by field_simp] at hstep
 
 /-- **Theorem 31.**  Metastability for the biased model: for `0 < α < 1/(M-1)` there are
 `β₀, C₁ > 0` and `C₂ > 0`, depending only on `α`, `M` and `N`, such that the rescaled exit

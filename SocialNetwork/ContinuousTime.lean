@@ -548,6 +548,110 @@ theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : �
       Filter.atTop (nhds 0) := by
   sorry
 
+/-- **The bound displayed inside the proof of part 2 of Theorem 2.**  For any `u ∈ S \ {0}`
+and any `t > 0`,
+
+```
+P (R^{β,u} (L) > t) ≤ 1 - ζ_β^{(M+1)N} + (M+1) N exp (-e^{β/(M-1)} t / ((M+1) N)).
+```
+
+**No counterpart among the numbered statements of the paper.**  Theorem 2.2 above --- the Lean
+`SocialNetwork.tendsto_hittingTime_ladderSet` --- is the limit this inequality gives at
+`t = e^{-β(1-δ)/(M-1)}`, and the inequality itself never becomes a statement.  Lemma 13 uses
+the inequality and not the limit, so it cannot be derived from Theorem 2.2 as stated: taking
+the limit has thrown the rate away.  The display is transcribed here so that Lemma 13 has
+something to rest on; see `FOR-THE-AUTHORS.md`. -/
+theorem probHittingGT_ladderSet_le_of_ne_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) {t : ℝ} (ht : 0 < t) :
+    probHittingGT β u (ladderSet N M) (ENNReal.ofReal t)
+      ≤ ENNReal.ofReal (1 - zeta N M β ^ ((M + 1) * N)
+          + (((M + 1) * N : ℕ) : ℝ) *
+            Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * t) / (((M + 1) * N : ℕ) : ℝ))) := by
+  sorry
+
+/-- **Equation (19)**, the quantitative form of Corollary 11:
+
+```
+P (R^{β,0} (L) > 2β) ≤ P (τ > β) + sup_{u ≠ 0} P (R^{β,u} (L) > β),
+```
+
+with `τ` the waiting time before the first expression from the zero matrix.
+
+**No counterpart among the numbered statements of the paper.**  Corollary 11 above --- the Lean
+`SocialNetwork.tendsto_hittingTime_ladderSet_zero` --- is a limit, and this is the inequality
+its proof gives; Lemma 13 uses the inequality.
+
+`P (τ > β)` is written here as the paper evaluates it, `e^{-β/(MN)}`.  Note that `τ` is
+declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; since
+`e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, the form written here is the weaker of the two, so
+Lemma 13 follows from either reading. -/
+theorem probHittingGT_ladderSet_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
+    probHittingGT β 0 (ladderSet N M) (ENNReal.ofReal (2 * β))
+      ≤ ENNReal.ofReal (Real.exp (-β / ((M * N : ℕ) : ℝ)))
+        + ⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+            probHittingGT β v (ladderSet N M) (ENNReal.ofReal β) := by
+  sorry
+
+/-- The arithmetic of the last line of the proof of Lemma 13: the three bounds the paper
+collects fit under `(M+1)² N² e^{-β/((M+1)N)}`.  Each term is compared to that same
+exponential --- `MN ≤ (M+1)N`, `M - 1 ≤ (M+1)N` and `e^{β/(M-1)} ≥ 1` --- leaving the
+integer inequality `1 + (M+1)N ≤ (M+1)N²`, which holds since `N ≥ 3`.
+
+**Supplies a step the paper asserts**: "putting the inequalities above together, we conclude
+the proof". -/
+theorem exp_add_zeta_pow_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
+    Real.exp (-β / ((M * N : ℕ) : ℝ))
+        + (1 - zeta N M β ^ ((M + 1) * N)
+          + (((M + 1) * N : ℕ) : ℝ) *
+            Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * β) / (((M + 1) * N : ℕ) : ℝ)))
+      ≤ (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := by
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hN3 : (3 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hKc : (((M + 1) * N : ℕ) : ℝ) = ((M : ℝ) + 1) * (N : ℝ) := by push_cast; ring
+  have hMNc : ((M * N : ℕ) : ℝ) = (M : ℝ) * (N : ℝ) := by push_cast; ring
+  have hKpos : (0 : ℝ) < ((M : ℝ) + 1) * (N : ℝ) := by nlinarith
+  have hMNpos : (0 : ℝ) < (M : ℝ) * (N : ℝ) := by nlinarith
+  have hM1pos : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hEpos : (0 : ℝ) < Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := Real.exp_pos _
+  -- the waiting time from the zero matrix
+  have h1 : Real.exp (-β / ((M * N : ℕ) : ℝ))
+      ≤ Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := by
+    refine Real.exp_le_exp.2 ?_
+    rw [hMNc, hKc, neg_div, neg_div, neg_le_neg_iff]
+    exact div_le_div_of_nonneg_left hβ hMNpos (by nlinarith)
+  -- the greedy run, through Remark 4
+  have h2 : 1 - zeta N M β ^ ((M + 1) * N)
+      ≤ (((M + 1) * N : ℕ) : ℝ) * ((M : ℝ) * (N : ℝ))
+          * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := by
+    have hz := one_sub_le_zeta_pow N M β ((M + 1) * N)
+    have hexp : Real.exp (-(β / ((M : ℝ) - 1)))
+        ≤ Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := by
+      refine Real.exp_le_exp.2 ?_
+      rw [hKc, neg_div, neg_le_neg_iff]
+      exact div_le_div_of_nonneg_left hβ hM1pos (by nlinarith)
+    have hcoef : (0 : ℝ) ≤ (((M + 1) * N : ℕ) : ℝ) * ((M : ℝ) * (N : ℝ)) := by positivity
+    nlinarith [hz, hexp, hcoef]
+  -- the race between the exponential clocks
+  have h3 : (((M + 1) * N : ℕ) : ℝ) *
+        Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * β) / (((M + 1) * N : ℕ) : ℝ))
+      ≤ (((M + 1) * N : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)) := by
+    have hone : (1 : ℝ) ≤ Real.exp (β / ((M : ℝ) - 1)) :=
+      Real.one_le_exp (by positivity)
+    have hnum : -(Real.exp (β / ((M : ℝ) - 1)) * β) ≤ -β := by nlinarith
+    have hstep : -(Real.exp (β / ((M : ℝ) - 1)) * β) / (((M + 1) * N : ℕ) : ℝ)
+        ≤ -β / (((M + 1) * N : ℕ) : ℝ) := by
+      apply div_le_div_of_nonneg_right hnum
+      rw [hKc]; exact hKpos.le
+    have hKnn : (0 : ℝ) ≤ (((M + 1) * N : ℕ) : ℝ) := Nat.cast_nonneg _
+    exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 hstep) hKnn
+  -- the three constants fit
+  have hfit : 1 + (((M + 1) * N : ℕ) : ℝ) * ((M : ℝ) * (N : ℝ)) + (((M + 1) * N : ℕ) : ℝ)
+      ≤ (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) := by
+    push_cast
+    nlinarith [hM2, hN3]
+  have hcomb := mul_le_mul_of_nonneg_right hfit hEpos.le
+  nlinarith [h1, h2, h3, hcomb]
+
 /-- **Lemma 13.** For any `u ∈ S`,
 `P (R^{β,u} (L) > 2β) ≤ (M+1)² N² e^{-β/((M+1)N)}`.
 
@@ -558,7 +662,52 @@ theorem probHittingGT_ladderSet_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ
     probHittingGT β u (ladderSet N M) (ENNReal.ofReal (2 * β))
       ≤ ENNReal.ofReal ((((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) *
           Real.exp (-β / (((M + 1) * N : ℕ) : ℝ))) := by
-  sorry
+  rcases eq_or_lt_of_le hβ with hβ0 | hβpos
+  · -- `β = 0`: the right-hand side is already at least one
+    refine le_trans (prob_le_one (μ := ctsPathMeasure β u)) ?_
+    rw [← hβ0]
+    refine ENNReal.one_le_ofReal.2 ?_
+    rw [neg_zero, zero_div, Real.exp_zero, mul_one]
+    have hN0 : 0 < N := by omega
+    have h1 : 1 ≤ ((M + 1) ^ 2 * N ^ 2 : ℕ) :=
+      Nat.mul_pos (Nat.pow_pos (Nat.succ_pos M)) (Nat.pow_pos hN0)
+    exact_mod_cast h1
+  · -- the bound the proof of Theorem 2.2 puts on every non-null start
+    set A : ℝ := 1 - zeta N M β ^ ((M + 1) * N)
+        + (((M + 1) * N : ℕ) : ℝ) *
+          Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * β) / (((M + 1) * N : ℕ) : ℝ)) with hA
+    have hA0 : 0 ≤ A := by
+      have hz1 : zeta N M β ^ ((M + 1) * N) ≤ 1 :=
+        pow_le_one₀ (zeta_pos N M β).le (zeta_le_one N M β)
+      have hrest : (0 : ℝ) ≤ (((M + 1) * N : ℕ) : ℝ) *
+          Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * β) / (((M + 1) * N : ℕ) : ℝ)) := by
+        positivity
+      rw [hA]; linarith
+    have hsup : (⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+        probHittingGT β v (ladderSet N M) (ENNReal.ofReal β)) ≤ ENNReal.ofReal A := by
+      refine iSup₂_le fun v hv => ?_
+      rw [hA]
+      exact probHittingGT_ladderSet_le_of_ne_zero hM hN hβ hv.1 hv.2 hβpos
+    -- and the arithmetic that collects the pieces
+    have hfin : ENNReal.ofReal (Real.exp (-β / ((M * N : ℕ) : ℝ))) + ENNReal.ofReal A
+        ≤ ENNReal.ofReal ((((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) *
+            Real.exp (-β / (((M + 1) * N : ℕ) : ℝ))) := by
+      rw [← ENNReal.ofReal_add (Real.exp_pos _).le hA0, hA]
+      exact ENNReal.ofReal_le_ofReal (exp_add_zeta_pow_le hM hN hβ)
+    by_cases hu0 : u = 0
+    · -- from the zero matrix, through equation (19)
+      subst hu0
+      exact le_trans (le_trans (probHittingGT_ladderSet_zero_le hM hN hβ)
+        (add_le_add le_rfl hsup)) hfin
+    · -- from any other state the event at `2β` is contained in the event at `β`
+      have hmono : probHittingGT β u (ladderSet N M) (ENNReal.ofReal (2 * β))
+          ≤ probHittingGT β u (ladderSet N M) (ENNReal.ofReal β) :=
+        measure_mono fun ω hω =>
+          lt_of_le_of_lt (ENNReal.ofReal_le_ofReal (by linarith)) hω
+      refine le_trans hmono (le_trans ?_ hfin)
+      refine le_trans ?_ (self_le_add_left (ENNReal.ofReal A) _)
+      rw [hA]
+      exact probHittingGT_ladderSet_le_of_ne_zero hM hN hβ hu hu0 hβpos
 
 end Theorem2
 

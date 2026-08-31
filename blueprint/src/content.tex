@@ -1013,6 +1013,54 @@ the process pointwise.
   therefore needs its own twin; one axiom cannot serve both models.
 \end{proof}
 
+\begin{lemma}[Inside the proof of part~2 of Theorem~2]
+  \label{lem:hitting-rate}
+  \lean{SocialNetwork.probHittingGT_ladderSet_le_of_ne_zero}
+  \leanok
+  \uses{def:ladder}
+  For any $u \in \Sspace \setminus \{0\}$ and any $t > 0$,
+  \[
+    \mathbb{P}(\Rhit{u}(\ladder) > t)
+      \;\le\; 1 - \zeta_\beta^{(M+1)N}
+        + (M+1)N \exp\!\left(-\frac{e^{\beta/(M-1)}\, t}{(M+1)N}\right).
+  \]
+\end{lemma}
+\begin{proof}
+  \uses{prop:confinement, prop:greedy-prob}
+  \textbf{Not formalised, and not a numbered statement of the paper}: this
+  inequality is displayed inside the proof of part~2 of
+  Theorem~\ref{thm:invariant}, and Theorem~2.2 is the limit it gives at
+  $t = e^{-\beta(1-\delta)/(M-1)}$.  It is stated here because
+  Lemma~\ref{lem:hitting-2beta} uses the inequality and not the limit: taking
+  the limit throws the rate away, so Lemma~13 cannot rest on Theorem~2.2 as
+  stated.  See Section~\ref{sec:corrections}.
+\end{proof}
+
+\begin{lemma}[Equation~(19)]
+  \label{lem:hitting-zero-decomp}
+  \lean{SocialNetwork.probHittingGT_ladderSet_zero_le}
+  \leanok
+  \uses{def:ladder}
+  \[
+    \mathbb{P}(\Rhit{0}(\ladder) > 2\beta)
+      \;\le\; \mathbb{P}(\tau > \beta)
+        + \sup_{u \ne 0} \mathbb{P}(\Rhit{u}(\ladder) > \beta),
+  \]
+  with $\mathbb{P}(\tau > \beta)$ written as the paper evaluates it,
+  $e^{-\beta/(MN)}$.
+\end{lemma}
+\begin{proof}
+  \uses{cor:hitting-zero}
+  \textbf{Not formalised, and not a numbered statement of the paper}: it is
+  displayed as equation~(19) inside the proof of
+  Lemma~\ref{lem:hitting-2beta} and attributed there to
+  Corollary~\ref{cor:hitting-zero}, which is itself stated as a limit.  Note
+  that $\tau$ is declared exponential of mean $1/(MN)$, for which
+  $\mathbb{P}(\tau > \beta) = e^{-MN\beta}$ and not $e^{-\beta/(MN)}$; since
+  $e^{-MN\beta} \le e^{-\beta/(MN)}$ for $\beta \ge 0$, the form written here
+  is the weaker of the two and Lemma~13 follows from either reading.
+\end{proof}
+
 \begin{lemma}[Lemma~13]
   \label{lem:hitting-2beta}
   \lean{SocialNetwork.probHittingGT_ladderSet_le}
@@ -1023,10 +1071,19 @@ the process pointwise.
   This is \eqref{eq:h16} with $s_2 = 2\beta$.
 \end{lemma}
 \begin{proof}
-  \uses{cor:hitting-zero, rem:bernoulli}
-  Split according to whether the start is $0$, using
-  Corollary~\ref{cor:hitting-zero}, and bound $1 - \zeta_\beta^{(M+1)N}$ by
-  Remark~\ref{rem:bernoulli}.  \textbf{Not formalised}.
+  \leanok
+  \uses{lem:hitting-zero-decomp, lem:hitting-rate, rem:bernoulli}
+  Split according to whether the start is $0$.  From $0$, equation~(19) of
+  Lemma~\ref{lem:hitting-zero-decomp}; from any other state the event at
+  $2\beta$ is contained in the event at $\beta$.  Both are then bounded by
+  Lemma~\ref{lem:hitting-rate} at $t = \beta$, and $1 - \zeta_\beta^{(M+1)N}$
+  by Remark~\ref{rem:bernoulli}.  \emph{Formalised, but not sorry-free}: the
+  proof is complete in Lean and inherits \texttt{sorryAx} from the two
+  displays above alone.  \textbf{Supplies a step the paper asserts}: ``putting
+  the inequalities above together'' is the comparison of each of the three
+  terms with $e^{-\beta/((M+1)N)}$ --- using $MN \le (M+1)N$, $M-1 \le (M+1)N$
+  and $e^{\beta/(M-1)} \ge 1$ --- which leaves the integer inequality
+  $1 + (M+1)N \le (M+1)N^2$, true since $N \ge 3$.
 \end{proof}
 
 \begin{lemma}[Lemma~14]
@@ -1434,8 +1491,38 @@ the process pointwise.
   $c_{\alpha,\beta} \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{2\gamma}}$.
 \end{corollary}
 \begin{proof}
-  \uses{cor:cbeta}
-  \textbf{Not formalised}.
+  \leanok
+  \uses{cor:cbeta, lem:biased-exit-bounds, lem:biased-ladder-nonempty}
+  The rearrangement of Corollary~\ref{cor:cbeta}, with $\pressone$ replaced by
+  $\tfrac{1}{2\gamma}$: apply Lemma~\ref{lem:biased-exit-bounds}, part~1, at
+  $t = c_{\alpha,\beta}$ to the ladder of
+  Lemma~\ref{lem:biased-ladder-nonempty}.  \emph{Formalised, but not
+  sorry-free}: complete in Lean, inheriting \texttt{sorryAx} from
+  Lemma~\ref{lem:biased-exit-bounds} alone.  Its only addition to the paper is
+  the witness Corollary~\ref{cor:cbeta} needed as well.
+\end{proof}
+
+\begin{lemma}[$L_\alpha^o$ is inhabited]
+  \label{lem:biased-ladder-nonempty}
+  \lean{SocialNetwork.Bias.biasedLadderOf,
+    SocialNetwork.Bias.pressure_biasedLadderOf,
+    SocialNetwork.Bias.isBiasedLadder_biasedLadderOf,
+    SocialNetwork.Bias.exists_isBiasedLadder,
+    SocialNetwork.Bias.biasedLadderSet_nonempty}
+  \leanok
+  \uses{def:biased-sets}
+  For every $o \in O$ the set $L_\alpha^o$ is non-empty: the profile in which
+  actor $a$ has heard exactly $a$ expressions, all of them of $o$, is a biased
+  ladder supporting $o$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  That memory has $c_o = n_a = a$ and $c_p = 0$ for $p \ne o$, so
+  $u(a,o) = a(1+\gamma) - \gamma a = a$ and $u(a,p) = -\gamma a$, which is
+  equation~(9).  Actor $1$ has heard nothing and the $n_a$ are pairwise
+  distinct, so the profile lies in $S^\alpha$.  \textbf{No counterpart in the
+  paper}, exactly as for Lemma~\ref{lem:ladder-nonempty}: without it
+  Corollary~\ref{cor:biased-cbeta} is vacuous.
 \end{proof}
 
 \begin{theorem}[Theorem~31]
@@ -1601,18 +1688,20 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Twenty-seven
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts twenty-eight entries.
+of its own, so it counts thirty-one entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (twelve).
+\noindent\textbf{Follow the paper's proof} (fourteen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
 \ref{prop:biased-low-pressure}, \ref{prop:biased-bounded}
 and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
-Corollary~\ref{cor:cbeta}, Theorem~\ref{thm:metastability}, and
+Lemma~\ref{lem:hitting-2beta},
+Corollaries~\ref{cor:cbeta} and~\ref{cor:biased-cbeta},
+Theorem~\ref{thm:metastability}, and
 Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
 paper whose proofs are both given there and formalised here, and each Lean
 proof reproduces the written argument.  Four places carry a note: the passage
@@ -1636,7 +1725,14 @@ $\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum of~(20), and the
 threshold $\beta_1$; and its Proposition~\ref{prop:exit-exponential} is an
 axiom, not a theorem.  Corollary~\ref{cor:cbeta} is the paper's rearrangement,
 but needs $\ladder^o \ne \emptyset$, which is
-Lemma~\ref{lem:ladder-nonempty}.  Propositions~\ref{prop:biased-bounded}
+Lemma~\ref{lem:ladder-nonempty}; Corollary~\ref{cor:biased-cbeta} is that same
+rearrangement with $\pressone$ replaced by $\tfrac{1}{2\gamma}$, and needs the
+same witness, Lemma~\ref{lem:biased-ladder-nonempty}.
+Lemma~\ref{lem:hitting-2beta} is the paper's case split, resting on two
+inequalities the paper displays inside proofs rather than states ---
+Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} --- and
+supplying the arithmetic of ``putting the inequalities above together''.
+Propositions~\ref{prop:biased-bounded}
 and~\ref{prop:biased-greedy-prob} are the arguments of
 Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
 Appendix~C invokes; the iteration common to the two is run once in Lean, for an
@@ -1660,9 +1756,10 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (six).
+\noindent\textbf{No counterpart in the paper} (seven).
 Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
-\ref{lem:consensus-ladder} and~\ref{lem:ladder-nonempty} and
+\ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty}
+and~\ref{lem:biased-ladder-nonempty} and
 Remark~\ref{rem:biased-ladder-steep},
 together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear
@@ -1675,7 +1772,12 @@ audit, and the rule of Remark~\ref{rem:green} is written to keep it that way.
 Where the paper's route does not close --- Lemmas~19 and~20, and
 Proposition~22 --- the statement is left unproved and the obstruction is
 recorded in Section~\ref{sec:corrections} above, rather than repaired by an
-argument the authors have not seen.  \texttt{FOR-THE-AUTHORS.md} at the root of
+argument the authors have not seen.  Where the route closes but leaves the
+numbered statements --- Lemma~13, whose proof reaches into the proof of
+Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
+are transcribed as statements of their own,
+Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp}, and carry
+their own \texttt{sorry}.  \texttt{FOR-THE-AUTHORS.md} at the root of
 the repository collects those, and the decisions they call for, in one place.
 
 \begin{remark}[``By definition'' at the end of Proposition~7]

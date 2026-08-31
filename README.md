@@ -33,8 +33,9 @@ times, the process `U_t`, the transition semigroup and the hitting times `R^{β,
 The **biased model of Section 3** is assembled: memory profiles, the operator `π_α^{a,o}`, the
 state space `S^α`, the generator `G̃` of equation (7), the sets of equations (8) and (9), and
 the biased skeleton and process.  **Propositions 21, 17 and 24 are proved**, by the transports
-Appendix C and Section 5.4 assert — of Propositions 5, 6 and 8 respectively.  Proposition 22 is
-the one transport that does not work; see [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md).
+Appendix C and Section 5.4 assert — of Propositions 5, 6 and 8 respectively, and **Corollary 30**
+is Corollary 15 transposed.  Proposition 22 is the one transport that does not work; see
+[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md).
 
 **Every numbered statement of the paper is now stated in Lean.**  The ones whose proofs are not
 formalised carry a `sorry` and are marked 🟡 in the blueprint.  They are unproved for four
@@ -42,6 +43,14 @@ distinct reasons, which the blueprint keeps apart: blocked on missing Mathlib th
 criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 19 and 20, whose
 written proofs do not compose — repairs are recorded), not a result of this paper at all
 (Proposition 12; see below), or simply routine and not yet done.
+
+**Lemma 13** is proved, and writing it turned up a third kind of obstruction.  Its proof uses
+two inequalities the paper *displays inside proofs* but never states — a quantitative bound
+whose limit is Theorem 2.2, and equation (19), which reads Corollary 11 quantitatively — and
+both Theorem 2.2 and Corollary 11 are stated only as limits.  A limit has thrown the rate away,
+so Lemma 13 does not follow from the numbered statements it cites.  The two displays are now
+Lean statements of their own, each carrying a `sorry`, and Lemma 13 rests on them rather than
+on an argument nobody has seen.
 
 A proof does **not** have to wait for its ancestors.  A result whose own proof is written but
 whose upstream lemmas are still `sorry` compiles fine, inherits `sorryAx` from them, and turns
