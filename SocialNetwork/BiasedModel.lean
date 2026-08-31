@@ -535,6 +535,61 @@ theorem biasedLadderSet_subset_biasedSteepLadderSet [NeZero N] :
     biasedLadderSet N M γ ⊆ biasedSteepLadderSet N M γ :=
   fun _ ⟨o, hP⟩ => ⟨o, hP.isBiasedSteepLadder⟩
 
+/-! ### A witness for `L_α^o` -/
+
+/-- The staircase profile supporting `o`: actor `a` has heard exactly `a` expressions, all of
+them of `o`.  Its pressure matrix is `u (a, o) = a` and `u (a, p) = -γ a` for `p ≠ o`, which is
+equation (9) read off directly.
+
+**No counterpart in the paper**, exactly as for the unbiased `SocialNetwork.ladderOf`: every
+statement of the form "for any `l ∈ L_α^o`" concluding something about `L_α^o` is vacuous
+without a witness, and Corollary 30 is the first. -/
+def biasedLadderOf (N : ℕ) {M : ℕ} (o : Opinion M) : Profile N M := fun a =>
+  ⟨fun p => if p = o then (a : ℕ) else 0⟩
+
+@[simp]
+theorem heard_biasedLadderOf (o : Opinion M) (a : Actor N) :
+    (biasedLadderOf N o).heard a = (a : ℕ) := by
+  simp [Profile.heard, biasedLadderOf, Memory.heard]
+
+theorem pressure_biasedLadderOf (γ : ℝ) (o : Opinion M) (a : Actor N) (p : Opinion M) :
+    (biasedLadderOf N o).pressure γ a p
+      = if p = o then ((a : ℕ) : ℝ) else -γ * ((a : ℕ) : ℝ) := by
+  have hcount : (biasedLadderOf N o a).count p = if p = o then (a : ℕ) else 0 := rfl
+  have hheard : (biasedLadderOf N o a).heard = (a : ℕ) := heard_biasedLadderOf o a
+  simp only [Profile.pressure, Memory.pressure]
+  rw [hcount, hheard]
+  split_ifs with hp <;> push_cast <;> ring
+
+/-- The staircase profile is a biased ladder supporting `o`. -/
+theorem isBiasedLadder_biasedLadderOf [NeZero N] (γ : ℝ) (o : Opinion M) :
+    IsBiasedLadder γ o (biasedLadderOf N o) where
+  isBiasedState :=
+    { exists_zero_row := ⟨⟨0, Nat.pos_of_ne_zero (NeZero.ne N)⟩, by simp⟩
+      injective_heard := by
+        intro a b hab
+        simp only [heard_biasedLadderOf] at hab
+        exact Fin.val_injective hab }
+  column := by
+    have hcol : (fun a : Actor N => (biasedLadderOf N o).pressure γ a o)
+        = fun a : Actor N => ((a : ℕ) : ℝ) := by
+      funext a
+      rw [pressure_biasedLadderOf, if_pos rfl]
+    rw [hcol]
+  other := by
+    intro a p hp
+    rw [pressure_biasedLadderOf, pressure_biasedLadderOf, if_neg hp, if_pos rfl]
+
+/-- `L_α^o ≠ ∅` for every opinion `o`. -/
+theorem exists_isBiasedLadder [NeZero N] (γ : ℝ) (o : Opinion M) :
+    ∃ P : Profile N M, IsBiasedLadder γ o P :=
+  ⟨biasedLadderOf N o, isBiasedLadder_biasedLadderOf γ o⟩
+
+/-- `L_α ≠ ∅`. -/
+theorem biasedLadderSet_nonempty [NeZero N] [NeZero M] (γ : ℝ) :
+    (biasedLadderSet N M γ).Nonempty :=
+  ⟨biasedLadderOf N (0 : Opinion M), (0 : Opinion M), isBiasedLadder_biasedLadderOf _ _⟩
+
 end BiasedLadder
 
 end Bias

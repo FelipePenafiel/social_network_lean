@@ -95,6 +95,10 @@ jobs:
           #print axioms SocialNetwork.Bias.le_max_pressure
           #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
           #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
+          #print axioms SocialNetwork.Bias.pressure_biasedLadderOf
+          #print axioms SocialNetwork.Bias.isBiasedLadder_biasedLadderOf
+          #print axioms SocialNetwork.Bias.exists_isBiasedLadder
+          #print axioms SocialNetwork.Bias.biasedLadderSet_nonempty
           -- Definition 3: the skeleton
           #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
           #print axioms SocialNetwork.skeletonKernel_reachable
@@ -131,6 +135,7 @@ jobs:
           #print axioms SocialNetwork.one_le_eight_mul_exp_neg_one
           #print axioms SocialNetwork.const_bounds
           #print axioms SocialNetwork.hittingTimeCts_mono
+          #print axioms SocialNetwork.exp_add_zeta_pow_le
           EOF
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then

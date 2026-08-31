@@ -97,11 +97,13 @@ cannot be used, and the Lean statement differs from the paper's display.
 | # | Where | What is wrong | What was done |
 |---|---|---|---|
 | 2.1 | **Proposition 12**, (15)–(18) | `ε₁ ε₂ s₁ s₂` are introduced before `β`, but Section 5.3 instantiates them at `s₂ = 2β` and `ε₂ = (M+1)²N²e^{-β/((M+1)N)}`, and needs `ε₁ + ε₂ ≤ 1/2` only "for β sufficiently big".  Bound as constants ahead of `β`, **the hypotheses are unsatisfiable** — Theorem 3 could never have been derived from them. | Made functions of `β`; (15)–(18) required only above a threshold `β₁`.  Theorem 3 now follows. |
-| 2.2 | **Corollary 15** (and 30) | Quantifies over `l ∈ L^o` and concludes about `L^o`, so it is vacuous unless `L^o ≠ ∅`, which the paper never records. | `SocialNetwork.ladderOf` supplies the witness — the staircase itself.  Blueprint `lem:ladder-nonempty`. |
+| 2.2 | **Corollary 15** (and 30) | Quantifies over `l ∈ L^o` and concludes about `L^o`, so it is vacuous unless `L^o ≠ ∅`, which the paper never records. | `SocialNetwork.ladderOf` and `SocialNetwork.Bias.biasedLadderOf` supply the witnesses — the staircase itself, and the profile in which actor `a` has heard exactly `a` expressions of `o`.  Blueprint `lem:ladder-nonempty` and `lem:biased-ladder-nonempty`.  Both corollaries are now proved. |
 | 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `rem:eq6`; the stronger condition is what `IsBiasedState` carries. |
 | 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `rem:steep`; recorded, and the Lean definition carries it. |
 | 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed.  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what the paper uses and is not what is stated.  **Your call** whether to restate it. |
 | 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which does not exist: Proposition 12 is stated over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | Nothing done.  See §3.2. |
+| 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `lem:hitting-rate` and `lem:hitting-zero-decomp` — each carrying a `sorry`, and Lemma 13 is proved from them.  **Your call** whether either should become a numbered statement of the paper. |
+| 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
 
 ---
 
@@ -164,6 +166,15 @@ blueprint's audit section classifies every formalised proof this way.
   threshold above which `ε₁ + ε₂ ≤ 1/2`.  Proposition 12 also fixes an opinion
   while Theorem 3 quantifies over it, so the constants are taken uniform over the
   finitely many opinions.
+* **Lemma 13.**  "Putting the inequalities above together" is the comparison of
+  each of the three terms with `e^{-β/((M+1)N)}` — using `MN ≤ (M+1)N`,
+  `M - 1 ≤ (M+1)N` and `e^{β/(M-1)} ≥ 1` — which leaves the integer inequality
+  `1 + (M+1)N ≤ (M+1)N²`, true since `N ≥ 3`.  It is tight enough to be worth
+  writing down: the greedy term alone already uses `M(M+1)N²` of the `(M+1)²N²`
+  available.
+* **Corollary 30.**  Appendix C gives it as "the rearrangement of Corollary 15
+  with `1/(M-1)` replaced by `1/(2γ)`", and it is exactly that; the Lean proof is
+  Corollary 15's, transposed.
 * **Measurability.**  The paper does not address it anywhere.  Every measurability
   lemma here has no counterpart in the text.
 
