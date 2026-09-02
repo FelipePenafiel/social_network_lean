@@ -651,6 +651,24 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   non-negative, integer-valued column whose minimum is $0$.
 \end{proof}
 
+\begin{lemma}[A biased ladder is a biased consensus state]
+  \label{lem:biased-ladder-consensus}
+  \lean{SocialNetwork.Bias.IsBiasedLadder.isBiasedConsensus}
+  \leanok
+  \uses{def:biased-sets}
+  For $\gamma > 0$ and $N \ge 2$, $\ladder_\alpha^o \subseteq C_\alpha^o$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{No counterpart in the paper}, exactly as for
+  Lemma~\ref{lem:ladder-consensus}.  The $o$-column is non-negative and takes
+  the value $N-1 \ge 1$, so it is not identically zero; the other columns are
+  $-\gamma$ times it, hence non-positive.  Appendix~C needs it for the reason
+  Section~5.3 needs the unbiased version:
+  \eqref{eq:h16} is about $\ladder_\alpha^o \cup C_\alpha^{-o}$ while
+  Lemma~\ref{lem:biased-hitting} bounds the hitting time of $\ladder_\alpha$.
+\end{proof}
+
 \begin{remark}[The smallest maximum of a non-null row, Remark~8]
   \label{rem:remark8}
   \lean{SocialNetwork.Bias.le_max_pressure, SocialNetwork.Bias.exists_count_ge, SocialNetwork.Bias.pressure_eq_of_bias}
@@ -1512,11 +1530,21 @@ the process pointwise.
   \leanok
   \uses{def:biased-sets}
   For any $u \in \Salpha$,
-  $\mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > 2\beta) \le C e^{-\frac{\beta}{2\gamma}}$.
+  $\mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > 2\beta) \le C e^{-\frac{\beta}{2\gamma}}$,
+  with $C$ depending only on $\alpha$, $M$ and $N$.
 \end{lemma}
 \begin{proof}
   \uses{lem:hitting-2beta}
-  \textbf{Not formalised}.
+  \textbf{Not formalised.}  \emph{Restated}: the Lean statement of this lemma
+  used to be about the skeleton path measure and the discrete steps
+  $k \le \lceil 2\beta \rceil$ rather than about the continuous-time hitting
+  time $R^{\alpha,\beta,u}$, and it bound $C$ after $\beta$ and $u$, so the
+  constant was free to depend on both.  Neither matches the display above, and
+  neither can serve as \eqref{eq:h16} for
+  Proposition~\ref{prop:biased-exit-exponential}, which is what this lemma
+  exists for.  It now has the shape of Lemma~\ref{lem:hitting-2beta} with
+  $\pressone$ replaced by $\tfrac{1}{2\gamma}$.  A formalisation-side
+  correction, not a correction to the paper.
 \end{proof}
 
 \begin{lemma}[Lemma~29]
@@ -1586,8 +1614,64 @@ the process pointwise.
   $C_1 \beta^3 e^{-C_2\beta}$.
 \end{theorem}
 \begin{proof}
-  \uses{thm:metastability, cor:biased-cbeta, lem:biased-hitting}
-  As Theorem~\ref{thm:metastability}.  \textbf{Not formalised}.
+  \leanok
+  \uses{prop:biased-exit-exponential, thm:metastability, cor:biased-cbeta,
+    lem:biased-hitting, lem:biased-exit-bounds, lem:biased-ladder-consensus}
+  As Theorem~\ref{thm:metastability}, which is all Appendix~C says.
+  \emph{Formalised, but neither sorry-free nor axiom-free}: the assembly is
+  complete in Lean, and inherits \texttt{sorryAx} from
+  Lemmas~\ref{lem:biased-hitting} and~\ref{lem:biased-exit-bounds} together
+  with the second [LM22] axiom, Proposition~\ref{prop:biased-exit-exponential}.
+
+  The four assumptions are checked as in Section~5.3, with $\pressone$ replaced
+  by $\tfrac{1}{2\gamma}$ throughout:
+  \begin{itemize}
+    \item \eqref{eq:h15} at $s_1 = 1$,
+      $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(2\gamma)}$, from part 1 of
+      Lemma~\ref{lem:biased-exit-bounds} through $1 - e^{-x} \le x$;
+    \item \eqref{eq:h16} at $s_2 = 2\beta$, from
+      Lemma~\ref{lem:biased-hitting} and the inclusion
+      $\ladder_\alpha \subseteq \ladder_\alpha^o \cup C_\alpha^{-o}$ of
+      Lemma~\ref{lem:biased-ladder-consensus};
+    \item \eqref{eq:h17} at $\delta = 1/(4\gamma)$, from
+      Corollary~\ref{cor:biased-cbeta};
+    \item \eqref{eq:h18} at $\theta = 1/(4\gamma)$, from part 2 of
+      Lemma~\ref{lem:biased-exit-bounds} at $t = 2\beta$.
+  \end{itemize}
+
+  \textbf{Supplies a step the paper asserts}: Appendix~C names none of the
+  constants.  They are what Section~5.3 produces once the exponent
+  $\tfrac{1}{2\gamma}$ replaces $\pressone$ --- halved to $\tfrac{1}{4\gamma}$
+  to absorb the factor $\beta$ of step~(20), so that $\delta = \theta$ here
+  where the unbiased proof had two different values --- together with an
+  explicit threshold $\beta_1 = \max\{1, 4\gamma(2N^3(M+1)^3 + C)\}$ above which
+  $\varepsilon_1 + \varepsilon_2 \le 1/2$, and, as in Theorem~3, constants taken
+  uniform over the finitely many opinions.
+\end{proof}
+
+\begin{proposition}[Proposition~12 for the biased process]
+  \label{prop:biased-exit-exponential}
+  \lean{SocialNetwork.Bias.biasedExitTime_approx_exponential}
+  \leanok
+  \uses{def:biased-sets}
+  Under \eqref{eq:h15}--\eqref{eq:h18} read for the biased process, the
+  rescaled exit time from $C_\alpha^o$ is exponential of parameter one up to
+  $K'\beta^3 e^{-\min(\delta/3,\,1/2,\,\theta)\beta}$, and the mean exit time
+  barely depends on the starting profile.
+\end{proposition}
+\begin{proof}
+  \uses{prop:exit-exponential}
+  \textbf{An axiom, not a theorem, and the second one this development asks the
+  reader to trust.}  Appendix~C never states it: it says only that ``the proof
+  of Theorem~31 follows exactly as the proof of Theorem~3'', and that proof runs
+  through Proposition~\ref{prop:exit-exponential}, which is stated for the
+  unbiased process alone.
+
+  One axiom cannot serve both models, for the reason recorded at
+  Proposition~\ref{prop:exit-exponential}: stated abstractly the assertion is
+  \textbf{inconsistent}, so it has to be attached to a concrete process, and the
+  unbiased axiom is attached to the unbiased one.  Everything resting on this
+  one is listed separately in the CI axiom inventory.
 \end{proof}
 
 \chapter{Notes on the formalisation}
@@ -1738,13 +1822,13 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-two
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-four
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-three entries.
+of its own, so it counts thirty-five entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (fifteen).
+\noindent\textbf{Follow the paper's proof} (sixteen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
 \ref{prop:reach-ladder}, \ref{prop:biased-low-pressure},
 \ref{prop:biased-bounded}
@@ -1752,7 +1836,7 @@ and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
 Lemma~\ref{lem:hitting-2beta},
 Corollaries~\ref{cor:cbeta} and~\ref{cor:biased-cbeta},
-Theorem~\ref{thm:metastability}, and
+Theorems~\ref{thm:metastability} and~\ref{thm:biased-metastability}, and
 Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
 paper whose proofs are both given there and formalised here, and each Lean
 proof reproduces the written argument.  Four places carry a note: the passage
@@ -1783,6 +1867,12 @@ Lemma~\ref{lem:hitting-2beta} is the paper's case split, resting on two
 inequalities the paper displays inside proofs rather than states ---
 Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} --- and
 supplying the arithmetic of ``putting the inequalities above together''.
+Theorem~\ref{thm:biased-metastability} is the same verification as
+Theorem~\ref{thm:metastability} with $\pressone$ replaced by
+$\tfrac{1}{2\gamma}$, which is all Appendix~C asks for; it names none of the
+constants, so the four they take here are supplied, and it rests on a
+\emph{second} axiom, Proposition~\ref{prop:biased-exit-exponential}, since one
+cannot serve both models.
 Proposition~\ref{prop:reach-ladder} is the paper's three-stage assembly with
 its arithmetic unchanged, but it applies Lemma~\ref{lem:lemma20} at $\tau(u)$
 rather than at $N+1$: the written route needs $\bigcup_o S^o$ to be stable
@@ -1814,10 +1904,11 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (eight).
+\noindent\textbf{No counterpart in the paper} (nine).
 Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
 \ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty},
-\ref{lem:biased-ladder-nonempty} and~\ref{lem:shift} and
+\ref{lem:biased-ladder-nonempty}, \ref{lem:biased-ladder-consensus}
+and~\ref{lem:shift} and
 Remark~\ref{rem:biased-ladder-steep},
 together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear

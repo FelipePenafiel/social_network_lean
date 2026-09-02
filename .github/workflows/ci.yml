@@ -88,8 +88,8 @@ jobs:
           #print axioms SocialNetwork.Bias.heard_stateAfter_expressed
           #print axioms SocialNetwork.Bias.exists_pressure_lt
           #print axioms SocialNetwork.Bias.biasedZeta_le_biasedJumpPMF_nearArgmaxFinset
-          #print axioms SocialNetwork.Bias.biasedZeta_le_partialTraj_succ
-          #print axioms SocialNetwork.Bias.biasedZeta_pow_le_historyMeasure
+          #print axioms SocialNetwork.Bias.le_partialTraj_succ
+          #print axioms SocialNetwork.Bias.pow_le_historyMeasure
           #print axioms SocialNetwork.Bias.biasedZeta_pow_le
           #print axioms SocialNetwork.Bias.pow_le_pathMeasure_stepEvents
           #print axioms SocialNetwork.Bias.inv_le_biasedJumpPMF_biasedArgmaxFinset
@@ -102,6 +102,8 @@ jobs:
           #print axioms SocialNetwork.Bias.isBiasedLadder_biasedLadderOf
           #print axioms SocialNetwork.Bias.exists_isBiasedLadder
           #print axioms SocialNetwork.Bias.biasedLadderSet_nonempty
+          #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedConsensus
+          #print axioms SocialNetwork.Bias.biasedHittingTimeCts_mono
           -- Definition 3: the skeleton
           #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
           #print axioms SocialNetwork.skeletonKernel_reachable
@@ -140,19 +142,23 @@ jobs:
           #print axioms SocialNetwork.hittingTimeCts_mono
           #print axioms SocialNetwork.exp_add_zeta_pow_le
           EOF
+          # `set -o pipefail` matters: without it the pipe into `tee` masks a non-zero exit
+          # from `lean`, and a name in the list above that no longer resolves is then silently
+          # not checked at all.
+          set -o pipefail
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then
             echo "::error::a result declared complete depends on sorryAx"
             exit 1
           fi
-          # `exitTime_approx_exponential` is Theorem 5.3 of [LM22], declared as an axiom
-          # because nothing in this library can discharge it.  Results listed above claim to
-          # be proved outright, so none of them may reach it either.
+          # `exitTime_approx_exponential`, and its biased twin, are Theorem 5.3 of [LM22],
+          # declared as axioms because nothing in this library can discharge them.  Results
+          # listed above claim to be proved outright, so none may reach either.
           if grep -q 'exitTime_approx_exponential' axioms.txt; then
-            echo "::error::a result declared complete depends on the [LM22] axiom"
+            echo "::error::a result declared complete depends on an [LM22] axiom"
             exit 1
           fi
-          echo "every completed result is sorry-free, and free of the [LM22] axiom"
+          echo "every completed result is sorry-free, and free of the [LM22] axioms"
 
       - name: Inventory of the results that rest on the [LM22] axiom
         # Not a gate: this records which statements are complete *modulo* the one external
@@ -161,8 +167,10 @@ jobs:
           cat > CheckCited.lean <<'EOF'
           import SocialNetwork
           #print axioms SocialNetwork.metastability
+          #print axioms SocialNetwork.Bias.biasedMetastability
           EOF
           echo "### Proved modulo Theorem 5.3 of [LM22]" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          set -o pipefail
           lake env lean CheckCited.lean | tee -a "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"

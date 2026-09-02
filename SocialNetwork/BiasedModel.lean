@@ -530,6 +530,34 @@ theorem IsBiasedLadder.isBiasedSteepLadder [NeZero N] (hP : IsBiasedLadder γ o 
   nonneg := hP.nonneg
   other := hP.other
 
+/-- A biased ladder supporting `o` is in particular a biased consensus state for `o`:
+equation (9) is stronger than equation (8).
+
+**No counterpart in the paper**, exactly as for the unbiased
+`SocialNetwork.IsLadder.isConsensus`.  Appendix C needs it for the same reason Section 5.3
+needs that one: the condition (16) of Proposition 12 is about `L_α^o ∪ C_α^{-o}`, while
+Lemma 28 bounds the hitting time of `L_α`. -/
+theorem IsBiasedLadder.isBiasedConsensus (hγ : 0 < γ) (hN : 2 ≤ N)
+    (hP : IsBiasedLadder γ o P) : IsBiasedConsensus γ o P where
+  isBiasedState := hP.isBiasedState
+  ne_zero := by
+    have hNpos : 0 < N := by omega
+    have hmem : (((N - 1 : ℕ) : ℝ))
+        ∈ Finset.image (fun k : Actor N => ((k : ℕ) : ℝ)) Finset.univ :=
+      Finset.mem_image.2 ⟨⟨N - 1, Nat.sub_lt hNpos one_pos⟩, Finset.mem_univ _, rfl⟩
+    rw [← hP.column] at hmem
+    obtain ⟨a, -, ha⟩ := Finset.mem_image.1 hmem
+    refine ⟨a, o, ?_⟩
+    rw [ha]
+    have h1 : (1 : ℕ) ≤ N - 1 := by omega
+    have h1' : (1 : ℝ) ≤ ((N - 1 : ℕ) : ℝ) := by exact_mod_cast h1
+    exact ne_of_gt (by linarith)
+  nonneg := hP.nonneg
+  nonpos := fun a p hp => by
+    rw [hP.other a p hp]
+    have h := hP.nonneg a
+    nlinarith
+
 /-- **Remark 5 for the biased model** (Appendix C): `L_α ⊆ L̂_α`. -/
 theorem biasedLadderSet_subset_biasedSteepLadderSet [NeZero N] :
     biasedLadderSet N M γ ⊆ biasedSteepLadderSet N M γ :=
