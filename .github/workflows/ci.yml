@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Check STATUS.md, and that every obstruction is documented
+        # No toolchain needed, so it runs before the build and fails fast.  It also
+        # checks that every Lean name the blueprint cites exists, that no `sorry` in the
+        # sources is missing from the blueprint, and that anything unproved has a
+        # recorded reason.
+        run: python3 scripts/status.py --check
+
       - name: Install elan
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
@@ -49,111 +56,29 @@ jobs:
           echo "total: $n" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Check axioms of the completed results
-        # Every declaration listed here is claimed to be fully proved.  If one of them starts
-        # depending on `sorryAx`, the claim is false and the build must fail.  Declarations
-        # that are deliberately unproved are absent from this list and are inventoried above.
+        # Every declaration checked here is claimed to be fully proved.  If one of them
+        # starts depending on `sorryAx`, the claim is false and the build must fail.
+        #
+        # The list is GENERATED from the blueprint: it is exactly the declarations cited
+        # by a node the dependency graph resolves to proved or stated.  So a `\leanok`
+        # that has not been earned fails CI, and a renamed declaration cannot silently
+        # drop out of the check — which is what happened twice while the list was typed
+        # by hand.  Declarations no node cites are listed in `scripts/status.py`.
         run: |
-          cat > CheckAxioms.lean <<'EOF'
-          import SocialNetwork
-          -- Section 2: the model
-          #print axioms SocialNetwork.IsState.express
-          #print axioms SocialNetwork.trust_express
-          #print axioms SocialNetwork.IsLadder.isSteepLadder
-          #print axioms SocialNetwork.IsLadder.isConsensus
-          #print axioms SocialNetwork.isLadder_ladderOf
-          #print axioms SocialNetwork.exists_isLadder
-          #print axioms SocialNetwork.ladderSet_nonempty
-          -- Section 5: the deterministic layer
-          #print axioms SocialNetwork.Trajectory.isState_state
-          #print axioms SocialNetwork.Trajectory.state_add
-          #print axioms SocialNetwork.isGreedyAt_shift
-          #print axioms SocialNetwork.isConsensus_state
-          #print axioms SocialNetwork.exists_rowSup_actor_lt
-          #print axioms SocialNetwork.entry_mem_of_greedy
-          #print axioms SocialNetwork.isLadder_state
-          #print axioms SocialNetwork.firstRepeat_le
-          #print axioms SocialNetwork.isConsensus_of_nonpos
-          #print axioms SocialNetwork.rowSup_state_le
-          -- Section 3: the biased model
-          #print axioms SocialNetwork.Bias.Memory.pressure_hear
-          #print axioms SocialNetwork.Bias.Memory.sum_pressure_eq
-          #print axioms SocialNetwork.Bias.sum_range_card_le_sum
-          #print axioms SocialNetwork.Bias.sum_ge_of_injective
-          #print axioms SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge
-          #print axioms SocialNetwork.Bias.measurableSet_nearGreedyEvents
-          #print axioms SocialNetwork.Bias.measurableSet_biasedGreedyEvents
-          #print axioms SocialNetwork.Bias.pressure_eq_of_bias
-          #print axioms SocialNetwork.Bias.Profile.pressure_le_heard
-          #print axioms SocialNetwork.Bias.heard_stateAfter_le
-          #print axioms SocialNetwork.Bias.heard_stateAfter_expressed
-          #print axioms SocialNetwork.Bias.exists_pressure_lt
-          #print axioms SocialNetwork.Bias.biasedZeta_le_biasedJumpPMF_nearArgmaxFinset
-          #print axioms SocialNetwork.Bias.le_partialTraj_succ
-          #print axioms SocialNetwork.Bias.pow_le_historyMeasure
-          #print axioms SocialNetwork.Bias.biasedZeta_pow_le
-          #print axioms SocialNetwork.Bias.pow_le_pathMeasure_stepEvents
-          #print axioms SocialNetwork.Bias.inv_le_biasedJumpPMF_biasedArgmaxFinset
-          #print axioms SocialNetwork.Bias.pressure_stateAfter_le_of_biasedGreedy
-          #print axioms SocialNetwork.Bias.measure_biasedBounded_ge
-          #print axioms SocialNetwork.Bias.le_max_pressure
-          #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder
-          #print axioms SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet
-          #print axioms SocialNetwork.Bias.pressure_biasedLadderOf
-          #print axioms SocialNetwork.Bias.isBiasedLadder_biasedLadderOf
-          #print axioms SocialNetwork.Bias.exists_isBiasedLadder
-          #print axioms SocialNetwork.Bias.biasedLadderSet_nonempty
-          #print axioms SocialNetwork.Bias.IsBiasedLadder.isBiasedConsensus
-          #print axioms SocialNetwork.Bias.biasedHittingTimeCts_mono
-          -- Definition 3: the skeleton
-          #print axioms SocialNetwork.isMarkovKernel_skeletonKernel
-          #print axioms SocialNetwork.skeletonKernel_reachable
-          #print axioms SocialNetwork.isState_skeletonKernel
-          #print axioms SocialNetwork.measurableSet_greedyEvent
-          #print axioms SocialNetwork.entry_mem_of_mem_greedyEvents
-          #print axioms SocialNetwork.isLadder_state_of_mem_greedyEvents
-          -- Proposition 8 and Remarks 4, 5
-          #print axioms SocialNetwork.le_entrySup_sub_one
-          #print axioms SocialNetwork.one_sub_le_zeta_pow
-          #print axioms SocialNetwork.IsSteepLadder.express_of_pos
-          #print axioms SocialNetwork.zeta_le_jumpPMF_argmaxFinset
-          #print axioms SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents
-          #print axioms SocialNetwork.one_sub_le_pathMeasure_greedyEvents
-          #print axioms SocialNetwork.pathMeasure_preimage_zero
-          #print axioms SocialNetwork.sum_range_add_le_sum
-          #print axioms SocialNetwork.sum_Ico_exp_le_sum_jumpRate
-          #print axioms SocialNetwork.sum_jumpRate_compl_le
-          #print axioms SocialNetwork.eta_le_jumpPMF_posFinset
-          #print axioms SocialNetwork.eta_le_pathMeasure_positivePressure
-          #print axioms SocialNetwork.IsSteepLadder.state_of_isPositiveAt
-          #print axioms SocialNetwork.eta_le_partialTraj_succ
-          #print axioms SocialNetwork.eta_pow_le_historyMeasure
-          #print axioms SocialNetwork.eta_pow_le_pathMeasure_positiveEvents
-          #print axioms SocialNetwork.eta_pow_le_pathMeasure_steepLadder
-          -- The continuous-time process
-          #print axioms SocialNetwork.jumpCount_eq_iff
-          #print axioms SocialNetwork.measurable_jumpCount
-          #print axioms SocialNetwork.measurable_state_ofStepPath
-          #print axioms SocialNetwork.measurable_process
-          -- Section 5.3: the arithmetic behind the constants of Proposition 12
-          #print axioms SocialNetwork.mul_exp_neg_le_exp_neg_one
-          #print axioms SocialNetwork.mul_exp_neg_div_le
-          #print axioms SocialNetwork.one_le_eight_mul_exp_neg_one
-          #print axioms SocialNetwork.const_bounds
-          #print axioms SocialNetwork.hittingTimeCts_mono
-          #print axioms SocialNetwork.exp_add_zeta_pow_le
-          EOF
-          # `set -o pipefail` matters: without it the pipe into `tee` masks a non-zero exit
-          # from `lean`, and a name in the list above that no longer resolves is then silently
-          # not checked at all.
+          python3 scripts/status.py --axioms CheckAxioms.lean
+          echo "checking $(grep -c '^#print axioms' CheckAxioms.lean) declarations"
+          # `set -o pipefail` matters: without it the pipe into `tee` masks a non-zero
+          # exit from `lean`, and a name that no longer resolves is then not checked.
           set -o pipefail
           lake env lean CheckAxioms.lean | tee axioms.txt
           if grep -q 'sorryAx' axioms.txt; then
             echo "::error::a result declared complete depends on sorryAx"
             exit 1
           fi
-          # `exitTime_approx_exponential`, and its biased twin, are Theorem 5.3 of [LM22],
-          # declared as axioms because nothing in this library can discharge them.  Results
-          # listed above claim to be proved outright, so none may reach either.
+          # `exitTime_approx_exponential`, and its biased twin, are Theorem 5.3 of
+          # [LM22], declared as axioms because nothing in this library can discharge
+          # them.  Results checked above claim to be proved outright, so none may reach
+          # either.
           if grep -q 'exitTime_approx_exponential' axioms.txt; then
             echo "::error::a result declared complete depends on an [LM22] axiom"
             exit 1

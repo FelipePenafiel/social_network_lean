@@ -2,15 +2,18 @@
 
 This file is the engineering companion to the blueprint.  The **blueprint itself** —
 the correspondence between the numbered statements of arXiv:2607.19651 and their Lean
-counterparts, the dependency graph, and the three corrections that formalising the paper
+counterparts, the dependency graph, and the corrections that formalising the paper
 surfaced — lives in [`blueprint/src/content.tex`](src/content.tex) and renders as a web
 page and a pdf.  That is the contract between the paper and the repository; a change to
 the code updates it in the same commit.
 
-A third file, [`FOR-THE-AUTHORS.md`](../FOR-THE-AUTHORS.md) at the root, collects what
-formalising has not been able to close and what each item asks of the authors: the written
-proofs that do not compose, the statements that had to be changed, and the one axiom.  What
-is blocked *there* is blocked on the paper; what is blocked here is blocked on Mathlib.
+Three files at the root divide the rest between them.
+[`STATUS.md`](../STATUS.md) is the generated index of every statement and its status;
+[`FOR-THE-AUTHORS.md`](../FOR-THE-AUTHORS.md) collects what formalising has not been able
+to close and what each item asks of the authors — the written proofs that do not compose,
+the statements that had to be changed, and the two axioms; and
+[`CONVENTIONS.md`](../CONVENTIONS.md) is how the translation is written.  What is blocked
+*there* is blocked on the paper; what is blocked here is blocked on Mathlib.
 
 What is in this file is the audit that has no place in a mathematical blueprint: exact
 declaration names, file paths and line numbers for what Mathlib does and does not provide.
@@ -122,6 +125,9 @@ The Mathlib gap itself is unchanged: this belongs upstream, in `Mathlib/Data/Fin
 or beside `Finset.sum_range_id_mul_two`, not in a paper formalisation.
 
 ## `measurable_hittingTimeCts` is not the routine lemma it was filed as
+
+Blueprint `lem:measurable-hitting`, with its biased twin
+`SocialNetwork.Bias.measurable_biasedHittingTimeCts`.
 
 An earlier draft listed `SocialNetwork.measurable_hittingTimeCts` alongside
 `SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  They do
