@@ -143,11 +143,66 @@ The three stages are Lemma 19 (which needs `τ (u) ≤ N + 1` steps), Lemma 20 (
 `(M-1)(n(u)+1) - 1 ≤ (M-1) N` further steps, since `n (u) ≤ N - 1`), and the final step
 `SocialNetwork.isLadder_state` (`N` further steps).  The total is `(M+1) N`.
 
-**Unproved**, because Lemmas 19 and 20 are. -/
+**Formalised, but not sorry-free**: the assembly is complete and inherits `sorryAx` from
+Lemmas 19 and 20 alone.
+
+**Supplies a step the paper asserts, and takes a different route through one of them.**  The
+written proof reaches `⋃_o S^o` at time `N + 1` --- "so by Lemma 19 we have
+`⋂_{j=1}^{N+1} ξ_j^u ⊆ {Ũ_{N+1} ∈ ⋃_o S^o}`" --- whereas Lemma 19 delivers that membership at
+the first repeat `τ (u)`, which is only `≤ N + 1`.  Carrying it from `τ (u)` to `N + 1` needs
+`⋃_o S^o` to be stable under a greedy expression, and the paper never establishes that; it is
+not obvious either, since expressing resets the row of one of the very actors that witness
+`S^o`.  Lemma 20 is therefore applied here at `τ (u)` itself, where Lemma 19 leaves the
+process, and no stability of `S^o` is needed.  The arithmetic is unchanged:
+`τ (u) + (M-1)(n(u)+1) - 1 ≤ (N+1) + (M-1)N - 1 = MN`.
+
+The padding the paper does need is the other one, and that one is available: the consensus is
+carried from the time Lemma 20 delivers it up to `MN` by
+`SocialNetwork.isConsensus_state`, which is the paper's own observation that a greedy
+expression in `C^o` expresses `o` and that `C^o` is stable under it. -/
 theorem isLadder_state_of_greedy (hM : 2 ≤ M) (hN : 3 ≤ N) (hu : IsState u)
     (hgreedy : ∀ k < (M + 1) * N, IsGreedyAt T u k) :
     T.state u ((M + 1) * N) ∈ ladderSet N M := by
-  sorry
+  have hN2 : 2 ≤ N := by omega
+  -- The three horizons, with the products left as atoms for `omega`.
+  have hprod : (M - 1) * N + N = M * N := by
+    have hM1 : M - 1 + 1 = M := by omega
+    calc (M - 1) * N + N = (M - 1 + 1) * N := by ring
+      _ = M * N := by rw [hM1]
+  have hBN : N ≤ (M - 1) * N := Nat.le_mul_of_pos_left N (by omega)
+  have hMN : 2 * N ≤ M * N := Nat.mul_le_mul_right N hM
+  have hlast : M * N + N = (M + 1) * N := by ring
+  -- Stage 1: Lemma 19, at the first repeat, which is where it delivers.
+  have hτ : firstRepeat T ≤ N := firstRepeat_le T
+  have h19 := isFavouring_state_firstRepeat T hM hN hu (hgreedy _ (by omega))
+  rw [mem_favouringSet] at h19
+  obtain ⟨o, n, ρ, a, hfav⟩ := h19
+  -- Stage 2: Lemma 20 from that state, for `(M-1)(n(u)+1) - 1` further steps.
+  have hn : n + 1 ≤ N := by have := hfav.le_pred; have := hfav.one_le; omega
+  have hstep : (M - 1) * (n + 1) ≤ (M - 1) * N := Nat.mul_le_mul (le_refl (M - 1)) hn
+  have hbound : firstRepeat T + 1 + ((M - 1) * (n + 1) - 1) ≤ M * N := by omega
+  have h20 : IsConsensus o (T.state u (firstRepeat T + 1 + ((M - 1) * (n + 1) - 1))) := by
+    rw [T.state_add u (firstRepeat T + 1) ((M - 1) * (n + 1) - 1)]
+    exact isConsensus_state_of_favouring (T.shift (firstRepeat T + 1)) hM hN hfav
+      fun k hk => (isGreedyAt_shift T u (firstRepeat T + 1) k).2 (hgreedy _ (by omega))
+  -- Stage 3: carry the consensus up to `MN`, where the last stage has to start.
+  have h3 : IsConsensus o (T.state u (M * N)) := by
+    have hcarry := isConsensus_state (T.shift (firstRepeat T + 1 + ((M - 1) * (n + 1) - 1)))
+      hM hN2 h20
+      (fun k hk =>
+        (isGreedyAt_shift T u (firstRepeat T + 1 + ((M - 1) * (n + 1) - 1)) k).2
+          (hgreedy _ (by omega)))
+      (M * N - (firstRepeat T + 1 + ((M - 1) * (n + 1) - 1))) le_rfl
+    rw [← T.state_add] at hcarry
+    rwa [show firstRepeat T + 1 + ((M - 1) * (n + 1) - 1)
+        + (M * N - (firstRepeat T + 1 + ((M - 1) * (n + 1) - 1))) = M * N from by omega]
+      at hcarry
+  -- Stage 4: `N` greedy expressions from a consensus state land on the staircase.
+  refine ⟨o, ?_⟩
+  have h4 := isLadder_state (T.shift (M * N)) hM hN2 h3
+    (fun k hk => (isGreedyAt_shift T u (M * N) k).2 (hgreedy _ (by omega)))
+  rw [← T.state_add] at h4
+  rwa [hlast] at h4
 
 variable [NeZero N] [NeZero M]
 

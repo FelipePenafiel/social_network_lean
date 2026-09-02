@@ -65,6 +65,9 @@ jobs:
           #print axioms SocialNetwork.ladderSet_nonempty
           -- Section 5: the deterministic layer
           #print axioms SocialNetwork.Trajectory.isState_state
+          #print axioms SocialNetwork.Trajectory.state_add
+          #print axioms SocialNetwork.isGreedyAt_shift
+          #print axioms SocialNetwork.isConsensus_state
           #print axioms SocialNetwork.exists_rowSup_actor_lt
           #print axioms SocialNetwork.entry_mem_of_greedy
           #print axioms SocialNetwork.isLadder_state
