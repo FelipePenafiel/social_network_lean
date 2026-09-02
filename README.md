@@ -44,6 +44,15 @@ criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 1
 written proofs do not compose — repairs are recorded), not a result of this paper at all
 (Proposition 12; see below), or simply routine and not yet done.
 
+**Theorem 31 is proved**, at the price the repository had been flagging: a *second* axiom.
+Appendix C says only that its proof "follows exactly as the proof of Theorem 3", and that proof
+runs through Proposition 12, which is stated for the unbiased process alone.  One axiom cannot
+serve both models — stated abstractly it is inconsistent, so it has to be attached to a
+concrete process.  The two are the same citation applied twice, and CI gates both.  Formalising
+the assembly also showed that the Lean statement of **Lemma 28** did not match its own
+docstring; it is restated in the paper's form.  See
+[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3.3 and §2.9.
+
 **Proposition 7 is assembled**, and its written route turned out not to run.  The paper carries
 the process to `⋃_o S^o` at time `N+1`, whereas Lemma 19 delivers that membership at the first
 repeat `τ(u) ≤ N+1`; bridging the gap needs `⋃_o S^o` to be stable under a greedy expression,
@@ -84,7 +93,7 @@ routine at all: the hitting time is an infimum over an uncountable family of tim
 needs path regularity that holds only almost surely.  The blueprint says why, and what has to
 be decided before it can be done.
 
-### The one axiom
+### The two axioms
 
 `SocialNetwork.exitTime_approx_exponential` — **Proposition 12** — is an `axiom`, not a
 `sorry`.  It is not a result of arXiv:2607.19651: the paper derives it from Theorem 5.3 of
@@ -95,16 +104,21 @@ sitting in the inventory of `sorry`s as if it were work someone could pick up.
 It is attached to *this* process on purpose.  Stated abstractly, over an arbitrary family of
 measures and an arbitrary hitting time, it would be **inconsistent**: the zero measure with an
 empty ladder set satisfies (15)–(18) vacuously and falsifies the conclusion at `t = 0`.  What
-rules that out is the strong Markov property, which is exactly the content of [LM22].  Theorem
-31 will therefore need its own twin for the biased process.
+rules that out is the strong Markov property, which is exactly the content of [LM22].
 
-**Theorem 3** is now proved from it, together with the four assumptions (15)–(18) checked for
-this model as Section 5.3 does.
+So the biased process needs its own twin, and
+`SocialNetwork.Bias.biasedExitTime_approx_exponential` is it — the same statement over
+`Profile N M`.  The repository therefore asks for two things to be trusted rather than one, and
+they are the same citation applied twice: if [LM22] Theorem 5.3 holds, both hold.  The
+duplication is a limit on what can be *stated* here, not a second mathematical assumption.
+
+**Theorem 3** and **Theorem 31** are now proved from them, together with the four assumptions
+(15)–(18) checked for each model as Section 5.3 does.
 
 The library is **not** `sorry`-free, by design.  What CI enforces is that no declaration listed
-as complete in `.github/workflows/ci.yml` depends on `sorryAx` — **or on the [LM22] axiom**.  A
-separate step records which results are complete modulo that one citation, so the trust surface
-stays visible.  Every run also prints an inventory of the outstanding `sorry`s.
+as complete in `.github/workflows/ci.yml` depends on `sorryAx` — **or on either [LM22]
+axiom**.  A separate step records which results are complete modulo that citation, so the trust
+surface stays visible.  Every run also prints an inventory of the outstanding `sorry`s.
 
 Formalising surfaced places where the paper needs correcting, none of which affects its
 results.  Two are in Appendix A (Lemmas 19 and 20); one is that the second condition of
@@ -117,8 +131,8 @@ supremum `sup β e^{-β/a} = a e^{-1}`, and the threshold above which `ε₁ + �
 
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) collects, in one place, everything formalising has
 not been able to close: the three written proofs that do not compose (Lemmas 19 and 20, and
-Proposition 22), the statements that had to be changed to be usable, the one axiom and the
-second one Theorem 31 will need, and the steps the text asserts that had to be supplied.  It
+Proposition 22), the statements that had to be changed to be usable, the two axioms, and the
+steps the text asserts that had to be supplied.  It
 also records the rule this repository works under: **no proof of a statement of the paper has
 been invented here.**  Where the written argument does not close, the statement is left
 unproved and the obstruction is written down, rather than repaired by an argument the authors

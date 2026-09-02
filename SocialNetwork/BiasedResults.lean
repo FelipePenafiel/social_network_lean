@@ -1015,6 +1015,23 @@ noncomputable def biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)
     (ω : ℕ → Step N M) : ℝ≥0∞ :=
   sInf ((fun t : ℝ => ENNReal.ofReal t) '' {t : ℝ | 0 ≤ t ∧ biasedProcess u t ω ∈ θ})
 
+/-- **Unproved, for the reason recorded at `SocialNetwork.measurable_hittingTimeCts`**: the
+infimum runs over the uncountable family `{t : 0 ≤ t}`, so reducing it to a countable one
+needs the path `t ↦ U_t (ω)` to be right-continuous, which holds only where the holding times
+are positive — almost surely, not for every `ω`.  The biased process has the same shape as the
+unbiased one and the same gap. -/
+theorem measurable_biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)) :
+    Measurable (biasedHittingTimeCts (N := N) (M := M) u θ) := by
+  sorry
+
+/-- Hitting a larger set happens no later. -/
+theorem biasedHittingTimeCts_mono (u : Profile N M) {θ₁ θ₂ : Set (Profile N M)} (h : θ₁ ⊆ θ₂)
+    (ω : ℕ → Step N M) :
+    biasedHittingTimeCts u θ₂ ω ≤ biasedHittingTimeCts u θ₁ ω := by
+  refine sInf_le_sInf ?_
+  rintro x ⟨t, ⟨ht0, htθ⟩, rfl⟩
+  exact ⟨t, ⟨ht0, h htθ⟩, rfl⟩
+
 /-- `P (R^{α,β,u} (θ) > t)`. -/
 noncomputable def biasedProbHittingGT (γ β : ℝ) (u : Profile N M) (θ : Set (Profile N M))
     (t : ℝ≥0∞) : ℝ≥0∞ :=
@@ -1249,12 +1266,20 @@ theorem tendsto_biasedHittingTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (h
       Filter.atTop (nhds 0) := by
   sorry
 
-/-- **Lemma 28.**  `P (R^{α,β,u} (L_α) > 2β) ≤ C e^{-β/(2γ)}`. -/
-theorem biasedProbHitting_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
-    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
-    ∃ C : ℝ, 0 < C ∧
-      biasedPathMeasure γ β u {ω | ∀ k, k ≤ Nat.ceil (2 * β) →
-          stateAfter u ω k ∉ biasedLadderSet N M γ}
+/-- **Lemma 28.**  `P (R^{α,β,u} (L_α) > 2β) ≤ C e^{-β/(2γ)}`, with `C` depending only on
+`α`, `M` and `N`.
+
+**Restated.**  The earlier Lean statement of this lemma was about the skeleton path measure
+and the discrete steps `k ≤ ⌈2β⌉` rather than about the continuous-time hitting time
+`R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant was free to depend on both.
+Neither matches the paper's display, and neither can serve as assumption (16) of the biased
+Proposition 12, which is what Lemma 28 exists for.  This is the shape of the unbiased
+Lemma 13, `SocialNetwork.probHittingGT_ladderSet_le`, with `1/((M+1)N)` replaced by `1/(2γ)`;
+see `FOR-THE-AUTHORS.md`. -/
+theorem biasedProbHitting_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) :
+    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ u : Profile N M, IsBiasedState u →
+      biasedProbHittingGT γ β u (biasedLadderSet N M γ) (ENNReal.ofReal (2 * β))
         ≤ ENNReal.ofReal (C * Real.exp (-β / (2 * γ))) := by
   sorry
 
@@ -1314,6 +1339,223 @@ theorem le_biasedCharacteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} 
   rwa [show (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹ *
     (2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) = c by field_simp] at hstep
 
+/-! ### The four assumptions of the biased Proposition 12
+
+Appendix C says only that "the proof of Theorem 31 follows exactly as the proof of Theorem 3",
+and does not name the constants.  They are the ones Section 5.3 produces once `1/(M-1)` is
+replaced by `1/(2γ)`: the exponent `1/(2γ)` of Lemmas 28 and 29 is halved to `1/(4γ)` to absorb
+the factor `β` of step (20), so `δ = θ = 1/(4γ)` here, where the unbiased proof had two
+different values.
+-/
+
+/-- Assumption **(16)** of the biased Proposition 12, with `s₂ = 2β`.
+
+As in the unbiased model, Lemma 28 is about `L_α` and the assumption is about
+`L_α^o ∪ C_α^{-o}`; the two are related by `L_α ⊆ L_α^o ∪ C_α^{-o}`, a biased ladder for
+`p ≠ o` being a biased consensus state for `p`. -/
+theorem biasedProbHittingGT_ladderOther_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (o : Opinion M) :
+    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ u : Profile N M, IsBiasedState u →
+      biasedProbHittingGT γ β u
+          ({v | IsBiasedLadder γ o v} ∪ biasedConsensusSetOther N γ o)
+          (ENNReal.ofReal (2 * β))
+        ≤ ENNReal.ofReal (C * Real.exp (-β / (2 * γ))) := by
+  obtain ⟨C, hC, h28⟩ := biasedProbHitting_le hM hN hγ hγ'
+  refine ⟨C, hC, fun β hβ u hu => ?_⟩
+  refine le_trans (measure_mono fun ω hω => ?_) (h28 β hβ u hu)
+  have hsub : biasedLadderSet N M γ
+      ⊆ {v | IsBiasedLadder γ o v} ∪ biasedConsensusSetOther N γ o := by
+    rintro v ⟨p, hp⟩
+    by_cases hpo : p = o
+    · exact Or.inl (hpo ▸ hp)
+    · exact Or.inr ⟨p, hpo, hp.isBiasedConsensus hγ (by omega)⟩
+  exact lt_of_lt_of_le hω (biasedHittingTimeCts_mono u hsub ω)
+
+/-- Assumption **(15)** of the biased Proposition 12, with `s₁ = 1` and
+`ε₁ = 2N³(M+1)³e^{-β/(2γ)}`.
+
+Part 1 of Lemma 29 at `t = 1`, read on the complementary event, with `1 - e^{-x} ≤ x`. -/
+theorem biasedMeasure_hittingTime_le_one (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 ≤ β)
+    {o : Opinion M} {l : Profile N M} (hl : IsBiasedLadder γ o l) :
+    biasedCtsPathMeasure γ β l
+        {ω | biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω ≤ ENNReal.ofReal 1}
+      ≤ ENNReal.ofReal (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / (2 * γ))) := by
+  set E : ℝ := Real.exp (-β / (2 * γ)) with hE
+  set Kc : ℝ := ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) with hKc
+  have hKc0 : 0 ≤ Kc := by rw [hKc]; positivity
+  have hE0 : 0 < E := Real.exp_pos _
+  have hmeas : MeasurableSet {ω : ℕ → Step N M |
+      ENNReal.ofReal 1 < biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω} :=
+    measurableSet_lt measurable_const (measurable_biasedHittingTimeCts l _)
+  have hcompl : {ω : ℕ → Step N M |
+      biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω ≤ ENNReal.ofReal 1}
+      = {ω : ℕ → Step N M |
+        ENNReal.ofReal 1 < biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω}ᶜ := by
+    ext ω; simp [not_lt]
+  have h29 := le_biasedProbHittingGT hM hN hγ hγ' hβ hl (t := 1) one_pos
+  rw [show (-2 * (1 : ℝ) * Kc * E) = -(2 * Kc * E) by ring] at h29
+  rw [hcompl, prob_compl_eq_one_sub hmeas]
+  refine le_trans (tsub_le_tsub_left h29 1) ?_
+  rw [← ENNReal.ofReal_one, ← ENNReal.ofReal_sub _ (Real.exp_pos _).le]
+  refine ENNReal.ofReal_le_ofReal ?_
+  have := Real.add_one_le_exp (-(2 * Kc * E))
+  linarith
+
+/-- Assumption **(18)** of the biased Proposition 12, with `s₂ = 2β`, `θ = 1/(4γ)` and
+`K = N²M + 16γe⁻¹N³(M+1)³`.
+
+Part 2 of Lemma 29 at `t = 2β` gives `(N²M + 4βN³(M+1)³) e^{-β/(2γ)}`; splitting the exponent
+in half and absorbing `β e^{-β/(4γ)} ≤ 4γ e^{-1}` is step (20) of Section 5.3. -/
+theorem biasedMeasure_hittingTime_le_two_mul (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β)
+    {o : Opinion M} {u : Profile N M} (hu : IsBiasedConsensus γ o u) :
+    biasedCtsPathMeasure γ β u
+        {ω | biasedHittingTimeCts u (biasedConsensusSetOther N γ o) ω
+          ≤ ENNReal.ofReal (2 * β)}
+      ≤ ENNReal.ofReal ((((N ^ 2 * M : ℕ) : ℝ)
+            + 16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ))
+          * Real.exp (-(1 / (4 * γ)) * β)) := by
+  refine le_trans
+    (biasedProbHittingLE_le hM hN hγ hγ' hβ.le hu (by linarith : (0 : ℝ) < 2 * β))
+    (ENNReal.ofReal_le_ofReal ?_)
+  have ha : (0 : ℝ) < 4 * γ := by linarith
+  have hγ0 : (γ : ℝ) ≠ 0 := hγ.ne'
+  set E : ℝ := Real.exp (-β / (4 * γ)) with hE
+  have hE0 : 0 < E := Real.exp_pos _
+  have hE1 : E ≤ 1 := by
+    rw [hE, Real.exp_le_one_iff]
+    apply div_nonpos_of_nonpos_of_nonneg <;> linarith
+  have hexpeq : -β / (4 * γ) + -β / (4 * γ) = -β / (2 * γ) := by field_simp; ring
+  have hhalf : Real.exp (-β / (2 * γ)) = E * E := by rw [hE, ← Real.exp_add, hexpeq]
+  have hgoal : Real.exp (-(1 / (4 * γ)) * β) = E := by
+    rw [hE, show -(1 / (4 * γ)) * β = -β / (4 * γ) by ring]
+  rw [hhalf, hgoal]
+  have hβE : β * E ≤ (4 * γ) * Real.exp (-1) := mul_exp_neg_div_le ha β
+  have hKc : (0 : ℝ) ≤ ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by positivity
+  have hNM : (0 : ℝ) ≤ ((N ^ 2 * M : ℕ) : ℝ) := by positivity
+  have hstep : (((N ^ 2 * M : ℕ) : ℝ) + 2 * (2 * β) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) * E
+      ≤ ((N ^ 2 * M : ℕ) : ℝ)
+        + 16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by
+    have hexp : 4 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * (β * E)
+        ≤ 4 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * ((4 * γ) * Real.exp (-1)) :=
+      mul_le_mul_of_nonneg_left hβE (by linarith)
+    nlinarith [mul_le_mul_of_nonneg_left hE1 hNM]
+  calc (((N ^ 2 * M : ℕ) : ℝ) + 2 * (2 * β) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) * (E * E)
+      = ((((N ^ 2 * M : ℕ) : ℝ)
+          + 2 * (2 * β) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) * E) * E := by ring
+    _ ≤ (((N ^ 2 * M : ℕ) : ℝ)
+        + 16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) * E :=
+        mul_le_mul_of_nonneg_right hstep hE0.le
+
+/-- Assumption **(17)** of the biased Proposition 12, with `s₂ = 2β`, `δ = 1/(4γ)` and
+`C = 16γe⁻¹N³(M+1)³ + C₂₈`.
+
+This is where Corollary 30 enters: it turns `s₂ / c_{α,β}` into `4βN³(M+1)³e^{-β/(2γ)}`, and
+half of the exponent absorbs the factor `β`. -/
+theorem biasedMax_le_of_isCharacteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 ≤ β) {o : Opinion M} {c : ℝ}
+    (hc : IsBiasedCharacteristicTime (N := N) γ β o c) {C : ℝ} (hC : 0 ≤ C) :
+    max (2 * β / c) (C * Real.exp (-β / (2 * γ)))
+      ≤ (16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + C)
+          * Real.exp (-(1 / (4 * γ)) * β) := by
+  have ha : (0 : ℝ) < 4 * γ := by linarith
+  have hγ0 : (γ : ℝ) ≠ 0 := hγ.ne'
+  set Kc : ℝ := ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) with hKc
+  have hKcpos : 0 < Kc := by
+    rw [hKc]
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (by omega : 0 < N)) (Nat.pow_pos (Nat.succ_pos M))
+  set E : ℝ := Real.exp (-β / (4 * γ)) with hE
+  have hE0 : 0 < E := Real.exp_pos _
+  have hE1 : E ≤ 1 := by
+    rw [hE, Real.exp_le_one_iff]
+    apply div_nonpos_of_nonpos_of_nonneg <;> linarith
+  have hexpeq : -β / (4 * γ) + -β / (4 * γ) = -β / (2 * γ) := by field_simp; ring
+  have hhalf : Real.exp (-β / (2 * γ)) = E * E := by rw [hE, ← Real.exp_add, hexpeq]
+  have hgoal : Real.exp (-(1 / (4 * γ)) * β) = E := by
+    rw [hE, show -(1 / (4 * γ)) * β = -β / (4 * γ) by ring]
+  have hbig : (0 : ℝ) ≤ 16 * γ * Real.exp (-1) * Kc := by positivity
+  rw [hgoal]
+  refine max_le ?_ ?_
+  · have hcpos : 0 < c := hc.1
+    have h30 := le_biasedCharacteristicTime hM hN hγ hγ' hβ hc
+    set F : ℝ := Real.exp (β / (2 * γ)) with hF
+    have hFpos : 0 < F := Real.exp_pos _
+    have hbpos : (0 : ℝ) < 1 / 2 * Kc⁻¹ * F := by positivity
+    have hdiv : 2 * β / c ≤ 2 * β / (1 / 2 * Kc⁻¹ * F) :=
+      div_le_div_of_nonneg_left (by linarith) hbpos h30
+    have hfe : 2 * β / (1 / 2 * Kc⁻¹ * F) = 4 * Kc * (β * E) * E := by
+      rw [show 4 * Kc * (β * E) * E = 4 * Kc * β * (E * E) by ring, ← hhalf,
+        show -β / (2 * γ) = -(β / (2 * γ)) by ring, Real.exp_neg, ← hF]
+      field_simp
+      ring
+    calc 2 * β / c ≤ 4 * Kc * (β * E) * E := hdiv.trans_eq hfe
+      _ ≤ 4 * Kc * ((4 * γ) * Real.exp (-1)) * E :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left (mul_exp_neg_div_le ha β) (by positivity)) hE0.le
+      _ = 16 * γ * Real.exp (-1) * Kc * E := by ring
+      _ ≤ (16 * γ * Real.exp (-1) * Kc + C) * E := by nlinarith
+  · calc C * Real.exp (-β / (2 * γ)) = C * E * E := by rw [hhalf]; ring
+      _ ≤ C * E := by
+          have h := mul_le_mul_of_nonneg_left hE1 (mul_nonneg hC hE0.le)
+          linarith
+      _ ≤ (16 * γ * Real.exp (-1) * Kc + C) * E := by nlinarith
+
+/-- **Proposition 12 for the biased process**, the consequence for this model of Theorem 5.3
+of [LM22].
+
+**This is an axiom, not a theorem, and it is the second one this repository asks you to
+trust.**  It is the exact twin of `SocialNetwork.exitTime_approx_exponential`, over
+`Profile N M` instead of `Pressure N M`.  Appendix C never states it: it says only that "the
+proof of Theorem 31 follows exactly as the proof of Theorem 3", and the proof of Theorem 3
+runs through Proposition 12, which is stated for the unbiased process alone.
+
+**One axiom cannot serve both models.**  Stated abstractly — over an arbitrary family of
+measures and an arbitrary hitting time — the statement is *inconsistent*: the zero measure
+with an empty ladder set satisfies the four assumptions vacuously and falsifies the conclusion
+at `t = 0`.  What rules that out is the strong Markov property, which is the content of [LM22]
+and is not expressible here, so the statement has to be attached to a concrete process.  The
+unbiased axiom is attached to the unbiased one, and this is the price: a second thing to
+trust.  See `FOR-THE-AUTHORS.md` §3.
+
+The hypotheses are named after the equations of the paper, and `ε₁ ε₂ s₁ s₂` are functions of
+`β` for the reason recorded at the unbiased axiom. -/
+axiom biasedExitTime_approx_exponential (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (o : Opinion M)
+    (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ}
+    (hC : 0 < C) (hδ : 0 < δ) (hK : 0 < K) (hθ : 0 < θ)
+    (hpos : ∀ β : ℝ, β₁ ≤ β → 0 < ε₁ β ∧ 0 < ε₂ β ∧ 0 < s₁ β ∧ 0 < s₂ β)
+    (hsum : ∀ β : ℝ, β₁ ≤ β → ε₁ β + ε₂ β ≤ 1 / 2)
+    (h15 : ∀ β : ℝ, β₁ ≤ β → ∀ l : Profile N M, IsBiasedLadder γ o l →
+      biasedCtsPathMeasure γ β l
+          {ω | biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω
+            ≤ ENNReal.ofReal (s₁ β)}
+        ≤ ENNReal.ofReal (ε₁ β))
+    (h16 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedState u →
+      biasedProbHittingGT γ β u
+          ({v | IsBiasedLadder γ o v} ∪ biasedConsensusSetOther N γ o)
+          (ENNReal.ofReal (s₂ β))
+        ≤ ENNReal.ofReal (ε₂ β))
+    (h17 : ∀ β : ℝ, β₁ ≤ β → ∀ c : ℝ, IsBiasedCharacteristicTime (N := N) γ β o c →
+      max (s₂ β / c) (ε₂ β) ≤ C * Real.exp (-δ * β))
+    (h18 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
+      biasedCtsPathMeasure γ β u
+          {ω | biasedHittingTimeCts u (biasedConsensusSetOther N γ o) ω
+            ≤ ENNReal.ofReal (s₂ β)}
+        ≤ ENNReal.ofReal (K * Real.exp (-θ * β))) :
+    ∃ β₀ K' : ℝ, β₁ ≤ β₀ ∧ 0 < β₀ ∧ 0 < K' ∧
+      ∀ β : ℝ, β₀ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
+      (∀ t : ℝ, 0 ≤ t →
+        |(biasedProbHittingGT γ β u (biasedConsensusSetOther N γ o)
+            (ENNReal.ofReal t *
+              biasedExpHittingTimeCts γ β u (biasedConsensusSetOther N γ o))).toReal
+          - Real.exp (-t)|
+        ≤ K' * β ^ 3 * Real.exp (-min (min (δ / 3) (1 / 2)) θ * β)) ∧
+      ∀ v : Profile N M, IsBiasedConsensus γ o v →
+        |(biasedExpHittingTimeCts γ β u (biasedConsensusSetOther N γ o)).toReal /
+            (biasedExpHittingTimeCts γ β v (biasedConsensusSetOther N γ o)).toReal - 1|
+          ≤ K' * β ^ 3 * Real.exp (-min (min (δ / 3) (1 / 2)) θ * β)
+
 /-- **Theorem 31.**  Metastability for the biased model: for `0 < α < 1/(M-1)` there are
 `β₀, C₁ > 0` and `C₂ > 0`, depending only on `α`, `M` and `N`, such that the rescaled exit
 time from a biased consensus set is exponential of parameter one up to `C₁ β³ e^{-C₂ β}`. -/
@@ -1330,7 +1572,93 @@ theorem biasedMetastability (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < 
           |(biasedExpHittingTimeCts γ β u (biasedConsensusSetOther N γ o)).toReal /
               (biasedExpHittingTimeCts γ β v (biasedConsensusSetOther N γ o)).toReal - 1|
             ≤ C₁ * β ^ 3 * Real.exp (-C₂ * β) := by
-  sorry
+  have hKcpos : (0 : ℝ) < ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (by omega : 0 < N)) (Nat.pow_pos (Nat.succ_pos M))
+  have hNMpos : (0 : ℝ) < ((N ^ 2 * M : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_pos (by omega : 0 < N)) (by omega : 0 < M)
+  have hδpos : (0 : ℝ) < 1 / (4 * γ) := by positivity
+  have hepos : (0 : ℝ) < Real.exp (-1) := Real.exp_pos _
+  -- Proposition 12 for the biased process, opinion by opinion
+  have key : ∀ o : Opinion M, ∃ β₀ K' : ℝ, 0 < β₀ ∧ 0 < K' ∧
+      ∀ β : ℝ, β₀ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
+      (∀ t : ℝ, 0 ≤ t →
+        |(biasedProbHittingGT γ β u (biasedConsensusSetOther N γ o)
+            (ENNReal.ofReal t *
+              biasedExpHittingTimeCts γ β u (biasedConsensusSetOther N γ o))).toReal
+          - Real.exp (-t)|
+        ≤ K' * β ^ 3 * Real.exp (-min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)) * β)) ∧
+      ∀ v : Profile N M, IsBiasedConsensus γ o v →
+        |(biasedExpHittingTimeCts γ β u (biasedConsensusSetOther N γ o)).toReal /
+            (biasedExpHittingTimeCts γ β v (biasedConsensusSetOther N γ o)).toReal - 1|
+          ≤ K' * β ^ 3 * Real.exp (-min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)) * β) := by
+    intro o
+    -- Lemma 28, in the form assumption (16) needs
+    obtain ⟨Cl, hCl, h16⟩ := biasedProbHittingGT_ladderOther_le hM hN hγ hγ' o
+    -- the threshold above which `ε₁ + ε₂ ≤ 1/2`
+    set β₁ : ℝ := max 1 (4 * γ * (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl)) with hβ₁def
+    have hβ₁one : (1 : ℝ) ≤ β₁ := le_max_left _ _
+    have hpos' : ∀ β : ℝ, β₁ ≤ β → (0 : ℝ) < β := fun β hβ =>
+      lt_of_lt_of_le zero_lt_one (le_trans hβ₁one hβ)
+    have hsum : ∀ β : ℝ, β₁ ≤ β →
+        2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / (2 * γ))
+          + Cl * Real.exp (-β / (2 * γ)) ≤ 1 / 2 := by
+      intro β hβ
+      have hβpos := hpos' β hβ
+      have hb : 4 * γ * (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) ≤ β :=
+        le_trans (le_max_right _ _) hβ
+      have hexp : Real.exp (-β / (2 * γ)) ≤ (2 * γ) / β :=
+        exp_neg_div_le (by linarith) hβpos
+      have hmul : (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) * Real.exp (-β / (2 * γ))
+          ≤ (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) * ((2 * γ) / β) :=
+        mul_le_mul_of_nonneg_left hexp (by linarith)
+      have hfin : (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) * ((2 * γ) / β) ≤ 1 / 2 := by
+        rw [show (2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) * ((2 * γ) / β)
+            = ((2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl) * (2 * γ)) / β by ring,
+          div_le_iff₀ hβpos]
+        linarith
+      linarith
+    have hCpos : (0 : ℝ)
+        < 16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) + Cl := by positivity
+    have hKpos : (0 : ℝ) < ((N ^ 2 * M : ℕ) : ℝ)
+        + 16 * γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by positivity
+    obtain ⟨b, K', -, hbpos, hK'pos, hmain⟩ :=
+      biasedExitTime_approx_exponential hM hN hγ hγ' o
+        (fun β => 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / (2 * γ)))
+        (fun β => Cl * Real.exp (-β / (2 * γ)))
+        (fun _ => 1) (fun β => 2 * β)
+        hCpos hδpos hKpos hδpos
+        (fun β hβ => ⟨mul_pos (by linarith) (Real.exp_pos _), mul_pos hCl (Real.exp_pos _),
+          one_pos, by linarith [hpos' β hβ]⟩)
+        hsum
+        (fun β hβ l hl =>
+          biasedMeasure_hittingTime_le_one hM hN hγ hγ' (hpos' β hβ).le hl)
+        (fun β hβ u hu => h16 β (hpos' β hβ).le u hu)
+        (fun β hβ c hc =>
+          biasedMax_le_of_isCharacteristicTime hM hN hγ hγ' (hpos' β hβ).le hc hCl.le)
+        (fun β hβ u hu =>
+          biasedMeasure_hittingTime_le_two_mul hM hN hγ hγ' (hpos' β hβ) hu)
+    exact ⟨b, K', hbpos, hK'pos, hmain⟩
+  -- the constants are uniform over the finitely many opinions
+  choose b k hbpos hkpos hmain using key
+  obtain ⟨B, hB⟩ : ∃ B : ℝ, ∀ o : Opinion M, b o ≤ B := Finite.exists_le b
+  obtain ⟨Kb, hKb⟩ : ∃ Kb : ℝ, ∀ o : Opinion M, k o ≤ Kb := Finite.exists_le k
+  refine ⟨max B 1, max Kb 1, min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)),
+    lt_of_lt_of_le zero_lt_one (le_max_right _ _),
+    lt_of_lt_of_le zero_lt_one (le_max_right _ _),
+    lt_min (lt_min (by positivity) (by norm_num)) hδpos, ?_⟩
+  intro β hβ o u hu
+  have hbβ : b o ≤ β := le_trans (hB o) (le_trans (le_max_left _ _) hβ)
+  obtain ⟨h1, h2⟩ := hmain o β hbβ u hu
+  have hβpos : (0 : ℝ) < β := lt_of_lt_of_le (hbpos o) hbβ
+  have hfac : (0 : ℝ) ≤ β ^ 3 *
+      Real.exp (-min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)) * β) := by positivity
+  have hup : k o * β ^ 3 *
+        Real.exp (-min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)) * β)
+      ≤ max Kb 1 * β ^ 3 *
+        Real.exp (-min (min ((1 / (4 * γ)) / 3) (1 / 2)) (1 / (4 * γ)) * β) := by
+    rw [mul_assoc, mul_assoc]
+    exact mul_le_mul_of_nonneg_right (le_trans (hKb o) (le_max_left _ _)) hfac
+  exact ⟨fun t ht => le_trans (h1 t ht) hup, fun v hv => le_trans (h2 v hv) hup⟩
 
 end PositiveBias
 

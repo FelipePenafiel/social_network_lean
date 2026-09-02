@@ -149,13 +149,14 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `rem:eq6`; the stronger condition is what `IsBiasedState` carries. |
 | 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `rem:steep`; recorded, and the Lean definition carries it. |
 | 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed.  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what the paper uses and is not what is stated.  **Your call** whether to restate it. |
-| 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which does not exist: Proposition 12 is stated over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | Nothing done.  See §3.2. |
+| 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is proved** from it.  See §3.3.  Proposition 23 is untouched. |
 | 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `lem:hitting-rate` and `lem:hitting-zero-decomp` — each carrying a `sorry`, and Lemma 13 is proved from them.  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
+| 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
 
 ---
 
-## 3. The one axiom, and the second one you will need
+## 3. The two axioms
 
 ### 3.1 Proposition 12 is a citation, not a theorem of this paper
 
@@ -177,8 +178,24 @@ Markov property, which is the entire content of [LM22] and is not expressible
 here.
 
 So the axiom is attached to the concrete process, as the paper states it, and
-**Theorem 31 will need its own twin.**  That is a second thing to trust, and it is
-your decision whether to add it.
+Theorem 31 needs its own twin.
+
+### 3.3 The twin, added on your instruction
+
+`SocialNetwork.Bias.biasedExitTime_approx_exponential` is the same statement over
+`Profile N M` instead of `Pressure N M`.  Appendix C never states it: it says only
+that "the proof of Theorem 31 follows exactly as the proof of Theorem 3", and that
+proof runs through Proposition 12, which is stated for the unbiased process alone.
+
+**So the repository now asks you to trust two things, not one**, and they are the
+same citation applied twice.  If [LM22] Theorem 5.3 is right, both are right; the
+duplication is a limitation of what can be *stated* here, not a second
+mathematical assumption.  Should you prefer a single hypothesis, the way to get it
+is to formalise enough of the strong Markov property that the abstract version
+stops being vacuous — that is real work, and it is the only honest route.
+
+CI gates both: no result claimed complete may reach either, and the inventory step
+now records what is true modulo each of them separately.
 
 ---
 
@@ -223,6 +240,14 @@ blueprint's audit section classifies every formalised proof this way.
 * **Corollary 30.**  Appendix C gives it as "the rearrangement of Corollary 15
   with `1/(M-1)` replaced by `1/(2γ)`", and it is exactly that; the Lean proof is
   Corollary 15's, transposed.
+* **Theorem 31.**  Appendix C says only "the proof follows exactly as the proof of
+  Theorem 3", and names none of the constants.  The four taken here are what
+  Section 5.3 produces with `1/(2γ)` in place of `1/(M-1)`: `s₁ = 1`,
+  `ε₁ = 2N³(M+1)³e^{-β/(2γ)}`, `s₂ = 2β`, `ε₂ = Ce^{-β/(2γ)}` with `C` from
+  Lemma 28, and `δ = θ = 1/(4γ)` — the exponent halved to absorb the factor `β` of
+  step (20), which is why the two coincide here where the unbiased proof had
+  `1/((M+1)N)` and `1/(2(M-1))`.  The threshold above which `ε₁ + ε₂ ≤ 1/2` is
+  `β₁ = max(1, 4γ(2N³(M+1)³ + C))`.
 * **Measurability.**  The paper does not address it anywhere.  Every measurability
   lemma here has no counterpart in the text.
 
