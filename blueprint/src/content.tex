@@ -10,8 +10,13 @@ of its statements are formalised in Lean~4 and which are not.
 Every numbered statement of the paper appears here.  A green node in the
 dependency graph is formalised; a blue one is stated in Lean but its proof is
 a \texttt{sorry}.  Chapter~\ref{chap:notes} explains why each unproved
-statement is unproved, and records three places where formalising the paper
+statement is unproved, and records five places where formalising the paper
 showed that the written text needs correcting.
+
+Two files at the root of the repository read this one.  \texttt{STATUS.md} is
+generated from it: every statement, its status, and --- for the ones that are
+not proved --- which of five kinds of obstruction it has met.
+\texttt{FOR-THE-AUTHORS.md} says what each obstruction asks of the authors.
 
 \begin{remark}[What a green node claims, and what it does not]
   \label{rem:green}
@@ -184,7 +189,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{remark}[How the process is built in Lean]
   \label{rem:construction}
-  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process, SocialNetwork.measurable_hittingTimeCts}
+  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process}
   \leanok
   \uses{def:skeleton}
   Mathlib has no theory of continuous-time Markov jump processes on a countable
@@ -207,8 +212,30 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   Per Remark~\ref{rem:green}, the measurability lemmas named above have
   \textbf{no counterpart in the paper}, which does not address measurability;
   \texttt{jumpCount\_eq\_iff} is likewise an artefact of this construction
-  rather than a formalisation of anything written there.
+  rather than a formalisation of anything written there.  The one measurability
+  obligation this construction leaves open is
+  Lemma~\ref{lem:measurable-hitting}, which is not of the same kind and has a
+  node of its own.
 \end{remark}
+
+\begin{lemma}[Measurability of the hitting times]
+  \label{lem:measurable-hitting}
+  \lean{SocialNetwork.measurable_hittingTimeCts,
+    SocialNetwork.Bias.measurable_biasedHittingTimeCts}
+  \leanok
+  \uses{rem:construction}
+  $\omega \mapsto \Rhit{u}(\theta)(\omega)$ is measurable, for either process.
+\end{lemma}
+\begin{proof}
+  \textbf{Not formalised, and no counterpart in the paper}, which does not
+  address measurability anywhere.  It is separated from
+  Remark~\ref{rem:construction} because it is the one statement there that is
+  not a cylinder argument: the hitting time is an infimum over the
+  \emph{uncountable} family $\{t \ge 0\}$, and reducing it to a countable one
+  needs right-continuity of $t \mapsto \Uproc{u}_t(\omega)$, which holds only
+  almost surely.  The obstruction is written out at the end of
+  Section~\ref{sec:missing}.
+\end{proof}
 
 \begin{theorem}[Existence, Theorem~1.1]
   \label{thm:nonexplosion}
@@ -1029,6 +1056,28 @@ the process pointwise.
   \textbf{Not formalised}.
 \end{proof}
 
+\begin{remark}[Remark~6]
+  \label{rem:remark6}
+  \uses{cor:hitting-zero}
+  The paper's own note that the first term on the right of equation~(14) may be
+  replaced by
+  $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) < \Rhit{u}(C^{-o}))$,
+  whence, by the same steps as part~2 of Theorem~\ref{thm:invariant}, for every
+  fixed $o$ and $\delta > 0$,
+  \[
+    \inf_{u \in C^o} \mathbb{P}\Bigl(
+      \Rhit{u}(\ladder^o) < \min\bigl\{e^{-\frac{\beta}{M-1}(1-\delta)},
+        \Rhit{u}(C^{-o})\bigr\}\Bigr) \to 1,
+    \qquad \beta \to +\infty .
+  \]
+
+  \textbf{Not stated in Lean.}  It is the one numbered statement of the paper
+  with no counterpart here, and it is recorded so that the count is honest.
+  Nothing downstream uses it: it strengthens Corollary~\ref{cor:hitting-zero}
+  in the direction Lemma~\ref{lem:exit-bounds} needs, and both are blocked on
+  the same continuous-time analysis.
+\end{remark}
+
 \section{Metastability}
 
 \begin{proposition}[The exponential-approximation criterion, Proposition~12]
@@ -1232,7 +1281,7 @@ the process pointwise.
   Proposition~\ref{prop:low-pressure}.  \textbf{Not formalised}.
 \end{proof}
 
-\begin{proposition}[Theorem~17]
+\begin{proposition}[Proposition~17]
   \label{prop:biased-bounded}
   \lean{SocialNetwork.Bias.measure_biasedBounded_ge, SocialNetwork.Bias.biasedBounded}
   \leanok
@@ -1680,7 +1729,7 @@ the process pointwise.
 \section{Corrections to the paper}
 \label{sec:corrections}
 
-Formalising surfaced three places where the written text needs correcting.
+Formalising surfaced five places where the written text needs correcting.
 None of them affects the results.
 
 \begin{remark}[Lemma~19: the $\lfloor m \rfloor + 1$ distinct actors]
@@ -1814,9 +1863,181 @@ None of them affects the results.
 \end{remark}
 
 \section{What is missing, and why}
+\label{sec:missing}
 
-The unproved statements fall into three groups, and it is worth keeping them
-apart because they are unproved for three different reasons.
+The unproved statements fall into four groups, and it is worth keeping them
+apart because they are unproved for four different reasons: the library Lean
+is built on has no theory of the object, the paper's own proof does not
+compose, the statement is a citation rather than a result of this paper, or
+the Lean statement itself has still to be settled.  \texttt{STATUS.md} at the
+root of the repository is the generated index of all four, statement by
+statement; the paragraphs below are the argument behind it.
+
+\subsection*{Blocked on Mathlib}
+
+Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
+\ref{thm:invariant-skeleton}, \ref{thm:concentration}, \ref{thm:metastability},
+\ref{thm:phase} and their auxiliaries.  Verified against the pinned revision
+(Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
+
+\begin{itemize}
+  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure}:
+    nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
+    and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
+    is the Meyn--Tweedie definition, two trivial instances and one monotonicity
+    lemma.
+  \item \textbf{Kac's lemma}: nothing; every \texttt{Kac} in Mathlib is a
+    Kac--Moody algebra.
+  \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
+    recurrence exists for a measure-preserving \emph{map}, which does not
+    transport to a kernel.
+  \item \textbf{Total-variation distance between measures}: nothing usable.
+  \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
+    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
+  \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
+    \texttt{TendstoInDistribution} makes the qualitative half expressible, but
+    the Kolmogorov-type bound is absent.
+\end{itemize}
+
+Theorems~\ref{thm:concentration} and~\ref{thm:metastability} live, in the
+paper's own architecture, on the skeleton; they are blocked by the discrete-time
+items, not by the continuous-time ones.  Only
+Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion} need Poisson
+point processes.  The shortest path is therefore: Doeblin, then Kac, then
+Proposition~\ref{prop:skeleton-concentration} follows from
+Propositions~\ref{prop:reach-ladder} and~\ref{prop:greedy-prob} and
+Lemma~\ref{lem:eta}, and Theorem~\ref{thm:concentration} from it by
+Lemma~\ref{lem:transfer}.
+
+\subsection*{Blocked on the paper}
+
+Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, and
+Proposition~\ref{prop:biased-confinement}; through them
+Propositions~\ref{prop:reach-ladder} and~\ref{prop:biased-reach-ladder}.  See
+Remarks~\ref{rem:lemma19}, \ref{rem:lemma20} and~\ref{rem:prop22}: in each case
+the written proof does not compose, and the repair changes the argument rather
+than its presentation, so it is recorded rather than guessed at in Lean.
+Proposition~\ref{prop:reach-ladder} is nonetheless \emph{proved}, along a route
+that does not need the step the written proof asserts --- the one departure of
+that kind in this repository, and the reason is written at its node.
+
+\subsection*{Cited from outside the paper}
+
+Four statements are not results of arXiv:2607.19651 at all, and nothing in this
+library can discharge them.
+
+Proposition~\ref{prop:exit-exponential} and its twin
+Proposition~\ref{prop:biased-exit-exponential} are Theorem~5.3 of [LM22].  They
+are declared as \texttt{axiom}s rather than left carrying a \texttt{sorry},
+because a \texttt{sorry} would put them in the inventory of work someone could
+pick up, and they are not that.  Two are needed rather than one: stated
+abstractly, over an arbitrary family of measures and an arbitrary hitting time,
+the statement is \emph{inconsistent} --- the zero measure with an empty ladder
+set satisfies the hypotheses vacuously and falsifies the conclusion at $t = 0$
+--- so it has to be attached to a concrete process, and there are two processes.
+They are the same citation applied twice, not two assumptions.
+
+Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} are the two
+inequalities the paper \emph{displays inside proofs} and never states.
+Lemma~\ref{lem:hitting-2beta} uses them, and it cannot use the numbered
+statements they are attributed to --- Theorem~2.2 and
+Corollary~\ref{cor:hitting-zero} --- because those are limits, and a limit has
+thrown the rate away.  They are transcribed verbatim and carry a
+\texttt{sorry}; whether either should become a numbered statement of the paper
+is a question for the authors.
+
+\subsection*{Routine, and now done}
+
+Seven statements were listed here as neither deep nor blocked.  They are now
+proved, and the paragraph is kept as the record of what they cost.  The first
+four fall in the third case of Remark~\ref{rem:green}: the paper proves none of
+them, so none of these is a check of anything it wrote.  The last three, added
+as the earlier ones were cleared, do not: Remark~\ref{rem:remark8} is argued in
+the paper and the Lean proof follows it, and Lemmas~\ref{lem:eta}
+and~\ref{lem:eta-pow} supply arguments the paper asserts.
+
+\begin{itemize}
+  \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
+    naturals sum to at least $0 + 1 + \dots + (N-1)$.  This was a
+    \textbf{Mathlib gap in its own right}, and still is: Mathlib has no lemma to
+    this effect and none from which it follows in one step.  The route it
+    suggests --- enumerate with \texttt{Finset.orderEmbOfFin}, then use ``a
+    strictly monotone $\mathrm{Fin}\ N \to \mathbb{N}$ dominates the identity''
+    --- needs that last step redone by hand, \texttt{StrictMono.le\_apply} being
+    stated only for endomorphisms.  Induction on the largest element
+    (\texttt{Finset.induction\_on\_max}) sidesteps it: adjoining a new maximum
+    $a$ to $s$ adds $a$ to the sum and $\#s$ to the bound, and $a \ge \#s$
+    because $s$ is contained in \texttt{range a}.  The general form is
+    \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
+  \item The two measurability lemmas for the biased greedy events,
+    \texttt{measurableSet\_nearGreedyEvents} and
+    \texttt{measurableSet\_biasedGreedyEvents}.  Both are the cylinder argument
+    already used for the unbiased model, transported through
+    \texttt{SocialNetwork.Bias.ofHistoryPath}.
+  \item \texttt{SocialNetwork.measurable\_process}.  The characterisation is
+    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, \texttt{jumpCount w t} equals $k$
+    exactly when $T_k \le t$ and no later jump time is $\le t$.  The level set at
+    $0$ is then the complement of the others, and \texttt{jumpCount} is
+    measurable into $\mathbb{N}$; gluing it to
+    \texttt{measurable\_state\_ofStepPath} along that countable index gives the
+    result.
+  \item Remark~\ref{rem:remark8}.  The pigeonhole step was already there; what
+    was left was the identity
+    $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma (M c_p - n_a)$,
+    \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, after which both terms
+    are visibly non-negative.  Cheap, as advertised.
+  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
+    one item on this list that checks something the paper wrote down without
+    argument.  Two thirds of it is bookkeeping --- the positive entries of a
+    steep ladder are exactly the non-minimal entries of the supported column,
+    the rest are non-positive and there are at most $MN$ of them, and the
+    fraction $S/(S+T)$ is monotone in the right directions.  The remaining third
+    is the comparison itself, and it needs the monotone form of the same Mathlib
+    gap as \texttt{sum\_range\_card\_le\_sum}: $N-1$ distinct naturals $\ge 1$
+    dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
+    \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
+    on the largest element.
+  \item Lemma~\ref{lem:eta-pow}, the iterate $\eta^m$.  As advertised: the
+    induction of Proposition~\ref{prop:greedy-prob} along the Ionescu--Tulcea
+    kernels, transcribed against the one-step bound of Lemma~\ref{lem:eta}, with
+    the event that every expression so far was made from a positive entry in
+    place of the greedy one.  The one real difference is that $\eta$, unlike
+    $\zeta_\beta$, is not uniform in the matrix, so the finite-horizon step has
+    to carry the steepness of the state the history reaches.
+\end{itemize}
+
+Nothing is left on this list.  What is unproved here is blocked on Mathlib, on
+the paper, or --- for \texttt{measurable\_hittingTimeCts} --- on a choice about
+the statement, recorded next.
+
+\subsection*{The statement itself is not settled}
+
+Lemma~\ref{lem:measurable-hitting}, alone.
+\texttt{SocialNetwork.measurable\_hittingTimeCts} was listed above, next to
+\texttt{measurable\_process}, on the grounds that both only see
+\texttt{jumpCount}.  They do not sit at the same depth.  \texttt{process} is
+evaluated at one $t$; the hitting time is an infimum over the \emph{uncountable}
+family $\{t \ge 0\}$, so it needs the path $t \mapsto \Uproc{u}_t(\omega)$ to be
+right-continuous, which is what reduces that infimum to a countable one.
+
+Right-continuity holds only where the jump times increase, and the holding time
+is a plain real coordinate of the sample space: it is positive almost surely,
+\texttt{expMeasure} charging only $[0,\infty)$, but not for every $\omega$.  On
+a realisation with a negative holding time, or whose jump times accumulate from
+the right at some $t$, \texttt{jumpCount w} is not
+right-continuous and the reduction fails pointwise.  The statement therefore
+wants an almost-sure formulation, or a proof that handles the null set on which
+the path misbehaves --- either way, real work, and not the cylinder argument
+promised here.  The biased twin
+\texttt{SocialNetwork.Bias.measurable\_biasedHittingTimeCts} is the same
+statement over $\Salpha$ and is open for the same reason; the two share
+Lemma~\ref{lem:measurable-hitting}.
+
+This is the only unproved statement in the repository that is nobody's fault:
+not a gap in Mathlib, not a gap in the paper, not a citation.  What it needs is
+a decision about what the statement should say, and that decision is about what
+the paper means by the hitting time, so it belongs to the authors.
+
 
 \section{What the formalised proofs check}
 \label{sec:audit}
@@ -1958,133 +2179,6 @@ the repository collects those, and the decisions they call for, in one place.
   This is the mechanism behind the paper's fast consensus formation, and it
   earns an argument.
 \end{remark}
-
-\subsection*{Blocked on Mathlib}
-
-Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
-\ref{thm:invariant-skeleton}, \ref{thm:concentration}, \ref{thm:metastability},
-\ref{thm:phase} and their auxiliaries.  Verified against the pinned revision
-(Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
-
-\begin{itemize}
-  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure}:
-    nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
-    and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
-    is the Meyn--Tweedie definition, two trivial instances and one monotonicity
-    lemma.
-  \item \textbf{Kac's lemma}: nothing; every \texttt{Kac} in Mathlib is a
-    Kac--Moody algebra.
-  \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
-    recurrence exists for a measure-preserving \emph{map}, which does not
-    transport to a kernel.
-  \item \textbf{Total-variation distance between measures}: nothing usable.
-  \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
-    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
-  \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
-    \texttt{TendstoInDistribution} makes the qualitative half expressible, but
-    the Kolmogorov-type bound is absent.
-\end{itemize}
-
-Theorems~\ref{thm:concentration} and~\ref{thm:metastability} live, in the
-paper's own architecture, on the skeleton; they are blocked by the discrete-time
-items, not by the continuous-time ones.  Only
-Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion} need Poisson
-point processes.  The shortest path is therefore: Doeblin, then Kac, then
-Proposition~\ref{prop:skeleton-concentration} follows from
-Propositions~\ref{prop:reach-ladder} and~\ref{prop:greedy-prob} and
-Lemma~\ref{lem:eta}, and Theorem~\ref{thm:concentration} from it by
-Lemma~\ref{lem:transfer}.
-
-\subsection*{Blocked on the paper}
-
-Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, hence
-Proposition~\ref{prop:reach-ladder}.  See Remarks~\ref{rem:lemma19}
-and~\ref{rem:lemma20}: the repairs change the written arguments rather than
-their presentation, so they are recorded rather than guessed at in Lean.
-
-\subsection*{Routine, and now done}
-
-Seven statements were listed here as neither deep nor blocked.  They are now
-proved, and the paragraph is kept as the record of what they cost.  The first
-four fall in the third case of Remark~\ref{rem:green}: the paper proves none of
-them, so none of these is a check of anything it wrote.  The last three, added
-as the earlier ones were cleared, do not: Remark~\ref{rem:remark8} is argued in
-the paper and the Lean proof follows it, and Lemmas~\ref{lem:eta}
-and~\ref{lem:eta-pow} supply arguments the paper asserts.
-
-\begin{itemize}
-  \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
-    naturals sum to at least $0 + 1 + \dots + (N-1)$.  This was a
-    \textbf{Mathlib gap in its own right}, and still is: Mathlib has no lemma to
-    this effect and none from which it follows in one step.  The route it
-    suggests --- enumerate with \texttt{Finset.orderEmbOfFin}, then use ``a
-    strictly monotone $\mathrm{Fin}\ N \to \mathbb{N}$ dominates the identity''
-    --- needs that last step redone by hand, \texttt{StrictMono.le\_apply} being
-    stated only for endomorphisms.  Induction on the largest element
-    (\texttt{Finset.induction\_on\_max}) sidesteps it: adjoining a new maximum
-    $a$ to $s$ adds $a$ to the sum and $\#s$ to the bound, and $a \ge \#s$
-    because $s$ is contained in \texttt{range a}.  The general form is
-    \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
-  \item The two measurability lemmas for the biased greedy events,
-    \texttt{measurableSet\_nearGreedyEvents} and
-    \texttt{measurableSet\_biasedGreedyEvents}.  Both are the cylinder argument
-    already used for the unbiased model, transported through
-    \texttt{SocialNetwork.Bias.ofHistoryPath}.
-  \item \texttt{SocialNetwork.measurable\_process}.  The characterisation is
-    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, \texttt{jumpCount w t} equals $k$
-    exactly when $T_k \le t$ and no later jump time is $\le t$.  The level set at
-    $0$ is then the complement of the others, and \texttt{jumpCount} is
-    measurable into $\mathbb{N}$; gluing it to
-    \texttt{measurable\_state\_ofStepPath} along that countable index gives the
-    result.
-  \item Remark~\ref{rem:remark8}.  The pigeonhole step was already there; what
-    was left was the identity
-    $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma (M c_p - n_a)$,
-    \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, after which both terms
-    are visibly non-negative.  Cheap, as advertised.
-  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
-    one item on this list that checks something the paper wrote down without
-    argument.  Two thirds of it is bookkeeping --- the positive entries of a
-    steep ladder are exactly the non-minimal entries of the supported column,
-    the rest are non-positive and there are at most $MN$ of them, and the
-    fraction $S/(S+T)$ is monotone in the right directions.  The remaining third
-    is the comparison itself, and it needs the monotone form of the same Mathlib
-    gap as \texttt{sum\_range\_card\_le\_sum}: $N-1$ distinct naturals $\ge 1$
-    dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
-    \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
-    on the largest element.
-  \item Lemma~\ref{lem:eta-pow}, the iterate $\eta^m$.  As advertised: the
-    induction of Proposition~\ref{prop:greedy-prob} along the Ionescu--Tulcea
-    kernels, transcribed against the one-step bound of Lemma~\ref{lem:eta}, with
-    the event that every expression so far was made from a positive entry in
-    place of the greedy one.  The one real difference is that $\eta$, unlike
-    $\zeta_\beta$, is not uniform in the matrix, so the finite-horizon step has
-    to carry the steepness of the state the history reaches.
-\end{itemize}
-
-Nothing is left on this list.  What is unproved here is blocked on Mathlib, on
-the paper, or --- for \texttt{measurable\_hittingTimeCts} --- on a choice about
-the statement, recorded next.
-
-\subsection*{Not routine after all}
-
-\texttt{SocialNetwork.measurable\_hittingTimeCts} was listed above, next to
-\texttt{measurable\_process}, on the grounds that both only see
-\texttt{jumpCount}.  They do not sit at the same depth.  \texttt{process} is
-evaluated at one $t$; the hitting time is an infimum over the \emph{uncountable}
-family $\{t \ge 0\}$, so it needs the path $t \mapsto \Uproc{u}_t(\omega)$ to be
-right-continuous, which is what reduces that infimum to a countable one.
-
-Right-continuity holds only where the jump times increase, and the holding time
-is a plain real coordinate of the sample space: it is positive almost surely,
-\texttt{expMeasure} charging only $[0,\infty)$, but not for every $\omega$.  On
-a realisation with a negative holding time, or whose jump times accumulate from
-the right at some $t$, \texttt{jumpCount w} is not
-right-continuous and the reduction fails pointwise.  The statement therefore
-wants an almost-sure formulation, or a proof that handles the null set on which
-the path misbehaves --- either way, real work, and not the cylinder argument
-promised here.
-
 
 \section{Where to go next}
 

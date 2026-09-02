@@ -12,19 +12,57 @@ statement is left carrying a `sorry` and the obstruction is recorded — in the
 blueprint for the mathematics, and here for the decision.  Nothing in §1 has been
 "repaired" by an argument you have not seen.
 
-The blueprint (`blueprint/src/content.tex`, chapter *Notes on the formalisation*)
-holds the full mathematical detail of each item.  This file is the index, and says
-what each one asks of you.
+Three files, three jobs.  [`STATUS.md`](STATUS.md) is the generated index: every
+statement of the paper, whether it is proved, and — for the ones that are not — which
+of five kinds of obstruction it has met.  It is rebuilt from the sources and checked by
+CI, so it cannot drift.  The blueprint (`blueprint/src/content.tex`, chapter *Notes on
+the formalisation*) holds the mathematics of each item.  **This file says what each one
+asks of you**, and nothing else.
+
+---
+
+## At a glance
+
+**These need a decision.**  Nothing in the repository can move until you make it.
+
+| | Statement | The problem | What we need from you |
+|---|---|---|---|
+| [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
+| [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
+| [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
+| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
+| [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement |
+| [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | an infimum over uncountably many times; the path regularity it needs holds only almost surely | an almost-sure formulation, or the null-set argument — the choice is about what the paper means by the hitting time |
+
+**These are recorded, and need nothing.**  Formalising turned each one up; the
+repository has already taken the only route available, and says so at the declaration.
+
+| | Statement | What was found |
+|---|---|---|
+| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Proved** |
+| [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | the biased twin of Lemma 13, so it inherits Lemma 13's two missing displays in biased form |
+| [§2.1](#2-statements-that-had-to-be-changed) | **Proposition 12** | with `ε₁ ε₂ s₁ s₂` bound ahead of `β`, the hypotheses are unsatisfiable and Theorem 3 could never have followed.  Made functions of `β` |
+| [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
+| [§2.3](#2-statements-that-had-to-be-changed) | **Equation (6)** | the second condition is not stable under `π_α^{a,o}`, though your justification for it proves a stronger one that is |
+| [§2.4](#2-statements-that-had-to-be-changed) | **Definition 4** | needs a sign condition to be the set the proofs use |
+| [§2.6](#2-statements-that-had-to-be-changed), [§3.3](#3-the-two-axioms) | **Theorem 31** | its route needs a biased Proposition 12, which the paper does not state.  Declared as a second axiom; Theorem 31 is **proved** from it |
+| [§2.8](#2-statements-that-had-to-be-changed) | **Proof of Lemma 13** | `τ` is exponential of mean `1/(MN)`, so `P(τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`.  Harmless — the written form is the weaker one |
+| [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
+| [§5](#5-not-the-papers-fault) | **Remark 6** | the one numbered statement with no Lean counterpart.  Nothing downstream uses it |
 
 ---
 
 ## 1. Proofs that do not survive formalisation
 
-Three written proofs do not compose.  Each is left unproved on purpose.  A repair
-is new mathematics and is yours to write, not the formalisation's to guess.  A
-fourth, **Proposition 7**, composes only along a different route — §1.4; there the
-missing step turned out to be avoidable, so it is proved, but you should know the
-written route does not run.
+Three written proofs do not compose — §§1.1–1.3.  Each is left unproved on
+purpose.  A repair is new mathematics and is yours to write, not the
+formalisation's to guess.
+
+Two more belong here for different reasons.  **Proposition 7** (§1.4) composes
+only along a different route; the missing step turned out to be avoidable, so it
+is proved, but you should know the written route does not run.  **Lemma 28**
+(§1.5) is blocked one level up, on ingredients Lemma 13 needs that the paper
+displays inside proofs rather than states.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
 
@@ -134,6 +172,23 @@ keeps that carry and drops the other.
 **Nothing here needs a decision.**  It is recorded because the paper as printed
 asserts a step that does not follow, and you may want either to add the `S^o`
 stability lemma or to restate Proposition 7's proof along the shorter route.
+
+### 1.5 Lemma 28 — inherits Lemma 13's missing displays
+
+*Blueprint:* `lem:biased-hitting`. *Lean:* `SocialNetwork.Bias.biasedProbHitting_le`.
+
+Lemma 28 is Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and Appendix C gives
+it no proof of its own.  Lemma 13's proof runs on two inequalities the paper
+displays inside proofs and never states (§2.7); the biased proof needs those two
+in biased form, and they are not in the paper either.
+
+So Lemma 28 is unproved not because its own argument fails but because the
+argument it is told to copy rests on statements that do not exist.  Once §2.7 is
+settled the same two transcriptions serve here, and its remaining ingredients —
+Propositions 22 and 23 — are §1.3.
+
+The Lean statement was also wrong, and that was a fault of this repository rather
+than of the paper; it is now restated in the paper's own form.  See §2.9.
 
 ---
 
@@ -262,18 +317,46 @@ Doeblin's minorisation criterion (Theorem 1.2, Theorem 25), Kac's lemma
 (Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering audit of what
 Mathlib does and does not provide, checked against the pinned revision.
 
-One item is neither: `SocialNetwork.measurable_hittingTimeCts`.  The hitting time
-is an infimum over an uncountable family of times, so it needs path regularity
-that holds only almost surely.  **It wants a decision** — an almost-sure
-formulation, or a proof that goes through the null set — and that decision is
-about what the paper means, so it is yours.
+Two statements are unproved for reasons that are nobody's fault at all.
+
+`SocialNetwork.measurable_hittingTimeCts`, with its biased twin
+`SocialNetwork.Bias.measurable_biasedHittingTimeCts`, is the only one left where
+the *Lean statement itself* is unsettled.  The hitting time is an infimum over an
+uncountable family of times, so it needs path regularity that holds only almost
+surely.  **It wants a decision** — an almost-sure formulation, or a proof that
+goes through the null set — and that decision is about what the paper means by
+the hitting time, so it is yours.
+
+**Remark 6** is the one numbered statement of the paper with no Lean counterpart.
+It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,
+and it is listed here rather than quietly omitted: the repository claims to state
+every numbered result, and this is the exception.  Nothing downstream uses it —
+it strengthens Corollary 11 in the direction Lemma 14 needs, and both wait on the
+same continuous-time analysis of Appendix B.
+
+Two more, **Proposition 18** and **Theorem 4**, are simply not done: the paper
+proves them and nothing here stands in the way.
 
 ---
 
 ## How this file stays honest
 
-Every claim above is checked by the build.  A statement listed as unproved carries
-a `sorry` and appears in the CI inventory; a statement listed as complete appears
-in the CI axiom list and fails the build if it ever reaches `sorryAx` or the
-[LM22] axiom.  If an item here is fixed, the blueprint and this file are updated
-in the same commit as the code.
+Every claim above is checked by the build, and the checking is no longer done by
+hand.
+
+[`STATUS.md`](STATUS.md) is generated from `blueprint/src/content.tex` and the
+Lean sources by `scripts/status.py`, and CI regenerates it and fails on any
+difference.  The same script refuses a `sorry` that no blueprint node accounts
+for, a Lean name the blueprint cites but the library does not declare, and an
+unproved statement with no recorded reason — so an obstruction cannot be
+introduced without appearing here.
+
+The axiom check is generated the same way: it is every declaration cited by a
+node the blueprint's dependency graph resolves to *proved*, or to a definition
+with nothing to prove, and the build fails if any of them reaches `sorryAx` or
+either [LM22] axiom.  A green node in
+the blueprint is therefore a claim the build verifies, not a claim someone
+remembered to keep true.
+
+If an item here is fixed, the blueprint and this file are updated in the same
+commit as the code.

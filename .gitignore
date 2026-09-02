@@ -12,3 +12,9 @@
 /blueprint/print/
 /blueprint/lean_decls
 /blueprint/src/*.paux
+
+# Python caches, and the axiom checks CI generates at the root
+__pycache__/
+/CheckAxioms.lean
+/CheckCited.lean
+/axioms.txt
