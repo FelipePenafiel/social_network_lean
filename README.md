@@ -44,6 +44,14 @@ criterion, Kac's lemma, Poisson point processes), blocked on the paper (Lemmas 1
 written proofs do not compose — repairs are recorded), not a result of this paper at all
 (Proposition 12; see below), or simply routine and not yet done.
 
+**Proposition 7 is assembled**, and its written route turned out not to run.  The paper carries
+the process to `⋃_o S^o` at time `N+1`, whereas Lemma 19 delivers that membership at the first
+repeat `τ(u) ≤ N+1`; bridging the gap needs `⋃_o S^o` to be stable under a greedy expression,
+which the paper never establishes.  Applying Lemma 20 where Lemma 19 actually lands removes
+the need, with the paper's arithmetic unchanged.  It is the one place where a formalised proof
+takes a different route through the paper's own lemmas, and the reason is written out both at
+the Lean declaration and in [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §1.4.
+
 **Lemma 13** is proved, and writing it turned up a third kind of obstruction.  Its proof uses
 two inequalities the paper *displays inside proofs* but never states — a quantitative bound
 whose limit is Theorem 2.2, and equation (19), which reads Corollary 11 quantitatively — and

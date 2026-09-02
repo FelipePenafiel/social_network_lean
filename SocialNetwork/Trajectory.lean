@@ -82,6 +82,32 @@ theorem state_succ_actor (u : Pressure N M) (n : ℕ) (p : Opinion M) :
     T.state u (n + 1) (T.actor n) p = 0 := by
   rw [state_succ]; exact express_self _ _ _ _
 
+/-- The realisation read from step `m` onwards: `(A_{m+1}, O_{m+1}), (A_{m+2}, O_{m+2}), …`.
+
+**No counterpart in the paper**, which restarts its arguments at intermediate times without
+naming the operation.  Appendix A needs it three times over: Lemma 20 takes as its input the
+state Lemma 19 produces, and the last step of Proposition 7 takes the state Lemma 20
+produces. -/
+def shift (m : ℕ) : Trajectory N M where
+  actor k := T.actor (m + k)
+  opinion k := T.opinion (m + k)
+
+@[simp]
+theorem shift_actor (m k : ℕ) : (T.shift m).actor k = T.actor (m + k) := rfl
+
+@[simp]
+theorem shift_opinion (m k : ℕ) : (T.shift m).opinion k = T.opinion (m + k) := rfl
+
+/-- Running `T` for `m + k` steps from `u` is running it for `m` steps and then running the
+shifted realisation for `k` steps.  This is what lets the three stages of Appendix A be
+composed. -/
+theorem state_add (u : Pressure N M) (m k : ℕ) :
+    T.state u (m + k) = (T.shift m).state (T.state u m) k := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+      rw [← Nat.add_assoc, T.state_succ, ih, (T.shift m).state_succ, shift_actor, shift_opinion]
+
 end Trajectory
 
 /-- `‖u (a, ·)‖_∞` in scaled coordinates, as a natural number.
@@ -256,6 +282,14 @@ maximising the social pressure, i.e. `(Aₙ, Oₙ) ∈ argmax U_{T_{n-1}}`.
 With the index convention of this file, `IsGreedyAt T u k` is the paper's `ξ_{k+1}^u`. -/
 def IsGreedyAt (T : Trajectory N M) (u : Pressure N M) (k : ℕ) : Prop :=
   ∀ a o, T.state u k a o ≤ T.state u k (T.actor k) (T.opinion k)
+
+/-- Greediness of the shifted realisation at step `k` is greediness of the original at step
+`m + k`: both read the same expression against the same matrix. -/
+theorem isGreedyAt_shift (T : Trajectory N M) (u : Pressure N M) (m k : ℕ) :
+    IsGreedyAt (T.shift m) (T.state u m) k ↔ IsGreedyAt T u (m + k) := by
+  unfold IsGreedyAt
+  rw [← T.state_add u m k]
+  rfl
 
 section Proposition6
 

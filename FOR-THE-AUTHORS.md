@@ -21,7 +21,10 @@ what each one asks of you.
 ## 1. Proofs that do not survive formalisation
 
 Three written proofs do not compose.  Each is left unproved on purpose.  A repair
-is new mathematics and is yours to write, not the formalisation's to guess.
+is new mathematics and is yours to write, not the formalisation's to guess.  A
+fourth, **Proposition 7**, composes only along a different route — §1.4; there the
+missing step turned out to be avoidable, so it is proved, but you should know the
+written route does not run.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
 
@@ -86,6 +89,51 @@ same quantity `nₐ`.  It closes because its event `ξ` is *exact* greediness: t
 maximum at the repeat time is the expressing actor's own entry, and there is
 nothing to absorb.  Proposition 22 differs from it only by the slack, and that
 is precisely what the argument cannot carry.
+
+### 1.4 Proposition 7 — the written route needs a step that is not there
+
+*Blueprint:* `prop:reach-ladder`. *Lean:* `SocialNetwork.isLadder_state_of_greedy`,
+**proved** (modulo Lemmas 19 and 20).
+
+The written proof has three stages and its arithmetic is right.  What it does not
+have is the glue between the first two.
+
+Lemma 19 delivers `Ũ_{τ(u)} ∈ ⋃_o S^o` at the first repeat `τ(u)`.  The proof of
+Proposition 7 then writes
+
+> so by Lemma 19 we have `⋂_{j=1}^{N+1} ξ_j^u ⊆ {Ũ_{N+1} ∈ ⋃_o S^o}`
+
+— that is, it carries the membership from `τ(u)` up to `N+1`, using only
+`τ(u) ≤ N+1`.  That carry needs **`⋃_o S^o` to be stable under a greedy
+expression**, which is neither stated nor proved anywhere.
+
+It is not a formality.  A greedy expression in `S^o` does express `o`
+(Lemma 21 of the formalisation's numbering — `opinion_eq_of_isMax_of_favouring`),
+but it resets the row of the expressing actor, and that actor may be one of the
+witnesses `a₁(u), …, a_{n(u)}(u)`.  New witnesses have to be produced from the
+actors that just gained a unit on column `o`, and the bound
+`u(a,p) ≤ n(u) + r - 1/(M-1)` on the other columns then has to be re-established
+with the *new* `n` and `r`.  That is exactly the bookkeeping of Lemma 20, whose
+written invariant does not survive either (§1.2).
+
+**What was done, and why it is not a repair you have to check.**  Lemma 20 is
+applied where Lemma 19 actually lands — at `τ(u)` — instead of at `N+1`.  Then no
+stability of `S^o` is needed at all, and the arithmetic is yours, unchanged:
+
+```
+τ(u) + (M-1)(n(u)+1) - 1  ≤  (N+1) + (M-1)N - 1  =  MN.
+```
+
+The written proof needs a *second* carry of the same kind, from
+`N+1 + (M-1)(n(u)+1) - 1` up to `MN`, and that one is unavoidable — the last stage
+must start at `MN` for the total to be `(M+1)N`.  It is also available: it is your
+own observation from the last stage of this same proof, that a greedy expression
+in `C^o` expresses `o` and that `C^o` is stable under it.  So the formalisation
+keeps that carry and drops the other.
+
+**Nothing here needs a decision.**  It is recorded because the paper as printed
+asserts a step that does not follow, and you may want either to add the `S^o`
+stability lemma or to restate Proposition 7's proof along the shorter route.
 
 ---
 

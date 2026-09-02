@@ -827,12 +827,62 @@ the process pointwise.
   $\bigcap_{j=1}^{(M+1)N} \xi_j^u \subset \{ \Uskel{u}_{(M+1)N} \in \ladder \}$.
 \end{proposition}
 \begin{proof}
-  \uses{lem:lemma19, lem:lemma20, lem:consensus-ladder}
+  \leanok
+  \uses{lem:lemma19, lem:lemma20, lem:consensus-ladder, lem:shift}
   Lemma~\ref{lem:lemma19} needs $\tau(u) \le N+1$ steps to reach
   $\bigcup_o S^o$, Lemma~\ref{lem:lemma20} needs $(M-1)(n(u)+1)-1 \le (M-1)N$
   further steps to reach $\bigcup_o C^o$, and
-  Lemma~\ref{lem:consensus-ladder} needs $N$ more.  \textbf{Not formalised},
-  because Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} are not.
+  Lemma~\ref{lem:consensus-ladder} needs $N$ more, for a total of $(M+1)N$.
+  Composing the three requires restarting the realisation at an intermediate
+  time, which is Lemma~\ref{lem:shift}.  \emph{Formalised, but not sorry-free}:
+  the assembly is complete in Lean and inherits \texttt{sorryAx} from
+  Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} alone.
+
+  \textbf{Supplies a step the paper asserts, and takes a different route
+  through one of them.}  The written proof carries the process to
+  $\bigcup_o S^o$ \emph{at time $N+1$} --- ``so by Lemma~19 we have
+  $\bigcap_{j=1}^{N+1}\xi_j^u \subset \{\Uskel{u}_{N+1} \in \bigcup_o S^o\}$''
+  --- whereas Lemma~\ref{lem:lemma19} delivers that membership at the first
+  repeat $\tau(u)$, which is only $\le N+1$.  Bridging the gap needs
+  $\bigcup_o S^o$ to be stable under a greedy expression, and the paper neither
+  states nor proves that.  It is not obvious either: a greedy expression in
+  $S^o$ expresses $o$ (Lemma~\ref{lem:favouring-max}), but it resets the row of
+  the actor that expresses, and that actor may be one of the very witnesses
+  $a_1(u), \dots, a_{n(u)}(u)$; new witnesses have to be produced, and the
+  bound on the other columns then has to be re-established, which is precisely
+  the bookkeeping of Lemma~\ref{lem:lemma20} whose written invariant does not
+  survive (Remark~\ref{rem:lemma20}).
+
+  Lemma~\ref{lem:lemma20} is therefore applied here at $\tau(u)$ itself, where
+  Lemma~\ref{lem:lemma19} leaves the process, and no stability of $S^o$ is
+  needed.  The arithmetic is the paper's and is unchanged:
+  $\tau(u) + (M-1)(n(u)+1) - 1 \le (N+1) + (M-1)N - 1 = MN$.
+
+  The written proof needs a \emph{second} bridge of the same kind, from
+  $N+1+(M-1)(n(u)+1)-1$ up to $MN$, and that one is unavoidable --- the last
+  stage has to start at $MN$ for the total to be $(M+1)N$.  It is also
+  available: it is the paper's own observation, from the last step of this same
+  proof, that a greedy expression in $C^o$ expresses $o$ and that $C^o$ is
+  stable under it (Lemma~\ref{lem:consensus-ladder}, stage~1).  So the
+  formalisation keeps that bridge and drops the other.
+\end{proof}
+
+\begin{lemma}[Restarting a realisation]
+  \label{lem:shift}
+  \lean{SocialNetwork.Trajectory.shift, SocialNetwork.Trajectory.state_add,
+    SocialNetwork.isGreedyAt_shift}
+  \leanok
+  \uses{def:state}
+  Running a realisation for $m+k$ steps from $u$ is running it for $m$ steps
+  and then running the realisation read from step $m$ onwards for $k$ further
+  steps; and greediness at step $k$ of the latter is greediness at step $m+k$
+  of the former.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Induction on $k$.  \textbf{No counterpart in the paper}, which restarts its
+  arguments at intermediate times without naming the operation.  Appendix~A
+  needs it three times over.
 \end{proof}
 
 \section{The probability of a greedy run}
@@ -1688,15 +1738,16 @@ apart because they are unproved for three different reasons.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-two
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-one entries.
+of its own, so it counts thirty-three entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (fourteen).
+\noindent\textbf{Follow the paper's proof} (fifteen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
-\ref{prop:biased-low-pressure}, \ref{prop:biased-bounded}
+\ref{prop:reach-ladder}, \ref{prop:biased-low-pressure},
+\ref{prop:biased-bounded}
 and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
 Lemma~\ref{lem:hitting-2beta},
@@ -1732,6 +1783,13 @@ Lemma~\ref{lem:hitting-2beta} is the paper's case split, resting on two
 inequalities the paper displays inside proofs rather than states ---
 Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} --- and
 supplying the arithmetic of ``putting the inequalities above together''.
+Proposition~\ref{prop:reach-ladder} is the paper's three-stage assembly with
+its arithmetic unchanged, but it applies Lemma~\ref{lem:lemma20} at $\tau(u)$
+rather than at $N+1$: the written route needs $\bigcup_o S^o$ to be stable
+under a greedy expression, which the paper does not establish, and starting
+where Lemma~\ref{lem:lemma19} actually lands removes the need.  It is the one
+place where a formalised proof takes a different route through the paper's own
+lemmas, and the reason is written out at the node.
 Propositions~\ref{prop:biased-bounded}
 and~\ref{prop:biased-greedy-prob} are the arguments of
 Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
@@ -1756,10 +1814,10 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (seven).
+\noindent\textbf{No counterpart in the paper} (eight).
 Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
-\ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty}
-and~\ref{lem:biased-ladder-nonempty} and
+\ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty},
+\ref{lem:biased-ladder-nonempty} and~\ref{lem:shift} and
 Remark~\ref{rem:biased-ladder-steep},
 together with the measurability lemmas and the
 plumbing of the sample space, which are not numbered statements and so appear
@@ -1777,7 +1835,10 @@ numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
 are transcribed as statements of their own,
 Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp}, and carry
-their own \texttt{sorry}.  \texttt{FOR-THE-AUTHORS.md} at the root of
+their own \texttt{sorry}.  And where the route needs a step the paper does not
+have but a shorter route through the same lemmas does not ---
+Proposition~\ref{prop:reach-ladder} --- the shorter route is taken and the
+difference is written down, rather than the missing step being assumed.  \texttt{FOR-THE-AUTHORS.md} at the root of
 the repository collects those, and the decisions they call for, in one place.
 
 \begin{remark}[``By definition'' at the end of Proposition~7]

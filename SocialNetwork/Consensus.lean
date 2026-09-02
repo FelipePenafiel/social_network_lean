@@ -87,10 +87,14 @@ theorem opinion_eq_of_isMax (hv : IsConsensus o v) {b : Actor N} {p : Opinion M}
   have h2 := hmax a o
   omega
 
-/-- Consensus is preserved along a greedy trajectory. -/
-theorem isConsensus_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
-    (hg : ∀ k, k < N → IsGreedyAt T v k) :
-    ∀ k, k ≤ N → IsConsensus o (T.state v k) := by
+/-- Consensus is preserved along a greedy trajectory, for as long as the trajectory is
+greedy.
+
+The horizon is arbitrary rather than `N`: the assembly of Proposition 7 needs the consensus
+carried from the time Lemma 20 delivers it up to `MN`, and that gap is not `N`. -/
+theorem isConsensus_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v) {m : ℕ}
+    (hg : ∀ k, k < m → IsGreedyAt T v k) :
+    ∀ k, k ≤ m → IsConsensus o (T.state v k) := by
   intro k
   induction k with
   | zero => intro _; rw [T.state_zero]; exact hv
