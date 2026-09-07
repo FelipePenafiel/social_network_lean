@@ -456,7 +456,7 @@ theorem greedyEvent_eq_preimage (u : Pressure N M) (k : ℕ) :
       Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) k ⁻¹'
         {h | IsGreedyAt (Trajectory.ofHistory h) u k} := by
   ext ω
-  simp only [greedyEvent, Set.mem_setOf_eq, Set.mem_preimage]
+  simp only [greedyEvent, Set.mem_ofPred_eq, Set.mem_preimage]
   exact (isGreedyAt_ofHistory_frestrictLe u ω (le_refl k)).symm
 
 theorem measurableSet_greedyEvent (u : Pressure N M) (k : ℕ) :

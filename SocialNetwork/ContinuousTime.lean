@@ -281,7 +281,7 @@ unbounded one, so `jumpCount ω t = 0` also records the explosion event, and the
 characterisation of it. -/
 theorem jumpCount_eq_iff (t : ℝ) (ω : ℕ → Step N M) {k : ℕ} (hk : k ≠ 0) :
     jumpCount ω t = k ↔ jumpTime k ω ≤ t ∧ ∀ m : ℕ, jumpTime m ω ≤ t → m ≤ k := by
-  simp only [jumpCount, Set.mem_setOf_eq]
+  simp only [jumpCount]
   constructor
   · intro h
     have hbdd : BddAbove {n : ℕ | jumpTime n ω ≤ t} := by
@@ -307,7 +307,7 @@ theorem measurableSet_jumpCount_eq (t : ℝ) {k : ℕ} (hk : k ≠ 0) :
       = {ω : ℕ → Step N M | jumpTime k ω ≤ t} ∩
         ⋂ m : ℕ, {ω : ℕ → Step N M | m ≤ k ∨ t < jumpTime m ω} := by
     ext ω
-    simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter, jumpCount_eq_iff t ω hk]
+    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter, jumpCount_eq_iff t ω hk]
     constructor
     · rintro ⟨h1, h2⟩
       exact ⟨h1, fun m => (le_or_gt (jumpTime m ω) t).imp (h2 m) id⟩
@@ -341,7 +341,7 @@ theorem measurable_jumpCount (t : ℝ) :
         = (⋃ j : ℕ, {ω : ℕ → Step N M | jumpCount ω t = j + 1})ᶜ := by
       ext ω
       simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_compl_iff, Set.mem_iUnion,
-        Set.mem_setOf_eq, not_exists]
+        Set.mem_ofPred_eq, not_exists]
       constructor
       · intro h j; omega
       · intro h
@@ -406,7 +406,7 @@ are countably many.  **No counterpart in the paper**, which does not address mea
 
 section Hitting
 
-variable {α : Type*} [MeasurableSpace α]
+variable {α : Type*}
 
 /-- `max (T_k, 0)` has jump count exactly `k`, whenever no jump time beyond the `k`-th has
 occurred by then.
@@ -504,8 +504,9 @@ theorem sInf_image_eq_hittingCandidates (F : ℕ → (ℕ → Step N M) → α) 
 /-- Each candidate is a measurable function of the realisation, so the infimum is one too.
 
 **No counterpart in the paper.** -/
-theorem measurable_hittingCandidates [Countable α] [MeasurableSingletonClass α]
-    {F : ℕ → (ℕ → Step N M) → α} (hF : ∀ k, Measurable (F k)) (θ : Set α) :
+theorem measurable_hittingCandidates [MeasurableSpace α] [Countable α]
+    [MeasurableSingletonClass α] {F : ℕ → (ℕ → Step N M) → α} (hF : ∀ k, Measurable (F k))
+    (θ : Set α) :
     Measurable (hittingCandidates F θ) := by
   classical
   have hθ : MeasurableSet θ := (Set.to_countable θ).measurableSet
@@ -526,7 +527,7 @@ theorem measurable_hittingCandidates [Countable α] [MeasurableSingletonClass α
         have : {ω : ℕ → Step N M | ∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k}
             = ⋂ m : ℕ, {ω : ℕ → Step N M | m ≤ k ∨ max (jumpTime k ω) 0 < jumpTime m ω} := by
           ext ω
-          simp only [Set.mem_setOf_eq, Set.mem_iInter]
+          simp only [Set.mem_ofPred_eq, Set.mem_iInter]
           constructor
           · exact fun h m => (le_or_gt (jumpTime m ω) (max (jumpTime k ω) 0)).imp (h m) id
           · intro h m hm
@@ -536,7 +537,7 @@ theorem measurable_hittingCandidates [Countable α] [MeasurableSingletonClass α
         rw [this]
         refine MeasurableSet.iInter fun m => ?_
         rcases le_or_gt m k with hm | hm
-        · simpa [hm] using MeasurableSet.univ
+        · simp [hm]
         · have : {ω : ℕ → Step N M | m ≤ k ∨ max (jumpTime k ω) 0 < jumpTime m ω}
               = {ω | max (jumpTime k ω) 0 < jumpTime m ω} := by
             ext ω; simp [Nat.not_le.2 hm]
@@ -762,6 +763,7 @@ theorem probHittingGT_ladderSet_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ}
             probHittingGT β v (ladderSet N M) (ENNReal.ofReal β) := by
   sorry
 
+omit [NeZero N] [NeZero M] in
 /-- The arithmetic of the last line of the proof of Lemma 13: the three bounds the paper
 collects fit under `(M+1)² N² e^{-β/((M+1)N)}`.  Each term is compared to that same
 exponential --- `MN ≤ (M+1)N`, `M - 1 ≤ (M+1)N` and `e^{β/(M-1)} ≥ 1` --- leaving the
@@ -939,6 +941,7 @@ theorem le_characteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 
   rwa [show (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹ *
     (2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) = c by field_simp] at hstep
 
+omit [NeZero N] [NeZero M] in
 /-- Hitting a larger set happens no later. -/
 theorem hittingTimeCts_mono (u : Pressure N M) {θ₁ θ₂ : Set (Pressure N M)} (h : θ₁ ⊆ θ₂)
     (ω : ℕ → Step N M) : hittingTimeCts u θ₂ ω ≤ hittingTimeCts u θ₁ ω :=
@@ -969,8 +972,6 @@ theorem mul_exp_neg_div_le {a : ℝ} (ha : 0 < a) (β : ℝ) :
   rw [show a * (β / a * Real.exp (-(β / a))) = β * Real.exp (-(β / a)) by field_simp] at hmul
   rw [show -β / a = -(β / a) by ring]
   exact hmul
-
-variable [NeZero N] [NeZero M]
 
 /-- Assumption **(16)** of Proposition 12, with `s₂ = 2β`.
 
@@ -1041,6 +1042,7 @@ theorem one_le_eight_mul_exp_neg_one : (1 : ℝ) ≤ 8 * Real.exp (-1) := by
   rw [Real.exp_neg, ← div_eq_mul_inv, le_div_iff₀ h2]
   linarith
 
+omit [NeZero N] [NeZero M] in
 /-- The size comparison behind the paper's constants: `N² M` and `(M+1)² N²` are both
 dominated by `8 e^{-1} (M+1)⁴ N³`, with room to spare for the `(M-1)` term of (18). -/
 theorem const_bounds (hM : 2 ≤ M) (hN : 3 ≤ N) :

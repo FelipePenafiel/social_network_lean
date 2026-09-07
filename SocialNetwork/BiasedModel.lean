@@ -275,7 +275,7 @@ theorem IsBiasedState.pressure_ne_zero (hN : 2 ≤ N) (γ α : ℝ)
     (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : ((M : ℝ) - 1) * α ≠ 0)
     {P : Profile N M} (hP : IsBiasedState P) : ∃ a p, P.pressure γ a p ≠ 0 := by
   by_contra hno
-  push_neg at hno
+  push Not at hno
   have hall : ∀ a, P.heard a = 0 := fun a =>
     Profile.heard_eq_zero_of_pressure_eq_zero γ α h hα fun p => hno a p
   have h0 : (⟨0, by omega⟩ : Actor N) ≠ (⟨1, by omega⟩ : Actor N) := by
@@ -317,9 +317,9 @@ section Remark8
 
 /-- Some opinion has been heard at least `⌈nₐ / M⌉` times: the pigeonhole behind Remark 8. -/
 theorem exists_count_ge (hM : 0 < M) (m : Memory M) : ∃ p, m.heard ≤ M * m.count p := by
-  haveI : NeZero M := ⟨by omega⟩
+  have : NeZero M := ⟨by omega⟩
   by_contra hno
-  push_neg at hno
+  push Not at hno
   have hne : (Finset.univ : Finset (Opinion M)).Nonempty := Finset.univ_nonempty
   have hsum : ∑ p : Opinion M, M * m.count p < ∑ _p : Opinion M, m.heard :=
     Finset.sum_lt_sum_of_nonempty hne fun p _ => hno p
