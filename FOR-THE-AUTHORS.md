@@ -348,10 +348,22 @@ every numbered result, and this is the exception.  Nothing downstream uses it �
 it strengthens Corollary 11 in the direction Lemma 14 needs, and both wait on the
 same continuous-time analysis of Appendix B.
 
-**Proposition 18** and **Theorem 4** part 2 are simply not done: the paper proves
-them and nothing here stands in the way.  With the measurability lemmas closed
-they are the only unproved statements in the repository that are nobody's fault,
-and they need nothing from you.
+**Theorem 4** part 1 is simply not done: the paper proves it and nothing here
+stands in the way.  Proposition 18, which it rests on, is now **proved** — the
+decomposition (21), the bound (22), the passage through `ln (1+x) ≥ x/(1+x)` and
+the event `E_ε^k`, in that order.  What part 1 adds on top is the strong Markov
+property at `T_N` and the Borel–Cantelli argument over the successive failure
+times `η_n`, neither of which the formalisation carries yet.  With the
+measurability lemmas and Proposition 18 closed it is the only unproved statement
+in the repository that is nobody's fault, and it needs nothing from you.
+
+Two steps of the proof of Proposition 18 were supplied rather than read off the
+paper, and both are recorded at the node in the blueprint. The first is your
+"without loss of generality `u(1,o) = 0` for all `o`": it is a choice of an actor
+whose row is null, which equation (6) always provides, and no relabelling is
+needed. The second is the terms of `∑_m λ_m` of index below `k`, which `E_ε^k`
+does not constrain — the paper absorbs them into its generic constant `C`, and
+here they are bounded by `λ_m ≤ (N-1) M e^{β(N + k(1+γ))}`.
 
 ---
 

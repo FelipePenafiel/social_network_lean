@@ -54,6 +54,31 @@ every function out of it is measurable; and the law of the next step depends on 
 only through the current matrix, so the one measurability obligation that survives the move to
 the uncountable sample space is discharged by factoring through that countable space.
 
+## Resolved: the strong law, and the infinite product measure
+
+Proposition 18 rewrites a sum over opinion words as an expectation over an i.i.d. uniform
+sequence and keeps only the words whose empirical frequencies have settled.  Both halves of
+that are in Mathlib at the pinned revision, and neither needed anything added.
+
+* `MeasureTheory.Measure.infinitePi` (`Mathlib/Probability/ProductMeasure.lean:358`) is the
+  product of an arbitrary family of probability measures, built through `Kernel.traj` and
+  Carathéodory.  `infinitePi_pi` (line 405) gives the mass of a finite box — which is all
+  the cylinder computation needs — and `infinitePi_map_eval` (line 481) the law of one
+  coordinate.
+* `ProbabilityTheory.iIndepFun_infinitePi`
+  (`Mathlib/Probability/Independence/InfinitePi.lean:127`) says the coordinates of that
+  measure are independent, in the `iIndepFun` form the strong law wants.
+* `ProbabilityTheory.strong_law_ae_real` (`Mathlib/Probability/StrongLaw.lean:598`) is
+  Etemadi's strong law: pairwise independence and identical distribution suffice, which is
+  more than enough for indicators of a letter.
+
+`SocialNetwork/Frequencies.lean` assembles the three into `uniformSeq`, the law of an i.i.d.
+uniform word, and proves that the paper's event `E_ε^k` has positive probability for some
+`k`.  The one thing that had to be written by hand is the bridge back to counting: at every
+horizon `n`, the words of length `n` meeting the constraint up to `n` carry at least the
+mass `P(E_ε^k)` of the uniform law on the `M^n` words.  That is `uniformSeq_freqGood_le`,
+and it is subadditivity plus `infinitePi_pi` on singleton boxes.
+
 ## Still missing, in DISCRETE time
 
 These block Theorem 1.2, Proposition 9, Corollary 10 and everything downstream.
