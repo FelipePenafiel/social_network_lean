@@ -281,7 +281,7 @@ unbounded one, so `jumpCount ω t = 0` also records the explosion event, and the
 characterisation of it. -/
 theorem jumpCount_eq_iff (t : ℝ) (ω : ℕ → Step N M) {k : ℕ} (hk : k ≠ 0) :
     jumpCount ω t = k ↔ jumpTime k ω ≤ t ∧ ∀ m : ℕ, jumpTime m ω ≤ t → m ≤ k := by
-  simp only [jumpCount, Set.mem_setOf_eq]
+  simp only [jumpCount]
   constructor
   · intro h
     have hbdd : BddAbove {n : ℕ | jumpTime n ω ≤ t} := by
@@ -307,7 +307,7 @@ theorem measurableSet_jumpCount_eq (t : ℝ) {k : ℕ} (hk : k ≠ 0) :
       = {ω : ℕ → Step N M | jumpTime k ω ≤ t} ∩
         ⋂ m : ℕ, {ω : ℕ → Step N M | m ≤ k ∨ t < jumpTime m ω} := by
     ext ω
-    simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter, jumpCount_eq_iff t ω hk]
+    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter, jumpCount_eq_iff t ω hk]
     constructor
     · rintro ⟨h1, h2⟩
       exact ⟨h1, fun m => (le_or_gt (jumpTime m ω) t).imp (h2 m) id⟩
@@ -341,7 +341,7 @@ theorem measurable_jumpCount (t : ℝ) :
         = (⋃ j : ℕ, {ω : ℕ → Step N M | jumpCount ω t = j + 1})ᶜ := by
       ext ω
       simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_compl_iff, Set.mem_iUnion,
-        Set.mem_setOf_eq, not_exists]
+        Set.mem_ofPred_eq, not_exists]
       constructor
       · intro h j; omega
       · intro h
@@ -384,30 +384,201 @@ theorem measurable_process (u : Pressure N M) (t : ℝ) :
   rw [h]
   exact hpair.comp ((measurable_jumpCount t).prodMk measurable_id)
 
+/-! ### Reducing a hitting time to a countable infimum
+
+The infimum defining a hitting time runs over the uncountable family `{t : 0 ≤ t}`.  Reducing
+it to a countable one does **not** need right-continuity of `t ↦ U_t (ω)`, which would hold
+only almost surely.  It is enough that the process factors through `jumpCount ω ·`, together
+with two facts about that function, both of which hold for every `ω`.
+
+Write `S (t) = {n : Tₙ ≤ t}`, so that `jumpCount ω t = sSup S (t)`.
+
+* Where `S (t)` is bounded, `k = jumpCount ω t` lies in `S (t)` and bounds it, so
+  `max (T_k, 0) ≤ t` is a time at which the jump count is again `k`.  The infimum over that
+  level set is therefore attained, at a time named by `k` alone.
+* Where `S (t)` is unbounded — the explosion event, on which `sSup` returns its junk value
+  `0` — every larger time has `S` unbounded too, so the junk value persists to the right and
+  the rationals above `t` do just as well.
+
+So the times `max (T_k, 0)` and the non-negative rationals already meet the infimum, and they
+are countably many.  **No counterpart in the paper**, which does not address measurability.
+-/
+
+section Hitting
+
+variable {α : Type*}
+
+/-- `max (T_k, 0)` has jump count exactly `k`, whenever no jump time beyond the `k`-th has
+occurred by then.
+
+**No counterpart in the paper.**  Unlike `SocialNetwork.jumpCount_eq_iff` this needs no
+`k ≠ 0`: the hypothesis rules out the unbounded case by hand, so the junk value of `sSup`
+cannot interfere. -/
+theorem jumpCount_max_jumpTime (ω : ℕ → Step N M) (k : ℕ)
+    (h : ∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k) :
+    jumpCount ω (max (jumpTime k ω) 0) = k := by
+  have hk : jumpTime k ω ≤ max (jumpTime k ω) 0 := le_max_left _ _
+  have hub : ∀ m ∈ {n : ℕ | jumpTime n ω ≤ max (jumpTime k ω) 0}, m ≤ k := fun m hm => h m hm
+  exact le_antisymm (csSup_le ⟨k, hk⟩ hub) (le_csSup ⟨k, hub⟩ hk)
+
+/-- Below the explosion time the infimum of a level set of `jumpCount` is attained, at
+`max (T_k, 0)`.
+
+**No counterpart in the paper.** -/
+theorem max_jumpTime_jumpCount_le (ω : ℕ → Step N M) {t : ℝ} (ht : 0 ≤ t)
+    (hb : BddAbove {n : ℕ | jumpTime n ω ≤ t}) :
+    max (jumpTime (jumpCount ω t) ω) 0 ≤ t ∧
+      ∀ m : ℕ, jumpTime m ω ≤ max (jumpTime (jumpCount ω t) ω) 0 → m ≤ jumpCount ω t := by
+  have hne : {n : ℕ | jumpTime n ω ≤ t}.Nonempty := ⟨0, by simpa using ht⟩
+  have hmem : jumpTime (jumpCount ω t) ω ≤ t := Nat.sSup_mem hne hb
+  refine ⟨max_le hmem ht, fun m hm => le_csSup hb ?_⟩
+  exact le_trans hm (max_le hmem ht)
+
+/-- The explosion event is closed upwards, so the junk value of `jumpCount` persists to the
+right of any time at which it is returned.
+
+**No counterpart in the paper.** -/
+theorem jumpCount_eq_of_not_bddAbove (ω : ℕ → Step N M) {t t' : ℝ} (htt : t ≤ t')
+    (h : ¬ BddAbove {n : ℕ | jumpTime n ω ≤ t}) :
+    jumpCount ω t' = jumpCount ω t := by
+  have h' : ¬ BddAbove {n : ℕ | jumpTime n ω ≤ t'} := fun hb =>
+    h (hb.mono fun n hn => le_trans hn htt)
+  rw [jumpCount, jumpCount, Nat.sSup_of_not_bddAbove h, Nat.sSup_of_not_bddAbove h']
+
+open Classical in
+/-- The countable family of times that meets the infimum: the jump times pushed up to `0`,
+and the non-negative rationals.
+
+**No counterpart in the paper.** -/
+noncomputable def hittingCandidates (F : ℕ → (ℕ → Step N M) → α) (θ : Set α)
+    (ω : ℕ → Step N M) : ℝ≥0∞ :=
+  (⨅ k : ℕ, if (∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k) ∧ F k ω ∈ θ then
+      ENNReal.ofReal (max (jumpTime k ω) 0) else ⊤) ⊓
+    ⨅ q : ℚ, if F (jumpCount ω (max (q : ℝ) 0)) ω ∈ θ then
+      ENNReal.ofReal (max (q : ℝ) 0) else ⊤
+
+/-- The infimum over `t ≥ 0` is the infimum over the countable family.
+
+**No counterpart in the paper**; this is the whole content of the measurability of the
+hitting times. -/
+theorem sInf_image_eq_hittingCandidates (F : ℕ → (ℕ → Step N M) → α) (θ : Set α)
+    (ω : ℕ → Step N M) :
+    sInf ((fun t : ℝ => ENNReal.ofReal t) ''
+        {t : ℝ | 0 ≤ t ∧ F (jumpCount ω t) ω ∈ θ})
+      = hittingCandidates F θ ω := by
+  classical
+  set A : Set ℝ := {t : ℝ | 0 ≤ t ∧ F (jumpCount ω t) ω ∈ θ} with hA
+  refine le_antisymm ?_ ?_
+  · -- Every candidate is either `⊤` or `ofReal` of a time in `A`.
+    refine le_inf (le_iInf fun k => ?_) (le_iInf fun q => ?_)
+    · split_ifs with hk
+      · refine sInf_le ⟨max (jumpTime k ω) 0, ⟨le_max_right _ _, ?_⟩, rfl⟩
+        rw [jumpCount_max_jumpTime ω k hk.1]
+        exact hk.2
+      · exact le_top
+    · split_ifs with hq
+      · exact sInf_le ⟨max (q : ℝ) 0, ⟨le_max_right _ _, hq⟩, rfl⟩
+      · exact le_top
+  · -- Every time in `A` is met by a candidate, exactly below the explosion time and from
+    -- above by rationals on it.
+    refine le_sInf ?_
+    rintro x ⟨t, ⟨ht0, htθ⟩, rfl⟩
+    by_cases hb : BddAbove {n : ℕ | jumpTime n ω ≤ t}
+    · obtain ⟨hle, hub⟩ := max_jumpTime_jumpCount_le ω ht0 hb
+      refine le_trans inf_le_left (le_trans (iInf_le _ (jumpCount ω t)) ?_)
+      rw [if_pos ⟨hub, htθ⟩]
+      exact ENNReal.ofReal_le_ofReal hle
+    · refine ENNReal.le_of_forall_pos_le_add fun ε hε _ => ?_
+      have hεpos : (0 : ℝ) < (ε : ℝ) := by exact_mod_cast hε
+      obtain ⟨q, hq1, hq2⟩ := exists_rat_btwn (lt_add_of_pos_right t hεpos)
+      have hq0 : max (q : ℝ) 0 = (q : ℝ) := max_eq_left (le_trans ht0 hq1.le)
+      have hcount : jumpCount ω (max (q : ℝ) 0) = jumpCount ω t := by
+        rw [hq0]; exact jumpCount_eq_of_not_bddAbove ω hq1.le hb
+      refine le_trans inf_le_right (le_trans (iInf_le _ q) ?_)
+      rw [if_pos (by rw [hcount]; exact htθ), hq0]
+      calc ENNReal.ofReal (q : ℝ) ≤ ENNReal.ofReal (t + (ε : ℝ)) :=
+            ENNReal.ofReal_le_ofReal hq2.le
+        _ = ENNReal.ofReal t + ε := by
+            rw [ENNReal.ofReal_add ht0 ε.coe_nonneg, ENNReal.ofReal_coe_nnreal]
+
+/-- Each candidate is a measurable function of the realisation, so the infimum is one too.
+
+**No counterpart in the paper.** -/
+theorem measurable_hittingCandidates [MeasurableSpace α] [Countable α]
+    [MeasurableSingletonClass α] {F : ℕ → (ℕ → Step N M) → α} (hF : ∀ k, Measurable (F k))
+    (θ : Set α) :
+    Measurable (hittingCandidates F θ) := by
+  classical
+  have hθ : MeasurableSet θ := (Set.to_countable θ).measurableSet
+  have hjump : ∀ t : ℝ, Measurable fun ω : ℕ → Step N M => F (jumpCount ω t) ω := by
+    intro t
+    have h : (fun ω : ℕ → Step N M => F (jumpCount ω t) ω)
+        = (fun p : ℕ × (ℕ → Step N M) => F p.1 p.2) ∘ fun ω : ℕ → Step N M => (jumpCount ω t, ω) :=
+      rfl
+    rw [h]
+    exact (measurable_from_prod_countable_right fun k => hF k).comp
+      ((measurable_jumpCount t).prodMk measurable_id)
+  refine Measurable.inf (Measurable.iInf fun k => ?_) (Measurable.iInf fun q => ?_)
+  · have hset : MeasurableSet
+        {ω : ℕ → Step N M |
+          (∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k) ∧ F k ω ∈ θ} := by
+      have h1 : MeasurableSet
+          {ω : ℕ → Step N M | ∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k} := by
+        have : {ω : ℕ → Step N M | ∀ m : ℕ, jumpTime m ω ≤ max (jumpTime k ω) 0 → m ≤ k}
+            = ⋂ m : ℕ, {ω : ℕ → Step N M | m ≤ k ∨ max (jumpTime k ω) 0 < jumpTime m ω} := by
+          ext ω
+          simp only [Set.mem_ofPred_eq, Set.mem_iInter]
+          constructor
+          · exact fun h m => (le_or_gt (jumpTime m ω) (max (jumpTime k ω) 0)).imp (h m) id
+          · intro h m hm
+            rcases h m with h | h
+            · exact h
+            · exact absurd hm (not_le.2 h)
+        rw [this]
+        refine MeasurableSet.iInter fun m => ?_
+        rcases le_or_gt m k with hm | hm
+        · simp [hm]
+        · have : {ω : ℕ → Step N M | m ≤ k ∨ max (jumpTime k ω) 0 < jumpTime m ω}
+              = {ω | max (jumpTime k ω) 0 < jumpTime m ω} := by
+            ext ω; simp [Nat.not_le.2 hm]
+          rw [this]
+          exact measurableSet_lt ((measurable_jumpTime k).max measurable_const)
+            (measurable_jumpTime m)
+      exact h1.inter (hF k hθ)
+    exact Measurable.ite hset
+      (ENNReal.measurable_ofReal.comp ((measurable_jumpTime k).max measurable_const))
+      measurable_const
+  · exact Measurable.ite (hjump (max (q : ℝ) 0) hθ) measurable_const measurable_const
+
+end Hitting
+
 /-- The hitting time `R^{β,u} (θ) = inf {t ≥ 0 : U_t^{β,u} ∈ θ}` of the paper, valued in
 `ℝ≥0∞` so that `⊤` records that `θ` is never reached. -/
 noncomputable def hittingTimeCts (u : Pressure N M) (θ : Set (Pressure N M))
     (ω : ℕ → Step N M) : ℝ≥0∞ :=
   sInf ((fun t : ℝ => ENNReal.ofReal t) '' {t : ℝ | 0 ≤ t ∧ process u t ω ∈ θ})
 
-/-- **Unproved, and not routine after all.**  The blueprint listed this next to
-`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  They do
-not sit at the same depth.  `process` is an infimum over nothing: it is evaluated at one `t`.
-This one is an infimum over the *uncountable* family `{t : 0 ≤ t}`, so it needs the path
-`t ↦ U_t (ω)` to be right-continuous, which reduces the infimum to a countable one.
+/-- The hitting time is a measurable function of the realisation.
 
-Right-continuity holds only where the jump times increase, and `holdingTime` is a plain real
-coordinate: it is positive `ctsPathMeasure`-almost surely, since `expMeasure` charges only
-`[0, ∞)`, but not for every `ω`.  On a realisation whose holding times are negative, or whose
-jump times accumulate from the right at some `t`, `jumpCount ω ·` is not right-continuous and
-the reduction fails pointwise.
+**No counterpart in the paper**, which does not address measurability.
 
-So the statement wants either an almost-sure formulation, or a proof that goes through the
-null set on which the path misbehaves.  Both are real work, and neither is the routine
-cylinder argument the blueprint promised. -/
+An earlier note here claimed this needed an almost-sure formulation, on the grounds that
+reducing the infimum over `{t : 0 ≤ t}` to a countable one needs `t ↦ U_t (ω)` to be
+right-continuous, which holds only where the holding times are positive.  **That was wrong**:
+right-continuity is one route to the reduction, not the only one, and the reduction holds for
+every `ω` — see `SocialNetwork.sInf_image_eq_hittingCandidates`.  What it uses instead is
+that the level sets of `jumpCount ω ·` are met by two countable families of times: below the
+explosion time the infimum of a level set is *attained*, at `max (T_k, 0)`, and on the
+explosion event the junk value of `sSup` persists to the right, so the rationals above a time
+serve in its place.  Neither needs the holding times to be positive. -/
 theorem measurable_hittingTimeCts (u : Pressure N M) (θ : Set (Pressure N M)) :
     Measurable (hittingTimeCts (N := N) (M := M) u θ) := by
-  sorry
+  have h : hittingTimeCts (N := N) (M := M) u θ
+      = hittingCandidates (fun k ω => (Trajectory.ofStepPath ω).state u k) θ :=
+    funext fun ω =>
+      sInf_image_eq_hittingCandidates (fun k ω => (Trajectory.ofStepPath ω).state u k) θ ω
+  rw [h]
+  exact measurable_hittingCandidates (fun k => measurable_state_ofStepPath u k) θ
 
 variable [NeZero N] [NeZero M]
 
@@ -592,6 +763,7 @@ theorem probHittingGT_ladderSet_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ}
             probHittingGT β v (ladderSet N M) (ENNReal.ofReal β) := by
   sorry
 
+omit [NeZero N] [NeZero M] in
 /-- The arithmetic of the last line of the proof of Lemma 13: the three bounds the paper
 collects fit under `(M+1)² N² e^{-β/((M+1)N)}`.  Each term is compared to that same
 exponential --- `MN ≤ (M+1)N`, `M - 1 ≤ (M+1)N` and `e^{β/(M-1)} ≥ 1` --- leaving the
@@ -769,6 +941,7 @@ theorem le_characteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 
   rwa [show (1 / 2 : ℝ) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)⁻¹ *
     (2 * c * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ)) = c by field_simp] at hstep
 
+omit [NeZero N] [NeZero M] in
 /-- Hitting a larger set happens no later. -/
 theorem hittingTimeCts_mono (u : Pressure N M) {θ₁ θ₂ : Set (Pressure N M)} (h : θ₁ ⊆ θ₂)
     (ω : ℕ → Step N M) : hittingTimeCts u θ₂ ω ≤ hittingTimeCts u θ₁ ω :=
@@ -799,8 +972,6 @@ theorem mul_exp_neg_div_le {a : ℝ} (ha : 0 < a) (β : ℝ) :
   rw [show a * (β / a * Real.exp (-(β / a))) = β * Real.exp (-(β / a)) by field_simp] at hmul
   rw [show -β / a = -(β / a) by ring]
   exact hmul
-
-variable [NeZero N] [NeZero M]
 
 /-- Assumption **(16)** of Proposition 12, with `s₂ = 2β`.
 
@@ -871,6 +1042,7 @@ theorem one_le_eight_mul_exp_neg_one : (1 : ℝ) ≤ 8 * Real.exp (-1) := by
   rw [Real.exp_neg, ← div_eq_mul_inv, le_div_iff₀ h2]
   linarith
 
+omit [NeZero N] [NeZero M] in
 /-- The size comparison behind the paper's constants: `N² M` and `(M+1)² N²` are both
 dominated by `8 e^{-1} (M+1)⁴ N³`, with room to spare for the `(M-1)` term of (18). -/
 theorem const_bounds (hM : 2 ≤ M) (hN : 3 ≤ N) :

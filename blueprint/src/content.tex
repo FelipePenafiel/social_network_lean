@@ -213,28 +213,58 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \textbf{no counterpart in the paper}, which does not address measurability;
   \texttt{jumpCount\_eq\_iff} is likewise an artefact of this construction
   rather than a formalisation of anything written there.  The one measurability
-  obligation this construction leaves open is
-  Lemma~\ref{lem:measurable-hitting}, which is not of the same kind and has a
-  node of its own.
+  obligation that is not a cylinder argument, Lemma~\ref{lem:measurable-hitting},
+  has a node of its own.
 \end{remark}
 
 \begin{lemma}[Measurability of the hitting times]
   \label{lem:measurable-hitting}
   \lean{SocialNetwork.measurable_hittingTimeCts,
-    SocialNetwork.Bias.measurable_biasedHittingTimeCts}
+    SocialNetwork.Bias.measurable_biasedHittingTimeCts,
+    SocialNetwork.jumpCount_max_jumpTime,
+    SocialNetwork.max_jumpTime_jumpCount_le,
+    SocialNetwork.jumpCount_eq_of_not_bddAbove,
+    SocialNetwork.hittingCandidates,
+    SocialNetwork.sInf_image_eq_hittingCandidates,
+    SocialNetwork.measurable_hittingCandidates,
+    SocialNetwork.Bias.measurable_stateAfter_ofStepPath}
   \leanok
   \uses{rem:construction}
   $\omega \mapsto \Rhit{u}(\theta)(\omega)$ is measurable, for either process.
 \end{lemma}
 \begin{proof}
-  \textbf{Not formalised, and no counterpart in the paper}, which does not
-  address measurability anywhere.  It is separated from
-  Remark~\ref{rem:construction} because it is the one statement there that is
-  not a cylinder argument: the hitting time is an infimum over the
-  \emph{uncountable} family $\{t \ge 0\}$, and reducing it to a countable one
-  needs right-continuity of $t \mapsto \Uproc{u}_t(\omega)$, which holds only
-  almost surely.  The obstruction is written out at the end of
-  Section~\ref{sec:missing}.
+  \leanok
+  \textbf{No counterpart in the paper}, which does not address measurability
+  anywhere.
+
+  An earlier version of this blueprint said the statement needed an
+  almost-sure formulation, or a proof handling the null set on which the path
+  misbehaves.  \emph{That was wrong}, and it is worth recording why: the error
+  was to take one route to the reduction for the only one.
+
+  The infimum runs over the uncountable family $\{t \ge 0\}$.  The obvious way
+  to make it countable is right-continuity of $t \mapsto \Uproc{u}_t(\omega)$,
+  and right-continuity does fail --- on realisations whose holding times are
+  negative, or whose jump times accumulate from the right, a null set but not
+  an empty one.  It is not needed.  Write $S(t) = \{n : T_n \le t\}$, so that
+  the jump count at $t$ is $\sup S(t)$, and split on whether $S(t)$ is
+  bounded.
+
+  Where it is bounded, $k = \sup S(t)$ both belongs to $S(t)$ and bounds it,
+  so $\max(T_k, 0) \le t$ and the jump count there is again $k$: the infimum
+  over that level set is \emph{attained}, at a time named by $k$ alone.  Where
+  $S(t)$ is unbounded --- the explosion event, on which the supremum returns
+  its junk value $0$ --- every larger time has $S$ unbounded too, so the junk
+  value persists to the right and every rational above $t$ lies in the same
+  level set.
+
+  So the countable family $\{\max(T_k,0)\}_{k \in \mathbb{N}} \cup
+  (\mathbb{Q} \cap [0,\infty))$ already meets the infimum, for \emph{every}
+  $\omega$, and each of its members is a measurable function of $\omega$.
+  Nothing in the argument mentions the holding times, which is why it
+  transports to the biased process unchanged: the two hitting times differ only
+  in the map sending $k$ to the state after $k$ expressions, and the reduction
+  is stated for an arbitrary such map.
 \end{proof}
 
 \begin{theorem}[Existence, Theorem~1.1]
@@ -1868,10 +1898,10 @@ None of them affects the results.
 The unproved statements fall into four groups, and it is worth keeping them
 apart because they are unproved for four different reasons: the library Lean
 is built on has no theory of the object, the paper's own proof does not
-compose, the statement is a citation rather than a result of this paper, or
-the Lean statement itself has still to be settled.  \texttt{STATUS.md} at the
-root of the repository is the generated index of all four, statement by
-statement; the paragraphs below are the argument behind it.
+compose, the statement is a citation rather than a result of this paper, or it
+is simply not done yet.  \texttt{STATUS.md} at the root of the repository is
+the generated index of all four, statement by statement; the paragraphs below
+are the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
@@ -2006,38 +2036,35 @@ and~\ref{lem:eta-pow} supply arguments the paper asserts.
     to carry the steepness of the state the history reaches.
 \end{itemize}
 
-Nothing is left on this list.  What is unproved here is blocked on Mathlib, on
-the paper, or --- for \texttt{measurable\_hittingTimeCts} --- on a choice about
-the statement, recorded next.
+Nothing is left on this list, and the one item that outlived it,
+Lemma~\ref{lem:measurable-hitting}, is now proved as well; the subsection after
+next records what its diagnosis got wrong.  What is unproved here is blocked on
+Mathlib, blocked on the paper, cited from outside it, or --- for
+Proposition~\ref{prop:biased-absorb}, Theorem~\ref{thm:phase} and
+Remark~\ref{rem:remark6} --- simply not done.
 
-\subsection*{The statement itself is not settled}
+\subsection*{Was here, and is now closed}
 
-Lemma~\ref{lem:measurable-hitting}, alone.
-\texttt{SocialNetwork.measurable\_hittingTimeCts} was listed above, next to
-\texttt{measurable\_process}, on the grounds that both only see
-\texttt{jumpCount}.  They do not sit at the same depth.  \texttt{process} is
-evaluated at one $t$; the hitting time is an infimum over the \emph{uncountable}
-family $\{t \ge 0\}$, so it needs the path $t \mapsto \Uproc{u}_t(\omega)$ to be
-right-continuous, which is what reduces that infimum to a countable one.
+Lemma~\ref{lem:measurable-hitting} stood in this chapter as a fourth kind of
+obstruction: not a gap in Mathlib, not a gap in the paper, not a citation, but
+a statement whose Lean formulation had still to be settled.  It is now
+\emph{proved}, and the diagnosis that put it here was wrong.
 
-Right-continuity holds only where the jump times increase, and the holding time
-is a plain real coordinate of the sample space: it is positive almost surely,
-\texttt{expMeasure} charging only $[0,\infty)$, but not for every $\omega$.  On
-a realisation with a negative holding time, or whose jump times accumulate from
-the right at some $t$, \texttt{jumpCount w} is not
-right-continuous and the reduction fails pointwise.  The statement therefore
-wants an almost-sure formulation, or a proof that handles the null set on which
-the path misbehaves --- either way, real work, and not the cylinder argument
-promised here.  The biased twin
-\texttt{SocialNetwork.Bias.measurable\_biasedHittingTimeCts} is the same
-statement over $\Salpha$ and is open for the same reason; the two share
-Lemma~\ref{lem:measurable-hitting}.
+What was written was that reducing the infimum over $\{t \ge 0\}$ to a
+countable one needs right-continuity of $t \mapsto \Uproc{u}_t(\omega)$, that
+right-continuity holds only almost surely, and that the statement therefore
+wanted an almost-sure formulation or an argument through the null set.  The
+first clause is the error: right-continuity is \emph{a} route to the
+reduction, not the only one, and the reduction holds pointwise.  The
+argument that works is at Lemma~\ref{lem:measurable-hitting}; it reads the
+level sets of the jump count directly, and never mentions the holding times,
+so it costs nothing to transport to the biased process.
 
-This is the only unproved statement in the repository that is nobody's fault:
-not a gap in Mathlib, not a gap in the paper, not a citation.  What it needs is
-a decision about what the statement should say, and that decision is about what
-the paper means by the hitting time, so it belongs to the authors.
-
+The paragraph is kept because the mistake is instructive.  A property that
+fails on a null set is a reason to look for a different argument before it is a
+reason to weaken the statement, and an obstruction recorded in this chapter is
+a claim like any other --- one that the repository owes the reader a proof or
+a retraction of.
 
 \section{What the formalised proofs check}
 \label{sec:audit}
@@ -2185,10 +2212,10 @@ the repository collects those, and the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \texttt{SocialNetwork.measurable\_hittingTimeCts}, on the terms of the
-    previous subsection: decide between an almost-sure statement and a proof
-    that goes through the null set, then carry it out.  This is the last of the
-    unproved statements here that are nobody's fault.
+  \item Proposition~\ref{prop:biased-absorb}, and Theorem~\ref{thm:phase}
+    part~2 with it.  The paper proves both and nothing here stands in the way;
+    they are the only unproved statements that are nobody's fault, now that
+    Lemma~\ref{lem:measurable-hitting} is closed.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
     Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
     authors first, since the repairs change the written proofs.

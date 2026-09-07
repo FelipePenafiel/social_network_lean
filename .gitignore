@@ -18,3 +18,5 @@ __pycache__/
 /CheckAxioms.lean
 /CheckCited.lean
 /axioms.txt
+/build.log
+/noise.log

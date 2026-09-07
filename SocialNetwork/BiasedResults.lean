@@ -196,6 +196,7 @@ theorem tsum_biasedJumpWeight_ne_zero (γ β : ℝ) (P : Profile N M) :
   obtain ⟨p, -⟩ := univ_jump_nonempty N M
   exact (ENNReal.ofReal_pos.2 (biasedJumpRate_pos γ β P p.1 p.2)).ne' (h p)
 
+omit [NeZero N] [NeZero M] in
 theorem tsum_biasedJumpWeight_ne_top (γ β : ℝ) (P : Profile N M) :
     (∑' p : Jump N M, biasedJumpWeight γ β P p) ≠ ∞ := by
   rw [tsum_eq_sum (s := Finset.univ) fun p hp => absurd (Finset.mem_univ p) hp]
@@ -302,7 +303,7 @@ theorem biasedGreedyEvents_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
       Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹'
         {h | ∀ k < n, IsBiasedGreedyAt γ u (ofHistoryPath h) k} := by
   ext ω
-  simp only [biasedGreedyEvents, Set.mem_setOf_eq, Set.mem_preimage]
+  simp only [biasedGreedyEvents, Set.mem_ofPred_eq, Set.mem_preimage]
   exact ⟨fun hω k hk => (isBiasedGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).2 (hω k hk),
     fun hω k hk => (isBiasedGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).1 (hω k hk)⟩
 
@@ -311,7 +312,7 @@ theorem nearGreedyEvents_eq_preimage (γ : ℝ) (u : Profile N M) (n : ℕ) :
       Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹'
         {h | ∀ k < n, IsNearGreedyAt γ u (ofHistoryPath h) k} := by
   ext ω
-  simp only [nearGreedyEvents, Set.mem_setOf_eq, Set.mem_preimage]
+  simp only [nearGreedyEvents, Set.mem_ofPred_eq, Set.mem_preimage]
   exact ⟨fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).2 (hω k hk),
     fun hω k hk => (isNearGreedyAt_ofHistoryPath_frestrictLe γ u ω hk.le).1 (hω k hk)⟩
 
@@ -339,6 +340,7 @@ section Propositions
 
 variable [NeZero N] [NeZero M]
 
+omit [NeZero N] [NeZero M] in
 /-- Along a realisation an actor hears at most one expression per step, so `nₐ` grows by at
 most one; it is reset, not incremented, in the step where the actor expresses. -/
 theorem heard_stateAfter_le (u : Profile N M) (ω : ℕ → Jump N M) (a : Actor N) (m k : ℕ) :
@@ -351,20 +353,22 @@ theorem heard_stateAfter_le (u : Profile N M) (ω : ℕ → Jump N M) (a : Actor
       · rw [ha, Profile.heard_express_self]; omega
       · rw [Profile.heard_express_of_ne ha]; omega
 
+omit [NeZero N] [NeZero M] in
 /-- Expressing resets the number of expressions heard. -/
 theorem heard_stateAfter_expressed (u : Profile N M) (ω : ℕ → Jump N M) (j : ℕ) :
     (stateAfter u ω (j + 1)).heard (ω j).1 = 0 := by
   rw [stateAfter_succ, Profile.heard_express_self]
 
+omit [NeZero N] [NeZero M] in
 /-- **Proposition 21.**  Among the first `N` expressions of the biased model, at least one
 comes from an actor whose social pressure on the expressed opinion is below `N`.
 
 The proof is that of Proposition 5, which is combinatorial and does not see the bias. -/
-theorem exists_pressure_lt (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {u : Profile N M}
+theorem exists_pressure_lt (_hM : 2 ≤ M) (_hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {u : Profile N M}
     (hu : IsBiasedState u) (ω : ℕ → Jump N M) :
     ∃ k < N, ∀ o, (stateAfter u ω k).pressure γ (ω k).1 o < (N : ℝ) := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   -- every one of the first `N` expressions comes from an actor that has heard `≥ N`
   have hbig : ∀ k, k < N → N ≤ (stateAfter u ω k).heard (ω k).1 := by
     intro k hk
@@ -631,9 +635,11 @@ def stepHistory (S : Profile N M → Finset (Jump N M)) (u : Profile N M) (n : �
     Set ((i : Finset.Iic n) → Jump N M) :=
   {h | ∀ k ≤ n, ofHistoryPath h k ∈ S (stateAfter u (ofHistoryPath h) k)}
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_stepHistory (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
     (n : ℕ) : MeasurableSet (stepHistory S u n) := MeasurableSet.of_discrete
 
+omit [NeZero N] [NeZero M] in
 /-- `⋂_{j=1}^{n+1}` of the event is the cylinder over `stepHistory S u n`. -/
 theorem stepEvents_succ_eq_preimage (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
     (n : ℕ) :
@@ -648,10 +654,11 @@ theorem stepEvents_succ_eq_preimage (S : Profile N M → Finset (Jump N M)) (u :
     rw [stateAfter_ofHistoryPath_frestrictLe u ω (by omega),
       ofHistoryPath_apply _ hk, Preorder.frestrictLe_apply]
   ext ω
-  simp only [stepEvents, stepHistory, Set.mem_setOf_eq, Set.mem_preimage]
+  simp only [stepEvents, stepHistory, Set.mem_ofPred_eq, Set.mem_preimage]
   exact ⟨fun hω k hk => (key ω k hk).2 (hω k (by omega)),
     fun hω k hk => (key ω k (by omega)).1 (hω k (by omega))⟩
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_stepEvents (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
     (m : ℕ) : MeasurableSet (stepEvents S u m) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
@@ -662,6 +669,7 @@ theorem measurableSet_stepEvents (S : Profile N M → Finset (Jump N M)) (u : Pr
     rw [stepEvents_succ_eq_preimage]
     exact Preorder.measurable_frestrictLe n (measurableSet_stepHistory S u n)
 
+omit [NeZero N] [NeZero M] in
 theorem ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
     {h : (i : Finset.Iic n) → Jump N M}
     (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h) {j : ℕ}
@@ -669,6 +677,7 @@ theorem ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
   rw [ofHistoryPath_apply _ (show j ≤ n + 1 by omega), ofHistoryPath_apply _ hj, ← hx,
     Preorder.frestrictLe₂_apply]
 
+omit [NeZero N] [NeZero M] in
 theorem stateAfter_ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Jump N M}
     {h : (i : Finset.Iic n) → Jump N M}
     (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h)
@@ -676,6 +685,7 @@ theorem stateAfter_ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → 
     stateAfter u (ofHistoryPath x) k = stateAfter u (ofHistoryPath h) k :=
   stateAfter_congr u k fun j hj => ofHistoryPath_eq hx (by omega)
 
+omit [NeZero N] [NeZero M] in
 /-- If a history of length `n + 2` restricts to one in `stepHistory S u n` and its last
 coordinate lies in `S` at the profile that history reaches, then it is in
 `stepHistory S u (n + 1)`. -/
@@ -908,7 +918,7 @@ theorem inv_le_biasedJumpPMF_biasedArgmaxFinset {γ β : ℝ} (hβ : 0 ≤ β) (
 theorem biasedGreedyEvents_eq_stepEvents (γ : ℝ) (u : Profile N M) (m : ℕ) :
     biasedGreedyEvents γ u m = stepEvents (biasedArgmaxFinset γ) u m := by
   ext ω
-  simp only [biasedGreedyEvents, stepEvents, Set.mem_setOf_eq]
+  simp only [biasedGreedyEvents, stepEvents, Set.mem_ofPred_eq]
   exact ⟨fun hω k hk => (isBiasedGreedyAt_iff_mem γ u ω k).1 (hω k hk),
     fun hω k hk => (isBiasedGreedyAt_iff_mem γ u ω k).2 (hω k hk)⟩
 
@@ -924,7 +934,7 @@ theorem inv_pow_le_biasedPathMeasure_biasedGreedyEvents {γ β : ℝ} (hβ : 0 �
 theorem nearGreedyEvents_eq_stepEvents (γ : ℝ) (u : Profile N M) (m : ℕ) :
     nearGreedyEvents γ u m = stepEvents (nearArgmaxFinset γ) u m := by
   ext ω
-  simp only [nearGreedyEvents, stepEvents, Set.mem_setOf_eq]
+  simp only [nearGreedyEvents, stepEvents, Set.mem_ofPred_eq]
   exact ⟨fun hω k hk => (isNearGreedyAt_iff_mem γ u ω k).1 (hω k hk),
     fun hω k hk => (isNearGreedyAt_iff_mem γ u ω k).2 (hω k hk)⟩
 
@@ -934,7 +944,7 @@ theorem nearGreedyEvents_eq_stepEvents (γ : ℝ) (u : Profile N M) (m : ℕ) :
 The lattice gap `1/(M-1)` is replaced by the slack `1/(2γ)` that the event `ξ̃` carries — the
 substitution Remark 7 is designed for, the entries of the biased model no longer lying on a
 lattice. -/
-theorem biasedZeta_pow_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ) (hβ : 0 ≤ β)
+theorem biasedZeta_pow_le (_hM : 2 ≤ M) (_hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ) (hβ : 0 ≤ β)
     (u : Profile N M) (m : ℕ) :
     ENNReal.ofReal (biasedZeta N M γ β) ^ m
       ≤ biasedPathMeasure γ β u (nearGreedyEvents γ u m) := by
@@ -959,6 +969,7 @@ def stateAfterStepHistory (u : Profile N M) {n : ℕ} (h : (i : Finset.Iic n) �
     (k : ℕ) : Profile N M :=
   stateAfterHistory u (fun i => (h i).1) k
 
+omit [NeZero N] [NeZero M] in
 theorem measurable_stateAfterStepHistory (u : Profile N M) (n k : ℕ) :
     Measurable fun h : (i : Finset.Iic n) → Step N M => stateAfterStepHistory u h k :=
   (Measurable.of_discrete
@@ -1015,15 +1026,48 @@ noncomputable def biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)
     (ω : ℕ → Step N M) : ℝ≥0∞ :=
   sInf ((fun t : ℝ => ENNReal.ofReal t) '' {t : ℝ | 0 ≤ t ∧ biasedProcess u t ω ∈ θ})
 
-/-- **Unproved, for the reason recorded at `SocialNetwork.measurable_hittingTimeCts`**: the
-infimum runs over the uncountable family `{t : 0 ≤ t}`, so reducing it to a countable one
-needs the path `t ↦ U_t (ω)` to be right-continuous, which holds only where the holding times
-are positive — almost surely, not for every `ω`.  The biased process has the same shape as the
-unbiased one and the same gap. -/
+omit [NeZero N] [NeZero M] in
+/-- Replaying a realisation is a measurable function of it: the profile after `k` expressions
+reads only the first `k + 1` steps, which live in a finite discrete space.
+
+**No counterpart in the paper**, which does not address measurability.  This is
+`SocialNetwork.measurable_state_ofStepPath` for the biased model, and it goes through the
+same truncation `SocialNetwork.Bias.stateAfter_ofHistoryPath_frestrictLe` as the greedy
+events. -/
+theorem measurable_stateAfter_ofStepPath (u : Profile N M) (k : ℕ) :
+    Measurable fun ω : ℕ → Step N M => stateAfter u (fun n => (ω n).1) k := by
+  have h : (fun ω : ℕ → Step N M => stateAfter u (fun n => (ω n).1) k)
+      = (fun h : (i : Finset.Iic k) → Jump N M => stateAfterHistory u h k) ∘
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) k) ∘
+        fun ω : ℕ → Step N M => fun n => (ω n).1 :=
+    funext fun ω =>
+      (stateAfter_ofHistoryPath_frestrictLe u (fun n => (ω n).1) (Nat.le_succ k)).symm
+  rw [h]
+  have hjumps : Measurable fun ω : ℕ → Step N M => fun n => (ω n).1 :=
+    measurable_pi_lambda (fun ω : ℕ → Step N M => fun n => (ω n).1) fun n =>
+      (measurable_fst (α := Jump N M) (β := ℝ)).comp (measurable_pi_apply n)
+  have hhist : Measurable fun h : (i : Finset.Iic k) → Jump N M => stateAfterHistory u h k :=
+    Measurable.of_discrete
+  exact hhist.comp ((Preorder.measurable_frestrictLe k).comp hjumps)
+
+omit [NeZero N] [NeZero M] in
+/-- The biased hitting time is a measurable function of the realisation.
+
+**No counterpart in the paper.**  The biased process has the same jump--hold shape as the
+unbiased one, so this is `SocialNetwork.measurable_hittingTimeCts` with
+`SocialNetwork.Bias.stateAfter` in place of `SocialNetwork.Trajectory.state`; the countable
+reduction `SocialNetwork.sInf_image_eq_hittingCandidates` is shared and knows nothing about
+either model. -/
 theorem measurable_biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)) :
     Measurable (biasedHittingTimeCts (N := N) (M := M) u θ) := by
-  sorry
+  have h : biasedHittingTimeCts (N := N) (M := M) u θ
+      = hittingCandidates (fun k ω => stateAfter u (fun n => (ω n).1) k) θ :=
+    funext fun ω =>
+      sInf_image_eq_hittingCandidates (fun k ω => stateAfter u (fun n => (ω n).1) k) θ ω
+  rw [h]
+  exact measurable_hittingCandidates (fun k => measurable_stateAfter_ofStepPath u k) θ
 
+omit [NeZero N] [NeZero M] in
 /-- Hitting a larger set happens no later. -/
 theorem biasedHittingTimeCts_mono (u : Profile N M) {θ₁ θ₂ : Set (Profile N M)} (h : θ₁ ⊆ θ₂)
     (ω : ℕ → Step N M) :
@@ -1119,7 +1163,7 @@ Here the quantity that resets and grows by one per step is `nₐ`, and `u (a, p)
 connects it to the entries.  Unlike Proposition 22, the chain closes: greediness is exact, so
 the maximum at the repeat time is the expressing actor's own entry, with no slack to
 absorb. -/
-theorem pressure_stateAfter_le_of_biasedGreedy (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
+theorem pressure_stateAfter_le_of_biasedGreedy (_hM : 2 ≤ M) (_hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
     {u : Profile N M} (hu : IsBiasedState u) {ω : ℕ → Jump N M}
     (hgreedy : ∀ k, k < N → IsBiasedGreedyAt γ u ω k) (a : Actor N) (p : Opinion M) :
     (stateAfter u ω N).pressure γ a p ≤ (N : ℝ) := by
@@ -1143,7 +1187,7 @@ theorem pressure_stateAfter_le_of_biasedGreedy (hM : 2 ≤ M) (hN : 3 ≤ N) {γ
       exact_mod_cast hnat
     exact le_trans (Profile.pressure_le_heard hγ _ a p) hcast
   · -- some actor expressed twice; greediness at that step caps the whole profile
-    push_neg at hdist
+    push Not at hdist
     obtain ⟨j, k, hjk, hk, heq⟩ := hdist
     have hz := heard_stateAfter_expressed u ω j
     have hle := heard_stateAfter_le u ω (ω j).1 (j + 1) (k - j - 1)

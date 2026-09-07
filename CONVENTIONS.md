@@ -97,7 +97,10 @@ unbiased proof transposed rather than a new argument.
 
 Hypotheses are named for what they are (`hM : 2 ≤ M`, `hβ : 0 ≤ β`, `hu : IsState u`),
 and the standing hypotheses of the paper — `N ≥ 3`, `M ≥ 2` — are arguments rather than
-`variable`s, so that a statement can be read without its context.
+`variable`s, so that a statement can be read without its context. A few statements do not
+need them and keep them anyway, written `_hM` and `_hN`: the paper states them under those
+hypotheses, so the Lean statement does too, and the underscore records that this particular
+proof did not have to use them.
 
 ## 5. `sorry` and `axiom`
 
@@ -112,6 +115,12 @@ outstanding work pretending to be pickable. There are two, both Theorem 5.3 of [
 `FOR-THE-AUTHORS.md` §3 says why there have to be two.
 
 CI gates both: no declaration claimed complete may reach `sorryAx` or either axiom.
+
+It also gates the *other* warnings: a `sorry` is the only warning the build may emit.
+A deprecation, an unused hypothesis, a section variable that no longer belongs — each is
+harmless on its own and each hides the next real warning, so the build fails on them
+rather than accumulating them. Both the toolchain and Mathlib are pinned, so nothing
+turns this red on its own.
 
 ## 6. A proof may precede its ancestors
 

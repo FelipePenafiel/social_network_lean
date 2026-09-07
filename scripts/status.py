@@ -44,10 +44,9 @@ ENVIRONMENTS = ("theorem", "proposition", "lemma", "corollary", "definition", "r
 BLOCKED_ON_PAPER = "Blocked on the paper"
 CITED = "Cited from outside the paper"
 BLOCKED_ON_MATHLIB = "Blocked on Mathlib"
-UNDECIDED = "Waiting on a decision about the statement"
 NOT_YET = "Not formalised yet"
 
-ORDER = [BLOCKED_ON_PAPER, CITED, UNDECIDED, BLOCKED_ON_MATHLIB, NOT_YET]
+ORDER = [BLOCKED_ON_PAPER, CITED, BLOCKED_ON_MATHLIB, NOT_YET]
 
 HEADNOTE = {
     BLOCKED_ON_PAPER:
@@ -57,9 +56,6 @@ HEADNOTE = {
     CITED:
         "Not results of arXiv:2607.19651 at all.  Nothing in this library can discharge "
         "them, so no amount of work here will close them.",
-    UNDECIDED:
-        "Nobody's fault: not a gap in Mathlib, not a gap in the paper.  What is missing "
-        "is a decision about what the Lean statement should say.",
     BLOCKED_ON_MATHLIB:
         "The paper's proof is fine; Mathlib has no theory of the object it uses.  "
         "Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is "
@@ -120,13 +116,6 @@ REASONS: dict[str, tuple[str, str]] = {
         CITED,
         "equation (19), displayed inside the proof of Lemma 13 and attributed to "
         "Corollary 11, which is likewise only a limit",
-    ),
-    # -- the Lean statement has still to be settled -------------------------
-    "lem:measurable-hitting": (
-        UNDECIDED,
-        "an infimum over uncountably many times: it needs right-continuity of the path, "
-        "which holds only almost surely.  Wants an almost-sure statement, or a proof "
-        "that goes through the null set",
     ),
     # -- Mathlib ------------------------------------------------------------
     "thm:invariant-skeleton": (
@@ -526,7 +515,7 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     # --- what resists ------------------------------------------------------
     w("## 1. What resists formalisation")
     w("")
-    w(f"{len(resisting)} statements. They are unproved for five different reasons, and")
+    w(f"{len(resisting)} statements. They are unproved for four different reasons, and")
     w("the reasons are not comparable: one of these groups will never close here, one")
     w("needs mathematics only the authors can supply, and one is only work.")
     w("[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item")

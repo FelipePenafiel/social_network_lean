@@ -56,7 +56,7 @@ have to be two, one per process; [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3 
 single abstract axiom would be inconsistent.
 
 Every numbered statement of the paper is stated in Lean, with one exception recorded in
-[`STATUS.md`](STATUS.md). What is unproved is unproved for five distinct reasons, which
+[`STATUS.md`](STATUS.md). What is unproved is unproved for four distinct reasons, which
 that file keeps apart because they are not comparable: one group will never close here,
 one needs mathematics only the authors can supply, and one is only work.
 

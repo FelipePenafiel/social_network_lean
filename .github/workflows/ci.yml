@@ -37,7 +37,24 @@ jobs:
         run: lake exe cache get || echo "cache unavailable, building from source"
 
       - name: Build
-        run: lake build
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee build.log
+
+      - name: No warnings but the deliberate ones
+        # The only warnings this build may emit are the `sorry`s, which are deliberate and
+        # inventoried in the next step.  Everything else — a deprecation, an unused
+        # hypothesis, a section variable that no longer belongs — is noise that hides the
+        # next real warning, so it fails the build instead of accumulating.  Both the
+        # toolchain and Mathlib are pinned, so this cannot go red on its own.
+        run: |
+          if grep -E '^warning:' build.log | grep -v "declaration uses \`sorry\`" > noise.log
+          then
+            echo "::error::the build emits warnings other than the deliberate sorries"
+            cat noise.log
+            exit 1
+          fi
+          echo "no warnings but the $(grep -c 'declaration uses .sorry.' build.log) sorries"
 
       - name: Inventory of unproved statements
         # `sorry` is allowed: the library states every numbered result of the paper, and the

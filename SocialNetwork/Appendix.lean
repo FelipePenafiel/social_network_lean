@@ -311,6 +311,7 @@ strictly positive social pressure. -/
 def positivePressureEvent (u : Pressure N M) : Set (ℕ → Jump N M) :=
   {ω | 0 < u (ω 0).1 (ω 0).2}
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_positivePressureEvent (u : Pressure N M) :
     MeasurableSet (positivePressureEvent u) := by
   have h : positivePressureEvent u
