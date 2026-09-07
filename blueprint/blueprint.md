@@ -124,26 +124,36 @@ and `#s` to the bound, and `a ≥ #s` because `s ⊆ range a`.
 The Mathlib gap itself is unchanged: this belongs upstream, in `Mathlib/Data/Finset/Card.lean`
 or beside `Finset.sum_range_id_mul_two`, not in a paper formalisation.
 
-## `measurable_hittingTimeCts` is not the routine lemma it was filed as
+## `measurable_hittingTimeCts`: filed as routine, refiled as blocked, and neither
 
-Blueprint `lem:measurable-hitting`, with its biased twin
-`SocialNetwork.Bias.measurable_biasedHittingTimeCts`.
+This entry is kept as a record of two wrong calls in a row, because both were made
+here and both were about what Mathlib supplies.
 
-An earlier draft listed `SocialNetwork.measurable_hittingTimeCts` alongside
-`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  They do
-not sit at the same depth, and `measurable_process` being done now makes the difference plain.
+An early draft listed `SocialNetwork.measurable_hittingTimeCts` alongside
+`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  That
+was wrong: `process` is evaluated at one `t`, the hitting time is an infimum over the
+uncountable family `{t ≥ 0}`.
 
-`process` is evaluated at one `t`.  The hitting time is an infimum over the **uncountable**
-family `{t : 0 ≤ t}`, so it needs the path `t ↦ U_t (ω)` to be right-continuous — that is what
-reduces the infimum to a countable one.  Right-continuity holds where the jump times increase,
-and `holdingTime` is a plain real coordinate of the sample space: `expMeasure`
-(`Mathlib/Probability/Distributions/Exponential.lean:96`) charges only `[0, ∞)`, so it is
-positive *almost surely*, not for every `ω`.  On a realisation with a negative holding time,
-or whose jump times accumulate from the right at some `t`, `jumpCount ω ·` is not
-right-continuous and the reduction fails pointwise.
+The correction was wrong too.  It said the reduction to a countable infimum needs the path
+`t ↦ U_t (ω)` to be right-continuous; that right-continuity fails on realisations with a
+negative holding time, or whose jump times accumulate from the right; and that the statement
+therefore wanted an almost-sure formulation or an argument through the null set.  Every
+clause of that is true except the first, and the first is the one that mattered.
+Right-continuity is *a* route to the reduction, not the only one.
 
-So the statement wants an almost-sure formulation, or a proof that goes through the null set.
-Neither is a cylinder argument.
+Both lemmas are now proved, statements unchanged, for every `ω`.  What the proof uses is the
+shape of the level sets of `jumpCount ω ·`: below the explosion time the infimum of a level
+set is attained, at `max (Tₖ, 0)`, and on the explosion event the junk value of `sSup`
+persists to the right, so the rationals above a time serve in its place.  The countable
+family `{max (Tₖ, 0)} ∪ (ℚ ∩ [0, ∞))` meets the infimum outright.  See
+`SocialNetwork.sInf_image_eq_hittingCandidates`, which is stated for an arbitrary map from
+jump counts to states and is therefore shared by both models.
+
+**Nothing was missing from Mathlib here.**  The lesson for the rest of this file: an
+obstruction recorded as "the library does not provide it" is a claim about a route, and a
+route is easier to be wrong about than a name that is absent.  The entries below are of the
+second kind — a `grep` that returns nothing, or a file whose whole contents are enumerated —
+which is why they are cheap to falsify and this one was not.
 
 ## How to re-check this file
 

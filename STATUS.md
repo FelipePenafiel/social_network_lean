@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-27 statements. They are unproved for five different reasons, and
+26 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -46,15 +46,6 @@ Nothing in this library can discharge them, so no amount of work here will close
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | displayed inside the proof of Theorem 2.2 and never stated; Theorem 2.2 is a limit, and a limit has thrown the rate away |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | equation (19), displayed inside the proof of Lemma 13 and attributed to Corollary 11, which is likewise only a limit |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
-
-### Waiting on a decision about the statement (1)
-
-Nobody's fault: not a gap in Mathlib, not a gap in the paper.
-What is missing is a decision about what the Lean statement should say.
-
-| Statement | Lean | Why |
-|---|---|---|
-| Measurability of the hitting times | `measurable_hittingTimeCts` +1 | an infimum over uncountably many times: it needs right-continuity of the path, which holds only almost surely.  Wants an almost-sure statement, or a proof that goes through the null set |
 
 ### Blocked on Mathlib (14)
 
@@ -93,10 +84,10 @@ The paper proves them and nothing here stands in the way; they are simply not do
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 16 | 12 | 28 |
+| Proved | 16 | 13 | 29 |
 | Proof written, resting on an unproved statement | 6 | 0 | 6 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 21 | 3 | 24 |
+| Stated in Lean, unproved | 21 | 2 | 23 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **61** | **19** | **80** |
@@ -182,7 +173,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | S is stable under expression | `IsState.express` | proved |
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
 | How the process is built in Lean | `ctsPathMeasure` +9 | stated |
-| Measurability of the hitting times | `measurable_hittingTimeCts` +1 | unproved — waiting on a decision about the statement |
+| Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |
 | a biased ladder is a biased steep ladder | `Bias.IsBiasedLadder.isBiasedSteepLadder` +6 | proved |

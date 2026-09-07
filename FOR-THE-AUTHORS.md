@@ -32,7 +32,6 @@ asks of you**, and nothing else.
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement |
-| [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | an infimum over uncountably many times; the path regularity it needs holds only almost surely | an almost-sure formulation, or the null-set argument — the choice is about what the paper means by the hitting time |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
 repository has already taken the only route available, and says so at the declaration.
@@ -49,6 +48,7 @@ repository has already taken the only route available, and says so at the declar
 | [§2.8](#2-statements-that-had-to-be-changed) | **Proof of Lemma 13** | `τ` is exponential of mean `1/(MN)`, so `P(τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`.  Harmless — the written form is the weaker one |
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
 | [§5](#5-not-the-papers-fault) | **Remark 6** | the one numbered statement with no Lean counterpart.  Nothing downstream uses it |
+| [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 
 ---
 
@@ -317,15 +317,29 @@ Doeblin's minorisation criterion (Theorem 1.2, Theorem 25), Kac's lemma
 (Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering audit of what
 Mathlib does and does not provide, checked against the pinned revision.
 
-Two statements are unproved for reasons that are nobody's fault at all.
+### Measurability of the hitting times: a decision we asked for and did not need
 
-`SocialNetwork.measurable_hittingTimeCts`, with its biased twin
-`SocialNetwork.Bias.measurable_biasedHittingTimeCts`, is the only one left where
-the *Lean statement itself* is unsettled.  The hitting time is an infimum over an
-uncountable family of times, so it needs path regularity that holds only almost
-surely.  **It wants a decision** — an almost-sure formulation, or a proof that
-goes through the null set — and that decision is about what the paper means by
-the hitting time, so it is yours.
+An earlier version of this file put `SocialNetwork.measurable_hittingTimeCts`, and
+its biased twin, in the table above: the hitting time is an infimum over an
+uncountable family of times, reducing it to a countable one appeared to need
+right-continuity of `t ↦ U_t (ω)`, and right-continuity holds only almost
+surely — so, we said, the statement wanted an almost-sure formulation, and the
+choice was yours.
+
+**Both are now proved, for every realisation, with the statement unchanged.**  The
+mistake was to take one route to the reduction for the only one.  Write
+`S (t) = {n : Tₙ ≤ t}`, so the jump count at `t` is `sup S (t)`.  Where `S (t)` is
+bounded, `k = sup S (t)` lies in `S (t)` and bounds it, so `max (T_k, 0) ≤ t` and
+the jump count there is again `k`: the infimum over that level set is *attained*,
+at a time named by `k` alone.  Where `S (t)` is unbounded — the explosion event —
+every larger time has `S` unbounded too, so every rational above `t` sits in the
+same level set.  The countable family `{max (T_k, 0)} ∪ (ℚ ∩ [0, ∞))` therefore
+meets the infimum outright.  Nothing in it mentions the holding times, which is
+why the biased twin costs one line.
+
+Nothing was asked of you and nothing is now.  It is recorded because this file
+had claimed otherwise, and a claim of ours that turned out to be wrong belongs
+here as visibly as one about the paper.
 
 **Remark 6** is the one numbered statement of the paper with no Lean counterpart.
 It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,
@@ -334,8 +348,10 @@ every numbered result, and this is the exception.  Nothing downstream uses it �
 it strengthens Corollary 11 in the direction Lemma 14 needs, and both wait on the
 same continuous-time analysis of Appendix B.
 
-Two more, **Proposition 18** and **Theorem 4**, are simply not done: the paper
-proves them and nothing here stands in the way.
+**Proposition 18** and **Theorem 4** part 2 are simply not done: the paper proves
+them and nothing here stands in the way.  With the measurability lemmas closed
+they are the only unproved statements in the repository that are nobody's fault,
+and they need nothing from you.
 
 ---
 

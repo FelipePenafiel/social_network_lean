@@ -1015,14 +1015,44 @@ noncomputable def biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)
     (ω : ℕ → Step N M) : ℝ≥0∞ :=
   sInf ((fun t : ℝ => ENNReal.ofReal t) '' {t : ℝ | 0 ≤ t ∧ biasedProcess u t ω ∈ θ})
 
-/-- **Unproved, for the reason recorded at `SocialNetwork.measurable_hittingTimeCts`**: the
-infimum runs over the uncountable family `{t : 0 ≤ t}`, so reducing it to a countable one
-needs the path `t ↦ U_t (ω)` to be right-continuous, which holds only where the holding times
-are positive — almost surely, not for every `ω`.  The biased process has the same shape as the
-unbiased one and the same gap. -/
+/-- Replaying a realisation is a measurable function of it: the profile after `k` expressions
+reads only the first `k + 1` steps, which live in a finite discrete space.
+
+**No counterpart in the paper**, which does not address measurability.  This is
+`SocialNetwork.measurable_state_ofStepPath` for the biased model, and it goes through the
+same truncation `SocialNetwork.Bias.stateAfter_ofHistoryPath_frestrictLe` as the greedy
+events. -/
+theorem measurable_stateAfter_ofStepPath (u : Profile N M) (k : ℕ) :
+    Measurable fun ω : ℕ → Step N M => stateAfter u (fun n => (ω n).1) k := by
+  have h : (fun ω : ℕ → Step N M => stateAfter u (fun n => (ω n).1) k)
+      = (fun h : (i : Finset.Iic k) → Jump N M => stateAfterHistory u h k) ∘
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) k) ∘
+        fun ω : ℕ → Step N M => fun n => (ω n).1 :=
+    funext fun ω =>
+      (stateAfter_ofHistoryPath_frestrictLe u (fun n => (ω n).1) (Nat.le_succ k)).symm
+  rw [h]
+  have hjumps : Measurable fun ω : ℕ → Step N M => fun n => (ω n).1 :=
+    measurable_pi_lambda (fun ω : ℕ → Step N M => fun n => (ω n).1) fun n =>
+      (measurable_fst (α := Jump N M) (β := ℝ)).comp (measurable_pi_apply n)
+  have hhist : Measurable fun h : (i : Finset.Iic k) → Jump N M => stateAfterHistory u h k :=
+    Measurable.of_discrete
+  exact hhist.comp ((Preorder.measurable_frestrictLe k).comp hjumps)
+
+/-- The biased hitting time is a measurable function of the realisation.
+
+**No counterpart in the paper.**  The biased process has the same jump--hold shape as the
+unbiased one, so this is `SocialNetwork.measurable_hittingTimeCts` with
+`SocialNetwork.Bias.stateAfter` in place of `SocialNetwork.Trajectory.state`; the countable
+reduction `SocialNetwork.sInf_image_eq_hittingCandidates` is shared and knows nothing about
+either model. -/
 theorem measurable_biasedHittingTimeCts (u : Profile N M) (θ : Set (Profile N M)) :
     Measurable (biasedHittingTimeCts (N := N) (M := M) u θ) := by
-  sorry
+  have h : biasedHittingTimeCts (N := N) (M := M) u θ
+      = hittingCandidates (fun k ω => stateAfter u (fun n => (ω n).1) k) θ :=
+    funext fun ω =>
+      sInf_image_eq_hittingCandidates (fun k ω => stateAfter u (fun n => (ω n).1) k) θ ω
+  rw [h]
+  exact measurable_hittingCandidates (fun k => measurable_stateAfter_ofStepPath u k) θ
 
 /-- Hitting a larger set happens no later. -/
 theorem biasedHittingTimeCts_mono (u : Profile N M) {θ₁ θ₂ : Set (Profile N M)} (h : θ₁ ⊆ θ₂)
