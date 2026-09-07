@@ -1347,14 +1347,61 @@ the process pointwise.
 
 \begin{proposition}[Proposition~18]
   \label{prop:biased-absorb}
-  \lean{SocialNetwork.Bias.inf_measure_forall_eq_first_pos}
+  \lean{SocialNetwork.Bias.inf_measure_forall_eq_first_pos,
+    SocialNetwork.Bias.exists_pos_le_pathMeasure_forall_lt_fst,
+    SocialNetwork.Bias.soloPath,
+    SocialNetwork.Bias.pressure_stateAfter_soloPath_of_ne,
+    SocialNetwork.Bias.soloOtherRate,
+    SocialNetwork.Bias.inv_le_biasedJumpPMF_soloPath,
+    SocialNetwork.Bias.prod_le_pathMeasure_cylinder,
+    SocialNetwork.Bias.prod_inv_add_ge,
+    SocialNetwork.Bias.sum_le_of_le_geometric,
+    SocialNetwork.occCount,
+    SocialNetwork.uniformSeq,
+    SocialNetwork.freqGood,
+    SocialNetwork.tendsto_occCount_ae,
+    SocialNetwork.exists_uniformSeq_freqGood_pos,
+    SocialNetwork.uniformSeq_freqGood_le}
   \leanok
   \uses{prop:biased-bounded}
   For $\alpha < 0$ and $\beta > 0$,
   $\inf_{u \in B_N^\alpha} \mathbb{P}\bigl( \bigcap_{j \ge 1} \{A_j^u = A_1^u\} \bigr) > 0$.
 \end{proposition}
 \begin{proof}
-  \textbf{Not formalised}.
+  \leanok
+  \textbf{Follows the paper's proof of Proposition~18.}
+
+  Fix $u \in B_N^\alpha$ and an actor $a$ whose row is null.  Equation~(6)
+  provides one --- it is the condition $\min_a \|u(a,\cdot)\|_\infty = 0$ ---
+  so the paper's ``without loss of generality $u(1,o) = 0$ for all $o$'' is a
+  choice of actor and nothing more.
+
+  Along the run in which $a$ expresses the word $o_1, o_2, \dots$ and no other
+  actor ever expresses, the memory of $a$ is reset at every step and every
+  other row is the initial one shifted by the counts of that word.  So the pair
+  $(a, o_m)$ carries rate $1$ while the whole profile carries at most
+  $M + \lambda_m$, with the $\lambda_m$ of~(22).  Equation~(21) is then the
+  product of these one-step probabilities, summed over the $M^n$ words of
+  length $n$: the measure of one cylinder is at least the product along it, and
+  the cylinders of distinct words are disjoint.
+
+  Since $Me^{\lambda} \ge M + \lambda$ --- the paper's $\ln(1+x) \ge x/(1+x)$
+  at $x = -\lambda/(M+\lambda)$, composed with its own weakening of
+  $e^{-\lambda/M}$ to $e^{-\lambda}$ --- the product along a word is at least
+  $M^{-n} e^{-\sum_{m < n} \lambda_m}$.  Restricting the sum to the words that
+  satisfy the constraint of $E_\varepsilon^k$ up to time $n$ makes
+  $\sum_{m<n} \lambda_m$ bounded by a constant, uniformly in $n$: above $k$ the
+  exponent of~(22) is at most $\beta(N - c(\alpha,\varepsilon)\,m)$, which
+  is~(24), and $c(\alpha,\varepsilon) > 0$ for $\varepsilon$ small is exactly where
+  $\alpha < 0$ is used.  Those words carry at least the uniform mass
+  $\mathbb{P}(E_\varepsilon^k)$, which the strong law of large numbers makes
+  positive for some $k$.  The passage from $\bigcap_{m \le n}$ to
+  $\bigcap_{m \ge 1}$ is continuity from above along decreasing events.
+
+  \textbf{Supplies two steps the paper asserts}: the choice of actor above, and
+  the terms of index below $k$, which $E_\varepsilon^k$ does not constrain and
+  which are bounded crudely by
+  $\lambda_m \le (N-1)\,M\,e^{\beta(N + k(1+\gamma))}$.
 \end{proof}
 
 \chapter{Appendix A: the road to Proposition~7}
@@ -2040,8 +2087,8 @@ Nothing is left on this list, and the one item that outlived it,
 Lemma~\ref{lem:measurable-hitting}, is now proved as well; the subsection after
 next records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or --- for
-Proposition~\ref{prop:biased-absorb}, Theorem~\ref{thm:phase} and
-Remark~\ref{rem:remark6} --- simply not done.
+Theorem~\ref{thm:phase} part~1 and Remark~\ref{rem:remark6} --- simply not
+done.
 
 \subsection*{Was here, and is now closed}
 
@@ -2070,17 +2117,17 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-four
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-six
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-five entries.
+of its own, so it counts thirty-seven entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (sixteen).
+\noindent\textbf{Follow the paper's proof} (seventeen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
 \ref{prop:reach-ladder}, \ref{prop:biased-low-pressure},
-\ref{prop:biased-bounded}
-and~\ref{prop:biased-greedy-prob}, the gap estimate of Lemma~\ref{lem:gap},
+\ref{prop:biased-bounded}, \ref{prop:biased-greedy-prob}
+and~\ref{prop:biased-absorb}, the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
 Lemma~\ref{lem:hitting-2beta},
 Corollaries~\ref{cor:cbeta} and~\ref{cor:biased-cbeta},
@@ -2134,6 +2181,14 @@ Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
 Appendix~C invokes; the iteration common to the two is run once in Lean, for an
 arbitrary choice of admissible pairs at each profile, since that is all either
 uses.
+Proposition~\ref{prop:biased-absorb} is the paper's decomposition~(21), its
+bound~(22), its passage through $\ln(1+x) \ge x/(1+x)$ and its event
+$E_\varepsilon^k$, in that order, with the strong law of large numbers taken from
+Mathlib as the paper takes it from the literature.  Two steps are supplied: the
+paper's ``without loss of generality $u(1,o) = 0$ for all $o$'', which is the
+choice of an actor whose row is null and which equation~(6) always provides;
+and the terms of index below $k$, which $E_\varepsilon^k$ does not constrain and
+which the paper absorbs silently into its generic constant $C$.
 
 \medskip
 \noindent\textbf{Supply a step the paper asserts} (ten).
@@ -2152,15 +2207,15 @@ $m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
 without deriving it.
 
 \medskip
-\noindent\textbf{No counterpart in the paper} (nine).
+\noindent\textbf{No counterpart in the paper} (ten).
 Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
 \ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty},
-\ref{lem:biased-ladder-nonempty}, \ref{lem:biased-ladder-consensus}
-and~\ref{lem:shift} and
+\ref{lem:biased-ladder-nonempty}, \ref{lem:biased-ladder-consensus},
+\ref{lem:shift} and~\ref{lem:measurable-hitting} and
 Remark~\ref{rem:biased-ladder-steep},
-together with the measurability lemmas and the
-plumbing of the sample space, which are not numbered statements and so appear
-here only inside definitions and remarks.
+together with the rest of the
+plumbing of the sample space, which is not made of numbered statements and so
+appears here only inside definitions and remarks.
 
 \medskip
 \noindent\textbf{No proof departs from the paper for convenience, and no proof
@@ -2212,10 +2267,13 @@ the repository collects those, and the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item Proposition~\ref{prop:biased-absorb}, and Theorem~\ref{thm:phase}
-    part~2 with it.  The paper proves both and nothing here stands in the way;
-    they are the only unproved statements that are nobody's fault, now that
-    Lemma~\ref{lem:measurable-hitting} is closed.
+  \item Theorem~\ref{thm:phase} part~1.  Proposition~\ref{prop:biased-absorb},
+    on which it rests, is now proved; what part~1 adds is the strong Markov
+    property at $T_N$ and the Borel--Cantelli argument over the successive
+    failure times $\eta_n$, neither of which the formalisation carries yet.  It
+    is the only unproved statement that is nobody's fault, now that
+    Lemma~\ref{lem:measurable-hitting} and
+    Proposition~\ref{prop:biased-absorb} are closed.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
     Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
     authors first, since the repairs change the written proofs.

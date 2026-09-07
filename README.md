@@ -48,6 +48,12 @@ the state space `S^α`, the generator `G̃` of equation (7), the sets of equatio
 (9), and the biased skeleton and process. Propositions 21, 17 and 24 are proved by the
 transports Appendix C and Section 5.4 assert, and Corollary 30 is Corollary 15 transposed.
 
+**Proposition 18 is proved**: from any profile of `B_N^α` the run in which one actor
+expresses for ever has uniformly positive probability. It is the paper's own argument —
+the decomposition (21), the rate bound (22), the passage through `ln (1+x) ≥ x/(1+x)`, and
+the frequency event `E_ε^k` — with the strong law of large numbers taken from Mathlib as
+the paper takes it from the literature.
+
 **Both metastability theorems — 3 and 31 — are proved**, modulo one citation used twice:
 Theorem 5.3 of [LM22], which the paper invokes as Proposition 12 and which nothing inside
 this library can discharge. It is declared as an `axiom` rather than left as a `sorry`, so
@@ -76,6 +82,7 @@ SocialNetwork/Trajectory.lean realisations (Aₙ, Oₙ)ₙ and the deterministic
 SocialNetwork/Consensus.lean  greedy dynamics from a consensus state reach a ladder
 SocialNetwork/Favouring.lean  Definition 5, the first-repeat time τ(u), Appendix A pieces
 SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) of eq. (6)
+SocialNetwork/Frequencies.lean     i.i.d. uniform opinion words and the event E_ε^k of Prop 18
 SocialNetwork/Skeleton.lean   Definition 3: jump rates, skeleton kernel, law of a realisation
 SocialNetwork/Greedy.lean     Proposition 8 and Remark 4
 SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9

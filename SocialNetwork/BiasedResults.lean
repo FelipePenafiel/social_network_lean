@@ -4,6 +4,7 @@ Released under the Apache 2.0 license.
 -/
 import SocialNetwork.BiasedModel
 import SocialNetwork.ContinuousTime
+import SocialNetwork.Frequencies
 import SocialNetwork.Greedy
 
 /-!
@@ -19,9 +20,12 @@ the same shortcuts apply — every subset is measurable and every function out o
 measurable — and the chain is again driven by the expressed pairs, so a realisation determines
 the profile at every time by definition.
 
-Everything that is a definition is built; the theorems of the paper are stated and carry a
-`sorry`, for the same reasons as in the unbiased case (no Doeblin criterion, no Kac lemma, no
-Poisson point process in Mathlib).
+Every numbered statement of Section 3 and Appendix C is stated here.  Which of them are
+proved is recorded in `STATUS.md`, which is generated from the blueprint and checked by CI;
+this docstring deliberately does not duplicate it, since a hand-kept list drifts.  What is
+unproved is unproved for the reasons of the unbiased case (no Doeblin criterion, no Kac
+lemma, no Poisson point process in Mathlib) except where `FOR-THE-AUTHORS.md` says
+otherwise.
 
 ## Main definitions
 
@@ -32,12 +36,13 @@ Poisson point process in Mathlib).
 * `SocialNetwork.Bias.IsBiasedGreedyAt` — the event `ξ_n^{α,u}` of Proposition 17.
 * `SocialNetwork.Bias.IsNearGreedyAt` — the event `ξ̃_n^{α,u}` of Remark 7, with its slack
   of `1/(2γ)`.
+* `SocialNetwork.Bias.soloPath` — the realisation in which a single actor expresses for
+  ever, which carries the proof of Proposition 18.
 
 ## Main statements
 
-Proposition 21, Proposition 22, Proposition 23, Proposition 24, Theorem 4, Theorem 16,
-Proposition 17, Proposition 18, Theorem 25, Proposition 26, Theorem 27, Lemma 28, Lemma 29,
-Corollary 30, Theorem 31 — all stated, none proved.
+Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25,
+Proposition 26, Theorem 27, Lemmas 28 and 29, Corollary 30 and Theorem 31 — all stated.
 -/
 
 namespace SocialNetwork
@@ -624,32 +629,36 @@ section Iterate
 
 variable {γ β : ℝ} {u : Profile N M}
 
-/-- The event that each of the first `m` expressed pairs lies in `S` at the profile reached
-then. -/
-def stepEvents (S : Profile N M → Finset (Jump N M)) (u : Profile N M) (m : ℕ) :
+/-- The event that the `k`-th expressed pair lies in `S k` at the profile reached then, for
+every `k < m`.
+
+The set is allowed to depend on the step as well as on the profile: at a constant `S` this is
+the event `⋂_{j=1}^{m} ξ_j` of Propositions 17 and 24, and at the singleton
+`S k _ = {ζ k}` it is the cylinder `{ω : ω_k = ζ_k for k < m}` of Proposition 18. -/
+def stepEvents (S : ℕ → Profile N M → Finset (Jump N M)) (u : Profile N M) (m : ℕ) :
     Set (ℕ → Jump N M) :=
-  {ω | ∀ k < m, ω k ∈ S (stateAfter u ω k)}
+  {ω | ∀ k < m, ω k ∈ S k (stateAfter u ω k)}
 
 /-- The same event, read on histories of the first `n + 1` expressed pairs. -/
-def stepHistory (S : Profile N M → Finset (Jump N M)) (u : Profile N M) (n : ℕ) :
+def stepHistory (S : ℕ → Profile N M → Finset (Jump N M)) (u : Profile N M) (n : ℕ) :
     Set ((i : Finset.Iic n) → Jump N M) :=
-  {h | ∀ k ≤ n, ofHistoryPath h k ∈ S (stateAfter u (ofHistoryPath h) k)}
+  {h | ∀ k ≤ n, ofHistoryPath h k ∈ S k (stateAfter u (ofHistoryPath h) k)}
 
 omit [NeZero N] [NeZero M] in
-theorem measurableSet_stepHistory (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
+theorem measurableSet_stepHistory (S : ℕ → Profile N M → Finset (Jump N M)) (u : Profile N M)
     (n : ℕ) : MeasurableSet (stepHistory S u n) := MeasurableSet.of_discrete
 
 omit [NeZero N] [NeZero M] in
 /-- `⋂_{j=1}^{n+1}` of the event is the cylinder over `stepHistory S u n`. -/
-theorem stepEvents_succ_eq_preimage (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
-    (n : ℕ) :
+theorem stepEvents_succ_eq_preimage (S : ℕ → Profile N M → Finset (Jump N M))
+    (u : Profile N M) (n : ℕ) :
     stepEvents S u (n + 1)
       = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹' stepHistory S u n := by
   have key : ∀ (ω : ℕ → Jump N M) (k : ℕ), k ≤ n →
       (ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω) k
-        ∈ S (stateAfter u (ofHistoryPath
+        ∈ S k (stateAfter u (ofHistoryPath
             (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ω)) k)
-        ↔ ω k ∈ S (stateAfter u ω k)) := by
+        ↔ ω k ∈ S k (stateAfter u ω k)) := by
     intro ω k hk
     rw [stateAfter_ofHistoryPath_frestrictLe u ω (by omega),
       ofHistoryPath_apply _ hk, Preorder.frestrictLe_apply]
@@ -659,7 +668,7 @@ theorem stepEvents_succ_eq_preimage (S : Profile N M → Finset (Jump N M)) (u :
     fun hω k hk => (key ω k (by omega)).1 (hω k (by omega))⟩
 
 omit [NeZero N] [NeZero M] in
-theorem measurableSet_stepEvents (S : Profile N M → Finset (Jump N M)) (u : Profile N M)
+theorem measurableSet_stepEvents (S : ℕ → Profile N M → Finset (Jump N M)) (u : Profile N M)
     (m : ℕ) : MeasurableSet (stepEvents S u m) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · have h0 : stepEvents S u 0 = Set.univ := by ext ω; simp [stepEvents]
@@ -687,13 +696,13 @@ theorem stateAfter_ofHistoryPath_eq {n : ℕ} {x : (i : Finset.Iic (n + 1)) → 
 
 omit [NeZero N] [NeZero M] in
 /-- If a history of length `n + 2` restricts to one in `stepHistory S u n` and its last
-coordinate lies in `S` at the profile that history reaches, then it is in
+coordinate lies in `S (n + 1)` at the profile that history reaches, then it is in
 `stepHistory S u (n + 1)`. -/
-theorem mem_stepHistory_succ {S : Profile N M → Finset (Jump N M)} {n : ℕ}
+theorem mem_stepHistory_succ {S : ℕ → Profile N M → Finset (Jump N M)} {n : ℕ}
     {x : (i : Finset.Iic (n + 1)) → Jump N M} {h : (i : Finset.Iic n) → Jump N M}
     (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h)
     (hh : h ∈ stepHistory S u n)
-    (hlast : x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩ ∈ S (stateAfterHistory u h (n + 1))) :
+    (hlast : x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩ ∈ S (n + 1) (stateAfterHistory u h (n + 1))) :
     x ∈ stepHistory S u (n + 1) := by
   intro k hk
   rcases Nat.lt_or_ge k (n + 1) with hlt | hge
@@ -706,12 +715,13 @@ theorem mem_stepHistory_succ {S : Profile N M → Finset (Jump N M)} {n : ℕ}
       ofHistoryPath_apply _ (le_refl (n + 1))]
     exact hlast
 
-/-- **The induction step**, for any one-step bound `c` that holds at every profile. -/
-theorem le_partialTraj_succ {S : Profile N M → Finset (Jump N M)} {c : ℝ}
-    (hone : ∀ P : Profile N M, ENNReal.ofReal c ≤ (biasedJumpPMF γ β P).toMeasure (S P))
-    (n : ℕ) {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ stepHistory S u n) :
-    ENNReal.ofReal c
-      ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
+/-- **The induction step**, for whatever one-step bound holds at the profile this history
+reaches. -/
+theorem le_partialTraj_succ {S : ℕ → Profile N M → Finset (Jump N M)} {c : ℝ≥0∞}
+    (n : ℕ) {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ stepHistory S u n)
+    (hone : c ≤ (biasedJumpPMF γ β (stateAfterHistory u h (n + 1))).toMeasure
+      (S (n + 1) (stateAfterHistory u h (n + 1)))) :
+    c ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
           (stepHistory S u (n + 1)) := by
   have hmapA : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
         (biasedDrivingKernel γ β u) n (n + 1) h).map
@@ -739,15 +749,15 @@ theorem le_partialTraj_succ {S : Profile N M → Finset (Jump N M)} {c : ℝ}
       (fun x : (i : Finset.Iic (n + 1)) → Jump N M => x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
       = biasedDrivingKernel γ β u n h := by
     rw [← Kernel.map_apply _ Measurable.of_discrete, Kernel.map_partialTraj_succ_self]
-  have hB : ENNReal.ofReal c
+  have hB : c
       ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
           (biasedDrivingKernel γ β u) n (n + 1) h
           ((fun x : (i : Finset.Iic (n + 1)) → Jump N M =>
               x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
-            (S (stateAfterHistory u h (n + 1)))) := by
+            (S (n + 1) (stateAfterHistory u h (n + 1)))) := by
     rw [← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete, hmapB,
       biasedDrivingKernel_apply]
-    exact hone _
+    exact hone
   exact le_measure_of_inter hAcompl hB fun x hx => mem_stepHistory_succ hx.1 hh hx.2
 
 /-- The law of the first `n + 1` expressed pairs of the biased chain. -/
@@ -756,10 +766,10 @@ noncomputable def biasedHistoryMeasure (γ β : ℝ) (u : Profile N M) (n : ℕ)
   Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) 0 n ∘ₘ
     ((biasedJumpPMF γ β u).toMeasure.map toHistoryZero)
 
-theorem le_historyMeasure_zero {S : Profile N M → Finset (Jump N M)} {c : ℝ}
-    (hone : ∀ P : Profile N M, ENNReal.ofReal c ≤ (biasedJumpPMF γ β P).toMeasure (S P)) :
-    ENNReal.ofReal c ≤ biasedHistoryMeasure γ β u 0 (stepHistory S u 0) := by
-  have hpre : toHistoryZero ⁻¹' stepHistory S u 0 = (S u : Set (Jump N M)) := by
+theorem le_historyMeasure_zero {S : ℕ → Profile N M → Finset (Jump N M)} {c : ℝ≥0∞}
+    (hone : c ≤ (biasedJumpPMF γ β u).toMeasure (S 0 u)) :
+    c ≤ biasedHistoryMeasure γ β u 0 (stepHistory S u 0) := by
+  have hpre : toHistoryZero ⁻¹' stepHistory S u 0 = (S 0 u : Set (Jump N M)) := by
     ext z
     have hz : ofHistoryPath (toHistoryZero z) 0 = z := rfl
     constructor
@@ -774,14 +784,23 @@ theorem le_historyMeasure_zero {S : Profile N M → Finset (Jump N M)} {c : ℝ}
   unfold biasedHistoryMeasure
   rw [Kernel.partialTraj_self, Measure.id_comp,
     Measure.map_apply measurable_toHistoryZero MeasurableSet.of_discrete, hpre]
-  exact hone u
+  exact hone
 
-theorem pow_le_historyMeasure {S : Profile N M → Finset (Jump N M)} {c : ℝ}
-    (hone : ∀ P : Profile N M, ENNReal.ofReal c ≤ (biasedJumpPMF γ β P).toMeasure (S P))
-    (n : ℕ) :
-    ENNReal.ofReal c ^ (n + 1) ≤ biasedHistoryMeasure γ β u n (stepHistory S u n) := by
+/-- The one-step bound, in the form the induction consumes: it may depend on the step and on
+the whole past, as long as the past is admissible. -/
+def IsStepBound (γ β : ℝ) (S : ℕ → Profile N M → Finset (Jump N M)) (u : Profile N M)
+    (c : ℕ → ℝ≥0∞) : Prop :=
+  ∀ (m : ℕ) (ω : ℕ → Jump N M), (∀ k < m, ω k ∈ S k (stateAfter u ω k)) →
+    c m ≤ (biasedJumpPMF γ β (stateAfter u ω m)).toMeasure (S m (stateAfter u ω m))
+
+theorem prod_le_historyMeasure {S : ℕ → Profile N M → Finset (Jump N M)} {c : ℕ → ℝ≥0∞}
+    (hone : IsStepBound γ β S u c) (n : ℕ) :
+    ∏ m ∈ Finset.range (n + 1), c m ≤ biasedHistoryMeasure γ β u n (stepHistory S u n) := by
   induction n with
-  | zero => simpa using le_historyMeasure_zero hone
+  | zero =>
+      have h0 := hone 0 (fun _ => default) (by omega)
+      rw [stateAfter_zero] at h0
+      simpa using le_historyMeasure_zero h0
   | succ n ih =>
       have hstep : biasedHistoryMeasure γ β u (n + 1) (stepHistory S u (n + 1))
           = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
@@ -791,10 +810,11 @@ theorem pow_le_historyMeasure {S : Profile N M → Finset (Jump N M)} {c : ℝ}
         rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
           Measure.bind_apply (measurableSet_stepHistory S u (n + 1)) (Kernel.aemeasurable _)]
       rw [hstep]
-      calc ENNReal.ofReal c ^ (n + 1 + 1)
-          = ENNReal.ofReal c * ENNReal.ofReal c ^ (n + 1) := by ring
-        _ ≤ ENNReal.ofReal c * biasedHistoryMeasure γ β u n (stepHistory S u n) := by gcongr
-        _ = ∫⁻ h, (stepHistory S u n).indicator (fun _ => ENNReal.ofReal c) h
+      calc ∏ m ∈ Finset.range (n + 1 + 1), c m
+          = c (n + 1) * ∏ m ∈ Finset.range (n + 1), c m := by
+            rw [Finset.prod_range_succ]; ring
+        _ ≤ c (n + 1) * biasedHistoryMeasure γ β u n (stepHistory S u n) := by gcongr
+        _ = ∫⁻ h, (stepHistory S u n).indicator (fun _ => c (n + 1)) h
               ∂(biasedHistoryMeasure γ β u n) := by
             rw [lintegral_indicator (measurableSet_stepHistory S u n), setLIntegral_const]
         _ ≤ ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
@@ -803,7 +823,8 @@ theorem pow_le_historyMeasure {S : Profile N M → Finset (Jump N M)} {c : ℝ}
             refine lintegral_mono fun h => ?_
             by_cases hh : h ∈ stepHistory S u n
             · rw [Set.indicator_of_mem hh]
-              exact le_partialTraj_succ hone n hh
+              exact le_partialTraj_succ n hh
+                (hone (n + 1) (ofHistoryPath h) fun k hk => hh k (by omega))
             · rw [Set.indicator_of_notMem hh]
               exact zero_le
 
@@ -812,15 +833,14 @@ theorem pow_le_historyMeasure {S : Profile N M → Finset (Jump N M)} {c : ℝ}
 The paper does it by conditioning on `Ũ_{m-1} = v` in eq. (10); here it goes along the
 finite-horizon kernels of the Ionescu–Tulcea construction, Mathlib offering no decomposition
 of that shape.  It is the same Markov property through the formalism that exists. -/
-theorem pow_le_pathMeasure_stepEvents {S : Profile N M → Finset (Jump N M)} {c : ℝ}
-    (hone : ∀ P : Profile N M, ENNReal.ofReal c ≤ (biasedJumpPMF γ β P).toMeasure (S P))
-    (m : ℕ) :
-    ENNReal.ofReal c ^ m ≤ biasedPathMeasure γ β u (stepEvents S u m) := by
+theorem prod_le_pathMeasure_stepEvents {S : ℕ → Profile N M → Finset (Jump N M)}
+    {c : ℕ → ℝ≥0∞} (hone : IsStepBound γ β S u c) (m : ℕ) :
+    ∏ j ∈ Finset.range m, c j ≤ biasedPathMeasure γ β u (stepEvents S u m) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · have huniv : stepEvents S u 0 = Set.univ := by
       ext ω
       simp [stepEvents]
-    rw [pow_zero, huniv, measure_univ]
+    rw [Finset.range_zero, Finset.prod_empty, huniv, measure_univ]
   · obtain ⟨n, rfl⟩ : ∃ n, m = n + 1 := ⟨m - 1, by omega⟩
     have hmap : (biasedPathMeasure γ β u).map
         (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n)
@@ -830,7 +850,37 @@ theorem pow_le_pathMeasure_stepEvents {S : Profile N M → Finset (Jump N M)} {c
         Kernel.traj_map_frestrictLe]
     rw [stepEvents_succ_eq_preimage, ← Measure.map_apply
       (Preorder.measurable_frestrictLe n) (measurableSet_stepHistory S u n), hmap]
-    exact pow_le_historyMeasure hone n
+    exact prod_le_historyMeasure hone n
+
+/-- The iteration at a bound that does not depend on the step: Propositions 17 and 24. -/
+theorem pow_le_pathMeasure_stepEvents {S : Profile N M → Finset (Jump N M)} {c : ℝ}
+    (hone : ∀ P : Profile N M, ENNReal.ofReal c ≤ (biasedJumpPMF γ β P).toMeasure (S P))
+    (m : ℕ) :
+    ENNReal.ofReal c ^ m ≤ biasedPathMeasure γ β u (stepEvents (fun _ => S) u m) := by
+  have := prod_le_pathMeasure_stepEvents (u := u) (S := fun _ => S)
+    (c := fun _ => ENNReal.ofReal c) (fun k ω _ => hone _) m
+  simpa using this
+
+/-- **The probability of following a prescribed sequence of expressed pairs** is at least the
+product of the one-step probabilities along it.  This is equation (21) of the paper, whose
+right-hand side it bounds term by term. -/
+theorem prod_le_pathMeasure_cylinder (ζ : ℕ → Jump N M) (n : ℕ) :
+    ∏ m ∈ Finset.range n, biasedJumpPMF γ β (stateAfter u ζ m) (ζ m)
+      ≤ biasedPathMeasure γ β u {ω | ∀ k < n, ω k = ζ k} := by
+  classical
+  have hev : {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k}
+      = stepEvents (fun k _ => ({ζ k} : Finset (Jump N M))) u n := by
+    ext ω
+    simp [stepEvents]
+  rw [hev]
+  refine prod_le_pathMeasure_stepEvents (S := fun k _ => ({ζ k} : Finset (Jump N M)))
+    (c := fun m => biasedJumpPMF γ β (stateAfter u ζ m) (ζ m)) (fun m ω hω => ?_) n
+  have hst : stateAfter u ω m = stateAfter u ζ m :=
+    stateAfter_congr u m fun j hj => Finset.mem_singleton.1 (hω j hj)
+  rw [hst]
+  refine le_of_eq ?_
+  rw [Finset.coe_singleton,
+    PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton (ζ m))]
 
 end Iterate
 
@@ -916,7 +966,7 @@ theorem inv_le_biasedJumpPMF_biasedArgmaxFinset {γ β : ℝ} (hβ : 0 ≤ β) (
 
 /-- `ξ^{α,u}` is the step event attached to `Y`. -/
 theorem biasedGreedyEvents_eq_stepEvents (γ : ℝ) (u : Profile N M) (m : ℕ) :
-    biasedGreedyEvents γ u m = stepEvents (biasedArgmaxFinset γ) u m := by
+    biasedGreedyEvents γ u m = stepEvents (fun _ => biasedArgmaxFinset γ) u m := by
   ext ω
   simp only [biasedGreedyEvents, stepEvents, Set.mem_ofPred_eq]
   exact ⟨fun hω k hk => (isBiasedGreedyAt_iff_mem γ u ω k).1 (hω k hk),
@@ -932,7 +982,7 @@ theorem inv_pow_le_biasedPathMeasure_biasedGreedyEvents {γ β : ℝ} (hβ : 0 �
 
 /-- `ξ̃^{α,u}` is the step event attached to `Ỹ_γ`. -/
 theorem nearGreedyEvents_eq_stepEvents (γ : ℝ) (u : Profile N M) (m : ℕ) :
-    nearGreedyEvents γ u m = stepEvents (nearArgmaxFinset γ) u m := by
+    nearGreedyEvents γ u m = stepEvents (fun _ => nearArgmaxFinset γ) u m := by
   ext ω
   simp only [nearGreedyEvents, stepEvents, Set.mem_ofPred_eq]
   exact ⟨fun hω k hk => (isNearGreedyAt_iff_mem γ u ω k).1 (hω k hk),
@@ -1231,14 +1281,462 @@ theorem measure_biasedBounded_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
     fun a p => pressure_stateAfter_le_of_biasedGreedy hM hN hγ0 hu
       (fun k hk => hω k hk) a p⟩
 
+/-! #### Proposition 18: the run in which one actor never stops
+
+The paper fixes a starting profile in `B_N^α` whose first row is null — which every `u ∈ S^α`
+has, by the first field of `SocialNetwork.Bias.IsBiasedState`, so the paper's "without loss of
+generality" is a choice of actor and nothing more — and bounds `P (⋂_{m ≤ n} {A_m = 1})` from
+below by decomposing over the word `o₁, …, o_n` that actor expresses, equation (21).  Each
+factor of the resulting product is bounded by `(M + λ_m)^{-1}` with the `λ_m` of equation
+(22), and the sum over words is the expectation over an i.i.d. uniform word of
+`SocialNetwork.uniformSeq`. -/
+
+section Absorption
+
+variable {γ β : ℝ}
+
+/-- The realisation in which the actor `a` expresses the opinions `x 0, x 1, …` and no other
+actor ever expresses. -/
+def soloPath (a : Actor N) (x : ℕ → Opinion M) : ℕ → Jump N M := fun j => (a, x j)
+
+omit [NeZero N] [NeZero M] in
+@[simp]
+theorem soloPath_apply (a : Actor N) (x : ℕ → Opinion M) (j : ℕ) :
+    soloPath a x j = (a, x j) := rfl
+
+omit [NeZero N] [NeZero M] in
+/-- Along `soloPath a x` the expressing actor's memory is reset at every step, so a null row
+stays null.  This is the paper's `u (1, o) = 0 for all o`, propagated along the run. -/
+theorem heard_stateAfter_soloPath (u : Profile N M) {a : Actor N} (hu : u.heard a = 0)
+    (x : ℕ → Opinion M) (m : ℕ) : (stateAfter u (soloPath a x) m).heard a = 0 := by
+  cases m with
+  | zero => exact hu
+  | succ m => rw [stateAfter_succ]; exact Profile.heard_express_self _ _ _
+
+omit [NeZero N] [NeZero M] in
+theorem pressure_stateAfter_soloPath_self (u : Profile N M) {a : Actor N} (hu : u.heard a = 0)
+    (x : ℕ → Opinion M) (m : ℕ) (p : Opinion M) :
+    (stateAfter u (soloPath a x) m).pressure γ a p = 0 :=
+  Profile.pressure_eq_zero_of_heard_eq_zero γ (heard_stateAfter_soloPath u hu x m) p
+
+omit [NeZero N] [NeZero M] in
+/-- Along `soloPath a x`, every other actor hears exactly the word `x`, so its row is the
+initial one shifted by the counts of that word.  This is the profile equation (22) reads. -/
+theorem pressure_stateAfter_soloPath_of_ne (u : Profile N M) (a : Actor N)
+    (x : ℕ → Opinion M) (m : ℕ) {b : Actor N} (hb : b ≠ a) (p : Opinion M) :
+    (stateAfter u (soloPath a x) m).pressure γ b p
+      = u.pressure γ b p + ((occCount x p m : ℕ) : ℝ) * (1 + γ) - γ * m := by
+  induction m with
+  | zero => simp [occCount]
+  | succ m ih =>
+      rw [stateAfter_succ, soloPath_apply, Profile.pressure_express, if_neg hb, ih,
+        occCount_succ]
+      by_cases h : p = x m
+      · rw [if_pos h, if_pos h.symm]
+        push_cast
+        ring
+      · rw [if_neg h, if_neg fun hh => h hh.symm]
+        push_cast
+        ring
+
+
+/-- A lower bound for the probability of a single expressed pair, from a lower bound on its
+rate and an upper bound on the total rate. -/
+theorem le_biasedJumpPMF_apply (P : Profile N M) (p : Jump N M) {A T : ℝ} (hA : 0 ≤ A)
+    (hAle : A ≤ biasedJumpRate γ β P p.1 p.2)
+    (hT : (∑ q : Jump N M, biasedJumpRate γ β P q.1 q.2) ≤ T) :
+    ENNReal.ofReal (A / T) ≤ biasedJumpPMF γ β P p := by
+  have htotpos : (0 : ℝ) < ∑ q : Jump N M, biasedJumpRate γ β P q.1 q.2 :=
+    Finset.sum_pos (fun q _ => biasedJumpRate_pos γ β P q.1 q.2) (univ_jump_nonempty N M)
+  have hTpos : (0 : ℝ) < T := lt_of_lt_of_le htotpos hT
+  have hw : (∑' q : Jump N M, biasedJumpWeight γ β P q)
+      = ENNReal.ofReal (∑ q : Jump N M, biasedJumpRate γ β P q.1 q.2) := by
+    rw [tsum_eq_sum (s := Finset.univ) fun q hq => absurd (Finset.mem_univ q) hq,
+      ENNReal.ofReal_sum_of_nonneg fun q _ => (biasedJumpRate_pos γ β P q.1 q.2).le]
+    rfl
+  rw [biasedJumpPMF_apply, hw, show biasedJumpWeight γ β P p
+      = ENNReal.ofReal (biasedJumpRate γ β P p.1 p.2) from rfl,
+    ← ENNReal.ofReal_inv_of_pos htotpos,
+    ← ENNReal.ofReal_mul (biasedJumpRate_pos γ β P p.1 p.2).le, ← div_eq_mul_inv]
+  refine ENNReal.ofReal_le_ofReal ?_
+  rw [div_le_div_iff₀ hTpos htotpos]
+  nlinarith [htotpos, (biasedJumpRate_pos γ β P p.1 p.2).le]
+
+/-- **Equation (22)**, `λ_{m+1}`: the rate carried by the actors other than `a`, after `a` has
+expressed the first `m` letters of the word `x`, when every entry of the starting profile is
+at most `K`. -/
+noncomputable def soloOtherRate (N M : ℕ) (γ β K : ℝ) (x : ℕ → Opinion M) (m : ℕ) : ℝ :=
+  ((N : ℝ) - 1) * ∑ p : Opinion M,
+    Real.exp (β * (K + ((occCount x p m : ℕ) : ℝ) * (1 + γ) - γ * m))
+
+omit [NeZero N] [NeZero M] in
+theorem soloOtherRate_nonneg (hN : 1 ≤ N) (γ β K : ℝ) (x : ℕ → Opinion M) (m : ℕ) :
+    0 ≤ soloOtherRate N M γ β K x m := by
+  have hN' : (1 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  exact mul_nonneg (by linarith) (Finset.sum_nonneg fun p _ => (Real.exp_pos _).le)
+
+omit [NeZero N] [NeZero M] in
+/-- **The one-step bound behind equation (21).**  When the expressing actor's row is null the
+pair it expresses carries rate `1`, and the whole profile carries at most `M + λ`. -/
+theorem sum_biasedJumpRate_soloPath_le (hβ : 0 ≤ β) (hN : 1 ≤ N) {u : Profile N M}
+    {a : Actor N} (hu : u.heard a = 0) {K : ℝ} (hK : ∀ b p, u.pressure γ b p ≤ K)
+    (x : ℕ → Opinion M) (m : ℕ) :
+    (∑ q : Jump N M, biasedJumpRate γ β (stateAfter u (soloPath a x) m) q.1 q.2)
+      ≤ (M : ℝ) + soloOtherRate N M γ β K x m := by
+  have hsplit : (∑ q : Jump N M, biasedJumpRate γ β (stateAfter u (soloPath a x) m) q.1 q.2)
+      = ∑ b : Actor N, ∑ p : Opinion M,
+          biasedJumpRate γ β (stateAfter u (soloPath a x) m) b p :=
+    Fintype.sum_prod_type _
+  have hself : (∑ p : Opinion M, biasedJumpRate γ β (stateAfter u (soloPath a x) m) a p)
+      = (M : ℝ) := by
+    have hone : ∀ p : Opinion M,
+        biasedJumpRate γ β (stateAfter u (soloPath a x) m) a p = 1 := fun p => by
+      unfold biasedJumpRate
+      rw [pressure_stateAfter_soloPath_self u hu x m p, mul_zero, Real.exp_zero]
+    rw [Finset.sum_congr rfl fun p _ => hone p]
+    simp
+  have hother : ∀ b ∈ (Finset.univ : Finset (Actor N)).erase a,
+      (∑ p : Opinion M, biasedJumpRate γ β (stateAfter u (soloPath a x) m) b p)
+        ≤ ∑ p : Opinion M,
+            Real.exp (β * (K + ((occCount x p m : ℕ) : ℝ) * (1 + γ) - γ * m)) := by
+    intro b hb
+    refine Finset.sum_le_sum fun p _ => ?_
+    unfold biasedJumpRate
+    refine Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left ?_ hβ)
+    rw [pressure_stateAfter_soloPath_of_ne u a x m (Finset.ne_of_mem_erase hb) p]
+    have := hK b p
+    linarith
+  have hfin : (∑ b ∈ (Finset.univ : Finset (Actor N)).erase a,
+      ∑ p : Opinion M, biasedJumpRate γ β (stateAfter u (soloPath a x) m) b p)
+        ≤ soloOtherRate N M γ β K x m := by
+    refine le_trans (Finset.sum_le_sum hother) ?_
+    rw [Finset.sum_const, soloOtherRate, nsmul_eq_mul,
+      Finset.card_erase_of_mem (Finset.mem_univ a), Finset.card_univ, Fintype.card_fin,
+      Nat.cast_sub hN, Nat.cast_one]
+  rw [hsplit, ← Finset.add_sum_erase _ _ (Finset.mem_univ a), hself]
+  linarith
+
+theorem inv_le_biasedJumpPMF_soloPath (hβ : 0 ≤ β) (hN : 1 ≤ N) {u : Profile N M}
+    {a : Actor N} (hu : u.heard a = 0) {K : ℝ} (hK : ∀ b p, u.pressure γ b p ≤ K)
+    (x : ℕ → Opinion M) (m : ℕ) :
+    ENNReal.ofReal (((M : ℝ) + soloOtherRate N M γ β K x m)⁻¹)
+      ≤ biasedJumpPMF γ β (stateAfter u (soloPath a x) m) (soloPath a x m) := by
+  have hA : biasedJumpRate γ β (stateAfter u (soloPath a x) m)
+      (soloPath a x m).1 (soloPath a x m).2 = 1 := by
+    show Real.exp (β * Profile.pressure γ (stateAfter u (soloPath a x) m) a (x m)) = 1
+    rw [pressure_stateAfter_soloPath_self u hu x m (x m), mul_zero, Real.exp_zero]
+  have h := le_biasedJumpPMF_apply (γ := γ) (β := β) (stateAfter u (soloPath a x) m)
+    (soloPath a x m) zero_le_one hA.ge
+    (sum_biasedJumpRate_soloPath_le hβ hN hu hK x m)
+  rwa [one_div] at h
+
+/-! ##### The elementary estimates of the proof -/
+
+/-- `M⁻¹ e^{-L} ≤ (M + L)⁻¹`.
+
+**Follows the paper's proof of Proposition 18**: this is its
+`ln (1 + x) ≥ x / (1 + x)` at `x = -λ / (M + λ)`, which gives `(M + λ)⁻¹ ≥ M⁻¹ e^{-λ/M}`,
+followed by the weakening from `e^{-λ/M}` to `e^{-λ}` that the paper performs on the next
+line.  Composed, the two are `M e^L ≥ M + L`. -/
+theorem inv_mul_exp_neg_le_inv_add {Mr L : ℝ} (hMr : 1 ≤ Mr) (hL : 0 ≤ L) :
+    Mr⁻¹ * Real.exp (-L) ≤ (Mr + L)⁻¹ := by
+  have hMpos : (0 : ℝ) < Mr := lt_of_lt_of_le one_pos hMr
+  have hsum : (0 : ℝ) < Mr + L := by linarith
+  have hexp : Mr + L ≤ Mr * Real.exp L := by
+    have h1 : L + 1 ≤ Real.exp L := Real.add_one_le_exp L
+    nlinarith
+  rw [show Mr⁻¹ * Real.exp (-L) = (Mr * Real.exp L)⁻¹ by rw [mul_inv, Real.exp_neg]]
+  exact inv_anti₀ hsum hexp
+
+/-- The product form: `∏_{m < n} (M + λ_m)⁻¹ ≥ M^{-n} e^{-C}` as soon as `∑_{m < n} λ_m ≤ C`.
+This is the display following equation (22) in the paper. -/
+theorem prod_inv_add_ge {Mr : ℝ} (hMr : 1 ≤ Mr) {l : ℕ → ℝ} (hl : ∀ m, 0 ≤ l m) (n : ℕ)
+    {C : ℝ} (hC : ∑ m ∈ Finset.range n, l m ≤ C) :
+    Mr⁻¹ ^ n * Real.exp (-C) ≤ ∏ m ∈ Finset.range n, (Mr + l m)⁻¹ := by
+  have hMpos : (0 : ℝ) < Mr := lt_of_lt_of_le one_pos hMr
+  calc Mr⁻¹ ^ n * Real.exp (-C)
+      ≤ Mr⁻¹ ^ n * Real.exp (-∑ m ∈ Finset.range n, l m) :=
+        mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by linarith)) (by positivity)
+    _ = ∏ m ∈ Finset.range n, Mr⁻¹ * Real.exp (-(l m)) := by
+        rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_range, ← Real.exp_sum,
+          Finset.sum_neg_distrib]
+    _ ≤ ∏ m ∈ Finset.range n, (Mr + l m)⁻¹ :=
+        Finset.prod_le_prod (fun m _ => by positivity)
+          (fun m _ => inv_mul_exp_neg_le_inv_add hMr (hl m))
+
+/-- A sum whose terms are bounded by a constant below `k` and geometrically above it is
+bounded uniformly in the horizon.  This is what makes the right-hand side of the paper's
+display (24) finite, and it is where `α < 0` is used: without it the ratio `r` is at least
+one. -/
+theorem sum_le_of_le_geometric {l : ℕ → ℝ} {D E r : ℝ} (k n : ℕ) (hD : 0 ≤ D) (hE : 0 ≤ E)
+    (hr0 : 0 ≤ r) (hr1 : r < 1)
+    (hlow : ∀ m, m < n → m < k → l m ≤ D)
+    (hhigh : ∀ m, m < n → k ≤ m → l m ≤ E * r ^ m) :
+    ∑ m ∈ Finset.range n, l m ≤ (k : ℝ) * D + E * (1 - r)⁻¹ := by
+  classical
+  have hcard : #(((Finset.range n).filter fun m => m < k)) ≤ k := by
+    have hsub : ((Finset.range n).filter fun m => m < k) ⊆ Finset.range k := fun m hm =>
+      Finset.mem_range.2 (Finset.mem_filter.1 hm).2
+    simpa using Finset.card_le_card hsub
+  have h1 : (∑ m ∈ (Finset.range n).filter (fun m => m < k), l m) ≤ (k : ℝ) * D := by
+    refine le_trans (Finset.sum_le_sum fun m hm =>
+      hlow m (Finset.mem_range.1 (Finset.mem_filter.1 hm).1) (Finset.mem_filter.1 hm).2) ?_
+    rw [Finset.sum_const, nsmul_eq_mul]
+    have : ((#(((Finset.range n).filter fun m => m < k)) : ℕ) : ℝ) ≤ (k : ℝ) := by
+      exact_mod_cast hcard
+    exact mul_le_mul_of_nonneg_right this hD
+  have hgeom : (∑ m ∈ Finset.range n, r ^ m) ≤ (1 - r)⁻¹ := by
+    have hsummable : Summable fun m : ℕ => r ^ m := summable_geometric_of_lt_one hr0 hr1
+    have hle := hsummable.sum_le_tsum (Finset.range n) (fun m _ => pow_nonneg hr0 m)
+    rwa [tsum_geometric_of_lt_one hr0 hr1] at hle
+  have h2 : (∑ m ∈ (Finset.range n).filter (fun m => ¬ m < k), l m) ≤ E * (1 - r)⁻¹ := by
+    calc (∑ m ∈ (Finset.range n).filter (fun m => ¬ m < k), l m)
+        ≤ ∑ m ∈ (Finset.range n).filter (fun m => ¬ m < k), E * r ^ m :=
+          Finset.sum_le_sum fun m hm =>
+            hhigh m (Finset.mem_range.1 (Finset.mem_filter.1 hm).1)
+              (not_lt.1 (Finset.mem_filter.1 hm).2)
+      _ ≤ ∑ m ∈ Finset.range n, E * r ^ m :=
+          Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+            (fun m _ _ => mul_nonneg hE (pow_nonneg hr0 m))
+      _ = E * ∑ m ∈ Finset.range n, r ^ m := by rw [Finset.mul_sum]
+      _ ≤ E * (1 - r)⁻¹ := mul_le_mul_of_nonneg_left hgeom hE
+  rw [← Finset.sum_filter_add_sum_filter_not (Finset.range n) (fun m => m < k) l]
+  linarith
+
+/-! ##### The events of Proposition 18 -/
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_cylinderPath (ζ : ℕ → Jump N M) (n : ℕ) :
+    MeasurableSet {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k} := by
+  have h : {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k}
+      = ⋂ k ∈ Finset.range n, {ω : ℕ → Jump N M | ω k = ζ k} := by
+    ext ω
+    simp
+  rw [h]
+  refine MeasurableSet.biInter (Finset.range n).countable_toSet fun k _ => ?_
+  show MeasurableSet ((fun ω : ℕ → Jump N M => ω k) ⁻¹' {ζ k})
+  exact measurable_pi_apply k (measurableSet_singleton (ζ k))
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_forall_lt_fst (a : Actor N) (n : ℕ) :
+    MeasurableSet {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a} := by
+  have h : {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a}
+      = ⋂ j ∈ Finset.range n, {ω : ℕ → Jump N M | (ω j).1 = a} := by
+    ext ω
+    simp
+  rw [h]
+  refine MeasurableSet.biInter (Finset.range n).countable_toSet fun j _ => ?_
+  show MeasurableSet ((fun ω : ℕ → Jump N M => (ω j).1) ⁻¹' {a})
+  exact ((Measurable.of_discrete (f := fun q : Jump N M => q.1)).comp
+    (measurable_pi_apply j)) (measurableSet_singleton a)
+
+end Absorption
+
+/-- **The finite-horizon form of Proposition 18.**  From a profile of `B_N^α` with a null row
+`a` — which every profile of `S^α` has — the probability that `a` performs the first `n`
+expressions is bounded below uniformly in `n`, in `u` and in `a`.
+
+**Follows the paper's proof of Proposition 18.**  Equation (21) is
+`SocialNetwork.Bias.prod_le_pathMeasure_cylinder` summed over the words `f` of length `n`;
+each factor is bounded by `(M + λ_m)⁻¹` with the `λ_m` of equation (22)
+(`SocialNetwork.Bias.inv_le_biasedJumpPMF_soloPath`); the display after (22) is
+`SocialNetwork.Bias.prod_inv_add_ge`; the restriction to `E_ε^k` and the geometric bound
+(24) are `SocialNetwork.uniformSeq_freqGood_le` and
+`SocialNetwork.Bias.sum_le_of_le_geometric`.
+
+**Supplies a step the paper asserts**: "without loss of generality `u (1, o) = 0` for all
+`o`" is the choice of an actor whose row is null, which `IsBiasedState.exists_zero_row`
+provides, and the terms of index below `k`, which `E_ε^k` does not control, are bounded by
+the crude `λ_m ≤ (N-1) M e^{β (N + k (1+γ))}`. -/
+theorem exists_pos_le_pathMeasure_forall_lt_fst (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
+    (hγ : 1 / ((M : ℝ) - 1) < γ) (hβ : 0 < β) :
+    ∃ c : ℝ, 0 < c ∧ ∀ u : Profile N M, u ∈ biasedBounded N M γ → ∀ a : Actor N,
+      u.heard a = 0 → ∀ n : ℕ,
+        ENNReal.ofReal c ≤ biasedPathMeasure γ β u {ω | ∀ j < n, (ω j).1 = a} := by
+  classical
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hMr : (1 : ℝ) ≤ (M : ℝ) := by linarith
+  have hMpos : (0 : ℝ) < (M : ℝ) := by linarith
+  have hN3 : (3 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hγ0 : (0 : ℝ) < γ := lt_trans (by positivity) hγ
+  have h1γ : (0 : ℝ) < 1 + γ := by linarith
+  have hgap : (1 : ℝ) < ((M : ℝ) - 1) * γ := by
+    rw [div_lt_iff₀ hM1] at hγ
+    linarith
+  set ε : ℝ := (((M : ℝ) - 1) * γ - 1) / (2 * (M : ℝ) * (1 + γ)) with hεdef
+  have hεpos : 0 < ε := div_pos (by linarith) (by positivity)
+  set c₀ : ℝ := γ - (((M : ℝ))⁻¹ + ε) * (1 + γ) with hc₀def
+  have hc₀eq : c₀ = (((M : ℝ) - 1) * γ - 1) / (2 * (M : ℝ)) := by
+    rw [hc₀def, hεdef]
+    field_simp
+    ring
+  have hc₀pos : 0 < c₀ := by
+    rw [hc₀eq]
+    exact div_pos (by linarith) (by positivity)
+  obtain ⟨k, hk⟩ := exists_uniformSeq_freqGood_pos (M := M) hεpos
+  set p : ℝ≥0∞ := uniformSeq M (freqGood M ε k) with hpdef
+  have hpne : p ≠ ⊤ := measure_ne_top _ _
+  have hptoReal : 0 < p.toReal := ENNReal.toReal_pos hk.ne' hpne
+  set r : ℝ := Real.exp (-(β * c₀)) with hrdef
+  have hr0 : (0 : ℝ) ≤ r := (Real.exp_pos _).le
+  have hr1 : r < 1 := by
+    rw [hrdef, Real.exp_lt_one_iff]
+    nlinarith
+  set W : ℝ := ((N : ℝ) - 1) * (M : ℝ) with hWdef
+  have hW0 : (0 : ℝ) ≤ W := by
+    rw [hWdef]
+    nlinarith
+  set D : ℝ := W * Real.exp (β * ((N : ℝ) + (k : ℝ) * (1 + γ))) with hDdef
+  set E : ℝ := W * Real.exp (β * (N : ℝ)) with hEdef
+  have hD0 : (0 : ℝ) ≤ D := mul_nonneg hW0 (Real.exp_pos _).le
+  have hE0 : (0 : ℝ) ≤ E := mul_nonneg hW0 (Real.exp_pos _).le
+  set C : ℝ := (k : ℝ) * D + E * (1 - r)⁻¹ with hCdef
+  refine ⟨Real.exp (-C) * p.toReal, by positivity, ?_⟩
+  intro u hu a ha n
+  have hcyl : ∀ f ∈ freqGoodFinset M ε k n,
+      ENNReal.ofReal (((M : ℝ))⁻¹ ^ n * Real.exp (-C))
+        ≤ biasedPathMeasure γ β u {ω | ∀ j < n, ω j = soloPath a (extendWord f) j} := by
+    intro f hf
+    have hlnn : ∀ m : ℕ, 0 ≤ soloOtherRate N M γ β (N : ℝ) (extendWord f) m := fun m =>
+      soloOtherRate_nonneg (by omega) _ _ _ _ _
+    have hCb : ∑ m ∈ Finset.range n, soloOtherRate N M γ β (N : ℝ) (extendWord f) m ≤ C := by
+      refine sum_le_of_le_geometric k n hD0 hE0 hr0 hr1 (fun m _ hmk => ?_)
+        (fun m hmn hmk => ?_)
+      · have hterm : ∀ q : Opinion M,
+            Real.exp (β * ((N : ℝ) + ((occCount (extendWord f) q m : ℕ) : ℝ) * (1 + γ)
+                - γ * m))
+              ≤ Real.exp (β * ((N : ℝ) + (k : ℝ) * (1 + γ))) := by
+          intro q
+          refine Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left ?_ hβ.le)
+          have h1 : occCount (extendWord f) q m ≤ m := occCount_le _ _ _
+          have h3 : ((occCount (extendWord f) q m : ℕ) : ℝ) ≤ (m : ℝ) := by exact_mod_cast h1
+          have h2 : (m : ℝ) ≤ (k : ℝ) := by exact_mod_cast hmk.le
+          have hoc : ((occCount (extendWord f) q m : ℕ) : ℝ) ≤ (k : ℝ) := by linarith
+          have hmul := mul_le_mul_of_nonneg_right hoc h1γ.le
+          have hγm : (0 : ℝ) ≤ γ * m := by positivity
+          linarith
+        calc soloOtherRate N M γ β (N : ℝ) (extendWord f) m
+            ≤ ((N : ℝ) - 1) * ∑ _q : Opinion M,
+                Real.exp (β * ((N : ℝ) + (k : ℝ) * (1 + γ))) :=
+              mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun q _ => hterm q) (by linarith)
+          _ = D := by
+              rw [hDdef, hWdef, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+                nsmul_eq_mul]
+              ring
+      · have hoc : ∀ q : Opinion M,
+            ((occCount (extendWord f) q m : ℕ) : ℝ) ≤ (((M : ℝ))⁻¹ + ε) * m :=
+          fun q => mem_freqGoodFinset.1 hf m hmn.le hmk q
+        have hterm : ∀ q : Opinion M,
+            Real.exp (β * ((N : ℝ) + ((occCount (extendWord f) q m : ℕ) : ℝ) * (1 + γ)
+                - γ * m))
+              ≤ Real.exp (β * (N : ℝ)) * r ^ m := by
+          intro q
+          have hmul := mul_le_mul_of_nonneg_right (hoc q) h1γ.le
+          have hstep : (N : ℝ) + ((occCount (extendWord f) q m : ℕ) : ℝ) * (1 + γ) - γ * m
+              ≤ (N : ℝ) + (m : ℝ) * (-c₀) := by
+            rw [hc₀def]
+            nlinarith [hmul]
+          have hexp : β * ((N : ℝ) + ((occCount (extendWord f) q m : ℕ) : ℝ) * (1 + γ)
+              - γ * m) ≤ β * (N : ℝ) + (m : ℝ) * (-(β * c₀)) := by
+            nlinarith [mul_le_mul_of_nonneg_left hstep hβ.le]
+          calc Real.exp (β * ((N : ℝ) + ((occCount (extendWord f) q m : ℕ) : ℝ) * (1 + γ)
+                  - γ * m))
+              ≤ Real.exp (β * (N : ℝ) + (m : ℝ) * (-(β * c₀))) := Real.exp_le_exp.2 hexp
+            _ = Real.exp (β * (N : ℝ)) * r ^ m := by
+                rw [Real.exp_add, hrdef, ← Real.exp_nat_mul]
+        calc soloOtherRate N M γ β (N : ℝ) (extendWord f) m
+            ≤ ((N : ℝ) - 1) * ∑ _q : Opinion M, Real.exp (β * (N : ℝ)) * r ^ m :=
+              mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun q _ => hterm q) (by linarith)
+          _ = E * r ^ m := by
+              rw [hEdef, hWdef, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+                nsmul_eq_mul]
+              ring
+    have hreal : ((M : ℝ))⁻¹ ^ n * Real.exp (-C)
+        ≤ ∏ m ∈ Finset.range n,
+            ((M : ℝ) + soloOtherRate N M γ β (N : ℝ) (extendWord f) m)⁻¹ :=
+      prod_inv_add_ge hMr hlnn n hCb
+    refine le_trans ?_ (prod_le_pathMeasure_cylinder (u := u) (soloPath a (extendWord f)) n)
+    calc ENNReal.ofReal (((M : ℝ))⁻¹ ^ n * Real.exp (-C))
+        ≤ ENNReal.ofReal (∏ m ∈ Finset.range n,
+            ((M : ℝ) + soloOtherRate N M γ β (N : ℝ) (extendWord f) m)⁻¹) :=
+          ENNReal.ofReal_le_ofReal hreal
+      _ = ∏ m ∈ Finset.range n, ENNReal.ofReal
+            (((M : ℝ) + soloOtherRate N M γ β (N : ℝ) (extendWord f) m)⁻¹) :=
+          ENNReal.ofReal_prod_of_nonneg fun m _ =>
+            inv_nonneg.2 (by have := hlnn m; linarith)
+      _ ≤ ∏ m ∈ Finset.range n, biasedJumpPMF γ β
+            (stateAfter u (soloPath a (extendWord f)) m) (soloPath a (extendWord f) m) :=
+          Finset.prod_le_prod' fun m _ =>
+            inv_le_biasedJumpPMF_soloPath hβ.le (by omega) ha hu.2 (extendWord f) m
+  have hdisj : (↑(freqGoodFinset M ε k n) : Set (Fin n → Opinion M)).PairwiseDisjoint
+      fun f => {ω : ℕ → Jump N M | ∀ j < n, ω j = soloPath a (extendWord f) j} := by
+    intro f _ g _ hfg
+    refine Set.disjoint_left.2 fun ω hωf hωg => hfg (funext fun i => ?_)
+    have h1 : ω (i : ℕ) = (a, extendWord f (i : ℕ)) := hωf (i : ℕ) i.isLt
+    have h2 : ω (i : ℕ) = (a, extendWord g (i : ℕ)) := hωg (i : ℕ) i.isLt
+    have he : extendWord f (i : ℕ) = extendWord g (i : ℕ) :=
+      congrArg Prod.snd (h1.symm.trans h2)
+    rwa [extendWord_apply f i.isLt, extendWord_apply g i.isLt] at he
+  have hsub : (⋃ f ∈ freqGoodFinset M ε k n,
+      {ω : ℕ → Jump N M | ∀ j < n, ω j = soloPath a (extendWord f) j})
+      ⊆ {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a} := by
+    intro ω hω
+    simp only [Set.mem_iUnion, Set.mem_ofPred_eq, exists_prop] at hω
+    obtain ⟨f, -, hf⟩ := hω
+    exact fun j hj => congrArg Prod.fst (hf j hj)
+  calc ENNReal.ofReal (Real.exp (-C) * p.toReal)
+      = ENNReal.ofReal (Real.exp (-C)) * p := by
+        rw [ENNReal.ofReal_mul (Real.exp_pos _).le, ENNReal.ofReal_toReal hpne]
+    _ ≤ ENNReal.ofReal (Real.exp (-C)) *
+          ∑ _f ∈ freqGoodFinset M ε k n, ((M : ℝ≥0∞))⁻¹ ^ n := by
+        gcongr
+        exact uniformSeq_freqGood_le ε k n
+    _ = ∑ _f ∈ freqGoodFinset M ε k n,
+          ENNReal.ofReal (((M : ℝ))⁻¹ ^ n * Real.exp (-C)) := by
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl fun f _ => ?_
+        rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_pow (by positivity),
+          ENNReal.ofReal_inv_of_pos hMpos, ENNReal.ofReal_natCast]
+        ring
+    _ ≤ ∑ f ∈ freqGoodFinset M ε k n, biasedPathMeasure γ β u
+          {ω | ∀ j < n, ω j = soloPath a (extendWord f) j} := Finset.sum_le_sum hcyl
+    _ = biasedPathMeasure γ β u (⋃ f ∈ freqGoodFinset M ε k n,
+          {ω | ∀ j < n, ω j = soloPath a (extendWord f) j}) :=
+        (measure_biUnion_finset hdisj fun f _ =>
+          measurableSet_cylinderPath (soloPath a (extendWord f)) n).symm
+    _ ≤ biasedPathMeasure γ β u {ω | ∀ j < n, (ω j).1 = a} := measure_mono hsub
+
 /-- **Proposition 18.**  For `α < 0`, from any profile in `B_N^α` there is a uniformly positive
-chance that a single actor expresses forever after. -/
+chance that a single actor expresses forever after.
+
+**Follows the paper's proof of Proposition 18**: the finite-horizon bound is
+`SocialNetwork.Bias.exists_pos_le_pathMeasure_forall_lt_fst`, and the passage to
+`⋂_{j ≥ 1} {A_j = A_1}` is continuity from above along the decreasing events. -/
 theorem inf_measure_forall_eq_first_pos (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
     (hγ : 1 / ((M : ℝ) - 1) < γ) (hβ : 0 < β) :
     ∃ c : ℝ, 0 < c ∧ ∀ u : Profile N M, u ∈ biasedBounded N M γ →
       ENNReal.ofReal c
         ≤ biasedPathMeasure γ β u {ω | ∀ j, (ω j).1 = (ω 0).1} := by
-  sorry
+  obtain ⟨c, hc, hbound⟩ := exists_pos_le_pathMeasure_forall_lt_fst hM hN hγ hβ
+  refine ⟨c, hc, fun u hu => ?_⟩
+  obtain ⟨a, ha⟩ := hu.1.exists_zero_row
+  have hanti : Antitone fun n : ℕ => {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a} := by
+    intro m n hmn ω hω j hj
+    exact hω j (lt_of_lt_of_le hj hmn)
+  have hinter : (⋂ n : ℕ, {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a})
+      = {ω : ℕ → Jump N M | ∀ j, (ω j).1 = a} := by
+    ext ω
+    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
+    exact ⟨fun h j => h (j + 1) j (by omega), fun h n j _ => h j⟩
+  have hle : ENNReal.ofReal c
+      ≤ biasedPathMeasure γ β u {ω : ℕ → Jump N M | ∀ j, (ω j).1 = a} := by
+    rw [← hinter,
+      hanti.measure_iInter (fun n => (measurableSet_forall_lt_fst a n).nullMeasurableSet)
+        ⟨0, measure_ne_top _ _⟩]
+    exact le_iInf fun n => hbound u hu a ha n
+  refine le_trans hle (measure_mono fun ω hω j => ?_)
+  rw [hω j, hω 0]
 
 /-- **Theorem 4.1.**  For `α < 0`, almost surely all but one actor eventually stop expressing:
 

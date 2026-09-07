@@ -140,11 +140,11 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem:exit-bounds": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem:biased-exit-bounds": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "prop:biased-absorb": (
+    "thm:phase": (
         NOT_YET,
-        "the paper proves it and nothing here stands in the way",
+        "part 1 needs the strong Markov property at T_N and the Borel-Cantelli "
+        "argument over the failure times; Proposition 18, which it rests on, is proved",
     ),
-    "thm:phase": (NOT_YET, "combines Theorem 16 and Proposition 18"),
     "rem:remark6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
@@ -621,9 +621,23 @@ INTERNAL: tuple[str, ...] = (
     "SocialNetwork.Bias.biasedZeta_le_biasedJumpPMF_nearArgmaxFinset",
     "SocialNetwork.Bias.inv_le_biasedJumpPMF_biasedArgmaxFinset",
     "SocialNetwork.Bias.le_partialTraj_succ",
-    "SocialNetwork.Bias.pow_le_historyMeasure",
+    "SocialNetwork.Bias.prod_le_historyMeasure",
+    "SocialNetwork.Bias.prod_le_pathMeasure_stepEvents",
     "SocialNetwork.Bias.pow_le_pathMeasure_stepEvents",
     "SocialNetwork.Bias.biasedHittingTimeCts_mono",
+    "SocialNetwork.Bias.le_biasedJumpPMF_apply",
+    "SocialNetwork.Bias.sum_biasedJumpRate_soloPath_le",
+    "SocialNetwork.Bias.heard_stateAfter_soloPath",
+    "SocialNetwork.Bias.pressure_stateAfter_soloPath_self",
+    "SocialNetwork.Bias.inv_mul_exp_neg_le_inv_add",
+    "SocialNetwork.Bias.measurableSet_cylinderPath",
+    "SocialNetwork.Bias.measurableSet_forall_lt_fst",
+    "SocialNetwork.occCount_succ",
+    "SocialNetwork.uniformOpinion",
+    "SocialNetwork.uniformSeq_cylinder",
+    "SocialNetwork.measurableSet_freqGood",
+    "SocialNetwork.extendWord",
+    "SocialNetwork.freqGoodFinset",
 )
 
 

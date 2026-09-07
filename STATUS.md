@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-26 statements. They are unproved for four different reasons, and
+25 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -69,25 +69,24 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Kac's lemma |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (3)
+### Not formalised yet (2)
 
 No obstruction known.
 The paper proves them and nothing here stands in the way; they are simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 4 | `Bias.biasedAbsorption` +2 | combines Theorem 16 and Proposition 18 |
+| Theorem 4 | `Bias.biasedAbsorption` +2 | part 1 needs the strong Markov property at T_N and the Borel-Cantelli argument over the failure times; Proposition 18, which it rests on, is proved |
 | Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it |
-| Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` | the paper proves it and nothing here stands in the way |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 16 | 13 | 29 |
+| Proved | 17 | 13 | 30 |
 | Proof written, resting on an unproved statement | 6 | 0 | 6 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 21 | 2 | 23 |
+| Stated in Lean, unproved | 20 | 2 | 22 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **61** | **19** | **80** |
@@ -141,7 +140,7 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Corollary 15 | `le_characteristicTime` | proof written, rests on Proposition 12, Lemma 14 |
 | Theorem 16 | `Bias.biasedNonExplosion` | unproved — blocked on Mathlib |
 | Proposition 17 | `Bias.measure_biasedBounded_ge` +1 | proved |
-| Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` | unproved — not formalised yet |
+| Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` +14 | proved |
 | Definition 5 — Matrices favouring an opinion | `IsFavouring` +2 | stated |
 | Definition 5 — The first repeat time | `firstRepeat` +3 | stated |
 | Lemma 19 | `isFavouring_state_firstRepeat` | unproved — blocked on the paper |
