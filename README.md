@@ -48,11 +48,18 @@ the state space `S^α`, the generator `G̃` of equation (7), the sets of equatio
 (9), and the biased skeleton and process. Propositions 21, 17 and 24 are proved by the
 transports Appendix C and Section 5.4 assert, and Corollary 30 is Corollary 15 transposed.
 
-**Proposition 18 is proved**: from any profile of `B_N^α` the run in which one actor
-expresses for ever has uniformly positive probability. It is the paper's own argument —
-the decomposition (21), the rate bound (22), the passage through `ln (1+x) ≥ x/(1+x)`, and
-the frequency event `E_ε^k` — with the strong law of large numbers taken from Mathlib as
-the paper takes it from the literature.
+**Proposition 18 and part 1 of Theorem 4 are proved** — the phase transition's negative-bias
+half. Proposition 18 is the paper's own argument: the decomposition (21), the rate bound
+(22), the passage through `ln (1+x) ≥ x/(1+x)`, and the frequency event `E_ε^k`, with the
+strong law of large numbers taken from Mathlib as the paper takes it from the literature.
+Theorem 4 part 1 carries it to the whole of `S^α` and iterates: almost surely, all but one
+actor eventually stop expressing.
+
+The Markov property that iteration needs is not in Mathlib — nothing in the library states
+a strong Markov property — and it turns out not to be needed in that form: the paper applies
+it "at `T_N`", which for the skeleton is a *deterministic* index, and the genuine stopping
+times are handled by the usual discrete-time decomposition.
+[`blueprint/blueprint.md`](blueprint/blueprint.md) records the audit.
 
 **Both metastability theorems — 3 and 31 — are proved**, modulo one citation used twice:
 Theorem 5.3 of [LM22], which the paper invokes as Proposition 12 and which nothing inside

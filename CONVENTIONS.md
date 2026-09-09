@@ -44,6 +44,15 @@ and 20.
 There is exactly one such departure in the repository at present, Proposition 7, and it
 is written out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
 
+**A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
+same estimates, applied at the same places and with the same constants, but arranges them
+differently — an induction run as the fixed point it converges to, an iteration run through
+the Ionescu–Tulcea kernels rather than through a conditioning the paper writes — nothing the
+paper argued goes unchecked, so rule 3 is satisfied. It is still recorded at the node, because
+a reader looking for the paper's sentences has to be told where they went. There are two:
+the iteration of Proposition 8, and part 1 of Theorem 4, whose recursion over the failure
+times `η_n` is run as the single step `q ≤ (1-c) q`.
+
 ## 2. Markers
 
 Every formalised proof opens by saying which of three things it is, in the docstring

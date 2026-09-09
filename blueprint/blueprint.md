@@ -79,6 +79,45 @@ horizon `n`, the words of length `n` meeting the constraint up to `n` carry at l
 mass `P(E_ε^k)` of the uniform law on the `M^n` words.  That is `uniformSeq_freqGood_le`,
 and it is subadditivity plus `infinitePi_pi` on singleton boxes.
 
+## Resolved without Mathlib: the Markov property
+
+**Mathlib has no strong Markov property.**  At the pinned revision there is not one
+occurrence of "strong Markov" in the library.  The only statement of a Markov property is the
+*weak* one for Brownian motion, `ProbabilityTheory.IsPreBrownianReal.indepFun_shift`
+(`Mathlib/Probability/BrownianMotion/Basic.lean:232`), which is about independence of Gaussian
+increments and does not transport.
+
+Theorem 4 part 1 needs one, and mostly does not.  The paper writes "the strong Markov property
+at time `T_N`", but the whole argument is about the sequence `(A_n)` of expressing actors —
+that is, about the skeleton — and for the skeleton `T_N` is the **deterministic** index `N`.
+What is used there is the simple Markov property at a deterministic time.  The genuine
+stopping times are the failure times, and for a discrete-time chain the strong Markov property
+at those follows from the simple one by decomposing over their countably many values; in
+`SocialNetwork/BiasedResults.lean` that decomposition is done directly on the failure
+*events*, so no stopping-time API is needed.  (Mathlib has one if it ever is:
+`MeasureTheory.IsStoppingTime` and `IsStoppingTime.measurableSpace`,
+`Mathlib/Probability/Process/Stopping.lean:75` and `:444`.)
+
+Mathlib's `Kernel.traj` scaffolding does carry the deterministic-time statement, in the very
+formalism this project uses:
+
+* `ProbabilityTheory.Kernel.traj_comp_partialTraj`
+  (`Mathlib/Probability/Kernel/IonescuTulcea/Traj.lean:575`) — `traj κ b ∘ₖ partialTraj κ a b =
+  traj κ a`, the decomposition at a deterministic time.
+* `Kernel.partialTraj_compProd_traj` (line 656) — the joint law of the past and the
+  trajectory.
+* `Kernel.condExp_traj` (line 720) — `E[f | F_b] = ∫ f d(traj κ b …)`, which is the shape of
+  the paper's display `E[1_{U_{T_N} ∈ B_N} P_{U_{T_N}}(…)]`.
+
+None of these was used in the end.  They decompose the *same* family of kernels, whereas the
+argument needs the shifted trajectory to have the law of the chain **started afresh at the
+profile reached** — a statement about this particular kernel family, since
+`biasedDrivingKernel γ β u n h` depends on the past only through `stateAfterHistory u h (n+1)`.
+That is `SocialNetwork.Bias.pathMeasure_restart`, and it is proved from the exact law of a
+cylinder (`pathMeasure_cylinder`) by uniqueness of measures on the π-system of cylinders.  The
+exact law is the same induction that gives the one-step bound of Propositions 17 and 24, with
+the one-step kernel evaluated at a singleton instead of bounded below.
+
 ## Still missing, in DISCRETE time
 
 These block Theorem 1.2, Proposition 9, Corollary 10 and everything downstream.

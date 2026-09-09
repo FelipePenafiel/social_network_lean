@@ -49,6 +49,7 @@ repository has already taken the only route available, and says so at the declar
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
 | [§5](#5-not-the-papers-fault) | **Remark 6** | the one numbered statement with no Lean counterpart.  Nothing downstream uses it |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
+| [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
 
 ---
 
@@ -348,22 +349,37 @@ every numbered result, and this is the exception.  Nothing downstream uses it �
 it strengthens Corollary 11 in the direction Lemma 14 needs, and both wait on the
 same continuous-time analysis of Appendix B.
 
-**Theorem 4** part 1 is simply not done: the paper proves it and nothing here
-stands in the way.  Proposition 18, which it rests on, is now **proved** — the
-decomposition (21), the bound (22), the passage through `ln (1+x) ≥ x/(1+x)` and
-the event `E_ε^k`, in that order.  What part 1 adds on top is the strong Markov
-property at `T_N` and the Borel–Cantelli argument over the successive failure
-times `η_n`, neither of which the formalisation carries yet.  With the
-measurability lemmas and Proposition 18 closed it is the only unproved statement
-in the repository that is nobody's fault, and it needs nothing from you.
+**Theorem 4** part 1 is now **proved**, and with it the negative-bias half of the phase
+transition: almost surely all but one actor eventually stop expressing. Proposition 18
+supplies the uniform chance of settling, Proposition 17 carries it from `B_N^α` to the whole
+of `S^α`, and the failure-time recursion closes it.
 
-Two steps of the proof of Proposition 18 were supplied rather than read off the
-paper, and both are recorded at the node in the blueprint. The first is your
-"without loss of generality `u(1,o) = 0` for all `o`": it is a choice of an actor
-whose row is null, which equation (6) always provides, and no relabelling is
-needed. The second is the terms of `∑_m λ_m` of index below `k`, which `E_ε^k`
-does not constrain — the paper absorbs them into its generic constant `C`, and
-here they are bounded by `λ_m ≤ (N-1) M e^{β(N + k(1+γ))}`.
+Two of its steps were supplied rather than read off the paper, and both are recorded at the
+node in the blueprint. The first is the Markov property. You write "the strong Markov
+property at time `T_N`", but part 1 is a statement about the sequence `(A_n)` — about the
+skeleton — and for the skeleton `T_N` is the *deterministic* index `N`; so what is used
+there is the simple Markov property. At the failure times a real stopping time does appear,
+and for a discrete-time chain the strong Markov property follows from the simple one by
+decomposing over its countably many values. Nothing was assumed that you did not use; it is
+only that the proof names a stronger tool than the argument needs, and Mathlib has no strong
+Markov property to hand it. The second supplied step is that `{η_n < ∞}` is measurable for
+the past at `η_n`, which here is the statement that each failure event is decided by the
+expressions that precede it.
+
+One reorganisation is worth flagging, since it is visible in the Lean. Your recursion gives
+`P(η_{n+1} < ∞) ≤ (1-c) P(η_n < ∞)` and concludes by letting `n → ∞`. That limit is exactly
+`q = sup_{v ∈ S^α} P_v(no actor is eventually alone)`, and the single inequality the
+recursion uses gives `q ≤ (1-c) q` in one step. The estimate, the time it is applied at and
+the constant are yours; only the bookkeeping of the recursion is replaced by the fixed point
+it converges to. Say the word if you would rather see the `η_n` written out.
+
+Two smaller notes. Theorem 16 is **not** needed for part 1: the statement is about the
+sequence of expressed pairs, and non-explosion is what makes the continuous-time process well
+defined. And your part 1 indexes from 1, the formalisation from 0, so where you write
+`⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean reads `∀ m ≥ N, A_m = A_N`.
+
+With this closed, **Remark 6** is the only item left in the repository that is nobody's
+fault.
 
 ---
 
