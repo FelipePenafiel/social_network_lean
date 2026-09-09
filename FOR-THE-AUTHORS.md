@@ -30,6 +30,7 @@ asks of you**, and nothing else.
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
+| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | its proof reads "leads the process to `L`, without visiting `u`" off Proposition 7, which says where the greedy run ends and nothing about where it passes | the argument that the greedy run does not return to `u`.  Everything else in Proposition 9 is now **proved** |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement |
 
@@ -49,6 +50,8 @@ repository has already taken the only route available, and says so at the declar
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
 | [§5](#5-not-the-papers-fault) | **Remark 6** | the one numbered statement with no Lean counterpart.  Nothing downstream uses it |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
+| [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
+| [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
 
 ---
@@ -59,11 +62,13 @@ Three written proofs do not compose — §§1.1–1.3.  Each is left unproved on
 purpose.  A repair is new mathematics and is yours to write, not the
 formalisation's to guess.
 
-Two more belong here for different reasons.  **Proposition 7** (§1.4) composes
+Three more belong here for different reasons.  **Proposition 7** (§1.4) composes
 only along a different route; the missing step turned out to be avoidable, so it
 is proved, but you should know the written route does not run.  **Lemma 28**
 (§1.5) is blocked one level up, on ingredients Lemma 13 needs that the paper
-displays inside proofs rather than states.
+displays inside proofs rather than states.  And **Proposition 9** (§1.6) is
+proved except for one clause of one sentence, which is the fourth item on this
+page that needs a decision.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
 
@@ -191,6 +196,42 @@ Propositions 22 and 23 — are §1.3.
 The Lean statement was also wrong, and that was a fault of this repository rather
 than of the paper; it is now restated in the paper's own form.  See §2.9.
 
+### 1.6 Proposition 9 — "without visiting `u`" does not come from Proposition 7
+
+*Blueprint:* `lem:greedy-avoids`. *Lean:* `SocialNetwork.skeleton_ne_of_greedy`.
+*Proposition 9 itself:* `SocialNetwork.measure_le_of_notMem_steepLadderSet`,
+**proved** modulo this one step (and, through Proposition 7, modulo Lemmas 19
+and 20).
+
+The proof of Proposition 9 bounds the return time below by
+
+> we first consider Proposition 7 to show that a sequence of events `ξ_j^u`,
+> `j = 1, …, (M+1)N`, leads the process to `L`, **without visiting `u`**, with a
+> lower bounded probability.
+
+Proposition 7 says where the greedy run *ends* — at a ladder, after `(M+1)N`
+expressions — and says nothing about where it passes.  The clause is needed:
+Kac's inequality bounds `μ̃^β(u)` by the probability of avoiding `u` at *every*
+one of the first `m` times, so a single return inside the transient makes the
+event empty and the bound vacuous.
+
+After the run has reached `L̂` the claim is immediate, and that part is
+formalised: the process stays in `L̂` (Remark 5) and `u ∉ L̂`.  What is missing is
+only the times `1 ≤ k < (M+1)N`.
+
+**It is not a formality.**  Greedy runs do return to matrices they have already
+visited: from a ladder they cycle with period `N`, three of them for `N = 3`,
+`M = 2`.  So the hypothesis `u ∉ L̂` is doing work, and an argument that rules out
+a return has to use it.  A monotone quantity will not do it either — the maximum
+entry can fall along a greedy step, and on the ladder cycle every symmetric
+function of the matrix is constant.
+
+**What we need from you.**  Either the argument, or a different route to the
+lower bound on `P(R̃^{β,u}(u) ≥ m)`.  Everything else Proposition 9 needs is in
+place and machine-checked: Kac's inequality (§5), the composition of
+Proposition 7 with Remark 5, the geometric series, and the arithmetic of the
+constant `C' = (NM)^{(M+1)N+1}`.
+
 ---
 
 ## 2. Statements that had to be changed
@@ -209,6 +250,7 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `lem:hitting-rate` and `lem:hitting-zero-decomp` — each carrying a `sorry`, and Lemma 13 is proved from them.  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
 | 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
+| 2.10 | **Proposition 9** | The statement quantifies over `β > 0` and `u ∉ L̂`, with no hypothesis on `u` beyond that; its proof calls Proposition 7, which is stated for `u ∈ S`, and the whole paper works in `S`. | `IsState u` added to the Lean statement.  Also stated for an *arbitrary* invariant probability measure of the skeleton rather than for a named `μ̃^β`, since its existence is Theorem 1.2 — which, with Kac's inequality in place of Kac's identity, Proposition 9 no longer needs. |
 
 ---
 
@@ -266,6 +308,13 @@ blueprint's audit section classifies every formalised proof this way.
   on `L` rests on a monotone form of a gap in Mathlib.
 * **Remark 5 iterated.**  The `m`-step bound `η^m` is used in the sketch of
   Proposition 9 without being derived.
+* **Proposition 9, the composition.**  The greedy run of Proposition 7 and the
+  positive expressions of Remark 5 are composed on the realisation — the two are
+  one event of the sample space — rather than by restarting the chain at time
+  `(M+1)N`, which is how the paper reads it.
+* **Proposition 9, the constant.**  Reaching the printed `C' = (NM)^{(M+1)N+1}`
+  needs the regime `MN e^{-β/(M-1)} > 1` treated separately: there `C'` already
+  exceeds `e^{β(N-1)}` and `μ̃^β(u) ≤ 1` suffices.  The paper does not split.
 * **Remark 8.**  The case `k ≥ 1` is supplied; the count `cₚ` the pigeonhole
   returns is kept rather than rounded to `⌈nₐ/M⌉`, which only enlarges the
   intermediate bound.
@@ -312,11 +361,49 @@ blueprint's audit section classifies every formalised proof this way.
 ## 5. Not the paper's fault
 
 Unproved because Mathlib has no theory of it, not because anything is wrong:
-Doeblin's minorisation criterion (Theorem 1.2, Theorem 25), Kac's lemma
-(Proposition 9, Corollary 10, Proposition 26), Poisson point processes
-(Theorem 1.1, Theorem 16), and the continuous-time analysis of Appendix B
-(Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering audit of what
-Mathlib does and does not provide, checked against the pinned revision.
+Doeblin's minorisation criterion (Theorem 1.2, Theorem 25), Poisson point
+processes (Theorem 1.1, Theorem 16), and the continuous-time analysis of
+Appendix B (Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering
+audit of what Mathlib does and does not provide, checked against the pinned
+revision.
+
+Two statements are unproved for neither reason — nobody's fault, and no
+obstruction known.  **Remark 6** has no Lean counterpart at all, and nothing
+downstream uses it.  **Corollary 10** needs the description of the states from
+which the zero matrix can be entered, which is the extra exponent `1/(M-1)`;
+that is work, not a decision, and Proposition 9 no longer stands in its way.
+
+### Kac's lemma: listed as a gap in Mathlib, and it was not one
+
+This section used to say that Proposition 9, Corollary 10 and Proposition 26
+were blocked because **Mathlib has no Kac lemma**.  The first half is true —
+every `Kac` in Mathlib is a Kac--Moody algebra — and the conclusion was wrong.
+
+The proof of Proposition 9 opens with the *identity*
+`1/μ̃^β(u) = E[R̃^{β,u}(u)]`, and the identity really does need the chain to be
+irreducible, so reading it as a citation of Theorem 1.2 was reasonable.  But the
+proof goes on to use only
+
+```
+μ̃^β(u) · E[R̃^{β,u}(u)] ≤ 1,
+```
+
+since what it wants is an *upper* bound on `μ̃^β(u)`.  **That inequality holds
+for every invariant probability measure**, with no irreducibility, no recurrence
+and no existence theorem: the events "the last visit to `u` before time `m` was
+at time `j`", `j < m`, are disjoint, and stationarity gives each of them
+probability `μ̃^β(u) · P_u(R > m-1-j)`.  Only the identity needs the union of
+those events to have full measure, which is where ergodicity comes in.  The
+counterexample to the identity without it is two absorbing states with
+`μ̃ = (½, ½)`, where the return time is `1` and `1/μ̃` is `2`.
+
+`SocialNetwork/Kac.lean` proves the inequality outright, for a Markov kernel on
+a countable space, in about a hundred lines and using nothing from Mathlib
+beyond `Kernel.Invariant` and the Lebesgue integral.  So Proposition 9 waits on
+neither Mathlib nor Doeblin, and what it does wait on is §1.6.
+
+The lesson is the one below, again: **a citation is not an obstruction until one
+has checked which half of it the proof needs.**
 
 ### Measurability of the hitting times: a decision we asked for and did not need
 

@@ -1080,24 +1080,77 @@ the process pointwise.
 
 \section{Concentration of the skeleton measure}
 
+\begin{lemma}[asserted inside the proof of Proposition~9]
+  \label{lem:greedy-avoids}
+  \lean{SocialNetwork.skeleton_ne_of_greedy}
+  \leanok
+  \uses{prop:reach-ladder, def:steep}
+  For $u \in \Sspace \setminus \steep$, the greedy run of
+  Proposition~\ref{prop:reach-ladder} does not visit $u$ again: on
+  $\bigcap_{j=1}^{k} \xi_j^u$ with $1 \le k \le (M+1)N$, one has
+  $\Uskel{u}_k \ne u$.
+\end{lemma}
+\begin{proof}
+  The proof of Proposition~9 reads this off Proposition~\ref{prop:reach-ladder}
+  --- ``a sequence of events $\xi_j^u$ \dots leads the process to $\ladder$,
+  without visiting $u$'' --- but Proposition~\ref{prop:reach-ladder} says where
+  the greedy run ends and nothing about where it passes.  Once the run has
+  reached $\steep$ the claim is immediate, since it stays there and
+  $u \notin \steep$; what is missing is the transient.  \textbf{Not
+  formalised}, and it is not a formality: greedy runs do return to matrices they
+  have already visited --- from a ladder they cycle with period $N$ --- so the
+  hypothesis $u \notin \steep$ is doing work.
+\end{proof}
+
 \begin{proposition}[Proposition~9]
   \label{prop:skeleton-concentration}
-  \lean{SocialNetwork.measure_le_of_notMem_steepLadderSet}
+  \lean{SocialNetwork.measure_le_of_notMem_steepLadderSet, SocialNetwork.kacAvoid, SocialNetwork.kac_identity, SocialNetwork.kac_tsum_le, SocialNetwork.measure_singleton_le_of_avoid, SocialNetwork.kacAvoid_skeletonKernel, SocialNetwork.lintegral_kacAvoid_skeletonKernel, SocialNetwork.returnStep, SocialNetwork.returnBound, SocialNetwork.isSteepLadder_skeleton_of_returnStep, SocialNetwork.returnBound_prod_le, SocialNetwork.one_sub_eta_le, SocialNetwork.eta_lt_one, SocialNetwork.one_div_zeta_le, SocialNetwork.one_add_mul_two_pow_le, SocialNetwork.exp_le_pow_of_one_lt}
   \leanok
-  \uses{def:steep, thm:invariant-skeleton}
+  \uses{def:steep}
   For any $\beta > 0$ and $u \notin \steep$,
   $\muskel(u) \le C' e^{-\beta(N-1)}$ with $C' = (NM)^{(M+1)N+1}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:reach-ladder, lem:eta, lem:eta-pow, prop:greedy-prob}
+  \leanok
+  \uses{prop:reach-ladder, lem:eta, lem:eta-pow, prop:greedy-prob, lem:greedy-avoids}
   By Kac's lemma $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]
   \ge \sum_{m \ge (M+1)N} \mathbb{P}(\Rskel{u}(u) \ge m)$.  A run of events
   $\xi_j^u$ takes the process to $\ladder$ without visiting $u$
-  (Proposition~\ref{prop:reach-ladder}) with the probability of
+  (Proposition~\ref{prop:reach-ladder} and
+  Lemma~\ref{lem:greedy-avoids}) with the probability of
   Proposition~\ref{prop:greedy-prob}, and Lemma~\ref{lem:eta-pow} then keeps it
-  in $\steep$.  \textbf{Not formalised}: Mathlib has no Kac lemma.  Everything
-  else this proof needs, other than
-  Proposition~\ref{prop:reach-ladder}, is now in place.
+  in $\steep$.  Summing the geometric series
+  $\sum_{m \ge 0} \eta^m = 1/(1-\eta)$ and using
+  $1 - \eta \le (1 + MN) e^{-\beta(N-1)}$ gives the bound.
+
+  \textbf{Follows the paper's proof}, and departs from it in one place.  The
+  paper writes Kac's lemma as the identity
+  $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]$, which needs the chain to be
+  irreducible and hence Theorem~\ref{thm:invariant-skeleton}; the proof uses
+  only $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, and \emph{that} inequality
+  holds for every invariant probability measure, with no irreducibility and no
+  existence theorem.  It is proved here outright, at the generality of a Markov
+  kernel on a countable space
+  (\texttt{SocialNetwork.kac\_tsum\_le}), by decomposing the event of visiting
+  $u$ before time $m$ over the last such visit.  So this proposition does not
+  wait on Doeblin's criterion, and it is stated for an arbitrary invariant
+  probability measure rather than for a named $\muskel$.
+
+  \textbf{Supplies two steps the paper asserts.}  The composition of
+  Proposition~\ref{prop:reach-ladder} with Lemma~\ref{lem:eta-pow} is done on
+  the realisation --- the greedy expressions and then the positive ones are one
+  event of the sample space --- rather than by restarting the chain at time
+  $(M+1)N$.  And the arithmetic that reaches the printed constant needs the
+  regime $MN e^{-\beta/(M-1)} > 1$ to be treated separately: there $C'$ already
+  exceeds $e^{\beta(N-1)}$ and $\muskel(u) \le 1$ suffices.
+
+  \textbf{Adds the hypothesis $u \in \Sspace$}, which the paper works under
+  throughout and which Proposition~\ref{prop:reach-ladder} --- called here ---
+  is stated with.
+
+  \textbf{Rests on} Lemma~\ref{lem:greedy-avoids}, and through
+  Proposition~\ref{prop:reach-ladder} on Lemmas~\ref{lem:lemma19}
+  and~\ref{lem:lemma20}.
 \end{proof}
 
 \begin{corollary}[Corollary~10]
@@ -2005,11 +2058,15 @@ Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
     and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
     is the Meyn--Tweedie definition, two trivial instances and one monotonicity
     lemma.
-  \item \textbf{Kac's lemma}: nothing; every \texttt{Kac} in Mathlib is a
-    Kac--Moody algebra.
   \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
     recurrence exists for a measure-preserving \emph{map}, which does not
-    transport to a kernel.
+    transport to a kernel.  (Kac's lemma is likewise absent --- every
+    \texttt{Kac} in Mathlib is a Kac--Moody algebra --- but it turned out not to
+    be needed: the inequality
+    $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, which is all
+    Proposition~\ref{prop:skeleton-concentration} uses, holds for every
+    invariant probability measure and is proved outright at
+    \texttt{SocialNetwork.kac\_tsum\_le}.)
   \item \textbf{Total-variation distance between measures}: nothing usable.
   \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
@@ -2022,18 +2079,21 @@ Theorems~\ref{thm:concentration} and~\ref{thm:metastability} live, in the
 paper's own architecture, on the skeleton; they are blocked by the discrete-time
 items, not by the continuous-time ones.  Only
 Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion} need Poisson
-point processes.  The shortest path is therefore: Doeblin, then Kac, then
-Proposition~\ref{prop:skeleton-concentration} follows from
-Propositions~\ref{prop:reach-ladder} and~\ref{prop:greedy-prob} and
-Lemma~\ref{lem:eta}, and Theorem~\ref{thm:concentration} from it by
-Lemma~\ref{lem:transfer}.
+point processes.  The shortest path is therefore Doeblin alone:
+Proposition~\ref{prop:skeleton-concentration} is already proved from
+Propositions~\ref{prop:reach-ladder} and~\ref{prop:greedy-prob},
+Lemma~\ref{lem:eta} and Kac's inequality, and
+Theorem~\ref{thm:concentration} follows from it by
+Lemma~\ref{lem:transfer} once $\muskel$ exists.
 
 \subsection*{Blocked on the paper}
 
-Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, and
+Lemmas~\ref{lem:lemma19}, \ref{lem:lemma20} and~\ref{lem:greedy-avoids}, and
 Proposition~\ref{prop:biased-confinement}; through them
-Propositions~\ref{prop:reach-ladder} and~\ref{prop:biased-reach-ladder}.  See
-Remarks~\ref{rem:lemma19}, \ref{rem:lemma20} and~\ref{rem:prop22}: in each case
+Propositions~\ref{prop:reach-ladder}, \ref{prop:skeleton-concentration}
+and~\ref{prop:biased-reach-ladder}.  See
+Remarks~\ref{rem:lemma19}, \ref{rem:lemma20} and~\ref{rem:prop22}, and the node
+of Lemma~\ref{lem:greedy-avoids}: in each case
 the written proof does not compose, and the repair changes the argument rather
 than its presentation, so it is recorded rather than guessed at in Lean.
 Proposition~\ref{prop:reach-ladder} is nonetheless \emph{proved}, along a route
@@ -2133,6 +2193,20 @@ Remark~\ref{rem:remark6} alone --- simply not done.
 
 \subsection*{Was here, and is now closed}
 
+\textbf{Kac's lemma} stood in the list above as the second gap in Mathlib, and
+Proposition~\ref{prop:skeleton-concentration}, Corollary~\ref{cor:zero} and
+three results below them were recorded as waiting on it.  They were not.  What
+the paper's proof uses is the inequality
+$\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, not the identity, and the
+inequality holds for \emph{every} invariant probability measure --- the identity
+is what needs irreducibility, and the counterexample is two absorbing states
+with $\muskel = (\tfrac12, \tfrac12)$, where the return time is $1$ and not
+$2$.  The inequality is proved at \texttt{SocialNetwork.kac\_tsum\_le}, for a
+Markov kernel on a countable space, from \texttt{Kernel.Invariant} and nothing
+else, by decomposing the event of visiting $u$ before time $m$ over the last
+such visit.  The lesson is the same as the one below: a citation is not an
+obstruction until one has checked which half of it the proof needs.
+
 Lemma~\ref{lem:measurable-hitting} stood in this chapter as a fourth kind of
 obstruction: not a gap in Mathlib, not a gap in the paper, not a citation, but
 a statement whose Lean formulation had still to be settled.  It is now
@@ -2158,15 +2232,16 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-seven
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-eight
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-eight entries.
+of its own, so it counts thirty-nine entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (eighteen).
+\noindent\textbf{Follow the paper's proof} (nineteen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
-\ref{prop:reach-ladder}, \ref{prop:biased-low-pressure},
+\ref{prop:reach-ladder}, \ref{prop:skeleton-concentration},
+\ref{prop:biased-low-pressure},
 \ref{prop:biased-bounded}, \ref{prop:biased-greedy-prob}
 and~\ref{prop:biased-absorb}, part~1 of Theorem~\ref{thm:phase},
 the gap estimate of Lemma~\ref{lem:gap},
@@ -2231,6 +2306,20 @@ paper's ``without loss of generality $u(1,o) = 0$ for all $o$'', which is the
 choice of an actor whose row is null and which equation~(6) always provides;
 and the terms of index below $k$, which $E_\varepsilon^k$ does not constrain and
 which the paper absorbs silently into its generic constant $C$.
+Proposition~\ref{prop:skeleton-concentration} is the paper's own proof --- Kac's
+lemma, then Proposition~\ref{prop:reach-ladder} and Lemma~\ref{lem:eta-pow} to
+bound the return time below --- with one departure and two supplied steps.  The
+departure is Kac: the paper states it as the identity
+$1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]$, which needs irreducibility and hence
+Theorem~\ref{thm:invariant-skeleton}, and the proof uses only the inequality
+$\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, which holds for every invariant
+probability measure and is proved here outright, so the proposition waits on
+neither Doeblin's criterion nor Mathlib.  The supplied steps are the composition
+of the two estimates, done on the realisation rather than by restarting the
+chain, and the arithmetic of the printed constant, which needs the regime
+$MNe^{-\beta/(M-1)} > 1$ treated separately.  It rests on
+Lemma~\ref{lem:greedy-avoids}, the ``without visiting $u$'' its proof reads off
+Proposition~\ref{prop:reach-ladder}, and adds the hypothesis $u \in \Sspace$.
 Part~1 of Theorem~\ref{thm:phase} is the estimate the paper applies at the
 failure times $\eta_n$, applied at the same time and with the same constant, but
 run as the single fixed-point step $q \le (1-c) q$ rather than as a recursion
@@ -2319,15 +2408,21 @@ In rough order of cost.
 
 \begin{enumerate}
   \item Remark~\ref{rem:remark6}, the one numbered statement of the paper with
-    no Lean counterpart.  It is the only item left that is nobody's fault, now
-    that Lemma~\ref{lem:measurable-hitting},
-    Proposition~\ref{prop:biased-absorb} and Theorem~\ref{thm:phase} part~1 are
-    closed.  Nothing downstream uses it.
+    no Lean counterpart, and Corollary~\ref{cor:zero}, whose extra exponent
+    $\pressone$ needs the states from which the zero matrix can be entered to be
+    described.  These two are what is left that is nobody's fault, now that
+    Lemma~\ref{lem:measurable-hitting}, Proposition~\ref{prop:biased-absorb},
+    Theorem~\ref{thm:phase} part~1 and
+    Proposition~\ref{prop:skeleton-concentration} are closed.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
-    Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
-    authors first, since the repairs change the written proofs.
-    Proposition~\ref{prop:reach-ladder} then follows by assembling them with
-    Lemma~\ref{lem:consensus-ladder}.
+    Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}, and
+    Lemma~\ref{lem:greedy-avoids}, the step the proof of
+    Proposition~\ref{prop:skeleton-concentration} asserts.  Worth settling with
+    the authors first, since the repairs change the written proofs.
+    Proposition~\ref{prop:reach-ladder} then follows by assembling the first two
+    with Lemma~\ref{lem:consensus-ladder}, and
+    Proposition~\ref{prop:skeleton-concentration} is proved outright once the
+    third is.
   \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure for
     a countable-state Markov kernel.}  The keystone:
     Theorems~\ref{thm:invariant} and~\ref{thm:invariant-skeleton}, and through
@@ -2335,14 +2430,12 @@ In rough order of cost.
     \ref{thm:biased-existence}, \ref{thm:biased-concentration} and
     \ref{thm:biased-metastability}, all wait on it.  It is self-contained, of
     independent value, and depends on nothing else in this list.
-  \item \textbf{Kac's lemma} for a countable-state chain, needed by
-    Proposition~\ref{prop:skeleton-concentration} and by nothing else here.
   \item \textbf{Poisson point processes} and the superposition comparison, for
     Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion}.  The
     largest item, and the one the fewest results depend on.
 \end{enumerate}
 
-Items 3, 4 and 5 are contributions to Mathlib rather than to this repository.
+Items 3 and 4 are contributions to Mathlib rather than to this repository.
 The engineering companion to this blueprint, \texttt{blueprint/blueprint.md},
 records exactly what the library does and does not provide, with names, files
 and line numbers, checked against the pinned revision.
