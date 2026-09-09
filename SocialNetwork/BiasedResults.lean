@@ -38,6 +38,10 @@ otherwise.
   of `1/(2γ)`.
 * `SocialNetwork.Bias.soloPath` — the realisation in which a single actor expresses for
   ever, which carries the proof of Proposition 18.
+* `SocialNetwork.Bias.shiftPath` — the realisation shifted in time, and with it
+  `SocialNetwork.Bias.pathMeasure_restart`, the Markov property at a deterministic time.
+* `SocialNetwork.Bias.sameFrom` — the event that a single actor performs every expression
+  from a given one on, which is what Theorem 4 part 1 is about.
 
 ## Main statements
 
@@ -715,14 +719,11 @@ theorem mem_stepHistory_succ {S : ℕ → Profile N M → Finset (Jump N M)} {n 
       ofHistoryPath_apply _ (le_refl (n + 1))]
     exact hlast
 
-/-- **The induction step**, for whatever one-step bound holds at the profile this history
-reaches. -/
-theorem le_partialTraj_succ {S : ℕ → Profile N M → Finset (Jump N M)} {c : ℝ≥0∞}
-    (n : ℕ) {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ stepHistory S u n)
-    (hone : c ≤ (biasedJumpPMF γ β (stateAfterHistory u h (n + 1))).toMeasure
-      (S (n + 1) (stateAfterHistory u h (n + 1)))) :
-    c ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
-          (stepHistory S u (n + 1)) := by
+/-- The one-step kernel of the Ionescu-Tulcea construction leaves the history it is given
+untouched: everything but the extensions of `h` is null. -/
+theorem partialTraj_compl_null (n : ℕ) (h : (i : Finset.Iic n) → Jump N M) :
+    Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
+        (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})ᶜ = 0 := by
   have hmapA : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
         (biasedDrivingKernel γ β u) n (n + 1) h).map
       (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n))
@@ -740,25 +741,37 @@ theorem le_partialTraj_succ {S : ℕ → Profile N M → Finset (Jump N M)} {c :
     rw [hmapA] at hm
     rw [← hm]
     exact Measure.dirac_apply_of_mem rfl
-  have hAcompl : Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
-      (biasedDrivingKernel γ β u) n (n + 1) h
-      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})ᶜ = 0 :=
-    (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2 hAone
-  have hmapB : (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+  exact (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2 hAone
+
+/-- The last coordinate of that one-step kernel is the jump law at the profile the history
+reaches. -/
+theorem partialTraj_map_last (n : ℕ) (h : (i : Finset.Iic n) → Jump N M) :
+    (Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
         (biasedDrivingKernel γ β u) n (n + 1) h).map
       (fun x : (i : Finset.Iic (n + 1)) → Jump N M => x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
-      = biasedDrivingKernel γ β u n h := by
-    rw [← Kernel.map_apply _ Measurable.of_discrete, Kernel.map_partialTraj_succ_self]
+      = (biasedJumpPMF γ β (stateAfterHistory u h (n + 1))).toMeasure := by
+  rw [← Kernel.map_apply _ Measurable.of_discrete, Kernel.map_partialTraj_succ_self,
+    biasedDrivingKernel_apply]
+
+/-- **The induction step**, for whatever one-step bound holds at the profile this history
+reaches. -/
+theorem le_partialTraj_succ {S : ℕ → Profile N M → Finset (Jump N M)} {c : ℝ≥0∞}
+    (n : ℕ) {h : (i : Finset.Iic n) → Jump N M} (hh : h ∈ stepHistory S u n)
+    (hone : c ≤ (biasedJumpPMF γ β (stateAfterHistory u h (n + 1))).toMeasure
+      (S (n + 1) (stateAfterHistory u h (n + 1)))) :
+    c ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h
+          (stepHistory S u (n + 1)) := by
   have hB : c
       ≤ Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
           (biasedDrivingKernel γ β u) n (n + 1) h
           ((fun x : (i : Finset.Iic (n + 1)) → Jump N M =>
               x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
             (S (n + 1) (stateAfterHistory u h (n + 1)))) := by
-    rw [← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete, hmapB,
-      biasedDrivingKernel_apply]
+    rw [← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete,
+      partialTraj_map_last]
     exact hone
-  exact le_measure_of_inter hAcompl hB fun x hx => mem_stepHistory_succ hx.1 hh hx.2
+  exact le_measure_of_inter (partialTraj_compl_null n h) hB
+    fun x hx => mem_stepHistory_succ hx.1 hh hx.2
 
 /-- The law of the first `n + 1` expressed pairs of the biased chain. -/
 noncomputable def biasedHistoryMeasure (γ β : ℝ) (u : Profile N M) (n : ℕ) :
@@ -882,7 +895,524 @@ theorem prod_le_pathMeasure_cylinder (ζ : ℕ → Jump N M) (n : ℕ) :
   rw [Finset.coe_singleton,
     PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton (ζ m))]
 
+/-! #### The exact law of a cylinder
+
+The bound above is in fact an equality, and Proposition 18 needed only the inequality.  The
+equality is what the Markov property of Theorem 4 rests on, so it is proved here, by the same
+induction with the one-step kernel evaluated at a singleton. -/
+
+/-- The one-step kernel of the Ionescu-Tulcea construction, at a singleton: it is the jump
+probability of the last coordinate, and zero unless the history is the one it was given. -/
+theorem partialTraj_singleton (n : ℕ) (h : (i : Finset.Iic n) → Jump N M)
+    (x : (i : Finset.Iic (n + 1)) → Jump N M) :
+    Kernel.partialTraj (X := fun _ : ℕ => Jump N M) (biasedDrivingKernel γ β u) n (n + 1) h {x}
+      = if Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h then
+          biasedJumpPMF γ β (stateAfterHistory u h (n + 1)) (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
+        else 0 := by
+  by_cases hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x = h
+  · rw [if_pos hx]
+    have hset : ({x} : Set ((i : Finset.Iic (n + 1)) → Jump N M))
+        = (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})
+          ∩ ((fun y : (i : Finset.Iic (n + 1)) → Jump N M =>
+              y ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+            {x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩}) := by
+      ext y
+      constructor
+      · rintro rfl
+        exact ⟨hx, rfl⟩
+      · rintro ⟨hy1, hy2⟩
+        have hy1' : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) y
+            = Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x := by
+          rw [hy1, hx]
+        refine funext fun i => ?_
+        rcases Nat.lt_or_ge (i : ℕ) (n + 1) with hi | hi
+        · have hi' : (i : ℕ) ≤ n := by omega
+          have hcast : (⟨(i : ℕ), Finset.mem_Iic.2 (by omega : (i : ℕ) ≤ n + 1)⟩ :
+              Finset.Iic (n + 1)) = i := Subtype.ext rfl
+          have := congrFun hy1' ⟨(i : ℕ), Finset.mem_Iic.2 hi'⟩
+          rw [Preorder.frestrictLe₂_apply, Preorder.frestrictLe₂_apply, hcast] at this
+          exact this
+        · have hieq : i = (⟨n + 1, Finset.mem_Iic.2 le_rfl⟩ : Finset.Iic (n + 1)) :=
+            Subtype.ext (le_antisymm (Finset.mem_Iic.1 i.2) hi)
+          rw [hieq]
+          exact hy2
+    rw [hset]
+    have hcap : Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+        (biasedDrivingKernel γ β u) n (n + 1) h
+        ((Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})
+          ∩ ((fun y : (i : Finset.Iic (n + 1)) → Jump N M =>
+              y ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+            {x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩}))
+        = Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+            (biasedDrivingKernel γ β u) n (n + 1) h
+            ((fun y : (i : Finset.Iic (n + 1)) → Jump N M =>
+                y ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+              {x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩}) := by
+      refine le_antisymm (measure_mono Set.inter_subset_right) ?_
+      have hcover : ((fun y : (i : Finset.Iic (n + 1)) → Jump N M =>
+            y ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+          {x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩})
+          ⊆ ((Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) ⁻¹' {h})
+              ∩ ((fun y : (i : Finset.Iic (n + 1)) → Jump N M =>
+                  y ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+                {x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩}))
+            ∪ (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M)
+                (Nat.le_succ n) ⁻¹' {h})ᶜ := by
+        intro y hy
+        by_cases hA : y ∈ (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M)
+            (Nat.le_succ n) ⁻¹' {h})
+        · exact Or.inl ⟨hA, hy⟩
+        · exact Or.inr hA
+      refine le_trans (measure_mono hcover) (le_trans (measure_union_le _ _) ?_)
+      rw [partialTraj_compl_null n h, add_zero]
+    rw [hcap, ← Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete,
+      partialTraj_map_last, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton _)]
+  · rw [if_neg hx]
+    refine measure_mono_null (fun y hy => ?_) (partialTraj_compl_null n h)
+    rw [Set.mem_singleton_iff] at hy
+    subst hy
+    exact hx
+
+/-- **The law of a finite history**: the probability of one prescribed history is the product
+of the one-step probabilities along it. -/
+theorem historyMeasure_singleton (n : ℕ) (x : (i : Finset.Iic n) → Jump N M) :
+    biasedHistoryMeasure γ β u n {x}
+      = ∏ m ∈ Finset.range (n + 1),
+          biasedJumpPMF γ β (stateAfterHistory u x m) (ofHistoryPath x m) := by
+  induction n with
+  | zero =>
+      have h0 : biasedHistoryMeasure γ β u 0
+          = (biasedJumpPMF γ β u).toMeasure.map toHistoryZero := by
+        unfold biasedHistoryMeasure
+        rw [Kernel.partialTraj_self, Measure.id_comp]
+      have hpre : toHistoryZero ⁻¹' ({x} : Set ((i : Finset.Iic 0) → Jump N M))
+          = ({ofHistoryPath x 0} : Set (Jump N M)) := by
+        ext z
+        constructor
+        · intro hz
+          have := congrFun hz ⟨0, Finset.mem_Iic.2 le_rfl⟩
+          simpa [ofHistoryPath] using this
+        · intro hz
+          rw [Set.mem_singleton_iff] at hz
+          funext i
+          have hi : i = (⟨0, Finset.mem_Iic.2 le_rfl⟩ : Finset.Iic 0) :=
+            Subtype.ext (Nat.le_zero.1 (Finset.mem_Iic.1 i.2))
+          rw [hi, hz]
+          rfl
+      rw [h0, Measure.map_apply measurable_toHistoryZero (measurableSet_singleton x), hpre,
+        PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton _), Finset.prod_range_one]
+      rfl
+  | succ n ih =>
+      have hstep : biasedHistoryMeasure γ β u (n + 1) {x}
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+              (biasedDrivingKernel γ β u) n (n + 1) h {x}
+              ∂(biasedHistoryMeasure γ β u n) := by
+        unfold biasedHistoryMeasure
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply (measurableSet_singleton x) (Kernel.aemeasurable _)]
+      set h₀ := Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n) x with hh₀
+      have hind : (fun h : (i : Finset.Iic n) → Jump N M =>
+            Kernel.partialTraj (X := fun _ : ℕ => Jump N M)
+              (biasedDrivingKernel γ β u) n (n + 1) h {x})
+          = Set.indicator {h₀} (fun _ =>
+              biasedJumpPMF γ β (stateAfterHistory u h₀ (n + 1))
+                (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)) := by
+        funext h
+        rw [partialTraj_singleton n h x]
+        by_cases hc : h = h₀
+        · rw [if_pos hc.symm, Set.indicator_of_mem (Set.mem_singleton_iff.2 hc), hc]
+        · rw [if_neg fun hh => hc hh.symm, Set.indicator_of_notMem (by simpa using hc)]
+      have hlhs : biasedHistoryMeasure γ β u (n + 1) {x}
+          = biasedJumpPMF γ β (stateAfterHistory u h₀ (n + 1))
+              (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
+            * ∏ m ∈ Finset.range (n + 1),
+                biasedJumpPMF γ β (stateAfterHistory u h₀ m) (ofHistoryPath h₀ m) := by
+        rw [hstep, hind, lintegral_indicator (measurableSet_singleton h₀), setLIntegral_const,
+          ih h₀]
+      have hprod : ∀ m ∈ Finset.range (n + 1),
+          biasedJumpPMF γ β (stateAfterHistory u h₀ m) (ofHistoryPath h₀ m)
+            = biasedJumpPMF γ β (stateAfterHistory u x m) (ofHistoryPath x m) := by
+        intro m hm
+        have hmn : m ≤ n := Nat.lt_succ_iff.1 (Finset.mem_range.1 hm)
+        have h1 : stateAfterHistory u h₀ m = stateAfterHistory u x m :=
+          (stateAfter_ofHistoryPath_eq (hx := hh₀.symm) u (k := m) (by omega)).symm
+        have h2 : ofHistoryPath h₀ m = ofHistoryPath x m :=
+          (ofHistoryPath_eq (hx := hh₀.symm) hmn).symm
+        rw [h1, h2]
+      have hlast : biasedJumpPMF γ β (stateAfterHistory u h₀ (n + 1))
+          (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩)
+          = biasedJumpPMF γ β (stateAfterHistory u x (n + 1)) (ofHistoryPath x (n + 1)) := by
+        rw [ofHistoryPath_apply x (le_refl (n + 1)),
+          show stateAfterHistory u h₀ (n + 1) = stateAfterHistory u x (n + 1) from
+            (stateAfter_ofHistoryPath_eq (hx := hh₀.symm) u (k := n + 1) le_rfl).symm]
+      rw [hlhs, Finset.prod_congr rfl hprod, hlast,
+        Finset.prod_range_succ (f := fun m =>
+          biasedJumpPMF γ β (stateAfterHistory u x m) (ofHistoryPath x m)) (n := n + 1)]
+      ring
+
+/-- **The law of a cylinder**: the probability of following a prescribed sequence of expressed
+pairs for `n` steps is exactly the product of the one-step probabilities along it. -/
+theorem pathMeasure_cylinder (ζ : ℕ → Jump N M) (n : ℕ) :
+    biasedPathMeasure γ β u {ω | ∀ k < n, ω k = ζ k}
+      = ∏ m ∈ Finset.range n, biasedJumpPMF γ β (stateAfter u ζ m) (ζ m) := by
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · have huniv : {ω : ℕ → Jump N M | ∀ k < 0, ω k = ζ k} = Set.univ := by
+      ext ω
+      simp
+    rw [huniv, Finset.range_zero, Finset.prod_empty, measure_univ]
+  · obtain ⟨b, rfl⟩ : ∃ b, n = b + 1 := ⟨n - 1, by omega⟩
+    have hset : {ω : ℕ → Jump N M | ∀ k < b + 1, ω k = ζ k}
+        = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹'
+          {(fun i : Finset.Iic b => ζ (i : ℕ))} := by
+      ext ω
+      simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_singleton_iff, funext_iff,
+        Preorder.frestrictLe_apply]
+      constructor
+      · intro hω i
+        exact hω (i : ℕ) (Nat.lt_succ_of_le (Finset.mem_Iic.1 i.2))
+      · intro hω k hk
+        exact hω ⟨k, Finset.mem_Iic.2 (Nat.lt_succ_iff.1 hk)⟩
+    have hmap : (biasedPathMeasure γ β u).map
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b)
+        = biasedHistoryMeasure γ β u b := by
+      unfold biasedHistoryMeasure biasedPathMeasure
+      rw [Measure.map_comp _ _ (Preorder.measurable_frestrictLe b),
+        Kernel.traj_map_frestrictLe]
+    rw [hset, ← Measure.map_apply (Preorder.measurable_frestrictLe b)
+      (measurableSet_singleton _), hmap, historyMeasure_singleton]
+    refine Finset.prod_congr rfl fun m hm => ?_
+    have hmb : m ≤ b := Nat.lt_succ_iff.1 (Finset.mem_range.1 hm)
+    have hpath : ∀ j ≤ b, ofHistoryPath (fun i : Finset.Iic b => ζ (i : ℕ)) j = ζ j :=
+      fun j hj => by rw [ofHistoryPath_apply _ hj]
+    have hstate : stateAfterHistory u (fun i : Finset.Iic b => ζ (i : ℕ)) m = stateAfter u ζ m :=
+      stateAfter_congr u m fun j hj => hpath j (by omega)
+    rw [hstate, hpath m hmb]
+
 end Iterate
+
+/-! ### The Markov property at a deterministic time
+
+The proof of Theorem 4 invokes "the strong Markov property at time `T_N`".  For the skeleton
+`T_N` is the deterministic index `N` — everything in that argument is about the sequence
+`(A_m)` — so what is needed there is the *simple* Markov property, which is what this section
+proves.  The genuine stopping times of the argument are the failure times, and the strong
+Markov property at those is obtained further down by decomposing over their countably many
+values, which is the standard discrete-time argument. -/
+
+section Markov
+
+variable {γ β : ℝ}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_cylinderPath (ζ : ℕ → Jump N M) (n : ℕ) :
+    MeasurableSet {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k} := by
+  have h : {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k}
+      = ⋂ k ∈ Finset.range n, {ω : ℕ → Jump N M | ω k = ζ k} := by
+    ext ω
+    simp
+  rw [h]
+  refine MeasurableSet.biInter (Finset.range n).countable_toSet fun k _ => ?_
+  show MeasurableSet ((fun ω : ℕ → Jump N M => ω k) ⁻¹' {ζ k})
+  exact measurable_pi_apply k (measurableSet_singleton (ζ k))
+
+/-- The realisation shifted by `n` expressions. -/
+def shiftPath (n : ℕ) (ω : ℕ → Jump N M) : ℕ → Jump N M := fun i => ω (n + i)
+
+omit [NeZero N] [NeZero M] in
+@[simp]
+theorem shiftPath_apply (n : ℕ) (ω : ℕ → Jump N M) (i : ℕ) : shiftPath n ω i = ω (n + i) := rfl
+
+omit [NeZero N] [NeZero M] in
+theorem measurable_shiftPath (n : ℕ) : Measurable (shiftPath (N := N) (M := M) n) :=
+  measurable_pi_lambda _ fun i => measurable_pi_apply (n + i)
+
+omit [NeZero N] [NeZero M] in
+/-- The profile after `n + i` expressions is the one the shifted realisation reaches in `i`
+expressions from the profile after `n`. -/
+theorem stateAfter_add (u : Profile N M) (ω : ℕ → Jump N M) (n i : ℕ) :
+    stateAfter u ω (n + i) = stateAfter (stateAfter u ω n) (shiftPath n ω) i := by
+  induction i with
+  | zero => rfl
+  | succ i ih =>
+      rw [show n + (i + 1) = n + i + 1 by ring, stateAfter_succ, ih, stateAfter_succ]
+      rfl
+
+/-- The realisation that follows `ζ` for `n` expressions and `w` afterwards. -/
+def concatPath (n : ℕ) (ζ w : ℕ → Jump N M) : ℕ → Jump N M :=
+  fun k => if k < n then ζ k else w (k - n)
+
+omit [NeZero N] [NeZero M] in
+theorem concatPath_of_lt {n : ℕ} (ζ w : ℕ → Jump N M) {k : ℕ} (hk : k < n) :
+    concatPath n ζ w k = ζ k := if_pos hk
+
+omit [NeZero N] [NeZero M] in
+theorem concatPath_add (n : ℕ) (ζ w : ℕ → Jump N M) (i : ℕ) :
+    concatPath n ζ w (n + i) = w i := by
+  rw [concatPath, if_neg (by omega)]
+  congr 1
+  omega
+
+omit [NeZero N] [NeZero M] in
+@[simp]
+theorem shiftPath_concatPath (n : ℕ) (ζ w : ℕ → Jump N M) :
+    shiftPath n (concatPath n ζ w) = w :=
+  funext fun i => concatPath_add n ζ w i
+
+omit [NeZero N] [NeZero M] in
+theorem stateAfter_concatPath (u : Profile N M) (n : ℕ) (ζ w : ℕ → Jump N M) :
+    stateAfter u (concatPath n ζ w) n = stateAfter u ζ n :=
+  stateAfter_congr u n fun _ hj => concatPath_of_lt ζ w hj
+
+omit [NeZero N] [NeZero M] in
+/-- Following `ζ` for `n` steps and then `w` for `c` more is following the concatenation for
+`n + c`. -/
+theorem cylinder_inter_shift (n c : ℕ) (ζ w : ℕ → Jump N M) :
+    ({ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k} ∩
+        shiftPath n ⁻¹' {ω : ℕ → Jump N M | ∀ k < c, ω k = w k})
+      = {ω : ℕ → Jump N M | ∀ k < n + c, ω k = concatPath n ζ w k} := by
+  ext ω
+  constructor
+  · rintro ⟨h1, h2⟩ k hk
+    by_cases hkn : k < n
+    · rw [h1 k hkn, concatPath_of_lt ζ w hkn]
+    · have hk' : k - n < c := by omega
+      have h3 := h2 (k - n) hk'
+      rw [shiftPath_apply, show n + (k - n) = k by omega] at h3
+      rw [h3, concatPath, if_neg hkn]
+  · intro hω
+    refine ⟨fun k hk => ?_, fun k hk => ?_⟩
+    · rw [hω k (by omega), concatPath_of_lt ζ w hk]
+    · rw [shiftPath_apply, hω (n + k) (by omega), concatPath_add]
+
+/-- The restart identity on cylinders. -/
+theorem pathMeasure_cylinder_restart (u : Profile N M) (ζ w : ℕ → Jump N M) (n c : ℕ) :
+    biasedPathMeasure γ β u ({ω | ∀ k < n, ω k = ζ k} ∩
+        shiftPath n ⁻¹' {ω | ∀ k < c, ω k = w k})
+      = biasedPathMeasure γ β u {ω | ∀ k < n, ω k = ζ k}
+        * biasedPathMeasure γ β (stateAfter u ζ n) {ω | ∀ k < c, ω k = w k} := by
+  rw [cylinder_inter_shift, pathMeasure_cylinder, pathMeasure_cylinder, pathMeasure_cylinder,
+    Finset.prod_range_add]
+  congr 1
+  · refine Finset.prod_congr rfl fun m hm => ?_
+    have hmn : m < n := Finset.mem_range.1 hm
+    rw [stateAfter_congr u m fun _ hj => concatPath_of_lt ζ w (by omega),
+      concatPath_of_lt ζ w hmn]
+  · refine Finset.prod_congr rfl fun i _ => ?_
+    rw [stateAfter_add, shiftPath_concatPath, stateAfter_concatPath, concatPath_add]
+
+omit [NeZero N] [NeZero M] in
+/-- A cylinder is the preimage of a singleton history. -/
+theorem cylinder_eq_frestrictLe (b : ℕ) (h : (i : Finset.Iic b) → Jump N M) :
+    Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h}
+      = {ω : ℕ → Jump N M | ∀ k < b + 1, ω k = ofHistoryPath h k} := by
+  ext ω
+  simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_ofPred_eq, funext_iff,
+    Preorder.frestrictLe_apply]
+  constructor
+  · intro hω k hk
+    rw [ofHistoryPath_apply h (Nat.lt_succ_iff.1 hk)]
+    exact hω ⟨k, Finset.mem_Iic.2 (Nat.lt_succ_iff.1 hk)⟩
+  · intro hω i
+    rw [hω (i : ℕ) (Nat.lt_succ_of_le (Finset.mem_Iic.1 i.2)),
+      ofHistoryPath_apply h (Finset.mem_Iic.1 i.2)]
+
+/-- **The Markov property at a deterministic time.**  Given that the first `n` expressed pairs
+are those of `ζ`, the rest of the realisation is a realisation of the chain started at the
+profile reached then.
+
+**No counterpart in the paper**, which uses it as "the strong Markov property at `T_N`". -/
+theorem pathMeasure_restart (u : Profile N M) (ζ : ℕ → Jump N M) (n : ℕ)
+    {E : Set (ℕ → Jump N M)} (hE : MeasurableSet E) :
+    biasedPathMeasure γ β u ({ω | ∀ k < n, ω k = ζ k} ∩ shiftPath n ⁻¹' E)
+      = biasedPathMeasure γ β u {ω | ∀ k < n, ω k = ζ k}
+        * biasedPathMeasure γ β (stateAfter u ζ n) E := by
+  classical
+  set A : Set (ℕ → Jump N M) := {ω | ∀ k < n, ω k = ζ k} with hAdef
+  have hAmeas : MeasurableSet A := measurableSet_cylinderPath ζ n
+  set μ₁ : Measure (ℕ → Jump N M) :=
+    ((biasedPathMeasure γ β u).restrict A).map (shiftPath n) with hμ₁def
+  set μ₂ : Measure (ℕ → Jump N M) :=
+    (biasedPathMeasure γ β u A) • biasedPathMeasure γ β (stateAfter u ζ n) with hμ₂def
+  have hμ₁apply : ∀ F : Set (ℕ → Jump N M), MeasurableSet F →
+      μ₁ F = biasedPathMeasure γ β u (A ∩ shiftPath n ⁻¹' F) := by
+    intro F hF
+    rw [hμ₁def, Measure.map_apply (measurable_shiftPath n) hF,
+      Measure.restrict_apply (measurable_shiftPath n hF), Set.inter_comm]
+  have hμ₂apply : ∀ F : Set (ℕ → Jump N M),
+      μ₂ F = biasedPathMeasure γ β u A * biasedPathMeasure γ β (stateAfter u ζ n) F := by
+    intro F
+    rw [hμ₂def, Measure.smul_apply, smul_eq_mul]
+  have : IsFiniteMeasure μ₁ := ⟨by
+    rw [hμ₁apply Set.univ MeasurableSet.univ, Set.preimage_univ, Set.inter_univ]
+    exact measure_lt_top _ _⟩
+  have hkey : μ₁ = μ₂ := by
+    refine MeasureTheory.ext_of_generate_finite
+      {s : Set (ℕ → Jump N M) | ∃ (b : ℕ) (T : Set ((i : Finset.Iic b) → Jump N M)),
+        s = Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' T} ?_ ?_ ?_ ?_
+    · refine le_antisymm (iSup_le fun i => ?_) (MeasurableSpace.generateFrom_le ?_)
+      · rintro s ⟨T, -, rfl⟩
+        exact MeasurableSpace.measurableSet_generateFrom
+          ⟨i, (fun h : (j : Finset.Iic i) → Jump N M =>
+            h ⟨i, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' T, rfl⟩
+      · rintro s ⟨b, T, rfl⟩
+        exact Preorder.measurable_frestrictLe b MeasurableSet.of_discrete
+    · rintro s ⟨b, T, rfl⟩ t ⟨b', T', rfl⟩ -
+      rcases le_total b b' with hbb | hbb
+      · exact ⟨b', (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) hbb ⁻¹' T) ∩ T',
+          by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+      · exact ⟨b, T ∩ (Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) hbb ⁻¹' T'),
+          by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+    · rintro s ⟨b, T, rfl⟩
+      have hsingle : ∀ h : (i : Finset.Iic b) → Jump N M,
+          μ₁ (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h})
+            = μ₂ (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h}) := by
+        intro h
+        rw [cylinder_eq_frestrictLe, hμ₁apply _ (measurableSet_cylinderPath _ _), hμ₂apply,
+          hAdef, pathMeasure_cylinder_restart]
+      have hmapeq : μ₁.map (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b)
+          = μ₂.map (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b) := by
+        refine Measure.ext_of_singleton fun h => ?_
+        rw [Measure.map_apply (Preorder.measurable_frestrictLe b) (measurableSet_singleton h),
+          Measure.map_apply (Preorder.measurable_frestrictLe b) (measurableSet_singleton h)]
+        exact hsingle h
+      rw [← Measure.map_apply (Preorder.measurable_frestrictLe b)
+          (MeasurableSet.of_discrete : MeasurableSet T),
+        ← Measure.map_apply (Preorder.measurable_frestrictLe b)
+          (MeasurableSet.of_discrete : MeasurableSet T), hmapeq]
+    · rw [hμ₁apply Set.univ MeasurableSet.univ, hμ₂apply, Set.preimage_univ, Set.inter_univ,
+        measure_univ, mul_one]
+  rw [← hμ₁apply E hE, hkey, hμ₂apply]
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_frestrictLe_preimage (b : ℕ)
+    (S : Set ((i : Finset.Iic b) → Jump N M)) :
+    MeasurableSet (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' S) :=
+  Preorder.measurable_frestrictLe b MeasurableSet.of_discrete
+
+/-- An event decided by the first `b + 1` expressed pairs splits into the histories it
+admits. -/
+theorem measure_frestrictLe_eq_sum (u : Profile N M) (b : ℕ)
+    (S : Finset ((i : Finset.Iic b) → Jump N M)) :
+    biasedPathMeasure γ β u
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+      = ∑ h ∈ S, biasedPathMeasure γ β u
+          (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h}) := by
+  have hdecomp : (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+      = ⋃ h ∈ S, (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h}) := by
+    ext ω
+    simp
+  have hdisj : (S : Set ((i : Finset.Iic b) → Jump N M)).PairwiseDisjoint
+      fun h => Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h} := by
+    intro h _ h' _ hne
+    refine Set.disjoint_left.2 fun ω hω hω' => hne ?_
+    rw [Set.mem_preimage, Set.mem_singleton_iff] at hω hω'
+    rw [← hω, ← hω']
+  rw [hdecomp, measure_biUnion_finset hdisj fun h _ => measurableSet_frestrictLe_preimage b _]
+
+/-- **The restart, decomposed.**  The probability that the first `b + 1` expressed pairs form
+a history of `S` and that the rest of the realisation lies in `E` is the sum over `S` of the
+probability of the history times the probability of `E` from the profile it reaches. -/
+theorem measure_inter_shift_eq_sum (u : Profile N M) (b : ℕ)
+    (S : Finset ((i : Finset.Iic b) → Jump N M)) {E : Set (ℕ → Jump N M)}
+    (hE : MeasurableSet E) :
+    biasedPathMeasure γ β u
+        ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+          ∩ shiftPath (b + 1) ⁻¹' E)
+      = ∑ h ∈ S, biasedPathMeasure γ β u
+            (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h})
+          * biasedPathMeasure γ β (stateAfterHistory u h (b + 1)) E := by
+  have hdecomp : ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+        ∩ shiftPath (b + 1) ⁻¹' E)
+      = ⋃ h ∈ S, ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h})
+          ∩ shiftPath (b + 1) ⁻¹' E) := by
+    ext ω
+    simp only [Set.mem_inter_iff, Set.mem_preimage, Finset.mem_coe, Set.mem_iUnion,
+      Set.mem_singleton_iff, exists_prop]
+    constructor
+    · rintro ⟨h1, h2⟩
+      exact ⟨_, h1, rfl, h2⟩
+    · rintro ⟨h, hh, hrfl, h2⟩
+      exact ⟨hrfl ▸ hh, h2⟩
+  have hdisj : (S : Set ((i : Finset.Iic b) → Jump N M)).PairwiseDisjoint
+      fun h => (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h})
+        ∩ shiftPath (b + 1) ⁻¹' E := by
+    intro h _ h' _ hne
+    refine Set.disjoint_left.2 fun ω hω hω' => hne ?_
+    have e1 : Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ω = h := hω.1
+    have e2 : Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ω = h' := hω'.1
+    rw [← e1, ← e2]
+  have hmeas : ∀ h ∈ S, MeasurableSet
+      ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' {h})
+        ∩ shiftPath (b + 1) ⁻¹' E) :=
+    fun h _ => (measurableSet_frestrictLe_preimage b _).inter (measurable_shiftPath (b + 1) hE)
+  rw [hdecomp, measure_biUnion_finset hdisj hmeas]
+  refine Finset.sum_congr rfl fun h _ => ?_
+  have hres := pathMeasure_restart (γ := γ) (β := β) u (ofHistoryPath h) (b + 1) hE
+  rwa [← cylinder_eq_frestrictLe b h] at hres
+
+/-- The restart, as the lower bound the argument uses. -/
+theorem le_measure_inter_shift (u : Profile N M) (b : ℕ)
+    (S : Finset ((i : Finset.Iic b) → Jump N M)) {E : Set (ℕ → Jump N M)}
+    (hE : MeasurableSet E) {c : ℝ≥0∞}
+    (hc : ∀ h ∈ S, c ≤ biasedPathMeasure γ β (stateAfterHistory u h (b + 1)) E) :
+    c * biasedPathMeasure γ β u
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+      ≤ biasedPathMeasure γ β u
+        ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+          ∩ shiftPath (b + 1) ⁻¹' E) := by
+  rw [measure_frestrictLe_eq_sum, measure_inter_shift_eq_sum u b S hE, Finset.mul_sum]
+  refine Finset.sum_le_sum fun h hh => ?_
+  rw [mul_comm c]
+  gcongr
+  exact hc h hh
+
+/-- The restart, as the upper bound the argument uses. -/
+theorem measure_inter_shift_le (u : Profile N M) (b : ℕ)
+    (S : Finset ((i : Finset.Iic b) → Jump N M)) {E : Set (ℕ → Jump N M)}
+    (hE : MeasurableSet E) {q : ℝ≥0∞}
+    (hq : ∀ h ∈ S, biasedPathMeasure γ β (stateAfterHistory u h (b + 1)) E ≤ q) :
+    biasedPathMeasure γ β u
+        ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _))
+          ∩ shiftPath (b + 1) ⁻¹' E)
+      ≤ q * biasedPathMeasure γ β u
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) b ⁻¹' (S : Set _)) := by
+  rw [measure_frestrictLe_eq_sum, measure_inter_shift_eq_sum u b S hE, Finset.mul_sum]
+  refine Finset.sum_le_sum fun h hh => ?_
+  rw [mul_comm q]
+  gcongr
+  exact hq h hh
+
+/-! ### The event that a single actor expresses from some time on -/
+
+/-- `⋂_{m ≥ n} {A_m = A_n}`: from the `n`-th expression on, a single actor expresses. -/
+def sameFrom (n : ℕ) : Set (ℕ → Jump N M) := {ω | ∀ m, n ≤ m → (ω m).1 = (ω n).1}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_sameFrom (n : ℕ) : MeasurableSet (sameFrom (N := N) (M := M) n) := by
+  have h : sameFrom (N := N) (M := M) n
+      = ⋂ m : ℕ, ⋂ _ : n ≤ m, {ω : ℕ → Jump N M | (ω m).1 = (ω n).1} := by
+    ext ω
+    simp [sameFrom]
+  rw [h]
+  refine MeasurableSet.iInter fun m => MeasurableSet.iInter fun _ => ?_
+  exact measurableSet_eq_fun
+    ((Measurable.of_discrete (f := fun p : Jump N M => p.1)).comp (measurable_pi_apply m))
+    ((Measurable.of_discrete (f := fun p : Jump N M => p.1)).comp (measurable_pi_apply n))
+
+omit [NeZero N] [NeZero M] in
+theorem sameFrom_eq_preimage (n : ℕ) :
+    sameFrom (N := N) (M := M) n = shiftPath n ⁻¹' sameFrom 0 := by
+  ext ω
+  simp only [sameFrom, Set.mem_ofPred_eq, Set.mem_preimage, shiftPath_apply, Nat.add_zero,
+    Nat.zero_le, forall_const]
+  constructor
+  · intro hω m
+    exact hω (n + m) (by omega)
+  · intro hω m hm
+    have h := hω (m - n)
+    rwa [show n + (m - n) = m by omega] at h
+
+end Markov
 
 /-- The paper's `Y (u) = {(a, o) : u (a, o) = y (u)}`, for the biased model. -/
 noncomputable def biasedArgmaxFinset (γ : ℝ) (P : Profile N M) : Finset (Jump N M) :=
@@ -1506,18 +2036,6 @@ theorem sum_le_of_le_geometric {l : ℕ → ℝ} {D E r : ℝ} (k n : ℕ) (hD :
 /-! ##### The events of Proposition 18 -/
 
 omit [NeZero N] [NeZero M] in
-theorem measurableSet_cylinderPath (ζ : ℕ → Jump N M) (n : ℕ) :
-    MeasurableSet {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k} := by
-  have h : {ω : ℕ → Jump N M | ∀ k < n, ω k = ζ k}
-      = ⋂ k ∈ Finset.range n, {ω : ℕ → Jump N M | ω k = ζ k} := by
-    ext ω
-    simp
-  rw [h]
-  refine MeasurableSet.biInter (Finset.range n).countable_toSet fun k _ => ?_
-  show MeasurableSet ((fun ω : ℕ → Jump N M => ω k) ⁻¹' {ζ k})
-  exact measurable_pi_apply k (measurableSet_singleton (ζ k))
-
-omit [NeZero N] [NeZero M] in
 theorem measurableSet_forall_lt_fst (a : Actor N) (n : ℕ) :
     MeasurableSet {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a} := by
   have h : {ω : ℕ → Jump N M | ∀ j < n, (ω j).1 = a}
@@ -1738,16 +2256,227 @@ theorem inf_measure_forall_eq_first_pos (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : �
   refine le_trans hle (measure_mono fun ω hω j => ?_)
   rw [hω j, hω 0]
 
+/-- **The uniform bound of Theorem 4 part 1.**  From any profile of `S^α`, a single actor
+performs every expression from the `N`-th on, with probability at least `c` uniformly in the
+profile.
+
+**Follows the paper's proof of Theorem 4 part 1**, first display: Proposition 17 puts the
+profile after `N` expressions in `B_N^α` with probability at least `(NM)^{-N}`, and
+Proposition 18 takes over from there.  The paper calls the passage "the strong Markov property
+at `T_N`"; for the skeleton `T_N` is the deterministic index `N`, so it is
+`SocialNetwork.Bias.le_measure_inter_shift`. -/
+theorem exists_pos_le_measure_sameFrom (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
+    (hγ : 1 / ((M : ℝ) - 1) < γ) (hβ : 0 < β) :
+    ∃ c : ℝ, 0 < c ∧ ∀ u : Profile N M, IsBiasedState u →
+      ENNReal.ofReal c ≤ biasedPathMeasure γ β u (sameFrom N) := by
+  classical
+  obtain ⟨c₁, hc₁, hbound⟩ := inf_measure_forall_eq_first_pos hM hN hγ hβ
+  have hNM : (0 : ℝ) < ((N * M : ℕ) : ℝ) := by
+    exact_mod_cast Nat.mul_pos (by omega : 0 < N) (by omega : 0 < M)
+  refine ⟨c₁ * ((N * M : ℕ) : ℝ) ^ (-(N : ℤ)), mul_pos hc₁ (zpow_pos hNM _), ?_⟩
+  intro u hu
+  obtain ⟨b, rfl⟩ : ∃ b, N = b + 1 := ⟨N - 1, by omega⟩
+  set S : Finset ((i : Finset.Iic b) → Jump (b + 1) M) :=
+    Finset.univ.filter fun h =>
+      stateAfterHistory u h (b + 1) ∈ biasedBounded (b + 1) M γ with hSdef
+  have hst : ∀ ω : ℕ → Jump (b + 1) M,
+      stateAfterHistory u (Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ω) (b + 1)
+        = stateAfter u ω (b + 1) :=
+    fun ω => stateAfter_ofHistoryPath_frestrictLe u ω (le_refl (b + 1))
+  have hA : {ω : ℕ → Jump (b + 1) M | stateAfter u ω (b + 1) ∈ biasedBounded (b + 1) M γ}
+      = Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ⁻¹' (S : Set _) := by
+    ext ω
+    show stateAfter u ω (b + 1) ∈ biasedBounded (b + 1) M γ ↔ _
+    rw [Set.mem_preimage, Finset.mem_coe, hSdef, Finset.mem_filter]
+    simp [hst ω]
+  have hzero : sameFrom (N := b + 1) (M := M) 0
+      = {ω : ℕ → Jump (b + 1) M | ∀ j, (ω j).1 = (ω 0).1} := by
+    ext ω
+    simp [sameFrom]
+  have hc : ∀ h ∈ S, ENNReal.ofReal c₁
+      ≤ biasedPathMeasure γ β (stateAfterHistory u h (b + 1)) (sameFrom 0) := by
+    intro h hh
+    have hmem : stateAfterHistory u h (b + 1) ∈ biasedBounded (b + 1) M γ := by
+      rw [hSdef, Finset.mem_filter] at hh
+      exact hh.2
+    rw [hzero]
+    exact hbound _ hmem
+  calc ENNReal.ofReal (c₁ * (((b + 1) * M : ℕ) : ℝ) ^ (-((b + 1 : ℕ) : ℤ)))
+      = ENNReal.ofReal c₁ * ENNReal.ofReal ((((b + 1) * M : ℕ) : ℝ) ^ (-((b + 1 : ℕ) : ℤ))) :=
+        ENNReal.ofReal_mul hc₁.le
+    _ ≤ ENNReal.ofReal c₁ * biasedPathMeasure γ β u
+          (Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ⁻¹' (S : Set _)) := by
+        gcongr
+        rw [← hA]
+        exact measure_biasedBounded_ge hM hN hγ hβ.le hu
+    _ ≤ biasedPathMeasure γ β u
+          ((Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ⁻¹' (S : Set _))
+            ∩ shiftPath (b + 1) ⁻¹' sameFrom 0) :=
+        le_measure_inter_shift u b S (measurableSet_sameFrom 0) hc
+    _ ≤ biasedPathMeasure γ β u (sameFrom (b + 1)) := by
+        refine measure_mono ?_
+        rw [sameFrom_eq_preimage (b + 1)]
+        exact Set.inter_subset_right
+
+open Classical in
+/-- The histories of length `p + 1` on which the first expression after the `N`-th performed by
+a different actor happens exactly at `p`.  These are the paper's failure times, read as events
+rather than as a random time. -/
+noncomputable def breakHistory (N M : ℕ) (p : ℕ) : Finset ((i : Finset.Iic p) → Jump N M) :=
+  Finset.univ.filter fun h => N ≤ p ∧ (ofHistoryPath h p).1 ≠ (ofHistoryPath h N).1 ∧
+    ∀ m < p, N ≤ m → (ofHistoryPath h m).1 = (ofHistoryPath h N).1
+
+omit [NeZero N] [NeZero M] in
+theorem mem_breakEvent (ω : ℕ → Jump N M) (p : ℕ) :
+    ω ∈ Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+        (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M))
+      ↔ N ≤ p ∧ (ω p).1 ≠ (ω N).1 ∧ ∀ m < p, N ≤ m → (ω m).1 = (ω N).1 := by
+  classical
+  have hof : ∀ j ≤ p, ofHistoryPath (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ω) j
+      = ω j := fun j hj => by rw [ofHistoryPath_apply _ hj, Preorder.frestrictLe_apply]
+  rw [Set.mem_preimage, Finset.mem_coe, breakHistory, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨h1, h2, h3⟩
+    refine ⟨h1, ?_, fun m hm hNm => ?_⟩
+    · rwa [hof p le_rfl, hof N h1] at h2
+    · have := h3 m hm hNm
+      rwa [hof m hm.le, hof N h1] at this
+  · rintro ⟨h1, h2, h3⟩
+    refine ⟨h1, ?_, fun m hm hNm => ?_⟩
+    · rwa [hof p le_rfl, hof N h1]
+    · rw [hof m hm.le, hof N h1]
+      exact h3 m hm hNm
+
 /-- **Theorem 4.1.**  For `α < 0`, almost surely all but one actor eventually stop expressing:
 
 ```
 P (⋃_{n ≥ 1} ⋂_{m ≥ n} {A_n^α = A_m^α}) = 1.
 ```
--/
+
+**Follows the paper's proof of Theorem 4 part 1, with its recursion run as a single
+fixed-point step.**  The paper defines the successive failure times `η_n`, applies the strong
+Markov property at each and gets `P (η_{n+1} < ∞) ≤ (1-c) P (η_n < ∞)`, whence
+`lim_n P (η_n < ∞) = 0`.  That limit is exactly
+`q = sup_{v ∈ S^α} P_v (no actor is eventually alone)`, and the single inequality the
+induction uses — the restart at the first failure — gives `q ≤ (1-c) q` in one step, which
+forces `q = 0` since `c > 0`.  The estimate, the time it is applied at and the constant are
+the paper's; only the bookkeeping of the recursion is replaced by the fixed point it
+converges to.
+
+**Supplies a step the paper asserts**: that `{η_n < ∞}` is measurable with respect to the past
+at `η_n`, which here is the statement that the failure events are decided by the expressions
+that precede them, and is what `SocialNetwork.Bias.mem_breakEvent` records. -/
 theorem biasedAbsorption (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 / ((M : ℝ) - 1) < γ)
     (hβ : 0 < β) {u : Profile N M} (hu : IsBiasedState u) :
     biasedPathMeasure γ β u {ω | ∃ n, ∀ m, n ≤ m → (ω m).1 = (ω n).1} = 1 := by
-  sorry
+  classical
+  obtain ⟨c, hc, hbound⟩ := exists_pos_le_measure_sameFrom hM hN hγ hβ
+  set absorbed : Set (ℕ → Jump N M) := ⋃ n : ℕ, sameFrom n with habs
+  have hmeasAbs : MeasurableSet absorbed :=
+    MeasurableSet.iUnion fun n => measurableSet_sameFrom n
+  set q : ℝ≥0∞ := ⨆ v ∈ biasedStateSet N M, biasedPathMeasure γ β v absorbedᶜ with hqdef
+  have hqle : ∀ v : Profile N M, IsBiasedState v →
+      biasedPathMeasure γ β v absorbedᶜ ≤ q := fun v hv =>
+    le_iSup₂ (f := fun v (_ : v ∈ biasedStateSet N M) =>
+      biasedPathMeasure γ β v absorbedᶜ) v hv
+  have hshift : ∀ (j : ℕ) (ω : ℕ → Jump N M), ω ∈ absorbedᶜ → shiftPath j ω ∈ absorbedᶜ := by
+    intro j ω hω hmem
+    rw [habs, Set.mem_iUnion] at hmem
+    obtain ⟨n, hn⟩ := hmem
+    refine hω ?_
+    rw [habs, Set.mem_iUnion]
+    refine ⟨j + n, fun m hm => ?_⟩
+    have h1 := hn (m - j) (by omega)
+    rw [shiftPath_apply, shiftPath_apply, show j + (m - j) = m by omega] at h1
+    exact h1
+  have hdisjBreak : Pairwise (Function.onFun Disjoint fun p : ℕ =>
+      Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+        (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M))) := by
+    have key : ∀ p p' : ℕ, p < p' →
+        Disjoint (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+            (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M)))
+          (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p' ⁻¹'
+            (breakHistory N M p' : Set ((i : Finset.Iic p') → Jump N M))) := by
+      intro p p' hlt
+      refine Set.disjoint_left.2 fun ω hω hω' => ?_
+      obtain ⟨h1, h2, -⟩ := (mem_breakEvent ω p).1 hω
+      obtain ⟨-, -, h3⟩ := (mem_breakEvent ω p').1 hω'
+      exact h2 (h3 p hlt h1)
+    intro p p' hpp
+    rcases lt_or_gt_of_ne hpp with h | h
+    · exact key p p' h
+    · exact (key p' p h).symm
+  have hstep : ∀ v : Profile N M, IsBiasedState v →
+      biasedPathMeasure γ β v absorbedᶜ ≤ q * (1 - ENNReal.ofReal c) := by
+    intro v hv
+    have hcover : absorbedᶜ ⊆ ⋃ p : ℕ,
+        ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+            (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M)))
+          ∩ shiftPath (p + 1) ⁻¹' absorbedᶜ) := by
+      intro ω hω
+      have hnot : ω ∉ sameFrom (N := N) (M := M) N := fun hmem =>
+        hω (by rw [habs]; exact Set.mem_iUnion.2 ⟨N, hmem⟩)
+      have hex : ∃ m, N ≤ m ∧ (ω m).1 ≠ (ω N).1 := by
+        by_contra hcon
+        push Not at hcon
+        exact hnot fun m hm => hcon m hm
+      have hp := Nat.find_spec hex
+      refine Set.mem_iUnion.2 ⟨Nat.find hex, ?_, hshift (Nat.find hex + 1) ω hω⟩
+      refine (mem_breakEvent ω (Nat.find hex)).2 ⟨hp.1, hp.2, fun m hm hNm => ?_⟩
+      by_contra hne
+      have hle : Nat.find hex ≤ m := Nat.find_le ⟨hNm, hne⟩
+      omega
+    calc biasedPathMeasure γ β v absorbedᶜ
+        ≤ ∑' p : ℕ, biasedPathMeasure γ β v
+            ((Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+                (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M)))
+              ∩ shiftPath (p + 1) ⁻¹' absorbedᶜ) :=
+          le_trans (measure_mono hcover) (measure_iUnion_le _)
+      _ ≤ ∑' p : ℕ, q * biasedPathMeasure γ β v
+            (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+              (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M))) := by
+          refine ENNReal.tsum_le_tsum fun p => ?_
+          exact measure_inter_shift_le v p (breakHistory N M p) hmeasAbs.compl
+            fun h _ => hqle _ (isBiasedState_stateAfter hv (ofHistoryPath h) (p + 1))
+      _ = q * ∑' p : ℕ, biasedPathMeasure γ β v
+            (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+              (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M))) :=
+          ENNReal.tsum_mul_left
+      _ = q * biasedPathMeasure γ β v (⋃ p : ℕ,
+            Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) p ⁻¹'
+              (breakHistory N M p : Set ((i : Finset.Iic p) → Jump N M))) := by
+          rw [measure_iUnion hdisjBreak fun p => measurableSet_frestrictLe_preimage p _]
+      _ ≤ q * biasedPathMeasure γ β v (sameFrom (N := N) (M := M) N)ᶜ := by
+          gcongr
+          intro ω hω
+          rw [Set.mem_iUnion] at hω
+          obtain ⟨p, hp⟩ := hω
+          obtain ⟨h1, h2, -⟩ := (mem_breakEvent ω p).1 hp
+          exact fun hmem => h2 (hmem p h1)
+      _ ≤ q * (1 - ENNReal.ofReal c) := by
+          gcongr
+          rw [measure_compl (measurableSet_sameFrom N) (measure_ne_top _ _), measure_univ]
+          exact tsub_le_tsub_left (hbound v hv) 1
+  have hqineq : q ≤ q * (1 - ENNReal.ofReal c) := iSup₂_le fun v hv => hstep v hv
+  have hqtop : q ≠ ⊤ :=
+    ne_top_of_le_ne_top ENNReal.one_ne_top (iSup₂_le fun v _ => prob_le_one)
+  have hq0 : q = 0 := by
+    by_contra hne
+    have hlt : (1 : ℝ≥0∞) - ENNReal.ofReal c < 1 :=
+      ENNReal.sub_lt_self ENNReal.one_ne_top one_ne_zero (by simpa using hc)
+    have hmul := ENNReal.mul_lt_mul_left hne hqtop hlt
+    rw [one_mul] at hmul
+    rw [mul_comm] at hqineq
+    exact absurd hqineq (not_le.2 hmul)
+  have hzero : biasedPathMeasure γ β u absorbedᶜ = 0 :=
+    le_antisymm (hq0 ▸ hqle u hu) zero_le
+  have habsorbed : biasedPathMeasure γ β u absorbed = 1 :=
+    (prob_compl_eq_zero_iff hmeasAbs).1 hzero
+  rw [← habsorbed, habs]
+  congr 1
+  ext ω
+  simp [sameFrom]
 
 end NegativeBias
 

@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-25 statements. They are unproved for four different reasons, and
+24 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -69,14 +69,13 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Kac's lemma |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (2)
+### Not formalised yet (1)
 
 No obstruction known.
-The paper proves them and nothing here stands in the way; they are simply not done.
+Nothing here stands in the way; the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 4 | `Bias.biasedAbsorption` +2 | part 1 needs the strong Markov property at T_N and the Borel-Cantelli argument over the failure times; Proposition 18, which it rests on, is proved |
 | Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it |
 
 ## 2. How far the formalisation has got
@@ -84,9 +83,9 @@ The paper proves them and nothing here stands in the way; they are simply not do
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
 | Proved | 17 | 13 | 30 |
-| Proof written, resting on an unproved statement | 6 | 0 | 6 |
+| Proof written, resting on an unproved statement | 7 | 0 | 7 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 20 | 2 | 22 |
+| Stated in Lean, unproved | 19 | 2 | 21 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **61** | **19** | **80** |
@@ -124,7 +123,7 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equation (8) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +2 | unproved — not formalised yet |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, the display inside the proof of Theorem 2.2, equation (19), Lemma 14, Theorem 25, Theorem 27, Lemma 28, Lemma 29, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |

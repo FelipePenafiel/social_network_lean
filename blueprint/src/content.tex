@@ -757,7 +757,17 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \begin{theorem}[Phase transition, Theorem~4]
   \label{thm:phase}
-  \lean{SocialNetwork.Bias.biasedAbsorption, SocialNetwork.Bias.biasedProcess, SocialNetwork.Bias.biasedHittingTimeCts}
+  \lean{SocialNetwork.Bias.biasedAbsorption,
+    SocialNetwork.Bias.exists_pos_le_measure_sameFrom,
+    SocialNetwork.Bias.sameFrom,
+    SocialNetwork.Bias.shiftPath,
+    SocialNetwork.Bias.pathMeasure_cylinder,
+    SocialNetwork.Bias.pathMeasure_restart,
+    SocialNetwork.Bias.measure_inter_shift_eq_sum,
+    SocialNetwork.Bias.le_measure_inter_shift,
+    SocialNetwork.Bias.measure_inter_shift_le,
+    SocialNetwork.Bias.breakHistory,
+    SocialNetwork.Bias.biasedProcess, SocialNetwork.Bias.biasedHittingTimeCts}
   \leanok
   \uses{def:biased-generator, def:biased-sets}
   \begin{enumerate}
@@ -771,10 +781,42 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \end{enumerate}
 \end{theorem}
 \begin{proof}
-  \uses{thm:biased-nonexplosion, prop:biased-bounded, prop:biased-absorb}
-  Part 1 combines Theorem~\ref{thm:biased-nonexplosion},
-  Proposition~\ref{prop:biased-bounded} and
-  Proposition~\ref{prop:biased-absorb}.  \textbf{Not formalised}.
+  \leanok
+  \uses{prop:biased-bounded, prop:biased-absorb, thm:biased-existence,
+    thm:biased-concentration, thm:biased-metastability}
+  \textbf{Part 1 follows the paper's proof, with its recursion run as a single fixed-point
+  step.}  Proposition~\ref{prop:biased-bounded} puts the profile after $N$ expressions in
+  $B_N^\alpha$ with probability at least $(NM)^{-N}$, and
+  Proposition~\ref{prop:biased-absorb} takes over from there, so from every $u \in \Salpha$ a
+  single actor performs every expression from the $N$-th on with probability at least a
+  constant $c$, uniformly in $u$.  The paper then defines the successive failure times
+  $\eta_n$, applies the strong Markov property at each and obtains
+  $\mathbb{P}(\eta_{n+1} < \infty) \le (1-c)\,\mathbb{P}(\eta_n < \infty)$, whence
+  $\lim_n \mathbb{P}(\eta_n < \infty) = 0$.  That limit is exactly
+  $q = \sup_{v \in \Salpha} \mathbb{P}_v(\text{no actor is eventually alone})$, and the one
+  inequality the induction uses --- the restart at the first failure --- gives
+  $q \le (1-c)\,q$ in a single step, which forces $q = 0$ since $c > 0$.  The estimate, the
+  time it is applied at and the constant are the paper's; only the bookkeeping of the
+  recursion is replaced by the fixed point it converges to.
+
+  \textbf{Supplies two steps the paper asserts.}  The first is the Markov property itself.
+  The paper writes ``the strong Markov property at time $T_N$'', but everything in part~1 is
+  about the sequence $(A_n)$, that is about the skeleton, for which $T_N$ is the
+  \emph{deterministic} index $N$; so what is used there is the simple Markov property, proved
+  here from the exact law of a cylinder.  At the failure times a genuine stopping time does
+  appear, and for a discrete-time chain the strong Markov property follows from the simple
+  one by decomposing over the countably many values of that time --- which is what the
+  failure \emph{events} of the Lean proof do.  The second is that $\{\eta_n < \infty\}$ is
+  measurable for the past at $\eta_n$: here it is the statement that each failure event is
+  decided by the expressions that precede it.
+
+  Theorem~\ref{thm:biased-nonexplosion} is not needed for part~1: the statement is about the
+  sequence of expressed pairs, and non-explosion is what makes the \emph{continuous-time}
+  process well defined.
+
+  Part 2 is Theorems~\ref{thm:biased-existence}, \ref{thm:biased-concentration}
+  and~\ref{thm:biased-metastability}, stated separately and carrying their own status;
+  Theorem~4 as a whole therefore rests on them.
 \end{proof}
 
 \chapter{Proofs}
@@ -2087,8 +2129,7 @@ Nothing is left on this list, and the one item that outlived it,
 Lemma~\ref{lem:measurable-hitting}, is now proved as well; the subsection after
 next records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or --- for
-Theorem~\ref{thm:phase} part~1 and Remark~\ref{rem:remark6} --- simply not
-done.
+Remark~\ref{rem:remark6} alone --- simply not done.
 
 \subsection*{Was here, and is now closed}
 
@@ -2117,17 +2158,18 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-six
+Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-seven
 proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
 bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-seven entries.
+of its own, so it counts thirty-eight entries.
 
 \medskip
-\noindent\textbf{Follow the paper's proof} (seventeen).
+\noindent\textbf{Follow the paper's proof} (eighteen).
 Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
 \ref{prop:reach-ladder}, \ref{prop:biased-low-pressure},
 \ref{prop:biased-bounded}, \ref{prop:biased-greedy-prob}
-and~\ref{prop:biased-absorb}, the gap estimate of Lemma~\ref{lem:gap},
+and~\ref{prop:biased-absorb}, part~1 of Theorem~\ref{thm:phase},
+the gap estimate of Lemma~\ref{lem:gap},
 the bound of Proposition~\ref{prop:greedy-prob},
 Lemma~\ref{lem:hitting-2beta},
 Corollaries~\ref{cor:cbeta} and~\ref{cor:biased-cbeta},
@@ -2189,6 +2231,15 @@ paper's ``without loss of generality $u(1,o) = 0$ for all $o$'', which is the
 choice of an actor whose row is null and which equation~(6) always provides;
 and the terms of index below $k$, which $E_\varepsilon^k$ does not constrain and
 which the paper absorbs silently into its generic constant $C$.
+Part~1 of Theorem~\ref{thm:phase} is the estimate the paper applies at the
+failure times $\eta_n$, applied at the same time and with the same constant, but
+run as the single fixed-point step $q \le (1-c) q$ rather than as a recursion
+over $n$; the two supplied steps --- the Markov property itself, which the paper
+calls strong but applies at what is for the skeleton a deterministic time, and
+the measurability of the failure events --- are written out at the node.  Only
+part~1 is formalised; part~2 is Theorems~\ref{thm:biased-existence},
+\ref{thm:biased-concentration} and~\ref{thm:biased-metastability}, and Theorem~4
+rests on them.
 
 \medskip
 \noindent\textbf{Supply a step the paper asserts} (ten).
@@ -2267,13 +2318,11 @@ the repository collects those, and the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item Theorem~\ref{thm:phase} part~1.  Proposition~\ref{prop:biased-absorb},
-    on which it rests, is now proved; what part~1 adds is the strong Markov
-    property at $T_N$ and the Borel--Cantelli argument over the successive
-    failure times $\eta_n$, neither of which the formalisation carries yet.  It
-    is the only unproved statement that is nobody's fault, now that
-    Lemma~\ref{lem:measurable-hitting} and
-    Proposition~\ref{prop:biased-absorb} are closed.
+  \item Remark~\ref{rem:remark6}, the one numbered statement of the paper with
+    no Lean counterpart.  It is the only item left that is nobody's fault, now
+    that Lemma~\ref{lem:measurable-hitting},
+    Proposition~\ref{prop:biased-absorb} and Theorem~\ref{thm:phase} part~1 are
+    closed.  Nothing downstream uses it.
   \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
     Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}.  Worth settling with the
     authors first, since the repairs change the written proofs.

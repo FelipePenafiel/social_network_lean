@@ -61,8 +61,8 @@ HEADNOTE = {
         "Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is "
         "the audit of exactly what is absent, checked against the pinned revision.",
     NOT_YET:
-        "No obstruction known.  The paper proves them and nothing here stands in the "
-        "way; they are simply not done.",
+        "No obstruction known.  Nothing here stands in the way; the work is simply not "
+        "done.",
 }
 
 # Why a node is not proved, keyed by blueprint label.  ``--check`` fails if a node
@@ -140,11 +140,6 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem:exit-bounds": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem:biased-exit-bounds": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "thm:phase": (
-        NOT_YET,
-        "part 1 needs the strong Markov property at T_N and the Borel-Cantelli "
-        "argument over the failure times; Proposition 18, which it rests on, is proved",
-    ),
     "rem:remark6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
@@ -603,9 +598,12 @@ def status_cell(node: Node, by_label: dict[str, Node], status: dict[str, str],
     return state
 
 
-# Declarations that no blueprint node cites — internal helpers, mostly arithmetic —
-# and that are nonetheless claimed complete.  Everything else the axiom check covers is
-# derived from the blueprint, so this list is the only part of it kept by hand.
+# Declarations the node-based rule below does not reach, and that are nonetheless claimed
+# complete.  Two kinds: internal helpers no blueprint node cites, mostly arithmetic; and
+# declarations cited by a node that resolves to *rests on* because a different half of its
+# statement is unproved — Theorem 4, whose part 1 is proved and whose part 2 is Theorems 25,
+# 27 and 31.  Everything else the axiom check covers is derived from the blueprint, so this
+# list is the only part of it kept by hand.
 INTERNAL: tuple[str, ...] = (
     "SocialNetwork.isConsensus_state",
     "SocialNetwork.hittingTimeCts_mono",
@@ -638,6 +636,26 @@ INTERNAL: tuple[str, ...] = (
     "SocialNetwork.measurableSet_freqGood",
     "SocialNetwork.extendWord",
     "SocialNetwork.freqGoodFinset",
+    # -- Theorem 4 part 1, whose node rests on part 2 -------------------------
+    "SocialNetwork.Bias.biasedAbsorption",
+    "SocialNetwork.Bias.exists_pos_le_measure_sameFrom",
+    "SocialNetwork.Bias.pathMeasure_cylinder",
+    "SocialNetwork.Bias.pathMeasure_restart",
+    "SocialNetwork.Bias.pathMeasure_cylinder_restart",
+    "SocialNetwork.Bias.measure_inter_shift_eq_sum",
+    "SocialNetwork.Bias.measure_frestrictLe_eq_sum",
+    "SocialNetwork.Bias.le_measure_inter_shift",
+    "SocialNetwork.Bias.measure_inter_shift_le",
+    "SocialNetwork.Bias.historyMeasure_singleton",
+    "SocialNetwork.Bias.partialTraj_singleton",
+    "SocialNetwork.Bias.partialTraj_map_last",
+    "SocialNetwork.Bias.partialTraj_compl_null",
+    "SocialNetwork.Bias.stateAfter_add",
+    "SocialNetwork.Bias.cylinder_inter_shift",
+    "SocialNetwork.Bias.cylinder_eq_frestrictLe",
+    "SocialNetwork.Bias.measurableSet_sameFrom",
+    "SocialNetwork.Bias.sameFrom_eq_preimage",
+    "SocialNetwork.Bias.mem_breakEvent",
 )
 
 
