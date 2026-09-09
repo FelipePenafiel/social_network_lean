@@ -97,6 +97,16 @@ REASONS: dict[str, tuple[str, str]] = {
         "the biased twin of Lemma 13, and its ingredients — the biased forms of the two "
         "displays below — are not in the paper either",
     ),
+    "lem:greedy-avoids": (
+        BLOCKED_ON_PAPER,
+        "asserted inside the proof of Proposition 9 and read off Proposition 7, which "
+        "says where the greedy run ends and nothing about where it passes",
+    ),
+    "prop:biased-skeleton-concentration": (
+        BLOCKED_ON_PAPER,
+        "the biased twin of Proposition 9: the proof would transpose that one, and rests "
+        "on the biased Proposition 7",
+    ),
     # -- citations ----------------------------------------------------------
     "prop:exit-exponential": (
         CITED,
@@ -129,17 +139,19 @@ REASONS: dict[str, tuple[str, str]] = {
         "the stationary-law transfer; needs Doeblin to be worth stating, and its own "
         "statement is one the authors may want to change",
     ),
-    "thm:concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Kac's lemma"),
-    "thm:biased-concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Kac's lemma"),
-    "prop:skeleton-concentration": (BLOCKED_ON_MATHLIB, "Kac's lemma"),
-    "prop:biased-skeleton-concentration": (BLOCKED_ON_MATHLIB, "Kac's lemma"),
-    "cor:zero": (BLOCKED_ON_MATHLIB, "Kac's lemma, through Proposition 9"),
-    "cor:hitting-zero": (BLOCKED_ON_MATHLIB, "Doeblin and Kac, through Theorem 2"),
+    "thm:concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
+    "thm:biased-concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 26"),
+    "cor:hitting-zero": (BLOCKED_ON_MATHLIB, "Doeblin, through Theorem 2"),
     "thm:nonexplosion": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "thm:biased-nonexplosion": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "lem:exit-bounds": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem:biased-exit-bounds": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
+    "cor:zero": (
+        NOT_YET,
+        "the extra `1/(M-1)` in the exponent needs the description of the states from "
+        "which the zero matrix can be entered; Proposition 9 no longer stands in the way",
+    ),
     "rem:remark6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
@@ -157,9 +169,11 @@ PAPER_OVERRIDE: dict[str, str | None] = {
     "prop:biased-exit-exponential": "Proposition 12, biased twin",
     "lem:hitting-rate": None,
     "lem:hitting-zero-decomp": None,
+    "lem:greedy-avoids": None,
 }
 
 NAME_OVERRIDE: dict[str, str] = {
+    "lem:greedy-avoids": "the greedy run does not revisit `u`",
     "lem:hitting-rate": "the display inside the proof of Theorem 2.2",
     "lem:hitting-zero-decomp": "equation (19)",
     "lem:state-stable": "S is stable under expression",
@@ -656,6 +670,61 @@ INTERNAL: tuple[str, ...] = (
     "SocialNetwork.Bias.measurableSet_sameFrom",
     "SocialNetwork.Bias.sameFrom_eq_preimage",
     "SocialNetwork.Bias.mem_breakEvent",
+    # -- Kac's lemma, and the Markov property of the skeleton it is applied
+    #    through: cited by Proposition 9, whose node rests on the step its proof
+    #    asserts, so the node itself does not reach the axiom check --------------
+    "SocialNetwork.kacAvoid",
+    "SocialNetwork.kacAvoid_succ_of_ne",
+    "SocialNetwork.kacAvoid_le_one",
+    "SocialNetwork.kacAvoid_antitone",
+    "SocialNetwork.kac_identity",
+    "SocialNetwork.kac_tsum_le",
+    "SocialNetwork.measure_singleton_le_of_avoid",
+    "SocialNetwork.ofHistoryPath",
+    "SocialNetwork.stateAfterHistory",
+    "SocialNetwork.skeleton_congr",
+    "SocialNetwork.skeleton_succ",
+    "SocialNetwork.skeleton_ofHistoryPath_frestrictLe",
+    "SocialNetwork.skeleton_ofHistoryPath_eq",
+    "SocialNetwork.partialTraj_compl_null",
+    "SocialNetwork.partialTraj_map_last",
+    "SocialNetwork.partialTraj_singleton",
+    "SocialNetwork.historyMeasure_singleton",
+    "SocialNetwork.stepEvents",
+    "SocialNetwork.stepHistory",
+    "SocialNetwork.stepEvents_succ_eq_preimage",
+    "SocialNetwork.measurableSet_stepEvents",
+    "SocialNetwork.mem_stepHistory_succ",
+    "SocialNetwork.le_partialTraj_succ",
+    "SocialNetwork.le_historyMeasure_zero",
+    "SocialNetwork.IsStepBound",
+    "SocialNetwork.prod_le_historyMeasure",
+    "SocialNetwork.prod_le_pathMeasure_stepEvents",
+    "SocialNetwork.pow_le_pathMeasure_stepEvents",
+    "SocialNetwork.pathMeasure_cylinder",
+    "SocialNetwork.measurableSet_cylinderPath",
+    "SocialNetwork.shiftPath",
+    "SocialNetwork.measurable_shiftPath",
+    "SocialNetwork.skeleton_add",
+    "SocialNetwork.concatPath",
+    "SocialNetwork.cylinder_inter_shift",
+    "SocialNetwork.pathMeasure_cylinder_restart",
+    "SocialNetwork.cylinder_eq_frestrictLe",
+    "SocialNetwork.pathMeasure_restart",
+    "SocialNetwork.avoidSet",
+    "SocialNetwork.measurableSet_avoidSet",
+    "SocialNetwork.lintegral_skeletonKernel",
+    "SocialNetwork.lintegral_pathMeasure_avoidSet",
+    "SocialNetwork.kacAvoid_skeletonKernel",
+    "SocialNetwork.lintegral_kacAvoid_skeletonKernel",
+    "SocialNetwork.returnStep",
+    "SocialNetwork.returnBound",
+    "SocialNetwork.isPositiveAt_shift",
+    "SocialNetwork.eta_lt_one",
+    "SocialNetwork.one_div_zeta_le",
+    "SocialNetwork.one_sub_eta_le",
+    "SocialNetwork.one_add_mul_two_pow_le",
+    "SocialNetwork.exp_le_pow_of_one_lt",
 )
 
 

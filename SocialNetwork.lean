@@ -12,7 +12,9 @@ import SocialNetwork.Defs
 import SocialNetwork.Favouring
 import SocialNetwork.Frequencies
 import SocialNetwork.Greedy
+import SocialNetwork.Kac
 import SocialNetwork.Ladder
+import SocialNetwork.Markov
 import SocialNetwork.Skeleton
 import SocialNetwork.Trajectory
 

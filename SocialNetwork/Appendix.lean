@@ -5,6 +5,7 @@ Released under the Apache 2.0 license.
 import SocialNetwork.ContinuousTime
 import SocialNetwork.Favouring
 import SocialNetwork.Greedy
+import SocialNetwork.Markov
 
 /-!
 # Appendix A: Proposition 7, and the bound of Remark 5
@@ -28,6 +29,13 @@ positive pressure keeps a steep ladder steep — the probabilistic half, that su
 expressed with probability at least `η`, and the iterate `η^m`, which reruns the conditioning
 of Proposition 8 against a one-step bound that holds only on `L̂`.
 
+And it proves **Proposition 9**, which puts those together: Kac's inequality
+(`SocialNetwork.kac_tsum_le`) bounds the invariant measure of a matrix by the reciprocal of its
+mean return time, and the return time is bounded below by a greedy run to `L` followed by
+positive expressions.  The one step it does not have is the paper's "without visiting `u`",
+which the written proof reads off Proposition 7 and which Proposition 7 does not give;
+`SocialNetwork.skeleton_ne_of_greedy` states it and carries the `sorry`.
+
 ## Main definitions
 
 * `SocialNetwork.favouringSet` — `⋃_{o ∈ O} S^o`, the target of Lemma 19.
@@ -47,6 +55,12 @@ of Proposition 8 against a one-step bound that holds only on `L̂`.
   over `L̂` is attained on `L`.
 * `SocialNetwork.eta_pow_le_pathMeasure_steepLadder` — Remark 5 iterated: the skeleton stays
   on `L̂` for `m` steps with probability at least `η^m`.
+* `SocialNetwork.returnBound_prod_le` — the lower bound on the return time to `u`, the greedy
+  run and the positive expressions composed on the realisation.
+* `SocialNetwork.skeleton_ne_of_greedy` — the step the proof of Proposition 9 asserts,
+  unproved.
+* `SocialNetwork.measure_le_of_notMem_steepLadderSet` — **Proposition 9**, proved modulo that
+  step and, through Proposition 7, modulo Lemmas 19 and 20.
 -/
 
 namespace SocialNetwork
@@ -810,22 +824,331 @@ section Proposition9
 
 variable [NeZero N] [NeZero M]
 
-/-- **Proposition 9.**  For any `β > 0` and any `u ∉ L̂`, the invariant measure of the
+/-- The events the proof of Proposition 9 runs one after the other: the first `(M+1)N`
+expressions are greedy, as in Proposition 7, and every later one is made from a positive
+entry, as in Remark 5. -/
+noncomputable def returnStep : ℕ → Pressure N M → Finset (Jump N M) :=
+  fun k v => if k < (M + 1) * N then argmaxFinset v else posFinset v
+
+/-- The one-step probabilities of those events: `ζ_β` while the expressions are greedy, then
+`η`. -/
+noncomputable def returnBound (N M : ℕ) (β : ℝ) : ℕ → ℝ≥0∞ :=
+  fun k => if k < (M + 1) * N then ENNReal.ofReal (zeta N M β) else ENNReal.ofReal (eta N M β)
+
+omit [NeZero N] [NeZero M] in
+theorem isPositiveAt_shift (T : Trajectory N M) (u : Pressure N M) (m k : ℕ) :
+    IsPositiveAt (T.shift m) (T.state u m) k ↔ IsPositiveAt T u (m + k) := by
+  rw [isPositiveAt_iff, isPositiveAt_iff, ← T.state_add, Trajectory.shift_actor,
+    Trajectory.shift_opinion]
+
+/-- **Proposition 7 and Remark 5, composed.**  While the prescribed expressions are being
+made, the skeleton is on a steep ladder from time `(M+1)N` on: the greedy run lands on
+`L ⊆ L̂` (Proposition 7), and the positive expressions keep it there (Remark 5).
+
+**No counterpart in the paper**: the paper composes the two estimates by the Markov property
+at time `(M+1)N`; here they are composed on the realisation, which needs no restart. -/
+theorem isSteepLadder_skeleton_of_returnStep (hM : 2 ≤ M) (hN : 3 ≤ N) {u : Pressure N M}
+    (hu : IsState u) {ω : ℕ → Jump N M} {k : ℕ} (hk : (M + 1) * N ≤ k)
+    (hω : ∀ j < k, ω j ∈ returnStep j (skeleton u j ω)) :
+    skeleton u k ω ∈ steepLadderSet N M := by
+  have hgreedy : ∀ j < (M + 1) * N, IsGreedyAt (Trajectory.ofPath ω) u j := by
+    intro j hj
+    have hj' := hω j (by omega)
+    rw [returnStep, if_pos hj] at hj'
+    exact (mem_greedyEvent_iff u j ω).2 hj'
+  obtain ⟨o, hlad⟩ : skeleton u ((M + 1) * N) ω ∈ ladderSet N M :=
+    isLadder_state_of_greedy (Trajectory.ofPath ω) hM hN hu hgreedy
+  refine ⟨o, ?_⟩
+  have hpos : ∀ j < k - (M + 1) * N,
+      IsPositiveAt ((Trajectory.ofPath ω).shift ((M + 1) * N))
+        ((Trajectory.ofPath ω).state u ((M + 1) * N)) j := by
+    intro j hj
+    rw [isPositiveAt_shift]
+    have hj' := hω ((M + 1) * N + j) (by omega)
+    rw [returnStep, if_neg (by omega)] at hj'
+    exact mem_posFinset.1 hj'
+  have hsteep := (hlad.isSteepLadder hM).state_of_isPositiveAt hM
+    ((Trajectory.ofPath ω).shift ((M + 1) * N)) (k - (M + 1) * N) hpos
+  have hstate : ((Trajectory.ofPath ω).shift ((M + 1) * N)).state
+      (skeleton u ((M + 1) * N) ω) (k - (M + 1) * N) = skeleton u k ω := by
+    show ((Trajectory.ofPath ω).shift ((M + 1) * N)).state
+        ((Trajectory.ofPath ω).state u ((M + 1) * N)) (k - (M + 1) * N)
+      = (Trajectory.ofPath ω).state u k
+    rw [← Trajectory.state_add, Nat.add_sub_cancel' hk]
+  rw [hstate] at hsteep
+  exact hsteep
+
+/-- **The step the proof of Proposition 9 asserts.**  Proposition 9 needs the greedy run of
+Proposition 7 to reach `L` *without visiting `u`*, and reads that off Proposition 7:
+
+> we first consider Proposition 7 to show that a sequence of events `ξ_j^u`,
+> `j = 1, …, (M+1)N`, leads the process to `L`, without visiting `u`, with a lower bounded
+> probability.
+
+Proposition 7 says where the greedy run ends, and nothing about where it passes.  After the
+run reaches `L̂` the claim is immediate — the process stays in `L̂` and `u ∉ L̂` — so what is
+missing is only the transient, the times `1 ≤ k < (M+1)N` before `L` is reached.
+
+**Unproved**, and left as the one gap of Proposition 9.  It is not a formality: greedy runs do
+return to earlier matrices — from a ladder they cycle with period `N` — so the hypothesis
+`u ∉ L̂` is doing work, and the argument that rules out a return has to use it.
+
+`FOR-THE-AUTHORS.md` §1.6 records what would settle it. -/
+theorem skeleton_ne_of_greedy (hM : 2 ≤ M) (hN : 3 ≤ N) {u : Pressure N M} (hu : IsState u)
+    (hu' : u ∉ steepLadderSet N M) {ω : ℕ → Jump N M} {k : ℕ} (hk1 : 1 ≤ k)
+    (hk : k ≤ (M + 1) * N) (hgreedy : ∀ j < k, IsGreedyAt (Trajectory.ofPath ω) u j) :
+    skeleton u k ω ≠ u := by
+  sorry
+
+/-- **The lower bound on the return time**, as Proposition 9 uses it: the probability of not
+coming back to `u` within `n` steps is at least `ζ_β^{(M+1)N} η^{n - (M+1)N}`. -/
+theorem returnBound_prod_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {u : Pressure N M} (hu : IsState u) (hu' : u ∉ steepLadderSet N M) (n : ℕ) :
+    ∏ j ∈ Finset.range n, returnBound N M β j
+      ≤ pathMeasure β u {ω : ℕ → Jump N M | ∀ k < n, skeleton u (k + 1) ω ≠ u} := by
+  have hone : IsStepBound β (returnStep) u (returnBound N M β) := by
+    intro m ω hm
+    by_cases hmT : m < (M + 1) * N
+    · rw [returnBound, if_pos hmT, returnStep, if_pos hmT]
+      exact zeta_le_jumpPMF_argmaxFinset hM hβ _
+    · rw [returnBound, if_neg hmT, returnStep, if_neg hmT]
+      obtain ⟨o, hsteep⟩ :=
+        isSteepLadder_skeleton_of_returnStep hM hN hu (by omega) hm
+      exact eta_le_jumpPMF_posFinset hM hN hβ hsteep
+  refine le_trans (prod_le_pathMeasure_stepEvents hone n) (measure_mono ?_)
+  intro ω hω k hk
+  by_cases hkT : k + 1 ≤ (M + 1) * N
+  · refine skeleton_ne_of_greedy hM hN hu hu' (by omega) hkT fun j hj => ?_
+    have hj' := hω j (by omega)
+    rw [returnStep, if_pos (by omega)] at hj'
+    exact (mem_greedyEvent_iff u j ω).2 hj'
+  · intro hcon
+    exact hu' (hcon ▸ isSteepLadder_skeleton_of_returnStep hM hN hu (by omega)
+      fun j hj => hω j (by omega))
+
+/-! #### The arithmetic of the constant `C' = (NM)^{(M+1)N+1}` -/
+
+omit [NeZero N] [NeZero M] in
+/-- `1 - η ≤ (1 + MN) e^{-β(N-1)}`: the denominator of `η` exceeds its numerator by
+`1 + MN`, and the numerator is at least its last term `e^{β(N-1)}`. -/
+theorem one_sub_eta_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (_hβ : 0 ≤ β) :
+    1 - eta N M β ≤ (1 + ((M * N : ℕ) : ℝ)) * Real.exp (-(β * ((N : ℝ) - 1))) := by
+  have hden : (∑ j ∈ Finset.range N, Real.exp (β * (j : ℝ)))
+      = 1 + ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) :=
+    sum_range_eq_one_add_sum_Ico (by omega) β
+  set A := ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) with hA
+  have hAterm : Real.exp (β * ((N : ℝ) - 1)) ≤ A := by
+    have hmem : N - 1 ∈ Finset.Ico 1 N := Finset.mem_Ico.2 ⟨by omega, by omega⟩
+    have hcast : ((N - 1 : ℕ) : ℝ) = (N : ℝ) - 1 := by
+      have : (1 : ℕ) ≤ N := by omega
+      push_cast [Nat.cast_sub this]
+      ring
+    have := Finset.single_le_sum (f := fun j : ℕ => Real.exp (β * (j : ℝ)))
+      (fun j _ => (Real.exp_pos _).le) hmem
+    rwa [hcast] at this
+  have hApos : 0 < A := lt_of_lt_of_le (Real.exp_pos _) hAterm
+  have hMN : (0 : ℝ) ≤ ((M * N : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hsub : 1 - eta N M β = (1 + ((M * N : ℕ) : ℝ)) / (1 + A + ((M * N : ℕ) : ℝ)) := by
+    rw [eta, hden, ← hA]
+    field_simp
+    ring
+  rw [hsub, Real.exp_neg, ← div_eq_mul_inv]
+  gcongr
+  all_goals linarith
+
+omit [NeZero N] [NeZero M] in
+/-- `(1 + MN) 2^{(M+1)N} ≤ (NM)^{(M+1)N+1}`, the arithmetic that lets the crude bound
+`ζ_β ≥ 1/2` reach the paper's constant. -/
+theorem one_add_mul_two_pow_le (hM : 2 ≤ M) (hN : 3 ≤ N) :
+    (1 + ((M * N : ℕ) : ℝ)) * 2 ^ ((M + 1) * N)
+      ≤ ((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 1) := by
+  set T := (M + 1) * N with hT
+  set x := ((N * M : ℕ) : ℝ) with hx
+  have hx6 : (6 : ℝ) ≤ x := by
+    have h6 : 6 ≤ N * M := le_trans (by norm_num) (Nat.mul_le_mul hN hM)
+    rw [hx]
+    exact_mod_cast h6
+  have hT1 : 1 ≤ T := by
+    have : 1 ≤ (M + 1) * N := Nat.one_le_iff_ne_zero.2 (by positivity)
+    omega
+  have hcast : ((M * N : ℕ) : ℝ) = x := by
+    rw [hx]
+    exact_mod_cast congrArg (fun n : ℕ => (n : ℝ)) (Nat.mul_comm M N)
+  have h3 : (2 : ℝ) ≤ 3 ^ T := by
+    calc (2 : ℝ) ≤ 3 ^ 1 := by norm_num
+      _ ≤ 3 ^ T := pow_le_pow_right₀ (by norm_num) hT1
+  have hkey : (2 : ℝ) * 2 ^ T ≤ x ^ T := by
+    calc (2 : ℝ) * 2 ^ T ≤ 3 ^ T * 2 ^ T := by
+          gcongr
+      _ = 6 ^ T := by rw [← mul_pow]; norm_num
+      _ ≤ x ^ T := by gcongr
+  have hxpos : (0 : ℝ) < x := by linarith
+  calc (1 + ((M * N : ℕ) : ℝ)) * 2 ^ T = (1 + x) * 2 ^ T := by rw [hcast]
+    _ ≤ (2 * x) * 2 ^ T := by nlinarith [pow_pos (show (0:ℝ) < 2 by norm_num) T]
+    _ = x * (2 * 2 ^ T) := by ring
+    _ ≤ x * x ^ T := by gcongr
+    _ = x ^ (T + 1) := by ring
+
+omit [NeZero N] [NeZero M] in
+/-- The regime the geometric bound does not cover: when `MN e^{-β/(M-1)} > 1`, the constant
+`(NM)^{(M+1)N+1}` already exceeds `e^{β(N-1)}`, so the bound of Proposition 9 is weaker than
+`μ̃^β (u) ≤ 1` and there is nothing to prove. -/
+theorem exp_le_pow_of_one_lt (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 < β)
+    (hbig : 1 < ((M * N : ℕ) : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) :
+    Real.exp (β * ((N : ℝ) - 1)) ≤ ((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 1) := by
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by
+    have : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  have hcast : ((M * N : ℕ) : ℝ) = ((N * M : ℕ) : ℝ) := by
+    exact_mod_cast congrArg (fun n : ℕ => (n : ℝ)) (Nat.mul_comm M N)
+  have hlt : Real.exp (β / ((M : ℝ) - 1)) < ((N * M : ℕ) : ℝ) := by
+    rw [← hcast]
+    have hpos : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+    rw [Real.exp_neg, ← div_eq_mul_inv, lt_div_iff₀ hpos, one_mul] at hbig
+    linarith
+  set k := (M - 1) * (N - 1) with hk
+  have hkcast : ((k : ℕ) : ℝ) * (β / ((M : ℝ) - 1)) = β * ((N : ℝ) - 1) := by
+    have h1 : ((M - 1 : ℕ) : ℝ) = (M : ℝ) - 1 := by
+      have : (1 : ℕ) ≤ M := by omega
+      push_cast [Nat.cast_sub this]
+      ring
+    have h2 : ((N - 1 : ℕ) : ℝ) = (N : ℝ) - 1 := by
+      have : (1 : ℕ) ≤ N := by omega
+      push_cast [Nat.cast_sub this]
+      ring
+    rw [hk, Nat.cast_mul, h1, h2]
+    field_simp
+  have hkle : k ≤ (M + 1) * N + 1 := by
+    have h1 : (M - 1) * (N - 1) ≤ M * N := Nat.mul_le_mul (Nat.sub_le M 1) (Nat.sub_le N 1)
+    have h2 : M * N ≤ (M + 1) * N := Nat.mul_le_mul_right N (by omega)
+    omega
+  calc Real.exp (β * ((N : ℝ) - 1))
+      = Real.exp (β / ((M : ℝ) - 1)) ^ k := by rw [← hkcast, Real.exp_nat_mul]
+    _ ≤ ((N * M : ℕ) : ℝ) ^ k :=
+        pow_le_pow_left₀ (Real.exp_pos _).le hlt.le k
+    _ ≤ ((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 1) := by
+        refine pow_le_pow_right₀ ?_ hkle
+        have h6 : 6 ≤ N * M := le_trans (by norm_num) (Nat.mul_le_mul hN hM)
+        have h6' : (6 : ℝ) ≤ ((N * M : ℕ) : ℝ) := by exact_mod_cast h6
+        linarith
+
+omit [NeZero N] [NeZero M] in
+/-- `η < 1`: the denominator of `η` exceeds its numerator by `1 + MN`. -/
+theorem eta_lt_one (hN : 1 ≤ N) (β : ℝ) : eta N M β < 1 := by
+  have hden : (∑ j ∈ Finset.range N, Real.exp (β * (j : ℝ)))
+      = 1 + ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) :=
+    sum_range_eq_one_add_sum_Ico hN β
+  have hA : (0 : ℝ) ≤ ∑ j ∈ Finset.Ico 1 N, Real.exp (β * (j : ℝ)) :=
+    Finset.sum_nonneg fun j _ => (Real.exp_pos _).le
+  have hMN : (0 : ℝ) ≤ ((M * N : ℕ) : ℝ) := Nat.cast_nonneg _
+  rw [eta, hden, div_lt_one (by linarith)]
+  linarith
+
+omit [NeZero N] [NeZero M] in
+/-- `1/ζ_β ≤ 2` in the regime `MN e^{-β/(M-1)} ≤ 1`. -/
+theorem one_div_zeta_le (_hM : 2 ≤ M) {β : ℝ}
+    (hsmall : ((M * N : ℕ) : ℝ) * Real.exp (-(β / ((M : ℝ) - 1))) ≤ 1) :
+    1 / zeta N M β ≤ 2 := by
+  have hx : (0 : ℝ) < Real.exp (β / ((M : ℝ) - 1)) := Real.exp_pos _
+  have hcast : ((M * N : ℕ) : ℝ) = (M : ℝ) * (N : ℝ) := by push_cast; ring
+  rw [hcast, Real.exp_neg, ← div_eq_mul_inv, div_le_one hx] at hsmall
+  rw [zeta, one_div, inv_div, div_le_iff₀ hx]
+  linarith
+
+/-- **Proposition 9.**  For any `β > 0` and any state `u ∉ L̂`, the invariant measure of the
 skeleton satisfies `μ̃^β (u) ≤ C' e^{-β(N-1)}`, with `C' = (NM)^{(M+1)N+1}`.
 
-The paper's proof is Kac's lemma — `1 / μ̃^β (u) = E [R̃^{β,u} (u)]` — followed by a lower
-bound on the return time built from Proposition 7 (reach `L` without visiting `u`) and
-Remark 5 (stay in `L̂` afterwards).  Mathlib has no Kac lemma.
+**Follows the paper's proof.**  Kac's lemma gives `μ̃^β (u) E [R̃^{β,u} (u)] ≤ 1`
+(`SocialNetwork.kac_tsum_le`); the return time is bounded below by a greedy run to `L`
+(Proposition 7) followed by positive expressions (Remark 5), whose probabilities are
+`ζ_β^{(M+1)N}` and `η^m`; and the geometric series `∑_m η^m = 1/(1-η)` supplies the factor
+`e^{β(N-1)}`, since `1 - η ≤ (1 + MN) e^{-β(N-1)}`.
 
-**Unproved**, and stated for an arbitrary invariant probability measure of the skeleton rather
-than for a named `μ̃^β`, since its existence is itself Theorem 1.2. -/
+**Departs from the paper in one place, and supplies two steps it asserts.**  The paper writes
+Kac's lemma as the identity `1/μ̃^β (u) = E [R̃^{β,u} (u)]`, which needs the chain to be
+irreducible and hence Theorem 1.2; only the inequality is used, and the inequality holds for
+every invariant probability measure, so `SocialNetwork.kac_tsum_le` is proved outright and
+Doeblin's criterion is not needed here.  The two supplied steps are the composition of
+Proposition 7 with Remark 5, done on the realisation rather than through a restart
+(`SocialNetwork.isSteepLadder_skeleton_of_returnStep`), and the arithmetic that reaches the
+printed constant, which needs the regime `MN e^{-β/(M-1)} > 1` to be treated separately:
+there the constant already exceeds `e^{β(N-1)}` and `μ̃^β (u) ≤ 1` suffices.
+
+**Rests on** `SocialNetwork.skeleton_ne_of_greedy`, the assertion that the greedy run reaches
+`L` without visiting `u`, and through Proposition 7 on Lemmas 19 and 20.
+
+**Stated for an arbitrary invariant probability measure** of the skeleton rather than for a
+named `μ̃^β`, since its existence is itself Theorem 1.2, and with `IsState u` added: the paper
+works throughout in `S`, and Proposition 7 — which this proof calls — is stated there. -/
 theorem measure_le_of_notMem_steepLadderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 < β)
     {μ : Measure (Pressure N M)} (hμ : IsProbabilityMeasure μ)
-    (hinv : Kernel.Invariant (skeletonKernel β) μ) {u : Pressure N M}
+    (hinv : Kernel.Invariant (skeletonKernel β) μ) {u : Pressure N M} (huS : IsState u)
     (hu : u ∉ steepLadderSet N M) :
     μ {u} ≤ ENNReal.ofReal
       ((((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 1)) * Real.exp (-β * ((N : ℝ) - 1))) := by
-  sorry
+  have := hμ
+  have hneg : -β * ((N : ℝ) - 1) = -(β * ((N : ℝ) - 1)) := by ring
+  by_cases hbig : 1 < ((M * N : ℕ) : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))
+  · -- The constant already exceeds `e^{β(N-1)}`, and `μ̃^β` is a probability measure.
+    refine le_trans prob_le_one ?_
+    rw [← ENNReal.ofReal_one]
+    refine ENNReal.ofReal_le_ofReal ?_
+    rw [hneg, Real.exp_neg, ← div_eq_mul_inv, le_div_iff₀ (Real.exp_pos _), one_mul]
+    exact exp_le_pow_of_one_lt hM hN hβ hbig
+  · rw [not_lt] at hbig
+    have hζpos : 0 < zeta N M β := zeta_pos N M β
+    have hη0 : (0 : ℝ) ≤ eta N M β := eta_nonneg N M
+    have hη1 : eta N M β < 1 := eta_lt_one (by omega) β
+    set T := (M + 1) * N with hT
+    set a := zeta N M β ^ T / (1 - eta N M β) with ha
+    have hapos : 0 < a := div_pos (pow_pos hζpos T) (by linarith)
+    -- Kac's inequality, with the return time bounded below by Proposition 7 and Remark 5.
+    have hkac : μ {u} * ∑' n : ℕ, ∏ j ∈ Finset.range n, returnBound N M β j ≤ 1 :=
+      measure_singleton_le_of_avoid (skeletonKernel β) μ hinv u _ fun n => by
+        rw [lintegral_kacAvoid_skeletonKernel]
+        exact returnBound_prod_le hM hN hβ.le huS hu n
+    have hprodT : ∀ i : ℕ, ∏ j ∈ Finset.range (T + i), returnBound N M β j
+        = ENNReal.ofReal (zeta N M β) ^ T * ENNReal.ofReal (eta N M β) ^ i := by
+      intro i
+      induction i with
+      | zero =>
+          rw [Nat.add_zero, pow_zero, mul_one,
+            Finset.prod_congr rfl (fun j hj => by
+              rw [returnBound, if_pos (Finset.mem_range.1 hj)]),
+            Finset.prod_const, Finset.card_range]
+      | succ i ih =>
+          rw [show T + (i + 1) = (T + i) + 1 by ring, Finset.prod_range_succ, ih,
+            returnBound, if_neg (by omega), pow_succ, mul_assoc]
+    have hgeo : ENNReal.ofReal a ≤ ∑' n : ℕ, ∏ j ∈ Finset.range n, returnBound N M β j := by
+      have hinj : Function.Injective fun i : ℕ => T + i := fun i j h => Nat.add_left_cancel h
+      refine le_trans (le_of_eq ?_)
+        (ENNReal.tsum_comp_le_tsum_of_injective hinj
+          fun n => ∏ j ∈ Finset.range n, returnBound N M β j)
+      simp only [hprodT]
+      rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric, ha,
+        ENNReal.ofReal_div_of_pos (by linarith : (0 : ℝ) < 1 - eta N M β),
+        ENNReal.ofReal_pow hζpos.le, ENNReal.ofReal_sub 1 hη0, ENNReal.ofReal_one,
+        div_eq_mul_inv]
+    have hmul : μ {u} * ENNReal.ofReal a ≤ 1 := le_trans (by gcongr) hkac
+    refine le_trans (ENNReal.le_inv_iff_mul_le.2 hmul) ?_
+    rw [← ENNReal.ofReal_inv_of_pos hapos]
+    refine ENNReal.ofReal_le_ofReal ?_
+    have hinva : a⁻¹ = (1 - eta N M β) * (1 / zeta N M β) ^ T := by
+      rw [ha, inv_div, div_eq_mul_inv, one_div, inv_pow]
+    have hz : 1 / zeta N M β ≤ 2 := one_div_zeta_le hM hbig
+    have hz0 : (0 : ℝ) ≤ 1 / zeta N M β := by positivity
+    rw [hinva, hneg]
+    have hA1 : 1 - eta N M β
+        ≤ (1 + ((M * N : ℕ) : ℝ)) * Real.exp (-(β * ((N : ℝ) - 1))) :=
+      one_sub_eta_le hM hN hβ.le
+    have hA2 : (1 / zeta N M β) ^ T ≤ 2 ^ T := pow_le_pow_left₀ hz0 hz T
+    calc (1 - eta N M β) * (1 / zeta N M β) ^ T
+        ≤ ((1 + ((M * N : ℕ) : ℝ)) * Real.exp (-(β * ((N : ℝ) - 1)))) * 2 ^ T :=
+          mul_le_mul hA1 hA2 (by positivity) (by positivity)
+      _ = ((1 + ((M * N : ℕ) : ℝ)) * 2 ^ T) * Real.exp (-(β * ((N : ℝ) - 1))) := by ring
+      _ ≤ (((N * M : ℕ) : ℝ) ^ (T + 1)) * Real.exp (-(β * ((N : ℝ) - 1))) := by
+          gcongr
+          exact one_add_mul_two_pow_le hM hN
 
 /-- **Corollary 10.**  `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` with `C'' = (NM) C'`.
 

@@ -118,9 +118,49 @@ cylinder (`pathMeasure_cylinder`) by uniqueness of measures on the π-system of 
 exact law is the same induction that gives the one-step bound of Propositions 17 and 24, with
 the one-step kernel evaluated at a singleton instead of bounded below.
 
+## Resolved without Mathlib: Kac's lemma, and the skeleton's Markov property
+
+**Mathlib has no Kac lemma.**  Every `Kac` in the library is a Kac–Moody algebra.  Proposition
+9 was recorded here as waiting on one; it was not, and the entry was wrong in the same way the
+`measurable_hittingTimeCts` entry below was wrong.
+
+The paper opens the proof of Proposition 9 with the *identity*
+`1/μ̃(u) = E[R̃^u(u)]`, and the identity does need irreducibility: with two absorbing states and
+`μ̃ = (½, ½)`, the return time to either is `1`, not `2`.  But the proof needs only
+`μ̃(u) · E[R̃^u(u)] ≤ 1`, and **that inequality holds for every invariant probability measure**,
+with no irreducibility, no recurrence and no existence theorem.  So it does not wait on
+Doeblin either.
+
+`SocialNetwork/Kac.lean` proves it, for a Markov kernel on a countable measurable space, in
+about a hundred lines:
+
+* `SocialNetwork.kac_identity` — the finite-horizon identity: the event of visiting `u` before
+  time `m`, decomposed over the *last* such visit.  Invariance enters once, as
+  `∫ (κ g) dμ = ∫ g dμ`; the rest splits an integral at the singleton `{u}`.
+* `SocialNetwork.kac_tsum_le` — `μ {u} · ∑_n P_u(R_u > n) ≤ 1`.
+* `SocialNetwork.measure_singleton_le_of_avoid` — the form Proposition 9 consumes.
+
+From Mathlib it uses `ProbabilityTheory.Kernel.Invariant`
+(`Mathlib/Probability/Kernel/Invariance.lean:39`), `MeasureTheory.Measure.lintegral_bind`
+(`Mathlib/MeasureTheory/Measure/GiryMonad.lean:285`), `Measure.restrict_singleton` and
+`lintegral_add_compl` (`Mathlib/MeasureTheory/Integral/Lebesgue/Basic.lean:630`), and
+`ENNReal.tsum_le_of_sum_range_le`.  Nothing else.  Poincaré recurrence
+(`Mathlib/Dynamics/Ergodic/Conservative.lean`) is not used: it is about a measure-preserving
+*map*, and the shift on this repository's sample space is not one, since a path is a sequence
+of *jumps* read against a starting matrix.
+
+Applying it needs the skeleton's avoidance probabilities, which are defined by a recursion on
+the kernel, to be identified with probabilities of events on realisations.  That is one
+application of the Markov property at time `1`, and `SocialNetwork/Markov.lean` carries it:
+`SocialNetwork.pathMeasure_cylinder` (the exact law of a cylinder),
+`SocialNetwork.pathMeasure_restart` (the Markov property at a deterministic time) and
+`SocialNetwork.kacAvoid_skeletonKernel` (the bridge).  The first two are the transposition to
+the skeleton of the biased lemmas of the section above, proved the same way.
+
 ## Still missing, in DISCRETE time
 
-These block Theorem 1.2, Proposition 9, Corollary 10 and everything downstream.
+These block Theorem 1.2 and everything downstream of it.  Items 1–3 are one gap seen from
+three sides.
 
 1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing.  `grep` over the whole tree
    returns zero hits for `Doeblin`, `minorisation`, `minorization`.
@@ -132,25 +172,26 @@ These block Theorem 1.2, Proposition 9, Corollary 10 and everything downstream.
 3. **Irreducibility.**  `ProbabilityTheory.Kernel.IsIrreducible`
    (`Mathlib/Probability/Kernel/Irreducible.lean`) is the Meyn–Tweedie definition, two trivial
    instances and one monotonicity lemma.  Nothing is derived from it.
-4. **Kac's lemma**, `1/μ̃(u) = E[R̃^u(u)]`, used by Proposition 9.  Nothing: every `Kac` in
-   Mathlib is a Kac–Moody algebra.
-5. **Recurrence for chains, and return times.**  Nothing (`returnTime`, "return time": zero
+4. **Recurrence for chains, and return times.**  Nothing (`returnTime`, "return time": zero
    hits).  `Mathlib/Dynamics/Ergodic/Conservative.lean` has Poincaré recurrence, but for a
-   measure-preserving *map*, which does not transport to a kernel.
-6. **Total-variation distance between measures.**  Nothing usable: `totalVariation` exists only
+   measure-preserving *map*, which does not transport to a kernel.  Nothing in this repository
+   waits on this any more: it was here for Kac's lemma, and Kac's inequality turned out to need
+   neither recurrence nor a return time as an object — only the avoidance probabilities, which
+   are a recursion on the kernel.
+5. **Total-variation distance between measures.**  Nothing usable: `totalVariation` exists only
    for signed and vector measures (Jordan decomposition), not as the distance that uniform
    ergodicity is stated in.
 
 ## Still missing, in CONTINUOUS time
 
-7. **Non-explosion criteria.**  Theorem 1.1 is proved by sandwiching the jump times between two
+6. **Non-explosion criteria.**  Theorem 1.1 is proved by sandwiching the jump times between two
    Poisson processes.  **Mathlib has no Poisson point process**; what it has is the Poisson
    *distribution* on `ℕ` (`ProbabilityTheory.poissonMeasure`,
    `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.  An
    earlier draft of this blueprint asserted the opposite; that was wrong.
-8. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
+7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
    the jump chain and of the process.  Nothing, and it needs 1–5 above to be worth stating.
-9. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
+8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
    Slutsky's theorem available; `Mathlib/MeasureTheory/Measure/LevyProkhorovMetric.lean`
@@ -161,14 +202,14 @@ These block Theorem 1.2, Proposition 9, Corollary 10 and everything downstream.
 
 Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
 continuous-time versions follow from the discrete ones through the transfer (13) and the
-control of the holding times.  So they are blocked by items 1–5, not by 7.  Only Theorem 1.1 —
-and its biased twin Theorem 16 — genuinely needs the continuous-time item 7.
+control of the holding times.  So they are blocked by items 1–3, not by 6.  Only Theorem 1.1 —
+and its biased twin Theorem 16 — genuinely needs the continuous-time item 6.
 
-The shortest path to Theorem 2 is therefore: Doeblin ⇒ unique invariant measure for a
-countable-state kernel (item 1), then Kac (item 4), then Proposition 9 follows from
-Proposition 7, Remark 5 and the bound of Proposition 8 that is already proved
-(`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`), and Theorem 2.1 follows from
-Proposition 9 by (13).
+The shortest path to Theorem 2 is therefore item 1 alone.  Proposition 9 no longer waits on
+Mathlib at all: it is proved from Proposition 7, Remark 5, the bound of Proposition 8
+(`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, modulo the one
+step its own proof asserts (`SocialNetwork.skeleton_ne_of_greedy`).  Theorem 2.1 follows from
+it by (13) once `μ̃` exists, which is item 1.
 
 ## A smaller gap, outside probability — closed, but still a gap
 
