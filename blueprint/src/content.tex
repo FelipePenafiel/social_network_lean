@@ -13,26 +13,37 @@ a \texttt{sorry}.  Chapter~\ref{chap:notes} explains why each unproved
 statement is unproved, and records five places where formalising the paper
 showed that the written text needs correcting.
 
+Each statement is called here what the paper calls it, and the blueprint
+numbers nothing of its own: the node drawn \texttt{prop9} in the dependency
+graph is the paper's Proposition~9, \texttt{lem19} its Lemma~19, \texttt{eq1}
+its equation~(1), and a reference to any of them prints the paper's own name.
+What the paper does \emph{not} state --- a step it leaves implicit, the
+plumbing of the sample space, a witness that keeps a vacuous statement from
+passing for a theorem --- is numbered A.1, A.2, \dots\ in a sequence of its own
+and drawn \texttt{aux-\dots}, so that no name here is ever mistaken for one of
+the paper's.
+
 Two files at the root of the repository read this one.  \texttt{STATUS.md} is
 generated from it: every statement, its status, and --- for the ones that are
 not proved --- which of five kinds of obstruction it has met.
 \texttt{FOR-THE-AUTHORS.md} says what each obstruction asks of the authors.
 
+\aux{Remark}
 \begin{remark}[What a green node claims, and what it does not]
-  \label{rem:green}
+  \label{note-green}
   A green node means the Lean proof is complete.  On its own it does not say
   that the \emph{paper's} proof has been checked, and the two are not the same
   thing: a statement can be reached by a route the paper does not take, and
   some statements here --- measurability, the plumbing of the sample space ---
   the paper never proves at all.
 
-  The rule this development works under is that a Lean proof \textbf{follows the
-  paper's proof} wherever the paper gives one.  Reaching the conclusion another
-  way checks nothing about what was written, and checking what was written is
-  how Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} came to be flagged.  The
-  exception is what the paper leaves implicit --- a step asserted with ``note
-  that'' or ``by definition'', and everything measure-theoretic --- which has to
-  be supplied, and is then marked as supplied.
+  The rule this development works under is that a Lean proof \textbf{follows
+  the paper's proof} wherever the paper gives one.  Reaching the conclusion
+  another way checks nothing about what was written, and checking what was
+  written is how \ref{lem19} and~\ref{lem20} came to be flagged.  The exception
+  is what the paper leaves implicit --- a step asserted with ``note that'' or
+  ``by definition'', and everything measure-theoretic --- which has to be
+  supplied, and is then marked as supplied.
 
   So each proof environment below opens by saying which it is: it follows the
   paper's proof of such and such, it supplies a step the paper asserts, or it
@@ -47,30 +58,31 @@ The network has $N \ge 3$ actors, $\actors = \{1, \dots, N\}$, and $M \ge 2$
 opinions, $\opinions = \{1, \dots, M\}$.  A state is an $N \times M$ matrix
 $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
+\aux{Remark}
 \begin{remark}[Scaled coordinates]
-  \label{rem:scaling}
+  \label{note-scaling}
   The entries of the paper's matrices lie in $\mathbb{Z} + \pressone \mathbb{Z}
   = \pressone \mathbb{Z}$.  Rather than carry a subgroup of $\mathbb{R}$ around,
   the Lean development works throughout with the rescaled matrix
   \[ v(a,o) := (M-1)\, u(a,o) \in \mathbb{Z} . \]
   The rescaling is a bijection, so no statement changes, but the arithmetic
   becomes plain integer arithmetic.  In particular the lattice estimate behind
-  Proposition~\ref{prop:greedy-prob} — that two distinct entries differ by at
-  least $\pressone$ — becomes the statement that two distinct integers differ
-  by at least $1$.
+  \ref{prop8} — that two distinct entries differ by at least $\pressone$ —
+  becomes the statement that two distinct integers differ by at least $1$.
 
   Consequently a Lean statement in this blueprint reads $v$ where the paper
-  reads $u$, and the operator of Definition~\ref{def:express} adds $M-1$ on the expressed
-  column and subtracts $1$ on the others.  The blueprint text below keeps the
-  paper's coordinates; the discrepancy is exactly this rescaling.
+  reads $u$, and the operator of \ref{eq1} adds $M-1$ on the expressed column
+  and subtracts $1$ on the others.  The blueprint text below keeps the paper's
+  coordinates; the discrepancy is exactly this rescaling.
 \end{remark}
 
 \chapter{The model and the main results}
 
 \section{The expression operator and the state space}
 
-\begin{definition}[The expression operator, eq.~(1)]
-  \label{def:express}
+\paper{Equation (1)}
+\begin{definition}[The expression operator]
+  \label{eq1}
   \lean{SocialNetwork.express, SocialNetwork.express_of_ne}
   \leanok
   When actor $a$ expresses opinion $o$, the matrix of social pressures is
@@ -85,11 +97,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{definition}
 
-\begin{definition}[The state space, eq.~(2)]
-  \label{def:state}
+\paper{Equation (2)}
+\begin{definition}[The state space]
+  \label{eq2}
   \lean{SocialNetwork.IsState, SocialNetwork.IsState.trust_eq_zero}
   \leanok
-  \uses{def:express}
+  \uses{eq1}
   \[
     \Sspace = \Bigl\{ u : \forall a, o,\ u(a,o) \in \mathbb{Z} + \pressone\mathbb{Z};\
       \min_{a} \|u(a,\cdot)\|_\infty = 0;\
@@ -99,11 +112,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \texttt{IsState} carries the two remaining conditions.
 \end{definition}
 
+\aux{Lemma}
 \begin{lemma}[Conservation of trust]
-  \label{lem:trust}
+  \label{aux-trust}
   \lean{SocialNetwork.trust_express, SocialNetwork.trust_express_of_ne, SocialNetwork.trust_express_self}
   \leanok
-  \uses{def:express}
+  \uses{eq1}
   Expressing preserves the trust $T_a(u) = \sum_o u(a,o)$ of every actor except
   the expressing one, whose trust is reset to zero.
 \end{lemma}
@@ -117,53 +131,56 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $1$ and the remaining $M-1$ opinions lose $\pressone$ each.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[$\Sspace$ is stable]
-  \label{lem:state-stable}
+  \label{aux-state-stable}
   \lean{SocialNetwork.IsState.express}
   \leanok
-  \uses{def:state, lem:trust}
+  \uses{eq2, aux-trust}
   $\Sspace$ is stable under every $\express{a}{o}$.  This is the claim, made
-  just after Definition~\ref{def:express}, that from any starting position the process
-  remains in $\Sspace$ once every actor has expressed at least once.
+  just after \ref{eq1}, that from any starting position the process remains in
+  $\Sspace$ once every actor has expressed at least once.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{Supplies a step the paper asserts}: ``Indeed, from any
-  starting position \dots\ the process will remain in $\Sspace$ forever'', said
-  just after~(2) and not argued.
-  Trust is conserved by Lemma~\ref{lem:trust}, and the expressing actor's row is
-  null, which supplies the second condition.
+  \textbf{Supplies a step the paper asserts}: ``Indeed, from any starting
+  position \dots\ the process will remain in $\Sspace$ forever'', said just
+  after~(2) and not argued.  Trust is conserved by \ref{aux-trust}, and the
+  expressing actor's row is null, which supplies the second condition.
 \end{proof}
 
 \section{Observables}
 
+\aux{Definition}
 \begin{definition}[Public opinion and trust, Section~4]
-  \label{def:observables}
+  \label{aux-observables}
   \lean{SocialNetwork.publicOpinion, SocialNetwork.trust}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   For $o \in \opinions$ the \emph{public opinion} toward $o$ is the total
   pressure exerted by the population, $P_o(u) = \sum_{a \in \actors} u(a,o)$,
   and the \emph{trust} of an actor is $T_a(u) = \sum_{o \in \opinions} u(a,o)$.
 \end{definition}
 
-\begin{remark}[Trust vanishes on $\Sspace$, Remark~3]
-  \label{rem:trust-zero}
+\paper{Remark 3}
+\begin{remark}[Trust vanishes on $\Sspace$]
+  \label{rem3}
   \lean{SocialNetwork.IsState.trust_eq_zero, SocialNetwork.Bias.Memory.sum_pressure_eq_zero_of_bias_zero}
   \leanok
-  \uses{def:observables, def:state}
+  \uses{aux-observables, eq2}
   On $\Sspace$ the trust of every actor vanishes identically; this is the
-  normalisation built into Definition~\ref{def:state}.  The same holds in the biased
-  model exactly when $\alpha = 0$, by the identity of Remark~\ref{rem:biased-row}.
+  normalisation built into \ref{eq2}.  The same holds in the biased model
+  exactly when $\alpha = 0$, by the identity of \ref{rem1}.
 \end{remark}
 
 \section{The jump process}
 
-\begin{definition}[The generator, eq.~(3)]
-  \label{def:generator}
+\paper{Equation (3)}
+\begin{definition}[The generator]
+  \label{eq3}
   \lean{SocialNetwork.generator, SocialNetwork.jumpRate, SocialNetwork.totalRate, SocialNetwork.jumpWeight}
   \leanok
-  \uses{def:express, def:state}
+  \uses{eq1, eq2}
   For $\beta \ge 0$, the polarization coefficient, the process
   $(\Uproc{u}_t)_{t \ge 0}$ is the Markov jump process with generator
   \[
@@ -175,11 +192,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   rate, and $(T_n, A_n, O_n)_n$ for the expression times, actors and opinions.
 \end{definition}
 
-\begin{definition}[The skeleton, Definition~3]
-  \label{def:skeleton}
+\paper{Definition 3}
+\begin{definition}[The skeleton]
+  \label{def3}
   \lean{SocialNetwork.skeletonKernel, SocialNetwork.jumpPMF, SocialNetwork.pathMeasure, SocialNetwork.isMarkovKernel_skeletonKernel, SocialNetwork.skeletonKernel_reachable, SocialNetwork.isState_skeletonKernel, SocialNetwork.skeleton, SocialNetwork.measurable_skeleton, SocialNetwork.returnTime}
   \leanok
-  \uses{def:generator}
+  \uses{eq3}
   The skeleton process is $\Uskel{u}_n := \Uproc{u}_{T_n}$.  Its transition
   kernel chooses the pair $(a,o)$ with probability proportional to its rate
   $\exp(\beta u(a,o))$ and moves to $\express{a}{o}(u)$.  For
@@ -187,11 +205,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\Rskel{u}(\theta) := \inf\{ n \ge 1 : \Uskel{u}_n \in \theta \}$.
 \end{definition}
 
+\aux{Remark}
 \begin{remark}[How the process is built in Lean]
-  \label{rem:construction}
+  \label{aux-construction}
   \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process}
   \leanok
-  \uses{def:skeleton}
+  \uses{def3}
   Mathlib has no theory of continuous-time Markov jump processes on a countable
   state space, but it does not need one: the jump--hold representation is a
   discrete-time chain carrying one extra real coordinate.  Taking the state of
@@ -209,16 +228,17 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   Chapter~\ref{chap:proofs} therefore transfer to a realisation pointwise, with
   no almost-sure clause anywhere.
 
-  Per Remark~\ref{rem:green}, the measurability lemmas named above have
-  \textbf{no counterpart in the paper}, which does not address measurability;
+  Per \ref{note-green}, the measurability lemmas named above have \textbf{no
+  counterpart in the paper}, which does not address measurability;
   \texttt{jumpCount\_eq\_iff} is likewise an artefact of this construction
   rather than a formalisation of anything written there.  The one measurability
-  obligation that is not a cylinder argument, Lemma~\ref{lem:measurable-hitting},
-  has a node of its own.
+  obligation that is not a cylinder argument, \ref{aux-measurable-hitting}, has
+  a node of its own.
 \end{remark}
 
+\aux{Lemma}
 \begin{lemma}[Measurability of the hitting times]
-  \label{lem:measurable-hitting}
+  \label{aux-measurable-hitting}
   \lean{SocialNetwork.measurable_hittingTimeCts,
     SocialNetwork.Bias.measurable_biasedHittingTimeCts,
     SocialNetwork.jumpCount_max_jumpTime,
@@ -229,7 +249,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
     SocialNetwork.measurable_hittingCandidates,
     SocialNetwork.Bias.measurable_stateAfter_ofStepPath}
   \leanok
-  \uses{rem:construction}
+  \uses{aux-construction}
   $\omega \mapsto \Rhit{u}(\theta)(\omega)$ is measurable, for either process.
 \end{lemma}
 \begin{proof}
@@ -267,60 +287,62 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   is stated for an arbitrary such map.
 \end{proof}
 
-\begin{theorem}[Existence, Theorem~1.1]
-  \label{thm:nonexplosion}
+\paper{Theorem 1.1}
+\begin{theorem}[Existence]
+  \label{thm1-1}
   \lean{SocialNetwork.nonExplosion}
   \leanok
-  \uses{def:generator, rem:construction}
+  \uses{eq3, aux-construction}
   For any $\beta \ge 0$ and any $u \in \Sspace$, the jump times satisfy
   $\mathbb{P}(\sup\{T_m : m \ge 1\} = \infty) = 1$.
 \end{theorem}
 \begin{proof}
-  \uses{prop:low-pressure}
+  \uses{prop5}
   The jump times are sandwiched between two Poisson processes, splitting the
   expressions into those coming from actors with pressure below $N$ — which
-  Proposition~\ref{prop:low-pressure} says happen at least once every $N$ steps
-  — and the others.  \textbf{Not formalised}: Mathlib has no Poisson point
-  process, only the Poisson distribution on $\mathbb{N}$.
+  \ref{prop5} says happen at least once every $N$ steps — and the others.
+  \textbf{Not formalised}: Mathlib has no Poisson point process, only the
+  Poisson distribution on $\mathbb{N}$.
 \end{proof}
 
-\begin{theorem}[Uniqueness of the invariant measure, Theorem~1.2]
-  \label{thm:invariant}
+\paper{Theorem 1.2}
+\begin{theorem}[Uniqueness of the invariant measure]
+  \label{thm1-2}
   \lean{SocialNetwork.existsUnique_invariantCts}
   \leanok
-  \uses{def:generator, rem:construction}
+  \uses{eq3, aux-construction}
   The process $(\Uproc{u}_t)_t$ has a unique invariant probability measure
   $\muinv$.
 \end{theorem}
 \begin{proof}
-  \uses{thm:invariant-skeleton, lem:transfer}
+  \uses{thm1-2-skeleton, eq13}
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
-  $\muskel$, which is transferred to continuous time by Lemma~\ref{lem:transfer}, the
+  $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
-  processes.  \textbf{Not formalised}: Mathlib has no Doeblin criterion.
+  processes. \textbf{Not formalised}: Mathlib has no Doeblin criterion.
 \end{proof}
 
-\begin{theorem}[The invariant measure of the skeleton, Definition~3]
-  \label{thm:invariant-skeleton}
+\paper{Theorem 1.2}
+\begin{theorem}[The invariant measure of the skeleton]
+  \label{thm1-2-skeleton}
   \lean{SocialNetwork.existsUnique_invariantSkeleton}
   \leanok
-  \uses{def:skeleton}
+  \uses{def3}
   The skeleton process has a unique invariant probability measure $\muskel$
   carried by $\Sspace$.
 \end{theorem}
 \begin{proof}
-  This is the Doeblin step.  \textbf{Not formalised}, and it is the keystone:
-  Theorems~\ref{thm:invariant}, \ref{thm:concentration},
-  \ref{thm:metastability}, \ref{thm:biased-existence},
-  \ref{thm:biased-concentration} and \ref{thm:biased-metastability} all rest
-  on it.
+  This is the Doeblin step. \textbf{Not formalised}, and it is the keystone:
+  \ref{thm1-2}, \ref{thm2}, \ref{thm3}, \ref{thm25}, \ref{thm27} and
+  \ref{thm31} all rest on it.
 \end{proof}
 
-\begin{lemma}[Transfer to continuous time, eq.~(13)]
-  \label{lem:transfer}
+\paper{Equation (13)}
+\begin{lemma}[Transfer to continuous time]
+  \label{eq13}
   \lean{SocialNetwork.invariantCts_eq_of_invariantSkeleton}
   \leanok
-  \uses{def:skeleton, def:generator}
+  \uses{def3, eq3}
   For every $u \in \Sspace$,
   \[
     \muinv(u) = \frac{\muskel(u)/\jumprate(u)}
@@ -328,17 +350,17 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{lemma}
 \begin{proof}
-  \textbf{Not formalised}; it needs Theorem~\ref{thm:invariant-skeleton} to be
-  worth stating.
+  \textbf{Not formalised}; it needs \ref{thm1-2-skeleton} to be worth stating.
 \end{proof}
 
 \section{Ladders, consensus, and the main estimates}
 
-\begin{definition}[Ladder sets, Definition~1]
-  \label{def:ladder}
+\paper{Definition 1}
+\begin{definition}[Ladder sets]
+  \label{def1}
   \lean{SocialNetwork.IsLadder, SocialNetwork.ladderSet, SocialNetwork.ladderValues, SocialNetwork.IsLadder.nonneg, SocialNetwork.IsLadder.nonpos}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   For $o \in \opinions$,
   \[
     \ladder^o = \Bigl\{ u \in \Sspace :
@@ -348,11 +370,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   and $\ladder = \bigcup_{o} \ladder^o$.
 \end{definition}
 
-\begin{definition}[Consensus sets, Definition~2]
-  \label{def:consensus}
+\paper{Definition 2}
+\begin{definition}[Consensus sets]
+  \label{def2}
   \lean{SocialNetwork.IsConsensus, SocialNetwork.consensusSet, SocialNetwork.consensusSetOther}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   \[
     C^o = \{ u \in \Sspace : u \ne 0,\ u(a,o) \ge 0,\ u(a,p) \le 0
       \ \forall a, \forall p \ne o \},
@@ -360,43 +383,44 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   and $C^{-o} = \bigcup_{p \ne o} C^p$.
 \end{definition}
 
+\aux{Lemma}
 \begin{lemma}[A consensus state has a positive entry]
-  \label{lem:consensus-pos}
+  \label{aux-consensus-pos}
   \lean{SocialNetwork.IsConsensus.exists_pos}
   \leanok
-  \uses{def:consensus}
+  \uses{def2}
   For $u \in C^o$ there is an actor with $u(a,o) > 0$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{Supplies a step the paper asserts}: ``Note that for any
-  $u \in C^o$, there exists at least one actor $a$ such that $u(a,o) > 0$'',
-  said just after Definition~\ref{def:consensus} and not argued.
-  Were column $o$ identically zero, the vanishing row sums would force the whole
-  matrix to vanish, which $C^o$ excludes.
+  \textbf{Supplies a step the paper asserts}: ``Note that for any $u \in C^o$,
+  there exists at least one actor $a$ such that $u(a,o) > 0$'', said just after
+  \ref{def2} and not argued.  Were column $o$ identically zero, the vanishing
+  row sums would force the whole matrix to vanish, which $C^o$ excludes.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[$\ladder^o \subset C^o$]
-  \label{lem:ladder-consensus}
+  \label{aux-ladder-consensus}
   \lean{SocialNetwork.IsLadder.isConsensus}
   \leanok
-  \uses{def:ladder, def:consensus}
+  \uses{def1, def2}
   A ladder supporting $o$ is a consensus state for $o$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{No counterpart in the paper}: the inclusion is immediate
-  from Definitions~\ref{def:ladder} and~\ref{def:consensus} but is nowhere
-  drawn there.
-  On a ladder the $o$-column is non-negative and the others are the
-  corresponding non-positive multiples.
+  \textbf{No counterpart in the paper}: the inclusion is immediate from
+  \ref{def1} and~\ref{def2} but is nowhere drawn there.  On a ladder the
+  $o$-column is non-negative and the others are the corresponding non-positive
+  multiples.
 \end{proof}
 
-\begin{definition}[Steep ladders, Definition~4]
-  \label{def:steep}
+\paper{Definition 4}
+\begin{definition}[Steep ladders]
+  \label{def4}
   \lean{SocialNetwork.IsSteepLadder, SocialNetwork.steepLadderSet, SocialNetwork.IsSteepLadder.express}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   \[
     \steep^o = \bigl\{ u \in \Sspace : u(a,o) \in \mathbb{Z}\ \forall a;\
       0 = u(a_1,o) < \dots < u(a_N,o),\ \{a_1,\dots,a_N\} = \actors;\
@@ -406,11 +430,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\ladder^o$ by repeatedly expressing $o$.
 \end{definition}
 
-\begin{remark}[$\ladder \subset \steep$, Remark~5]
-  \label{rem:ladder-steep}
+\paper{Remark 5}
+\begin{remark}[$\ladder \subset \steep$]
+  \label{rem5}
   \lean{SocialNetwork.IsLadder.isSteepLadder, SocialNetwork.ladderSet_subset_steepLadderSet}
   \leanok
-  \uses{def:ladder, def:steep}
+  \uses{def1, def4}
   Every ladder is a steep ladder.
 \end{remark}
 \begin{proof}
@@ -418,11 +443,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   The values $0, 1, \dots, N-1$ are distinct integers with smallest value $0$.
 \end{proof}
 
-\begin{lemma}[Steep ladders are stable, Remark~5]
-  \label{lem:steep-stable}
+\paper{Remark 5}
+\begin{lemma}[Steep ladders are stable]
+  \label{rem5-stable}
   \lean{SocialNetwork.IsSteepLadder.express_of_pos, SocialNetwork.mem_steepLadderSet_of_positivePressure, SocialNetwork.positivePressureEvent, SocialNetwork.measurableSet_positivePressureEvent}
   \leanok
-  \uses{def:steep}
+  \uses{def4}
   For $\hat{l} \in \steep$,
   $\{ \Uproc{\hat{l}}_0(A_1,O_1) > 0 \} \subset \{ \Uproc{\hat{l}}_{T_1} \in \steep \}$:
   an expression by a pair carrying strictly positive pressure keeps the state on
@@ -438,11 +464,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   minimum $0$.
 \end{proof}
 
-\begin{lemma}[The bound $\eta$, Remark~5]
-  \label{lem:eta}
+\paper{Remark 5}
+\begin{lemma}[The bound $\eta$]
+  \label{rem5-eta}
   \lean{SocialNetwork.eta, SocialNetwork.eta_le_pathMeasure_positivePressure, SocialNetwork.eta_le_jumpPMF_posFinset, SocialNetwork.posFinset, SocialNetwork.sum_Ico_exp_le_sum_jumpRate, SocialNetwork.sum_jumpRate_compl_le, SocialNetwork.eta_le_div_of_le, SocialNetwork.sum_range_add_le_sum, SocialNetwork.sum_range_eq_one_add_sum_Ico, SocialNetwork.pathMeasure_preimage_zero}
   \leanok
-  \uses{def:ladder, def:steep, lem:steep-stable}
+  \uses{def1, def4, rem5-stable}
   For $\hat{l} \in \steep$ and $l \in \ladder$,
   \[
     \mathbb{P}(\Uproc{\hat{l}}_0(A_1,O_1) > 0)
@@ -460,26 +487,27 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   rate at most $1$, and there are at most $MN$ of them.
 
   \textbf{Supplies a step the paper asserts}: that the worst case over $\steep$
-  is attained on $\ladder$.  Remark~5 writes the two inequalities in one line and
-  argues neither.  The comparison is
-  \texttt{SocialNetwork.sum\_Ico\_exp\_le\_sum\_jumpRate}: on a steep ladder the
-  $o$-column is $N$ pairwise distinct non-negative integers one of which is $0$,
-  so the positive ones are $N-1$ distinct integers $\ge 1$; being distinct they
-  dominate $1, 2, \dots, N-1$ term by term once sorted, and $j \mapsto e^{\beta
-  j}$ is increasing.  Every entry outside the $o$-column is non-positive by
-  Definition~\ref{def:steep}, so it contributes nothing to the numerator and at
+  is attained on $\ladder$.  Remark~5 writes the two inequalities in one line
+  and argues neither.  The comparison is
+  \texttt{SocialNetwork.sum\_Ico\_exp\_le\_sum\_jumpRate}: on a steep ladder
+  the $o$-column is $N$ pairwise distinct non-negative integers one of which is
+  $0$, so the positive ones are $N-1$ distinct integers $\ge 1$; being distinct
+  they dominate $1, 2, \dots, N-1$ term by term once sorted, and $j \mapsto
+  e^{\beta j}$ is increasing.  Every entry outside the $o$-column is
+  non-positive by \ref{def4}, so it contributes nothing to the numerator and at
   most $1$ to the denominator.  The domination step is
-  \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, the monotone-function form of
-  the Mathlib gap recorded below for
+  \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, the monotone-function form
+  of the Mathlib gap recorded below for
   \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
 
 \end{proof}
 
-\begin{lemma}[Remark~5 iterated]
-  \label{lem:eta-pow}
+\paper{Remark 5}
+\begin{lemma}[The bound $\eta$, iterated]
+  \label{rem5-eta-iter}
   \lean{SocialNetwork.eta_pow_le_pathMeasure_steepLadder, SocialNetwork.eta_pow_le_pathMeasure_positiveEvents, SocialNetwork.IsPositiveAt, SocialNetwork.positiveEvents, SocialNetwork.positiveHistory, SocialNetwork.IsSteepLadder.state_of_isPositiveAt, SocialNetwork.eta_le_partialTraj_succ, SocialNetwork.eta_pow_le_historyMeasure}
   \leanok
-  \uses{lem:eta, lem:steep-stable}
+  \uses{rem5-eta, rem5-stable}
   For $\hat{l} \in \steep$ and any $m$,
   \[
     \mathbb{P}\bigl( \Uskel{\hat{l}}_k \in \steep \ \text{for all } k \le m \bigr)
@@ -493,22 +521,22 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   --- ``by Remark 5 we show that starting from $l \in \ladder$, a sequence of
   events $\{\Uproc{l}_{T_{j-1}}(A_j,O_j) > 0\}$'' --- without deriving it.
 
-  It is the induction of Proposition~\ref{prop:greedy-prob} along the
-  finite-horizon kernels, run on the event that every expression so far was made
-  from a positive entry.  One thing differs, and it is what makes the event move
-  with the state: $\zeta_\beta$ bounds the greedy step at \emph{every} matrix, so
-  that induction needs nothing of the history it conditions on, whereas $\eta$
-  holds only on $\steep$, so this one has to know that the history has kept the
-  state there.  That is exactly what the event says, by
-  Lemma~\ref{lem:steep-stable} iterated
+  It is the induction of \ref{prop8} along the finite-horizon kernels, run on
+  the event that every expression so far was made from a positive entry.  One
+  thing differs, and it is what makes the event move with the state:
+  $\zeta_\beta$ bounds the greedy step at \emph{every} matrix, so that
+  induction needs nothing of the history it conditions on, whereas $\eta$ holds
+  only on $\steep$, so this one has to know that the history has kept the state
+  there.  That is exactly what the event says, by \ref{rem5-stable} iterated
   (\texttt{SocialNetwork.IsSteepLadder.state\_of\_isPositiveAt}).
 \end{proof}
 
-\begin{theorem}[Concentration of $\muinv$, Theorem~2]
-  \label{thm:concentration}
+\paper{Theorem 2}
+\begin{theorem}[Concentration of $\muinv$]
+  \label{thm2}
   \lean{SocialNetwork.measure_ladderSet_ge, SocialNetwork.tendsto_hittingTime_ladderSet}
   \leanok
-  \uses{def:ladder, thm:invariant}
+  \uses{def1, thm1-2}
   \begin{enumerate}
     \item There is $C > 0$ such that $\muinv(\ladder) \ge 1 - C e^{-\beta/(M-1)}$
       for every $\beta \ge 0$.
@@ -517,22 +545,22 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
        \mathbb{P}\bigl(\Rhit{u}(\ladder) > e^{-\frac{\beta}{M-1}(1-\delta)}\bigr) \to 0$
       as $\beta \to +\infty$.
   \end{enumerate}
-  The zero matrix must be excluded from the supremum: from $0$ every rate equals
-  $1$, so the first expression takes a time of order $1$.
-  Corollary~\ref{cor:hitting-zero} covers it.
+  The zero matrix must be excluded from the supremum: from $0$ every rate
+  equals $1$, so the first expression takes a time of order $1$. \ref{cor11}
+  covers it.
 \end{theorem}
 \begin{proof}
-  \uses{prop:skeleton-concentration, lem:transfer}
-  Part 1 follows from Proposition~\ref{prop:skeleton-concentration} and the
-  transfer of Lemma~\ref{lem:transfer}; part 2 from Propositions~\ref{prop:reach-ladder}
-  and \ref{prop:greedy-prob}.  \textbf{Not formalised}.
+  \uses{prop9, eq13}
+  Part 1 follows from \ref{prop9} and the transfer of \ref{eq13}; part 2 from
+  \ref{prop7} and \ref{prop8}. \textbf{Not formalised}.
 \end{proof}
 
-\begin{theorem}[Metastability, Theorem~3]
-  \label{thm:metastability}
+\paper{Theorem 3}
+\begin{theorem}[Metastability]
+  \label{thm3}
   \lean{SocialNetwork.metastability}
   \leanok
-  \uses{def:consensus}
+  \uses{def2}
   There are $\beta_0, C_1 > 0$ and $C_2 \in (0, 1/2)$, depending only on $M$ and
   $N$, such that for $\beta \ge \beta_0$, every $o \in \opinions$ and every
   $u \in C^o$,
@@ -547,52 +575,48 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{theorem}
 \begin{proof}
   \leanok
-  \uses{prop:exit-exponential, lem:hitting-2beta, lem:exit-bounds, cor:cbeta,
-    lem:ladder-nonempty}
-  Apply Proposition~\ref{prop:exit-exponential} with the bounds of
-  Lemmas~\ref{lem:hitting-2beta} and~\ref{lem:exit-bounds} and
-  Corollary~\ref{cor:cbeta}.  \emph{Formalised, but neither sorry-free nor
-  axiom-free}: the assembly below is complete in Lean, and what it inherits is
-  \texttt{sorryAx} from Lemmas~\ref{lem:hitting-2beta}
-  and~\ref{lem:exit-bounds} together with the [LM22] axiom of
-  Proposition~\ref{prop:exit-exponential}.
+  \uses{prop12, lem13, lem14, cor15,
+    aux-ladder-nonempty}
+  Apply \ref{prop12} with the bounds of \ref{lem13} and~\ref{lem14} and
+  \ref{cor15}. \emph{Formalised, but neither sorry-free nor axiom-free}: the
+  assembly below is complete in Lean, and what it inherits is \texttt{sorryAx}
+  from \ref{lem13} and~\ref{lem14} together with the [LM22] axiom of
+  \ref{prop12}.
 
   Section~5.3 checks the four assumptions in half a page; each is one lemma:
   \begin{itemize}
     \item \eqref{eq:h15} at $s_1 = 1$,
       $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(M-1)}$
-      (\texttt{measure\_hittingTime\_le\_one}), from part 1 of
-      Lemma~\ref{lem:exit-bounds} through $1 - e^{-x} \le x$;
+      (\texttt{measure\_hittingTime\_le\_one}), from part 1 of \ref{lem14}
+      through $1 - e^{-x} \le x$;
     \item \eqref{eq:h16} at $s_2 = 2\beta$
-      (\texttt{probHittingGT\_ladderOther\_le}), from
-      Lemma~\ref{lem:hitting-2beta};
+      (\texttt{probHittingGT\_ladderOther\_le}), from \ref{lem13};
     \item \eqref{eq:h17} at $\delta = 1/((M+1)N)$
-      (\texttt{max\_le\_of\_isCharacteristicTime}), from
-      Corollary~\ref{cor:cbeta};
+      (\texttt{max\_le\_of\_isCharacteristicTime}), from \ref{cor15};
     \item \eqref{eq:h18} at $\theta = 1/(2(M-1))$
       (\texttt{measure\_hittingTime\_le\_two\_mul}), from part 2 of
-      Lemma~\ref{lem:exit-bounds}.
+      \ref{lem14}.
   \end{itemize}
 
   Three steps the text leaves implicit had to be supplied.  The paper cites
-  Lemma~\ref{lem:hitting-2beta}, which is about $\ladder$, for a condition
-  about $\ladder^o \cup C^{-o}$; the two are related by
-  $\ladder \subseteq \ladder^o \cup C^{-o}$, since a ladder for $p \ne o$ is a
-  consensus state for $p$.  Steps \eqref{eq:h17} and \eqref{eq:h18} both rest
-  on $\sup_{\beta \ge 0} \beta e^{-\beta/a} = a e^{-1}$, stated without proof
-  in (20); it follows from $x \le e^{x-1}$.  And the threshold $\beta_1$ above
-  which $\varepsilon_1 + \varepsilon_2 \le 1/2$ is made explicit, from
-  $e^{-\beta/a} \le a/\beta$.  Finally, Proposition~\ref{prop:exit-exponential}
-  fixes $o$ while Theorem~3 quantifies over it, so the constants are taken
-  uniform over the finitely many opinions.
+  \ref{lem13}, which is about $\ladder$, for a condition about $\ladder^o \cup
+  C^{-o}$; the two are related by $\ladder \subseteq \ladder^o \cup C^{-o}$,
+  since a ladder for $p \ne o$ is a consensus state for $p$.  Steps
+  \eqref{eq:h17} and \eqref{eq:h18} both rest on $\sup_{\beta \ge 0} \beta
+  e^{-\beta/a} = a e^{-1}$, stated without proof in (20); it follows from $x
+  \le e^{x-1}$.  And the threshold $\beta_1$ above which $\varepsilon_1 +
+  \varepsilon_2 \le 1/2$ is made explicit, from $e^{-\beta/a} \le a/\beta$.
+  Finally, \ref{prop12} fixes $o$ while Theorem~3 quantifies over it, so the
+  constants are taken uniform over the finitely many opinions.
 \end{proof}
 
 \chapter{Communication bias and the phase transition}
 
 \section{The biased model}
 
-\begin{definition}[The biased operator, eq.~(5)]
-  \label{def:biased-express}
+\paper{Equation (5)}
+\begin{definition}[The biased operator]
+  \label{eq5}
   \lean{SocialNetwork.Bias.Profile.express, SocialNetwork.Bias.Profile.pressure_express, SocialNetwork.Bias.Memory.hear, SocialNetwork.Bias.Memory.reset, SocialNetwork.Bias.Memory.pressure_hear}
   \leanok
   For $\alpha \in \mathbb{R}$, set $\gamma := \pressone - \alpha$ and
@@ -606,11 +630,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{definition}
 
-\begin{definition}[The biased state space, eq.~(6)]
-  \label{def:biased-state}
+\paper{Equation (6)}
+\begin{definition}[The biased state space]
+  \label{eq6}
   \lean{SocialNetwork.Bias.Profile, SocialNetwork.Bias.IsBiasedState, SocialNetwork.Bias.Memory, SocialNetwork.Bias.Memory.pressure, SocialNetwork.Bias.Memory.heard, SocialNetwork.Bias.IsBiasedState.two_mul_totalHeard_ge, SocialNetwork.Bias.sum_range_card_le_sum, SocialNetwork.Bias.sum_ge_of_injective}
   \leanok
-  \uses{def:biased-express}
+  \uses{eq5}
   An actor that has heard $n_a$ expressions since it last expressed, $c_p$ of
   which concerned opinion $p$, has row $u(a,p) = c_p(1+\gamma) - \gamma n_a$.
   $\Salpha$ is the set of matrices of this form with
@@ -618,22 +643,21 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
   The Lean development takes the memory profile $(n_a, (c_p)_p)_a$ as the
   primitive datum rather than the matrix, so the row formula holds by
-  definition.  See Remark~\ref{rem:eq6} for a correction to the second
-  condition.
+  definition.  See \ref{note-eq6} for a correction to the second condition.
 
   \texttt{IsBiasedState.two\_mul\_totalHeard\_ge} formalises the paper's own
   argument for the inequality: the $n_a$ are pairwise distinct, whence the
   bound.  The step the paper leaves implicit --- that $N$ distinct naturals sum
-  to at least $0 + 1 + \dots + (N-1)$ --- is
-  \texttt{sum\_ge\_of\_injective}, and has \textbf{no counterpart in the paper}
-  (Remark~\ref{rem:green}).
+  to at least $0 + 1 + \dots + (N-1)$ --- is \texttt{sum\_ge\_of\_injective},
+  and has \textbf{no counterpart in the paper} (\ref{note-green}).
 \end{definition}
 
-\begin{remark}[Arithmetic of a row, Remark~1]
-  \label{rem:biased-row}
+\paper{Remark 1}
+\begin{remark}[Arithmetic of a row]
+  \label{rem1}
   \lean{SocialNetwork.Bias.IsBiasedState.express, SocialNetwork.Bias.Profile.pressure_mem_addSubgroup, SocialNetwork.Bias.Profile.sum_pressure_eq, SocialNetwork.Bias.IsBiasedState.pressure_ne_zero, SocialNetwork.Bias.Memory.sum_pressure_eq, SocialNetwork.Bias.Memory.pressure_eq_zero_of_heard_eq_zero, SocialNetwork.Bias.Profile.pressure_eq_add_mul, SocialNetwork.Bias.Profile.heard_eq_zero_of_pressure_eq_zero}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   $\Salpha$ is stable under every $\expressa{a}{o}$.  Moreover
   $\sum_p u(a,p) = n_a (M-1)\alpha$ and
   $u(a,p) = c_p + \gamma(c_p - n_a) \in \mathbb{Z} + \gamma\mathbb{Z}$; a row is
@@ -648,11 +672,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $n_a(M-1)\alpha / M \ne 0$.
 \end{proof}
 
-\begin{remark}[The degenerate regimes, Remark~2]
-  \label{rem:degenerate}
+\paper{Remark 2}
+\begin{remark}[The degenerate regimes]
+  \label{rem2}
   \lean{SocialNetwork.Bias.pressure_lt_pressure_hear_of_neg, SocialNetwork.Bias.le_pressure_hear_of_le_neg_one}
   \leanok
-  \uses{def:biased-express}
+  \uses{eq5}
   For $\alpha > \pressone$, that is $\gamma < 0$, every expression raises the
   pressure of every listener for \emph{every} opinion, so no opinion can acquire
   the negative pressure a consensus requires.  For
@@ -662,26 +687,27 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{remark}
 \begin{proof}
   \leanok
-  Both are sign computations on the increments of
-  Definition~\ref{def:biased-express}.
+  Both are sign computations on the increments of \ref{eq5}.
 \end{proof}
 
-\begin{definition}[The biased generator, eq.~(7)]
-  \label{def:biased-generator}
+\paper{Equation (7)}
+\begin{definition}[The biased generator]
+  \label{eq7}
   \lean{SocialNetwork.Bias.biasedGenerator, SocialNetwork.Bias.biasedSkeletonKernel, SocialNetwork.Bias.biasedCtsPathMeasure, SocialNetwork.Bias.biasedJumpRate, SocialNetwork.Bias.biasedTotalRate, SocialNetwork.Bias.biasedJumpPMF, SocialNetwork.Bias.biasedPathMeasure, SocialNetwork.Bias.stateAfter, SocialNetwork.Bias.isBiasedState_stateAfter}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   \[
     \tilde{G} f(u) = \sum_{o \in \opinions} \sum_{a \in \actors}
       \exp(\beta u(a,o)) \bigl[ f(\expressa{a}{o}(u)) - f(u) \bigr].
   \]
 \end{definition}
 
-\begin{definition}[Biased consensus and ladders, eq.~(8) and (9)]
-  \label{def:biased-sets}
+\paper{Equations (8) and (9)}
+\begin{definition}[Biased consensus and ladders]
+  \label{eq8}
   \lean{SocialNetwork.Bias.IsBiasedConsensus, SocialNetwork.Bias.IsBiasedLadder, SocialNetwork.Bias.IsBiasedSteepLadder, SocialNetwork.Bias.biasedStateSet, SocialNetwork.Bias.biasedLadderSet, SocialNetwork.Bias.biasedConsensusSetOther, SocialNetwork.Bias.biasedSteepLadderSet}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   For $0 < \alpha < \pressone$,
   \[
     C_\alpha^o = \{ u \in \Salpha : u \ne 0,\ u(a,o) \ge 0,\ u(a,p) \le 0 \},
@@ -692,45 +718,48 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   together with $\steep_\alpha$, the biased steep ladders of Appendix~C.
 \end{definition}
 
+\aux{Remark}
 \begin{remark}[$\ladder_\alpha \subset \steep_\alpha$]
-  \label{rem:biased-ladder-steep}
+  \label{aux-biased-ladder-steep}
   \lean{SocialNetwork.Bias.IsBiasedLadder.isBiasedSteepLadder, SocialNetwork.Bias.biasedLadderSet_subset_biasedSteepLadderSet, SocialNetwork.Bias.IsBiasedLadder.injective, SocialNetwork.Bias.IsBiasedLadder.exists_zero, SocialNetwork.Bias.IsBiasedLadder.nonneg, SocialNetwork.Bias.IsBiasedLadder.isInt, SocialNetwork.Bias.IsBiasedLadder.exists_eq_natCast}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   Every biased ladder is a biased steep ladder.
 \end{remark}
 \begin{proof}
   \leanok
-  \textbf{No counterpart in the paper}, which states
-  Remark~\ref{rem:ladder-steep} for the unbiased model only and transfers it to
-  Appendix~C without comment.  The argument is the unbiased one: a column taking
-  each of $0, 1, \dots, N-1$ exactly once is in particular an injective,
-  non-negative, integer-valued column whose minimum is $0$.
+  \textbf{No counterpart in the paper}, which states \ref{rem5} for the
+  unbiased model only and transfers it to Appendix~C without comment.  The
+  argument is the unbiased one: a column taking each of $0, 1, \dots, N-1$
+  exactly once is in particular an injective, non-negative, integer-valued
+  column whose minimum is $0$.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[A biased ladder is a biased consensus state]
-  \label{lem:biased-ladder-consensus}
+  \label{aux-biased-ladder-consensus}
   \lean{SocialNetwork.Bias.IsBiasedLadder.isBiasedConsensus}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   For $\gamma > 0$ and $N \ge 2$, $\ladder_\alpha^o \subseteq C_\alpha^o$.
 \end{lemma}
 \begin{proof}
   \leanok
   \textbf{No counterpart in the paper}, exactly as for
-  Lemma~\ref{lem:ladder-consensus}.  The $o$-column is non-negative and takes
-  the value $N-1 \ge 1$, so it is not identically zero; the other columns are
+  \ref{aux-ladder-consensus}.  The $o$-column is non-negative and takes the
+  value $N-1 \ge 1$, so it is not identically zero; the other columns are
   $-\gamma$ times it, hence non-positive.  Appendix~C needs it for the reason
-  Section~5.3 needs the unbiased version:
-  \eqref{eq:h16} is about $\ladder_\alpha^o \cup C_\alpha^{-o}$ while
-  Lemma~\ref{lem:biased-hitting} bounds the hitting time of $\ladder_\alpha$.
+  Section~5.3 needs the unbiased version: \eqref{eq:h16} is about
+  $\ladder_\alpha^o \cup C_\alpha^{-o}$ while \ref{lem28} bounds the hitting
+  time of $\ladder_\alpha$.
 \end{proof}
 
-\begin{remark}[The smallest maximum of a non-null row, Remark~8]
-  \label{rem:remark8}
+\paper{Remark 8}
+\begin{remark}[The smallest maximum of a non-null row]
+  \label{rem8}
   \lean{SocialNetwork.Bias.le_max_pressure, SocialNetwork.Bias.exists_count_ge, SocialNetwork.Bias.pressure_eq_of_bias}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   For $0 < \alpha < \pressone$ and an actor with $n_a \ge 1$,
   $\max_{p} u(a,p) \ge (M-1)\alpha$, with equality exactly for an actor that has
   heard one expression of each opinion.  Hence the jump rate out of any non-null
@@ -755,8 +784,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \section{The phase transition}
 
-\begin{theorem}[Phase transition, Theorem~4]
-  \label{thm:phase}
+\paper{Theorem 4}
+\begin{theorem}[Phase transition]
+  \label{thm4}
   \lean{SocialNetwork.Bias.biasedAbsorption,
     SocialNetwork.Bias.exists_pos_le_measure_sameFrom,
     SocialNetwork.Bias.sameFrom,
@@ -769,35 +799,35 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
     SocialNetwork.Bias.breakHistory,
     SocialNetwork.Bias.biasedProcess, SocialNetwork.Bias.biasedHittingTimeCts}
   \leanok
-  \uses{def:biased-generator, def:biased-sets}
+  \uses{eq7, eq8}
   \begin{enumerate}
     \item For any $\beta > 0$ and any $\alpha < 0$, for any $u \in \Salpha$,
       $\mathbb{P}\bigl( \bigcup_{n \ge 1} \bigcap_{m \ge n}
       \{A_n^{\alpha,\beta,u} = A_m^{\alpha,\beta,u}\} \bigr) = 1$: all but one
       actor eventually stop expressing.
     \item For $0 \le \alpha < \pressone$, adapted versions of Theorems~1, 2
-      and~3 hold; these are Theorems~\ref{thm:biased-existence},
-      \ref{thm:biased-concentration} and \ref{thm:biased-metastability}.
+      and~3 hold; these are \ref{thm25}, \ref{thm27} and \ref{thm31}.
   \end{enumerate}
 \end{theorem}
 \begin{proof}
   \leanok
-  \uses{prop:biased-bounded, prop:biased-absorb, thm:biased-existence,
-    thm:biased-concentration, thm:biased-metastability}
-  \textbf{Part 1 follows the paper's proof, with its recursion run as a single fixed-point
-  step.}  Proposition~\ref{prop:biased-bounded} puts the profile after $N$ expressions in
-  $B_N^\alpha$ with probability at least $(NM)^{-N}$, and
-  Proposition~\ref{prop:biased-absorb} takes over from there, so from every $u \in \Salpha$ a
-  single actor performs every expression from the $N$-th on with probability at least a
-  constant $c$, uniformly in $u$.  The paper then defines the successive failure times
+  \uses{prop17, prop18, thm25,
+    thm27, thm31}
+  \textbf{Part 1 follows the paper's proof, with its recursion run as a single
+  fixed-point step.} \ref{prop17} puts the profile after $N$ expressions in
+  $B_N^\alpha$ with probability at least $(NM)^{-N}$, and \ref{prop18} takes
+  over from there, so from every $u \in \Salpha$ a single actor performs every
+  expression from the $N$-th on with probability at least a constant $c$,
+  uniformly in $u$.  The paper then defines the successive failure times
   $\eta_n$, applies the strong Markov property at each and obtains
-  $\mathbb{P}(\eta_{n+1} < \infty) \le (1-c)\,\mathbb{P}(\eta_n < \infty)$, whence
-  $\lim_n \mathbb{P}(\eta_n < \infty) = 0$.  That limit is exactly
-  $q = \sup_{v \in \Salpha} \mathbb{P}_v(\text{no actor is eventually alone})$, and the one
-  inequality the induction uses --- the restart at the first failure --- gives
-  $q \le (1-c)\,q$ in a single step, which forces $q = 0$ since $c > 0$.  The estimate, the
-  time it is applied at and the constant are the paper's; only the bookkeeping of the
-  recursion is replaced by the fixed point it converges to.
+  $\mathbb{P}(\eta_{n+1} < \infty) \le (1-c)\,\mathbb{P}(\eta_n < \infty)$,
+  whence $\lim_n \mathbb{P}(\eta_n < \infty) = 0$.  That limit is exactly $q =
+  \sup_{v \in \Salpha} \mathbb{P}_v(\text{no actor is eventually alone})$, and
+  the one inequality the induction uses --- the restart at the first failure
+  --- gives $q \le (1-c)\,q$ in a single step, which forces $q = 0$ since $c >
+  0$.  The estimate, the time it is applied at and the constant are the
+  paper's; only the bookkeeping of the recursion is replaced by the fixed point
+  it converges to.
 
   \textbf{Supplies two steps the paper asserts.}  The first is the Markov property itself.
   The paper writes ``the strong Markov property at time $T_N$'', but everything in part~1 is
@@ -810,13 +840,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   measurable for the past at $\eta_n$: here it is the statement that each failure event is
   decided by the expressions that precede it.
 
-  Theorem~\ref{thm:biased-nonexplosion} is not needed for part~1: the statement is about the
-  sequence of expressed pairs, and non-explosion is what makes the \emph{continuous-time}
+  \ref{thm16} is not needed for part~1: the statement is about the sequence of
+  expressed pairs, and non-explosion is what makes the \emph{continuous-time}
   process well defined.
 
-  Part 2 is Theorems~\ref{thm:biased-existence}, \ref{thm:biased-concentration}
-  and~\ref{thm:biased-metastability}, stated separately and carrying their own status;
-  Theorem~4 as a whole therefore rests on them.
+  Part 2 is \ref{thm25}, \ref{thm27} and~\ref{thm31}, stated separately and
+  carrying their own status; Theorem~4 as a whole therefore rests on them.
 \end{proof}
 
 \chapter{Proofs}
@@ -824,41 +853,43 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
 \section{The deterministic layer}
 
-The results of this section are statements about a \emph{realisation}
-$(A_n, O_n)_n$, not about its probability.  They are formalised on the type of
-realisations and, by Remark~\ref{rem:construction}, apply to a sample point of
-the process pointwise.
+The results of this section are statements about a \emph{realisation} $(A_n,
+O_n)_n$, not about its probability.  They are formalised on the type of
+realisations and, by \ref{aux-construction}, apply to a sample point of the
+process pointwise.
 
+\aux{Definition}
 \begin{definition}[Realisations]
-  \label{def:trajectory}
+  \label{aux-trajectory}
   \lean{SocialNetwork.Trajectory, SocialNetwork.Trajectory.state, SocialNetwork.skeleton, SocialNetwork.Trajectory.state_succ, SocialNetwork.rowSup}
   \leanok
-  \uses{def:express}
+  \uses{eq1}
   A realisation is the sequence $(A_n, O_n)_n$ of expressing actors and
   opinions; $\Uskel{u}_n$ is obtained by iterating $\express{A_n}{O_n}$ from
   $u$.  Note the index convention: in Lean, \texttt{actor 0} is the paper's
   $A_1$.
 \end{definition}
 
+\aux{Lemma}
 \begin{lemma}[$\Sspace$ along a realisation]
-  \label{lem:state-along}
+  \label{aux-state-along}
   \lean{SocialNetwork.Trajectory.isState_state, SocialNetwork.isState_skeletonKernel}
   \leanok
-  \uses{def:trajectory, lem:state-stable}
+  \uses{aux-trajectory, aux-state-stable}
   If $u \in \Sspace$ then $\Uskel{u}_n \in \Sspace$ for every $n$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{No counterpart in the paper}, which uses this silently
-  throughout Section~5.
-  Induction on $n$ using Lemma~\ref{lem:state-stable}.
+  \textbf{No counterpart in the paper}, which uses this silently throughout
+  Section~5.  Induction on $n$ using \ref{aux-state-stable}.
 \end{proof}
 
-\begin{proposition}[Low pressure recurs, Proposition~5]
-  \label{prop:low-pressure}
+\paper{Proposition 5}
+\begin{proposition}[Low pressure recurs]
+  \label{prop5}
   \lean{SocialNetwork.exists_rowSup_actor_lt, SocialNetwork.exists_rowSup_actor_lt_ofPath, SocialNetwork.rowSup_state_le, SocialNetwork.actor_ne_of_rowSup_state_zero, SocialNetwork.actor_ne_actor_of_lt}
   \leanok
-  \uses{def:trajectory, lem:state-along}
+  \uses{aux-trajectory, aux-state-along}
   For any $u \in \Sspace$,
   $\inf\{ n \ge 1 : \|\Uskel{u}_{n-1}(A_n,\cdot)\|_\infty < N \} \le N$: among any
   $N$ consecutive expressions, at least one comes from an actor whose social
@@ -874,11 +905,12 @@ the process pointwise.
   $N+1$ distinct actors in a network of $N$.
 \end{proof}
 
+\aux{Definition}
 \begin{definition}[The greedy event]
-  \label{def:greedy}
+  \label{aux-greedy}
   \lean{SocialNetwork.IsGreedyAt, SocialNetwork.greedyEvent, SocialNetwork.greedyEvents, SocialNetwork.measurableSet_greedyEvent, SocialNetwork.measurableSet_greedyEvents}
   \leanok
-  \uses{def:trajectory}
+  \uses{aux-trajectory}
   For $u \in \Sspace$ and $n \ge 1$,
   \[
     \xi_n^u := \Bigl\{ (A_n, O_n) \in
@@ -889,107 +921,107 @@ the process pointwise.
   many coordinates, so it is a measurable cylinder.
 \end{definition}
 
-\begin{proposition}[Confinement, Proposition~6]
-  \label{prop:confinement}
+\paper{Proposition 6}
+\begin{proposition}[Confinement]
+  \label{prop6}
   \lean{SocialNetwork.entry_mem_of_greedy, SocialNetwork.entry_mem_of_mem_greedyEvents, SocialNetwork.entry_le_of_greedy, SocialNetwork.neg_le_of_forall_le}
   \leanok
-  \uses{def:greedy, prop:low-pressure}
+  \uses{aux-greedy, prop5}
   For any $u \in \Sspace$,
   $\bigcap_{j=1}^{N} \xi_j^u \subset \{ -MN < \Uskel{u}_N < N \}$, entrywise.
 \end{proposition}
 \begin{proof}
   \leanok
-  \textbf{Follows the paper's proof of Proposition~6}, in its two cases.
-  One step is supplied: where the paper passes from the bound at the repeat
-  time $m$ to ``this implies $\max \Uskel{u}_N < N$'', the Lean proof carries
-  the bound over the remaining $N - m$ expressions explicitly.
-  If the $N$ expressing actors are distinct, every row was reset within the
-  window and the argument of Proposition~\ref{prop:low-pressure} bounds the
-  matrix by $N-1$.  Otherwise some actor repeats at a step $m$, and greediness at
-  that step caps the whole matrix by the small row of the repeating actor.  The
-  lower bound then comes from the vanishing row sums.
+  \textbf{Follows the paper's proof of Proposition~6}, in its two cases.  One
+  step is supplied: where the paper passes from the bound at the repeat time
+  $m$ to ``this implies $\max \Uskel{u}_N < N$'', the Lean proof carries the
+  bound over the remaining $N - m$ expressions explicitly.  If the $N$
+  expressing actors are distinct, every row was reset within the window and the
+  argument of \ref{prop5} bounds the matrix by $N-1$.  Otherwise some actor
+  repeats at a step $m$, and greediness at that step caps the whole matrix by
+  the small row of the repeating actor.  The lower bound then comes from the
+  vanishing row sums.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[From consensus to a ladder]
-  \label{lem:consensus-ladder}
+  \label{aux-consensus-ladder}
   \lean{SocialNetwork.isLadder_state, SocialNetwork.isLadder_state_of_mem_greedyEvents, SocialNetwork.opinion_eq_of_greedy, SocialNetwork.IsConsensus.express, SocialNetwork.actor_ne_actor_of_greedy, SocialNetwork.state_add_of_hearing, SocialNetwork.opinion_eq_of_mem_greedyEvents}
   \leanok
-  \uses{def:greedy, def:consensus, def:ladder, lem:consensus-pos}
+  \uses{aux-greedy, def2, def1, aux-consensus-pos}
   If $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^v$ occurs then $\Uskel{v}_N \in \ladder^o$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{No counterpart in the paper.}  Proposition~7 closes with
-  ``we consider that by definition, if $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^u$
-  occurs, then $\Uskel{u}_N \in \ladder^o$'', and it is not by definition ---
-  see Remark~\ref{rem:by-definition}.  The three stages below are the
-  formalisation's own.
-  In $C^o$ a maximising entry lies in column $o$ by
-  Lemma~\ref{lem:consensus-pos}, and expressing $o$ keeps the state in $C^o$, so
-  every one of the $N$ expressions expresses $o$.  No actor expresses twice: one
-  that already expressed carries too little pressure, while an actor that has
-  not expressed has been accumulating pressure for $o$ the whole time.  Each
-  actor therefore expresses exactly once, at some step $i$, and afterwards only
-  listens to expressions of $o$; its row at time $N$ is exactly $N-1-i$ on
-  column $o$.  As $i$ runs over $0, \dots, N-1$ so does $N-1-i$, which is
-  Definition~\ref{def:ladder}.
+  \textbf{No counterpart in the paper.} Proposition~7 closes with ``we consider
+  that by definition, if $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^u$ occurs, then
+  $\Uskel{u}_N \in \ladder^o$'', and it is not by definition --- see
+  \ref{note-prop7}.  The three stages below are the formalisation's own.  In
+  $C^o$ a maximising entry lies in column $o$ by \ref{aux-consensus-pos}, and
+  expressing $o$ keeps the state in $C^o$, so every one of the $N$ expressions
+  expresses $o$.  No actor expresses twice: one that already expressed carries
+  too little pressure, while an actor that has not expressed has been
+  accumulating pressure for $o$ the whole time.  Each actor therefore expresses
+  exactly once, at some step $i$, and afterwards only listens to expressions of
+  $o$; its row at time $N$ is exactly $N-1-i$ on column $o$.  As $i$ runs over
+  $0, \dots, N-1$ so does $N-1-i$, which is \ref{def1}.
 \end{proof}
 
-\begin{proposition}[Reaching a ladder, Proposition~7]
-  \label{prop:reach-ladder}
+\paper{Proposition 7}
+\begin{proposition}[Reaching a ladder]
+  \label{prop7}
   \lean{SocialNetwork.isLadder_state_of_greedy, SocialNetwork.greedyEvents_subset_ladder, SocialNetwork.one_sub_le_pathMeasure_ladder, SocialNetwork.consensusUnion}
   \leanok
-  \uses{def:greedy, def:ladder}
+  \uses{aux-greedy, def1}
   For any $u \in \Sspace$,
   $\bigcap_{j=1}^{(M+1)N} \xi_j^u \subset \{ \Uskel{u}_{(M+1)N} \in \ladder \}$.
 \end{proposition}
 \begin{proof}
   \leanok
-  \uses{lem:lemma19, lem:lemma20, lem:consensus-ladder, lem:shift}
-  Lemma~\ref{lem:lemma19} needs $\tau(u) \le N+1$ steps to reach
-  $\bigcup_o S^o$, Lemma~\ref{lem:lemma20} needs $(M-1)(n(u)+1)-1 \le (M-1)N$
-  further steps to reach $\bigcup_o C^o$, and
-  Lemma~\ref{lem:consensus-ladder} needs $N$ more, for a total of $(M+1)N$.
-  Composing the three requires restarting the realisation at an intermediate
-  time, which is Lemma~\ref{lem:shift}.  \emph{Formalised, but not sorry-free}:
-  the assembly is complete in Lean and inherits \texttt{sorryAx} from
-  Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20} alone.
+  \uses{lem19, lem20, aux-consensus-ladder, aux-shift}
+  \ref{lem19} needs $\tau(u) \le N+1$ steps to reach $\bigcup_o S^o$,
+  \ref{lem20} needs $(M-1)(n(u)+1)-1 \le (M-1)N$ further steps to reach
+  $\bigcup_o C^o$, and \ref{aux-consensus-ladder} needs $N$ more, for a total
+  of $(M+1)N$.  Composing the three requires restarting the realisation at an
+  intermediate time, which is \ref{aux-shift}. \emph{Formalised, but not
+  sorry-free}: the assembly is complete in Lean and inherits \texttt{sorryAx}
+  from \ref{lem19} and~\ref{lem20} alone.
 
   \textbf{Supplies a step the paper asserts, and takes a different route
-  through one of them.}  The written proof carries the process to
-  $\bigcup_o S^o$ \emph{at time $N+1$} --- ``so by Lemma~19 we have
+  through one of them.} The written proof carries the process to $\bigcup_o
+  S^o$ \emph{at time $N+1$} --- ``so by Lemma~19 we have
   $\bigcap_{j=1}^{N+1}\xi_j^u \subset \{\Uskel{u}_{N+1} \in \bigcup_o S^o\}$''
-  --- whereas Lemma~\ref{lem:lemma19} delivers that membership at the first
-  repeat $\tau(u)$, which is only $\le N+1$.  Bridging the gap needs
-  $\bigcup_o S^o$ to be stable under a greedy expression, and the paper neither
-  states nor proves that.  It is not obvious either: a greedy expression in
-  $S^o$ expresses $o$ (Lemma~\ref{lem:favouring-max}), but it resets the row of
-  the actor that expresses, and that actor may be one of the very witnesses
-  $a_1(u), \dots, a_{n(u)}(u)$; new witnesses have to be produced, and the
-  bound on the other columns then has to be re-established, which is precisely
-  the bookkeeping of Lemma~\ref{lem:lemma20} whose written invariant does not
-  survive (Remark~\ref{rem:lemma20}).
+  --- whereas \ref{lem19} delivers that membership at the first repeat
+  $\tau(u)$, which is only $\le N+1$.  Bridging the gap needs $\bigcup_o S^o$
+  to be stable under a greedy expression, and the paper neither states nor
+  proves that.  It is not obvious either: a greedy expression in $S^o$
+  expresses $o$ (\ref{lem20-opening}), but it resets the row of the actor that
+  expresses, and that actor may be one of the very witnesses $a_1(u), \dots,
+  a_{n(u)}(u)$; new witnesses have to be produced, and the bound on the other
+  columns then has to be re-established, which is precisely the bookkeeping of
+  \ref{lem20} whose written invariant does not survive (\ref{note-lem20}).
 
-  Lemma~\ref{lem:lemma20} is therefore applied here at $\tau(u)$ itself, where
-  Lemma~\ref{lem:lemma19} leaves the process, and no stability of $S^o$ is
-  needed.  The arithmetic is the paper's and is unchanged:
-  $\tau(u) + (M-1)(n(u)+1) - 1 \le (N+1) + (M-1)N - 1 = MN$.
+  \ref{lem20} is therefore applied here at $\tau(u)$ itself, where \ref{lem19}
+  leaves the process, and no stability of $S^o$ is needed.  The arithmetic is
+  the paper's and is unchanged: $\tau(u) + (M-1)(n(u)+1) - 1 \le (N+1) + (M-1)N
+  - 1 = MN$.
 
   The written proof needs a \emph{second} bridge of the same kind, from
   $N+1+(M-1)(n(u)+1)-1$ up to $MN$, and that one is unavoidable --- the last
   stage has to start at $MN$ for the total to be $(M+1)N$.  It is also
   available: it is the paper's own observation, from the last step of this same
   proof, that a greedy expression in $C^o$ expresses $o$ and that $C^o$ is
-  stable under it (Lemma~\ref{lem:consensus-ladder}, stage~1).  So the
-  formalisation keeps that bridge and drops the other.
+  stable under it (\ref{aux-consensus-ladder}, stage~1).  So the formalisation
+  keeps that bridge and drops the other.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[Restarting a realisation]
-  \label{lem:shift}
+  \label{aux-shift}
   \lean{SocialNetwork.Trajectory.shift, SocialNetwork.Trajectory.state_add,
     SocialNetwork.isGreedyAt_shift}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   Running a realisation for $m+k$ steps from $u$ is running it for $m$ steps
   and then running the realisation read from step $m$ onwards for $k$ further
   steps; and greediness at step $k$ of the latter is greediness at step $m+k$
@@ -1004,31 +1036,31 @@ the process pointwise.
 
 \section{The probability of a greedy run}
 
+\aux{Lemma}
 \begin{lemma}[The gap estimate]
-  \label{lem:gap}
+  \label{aux-gap}
   \lean{SocialNetwork.entrySup, SocialNetwork.le_entrySup_sub_one, SocialNetwork.exists_entrySup, SocialNetwork.isGreedyAt_iff_entrySup}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   Write $y(v) = \max\{v(a,o)\}$.  For $b, o$ with $v(b,o) < y(v)$, the difference
   $v(b,o) - y(v)$ is a strictly negative element of $\pressone\mathbb{Z}$, so
   $v(b,o) - y(v) \le -\pressone$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{Follows the paper's proof of Proposition~8}, of which this is
-  one sentence, extracted so that Proposition~\ref{prop:greedy-prob} and the
-  biased model can share it.
-  Every entry of a state of $\Sspace$ lies in
-  $\mathbb{Z} + \pressone\mathbb{Z} = \pressone\mathbb{Z}$.  In the scaled
-  coordinates of Remark~\ref{rem:scaling} this is the statement that two
-  distinct integers differ by at least $1$.
+  \textbf{Follows the paper's proof of Proposition~8}, of which this is one
+  sentence, extracted so that \ref{prop8} and the biased model can share it.
+  Every entry of a state of $\Sspace$ lies in $\mathbb{Z} + \pressone\mathbb{Z}
+  = \pressone\mathbb{Z}$.  In the scaled coordinates of \ref{note-scaling} this
+  is the statement that two distinct integers differ by at least $1$.
 \end{proof}
 
-\begin{proposition}[Probability of a greedy run, Proposition~8]
-  \label{prop:greedy-prob}
+\paper{Proposition 8}
+\begin{proposition}[Probability of a greedy run]
+  \label{prop8}
   \lean{SocialNetwork.zeta, SocialNetwork.zeta_le_jumpPMF_argmaxFinset, SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents, SocialNetwork.zeta_le_partialTraj_succ, SocialNetwork.argmaxFinset, SocialNetwork.jumpPMF_apply}
   \leanok
-  \uses{def:greedy, lem:gap, def:skeleton}
+  \uses{aux-greedy, aux-gap, def3}
   For all $m \ge 1$,
   $\mathbb{P}\bigl( \bigcap_{j=1}^{m} \xi_j^u \bigr) \ge (\zeta_\beta)^m$, where
   \[
@@ -1052,9 +1084,8 @@ the process pointwise.
     \mathbb{P}(\xi_1^v) = \frac{|Y(v)| e^{\beta y(v)}}
       {|Y(v)| e^{\beta y(v)} + \sum_{b,o : v(b,o) < y(v)} e^{\beta v(b,o)}},
   \]
-  with $Y(v)$ the set of maximising pairs.  Use $|Y(v)| \ge 1$,
-  Lemma~\ref{lem:gap} for the non-maximising pairs, and
-  $|\actors \times \opinions| = MN$.
+  with $Y(v)$ the set of maximising pairs.  Use $|Y(v)| \ge 1$, \ref{aux-gap}
+  for the non-maximising pairs, and $|\actors \times \opinions| = MN$.
 
   In Lean the iteration is carried out as an induction along the finite-horizon
   kernels of the Ionescu--Tulcea construction: two marginals of one step say
@@ -1063,11 +1094,12 @@ the process pointwise.
   greedy exactly when its last coordinate maximises the pressure.
 \end{proof}
 
-\begin{remark}[Bernoulli, Remark~4]
-  \label{rem:bernoulli}
+\paper{Remark 4}
+\begin{remark}[Bernoulli]
+  \label{rem4}
   \lean{SocialNetwork.one_sub_le_zeta_pow, SocialNetwork.one_sub_le_pathMeasure_greedyEvents, SocialNetwork.zeta_pos, SocialNetwork.zeta_le_one, SocialNetwork.one_sub_le_zeta}
   \leanok
-  \uses{prop:greedy-prob}
+  \uses{prop8}
   For any $m \ge 1$ and $\beta \ge 0$,
   $(\zeta_\beta)^m \ge 1 - m M N e^{-\frac{\beta}{M-1}}$.
 \end{remark}
@@ -1080,84 +1112,81 @@ the process pointwise.
 
 \section{Concentration of the skeleton measure}
 
-\begin{lemma}[asserted inside the proof of Proposition~9]
-  \label{lem:greedy-avoids}
+\aux{Lemma}
+\begin{lemma}[The greedy run does not revisit $u$]
+  \label{aux-greedy-avoids}
   \lean{SocialNetwork.skeleton_ne_of_greedy}
   \leanok
-  \uses{prop:reach-ladder, def:steep}
-  For $u \in \Sspace \setminus \steep$, the greedy run of
-  Proposition~\ref{prop:reach-ladder} does not visit $u$ again: on
-  $\bigcap_{j=1}^{k} \xi_j^u$ with $1 \le k \le (M+1)N$, one has
-  $\Uskel{u}_k \ne u$.
+  \uses{prop7, def4}
+  For $u \in \Sspace \setminus \steep$, the greedy run of \ref{prop7} does not
+  visit $u$ again: on $\bigcap_{j=1}^{k} \xi_j^u$ with $1 \le k \le (M+1)N$,
+  one has $\Uskel{u}_k \ne u$.
 \end{lemma}
 \begin{proof}
-  The proof of Proposition~9 reads this off Proposition~\ref{prop:reach-ladder}
-  --- ``a sequence of events $\xi_j^u$ \dots leads the process to $\ladder$,
-  without visiting $u$'' --- but Proposition~\ref{prop:reach-ladder} says where
-  the greedy run ends and nothing about where it passes.  Once the run has
-  reached $\steep$ the claim is immediate, since it stays there and
-  $u \notin \steep$; what is missing is the transient.  \textbf{Not
-  formalised}, and it is not a formality: greedy runs do return to matrices they
-  have already visited --- from a ladder they cycle with period $N$ --- so the
-  hypothesis $u \notin \steep$ is doing work.
+  The proof of Proposition~9 reads this off \ref{prop7} --- ``a sequence of
+  events $\xi_j^u$ \dots leads the process to $\ladder$, without visiting $u$''
+  --- but \ref{prop7} says where the greedy run ends and nothing about where it
+  passes.  Once the run has reached $\steep$ the claim is immediate, since it
+  stays there and $u \notin \steep$; what is missing is the transient.
+  \textbf{Not formalised}, and it is not a formality: greedy runs do return to
+  matrices they have already visited --- from a ladder they cycle with period
+  $N$ --- so the hypothesis $u \notin \steep$ is doing work.
 \end{proof}
 
-\begin{proposition}[Proposition~9]
-  \label{prop:skeleton-concentration}
+\paper{Proposition 9}
+\begin{proposition}[Concentration of $\muskel$ off the steep ladders]
+  \label{prop9}
   \lean{SocialNetwork.measure_le_of_notMem_steepLadderSet, SocialNetwork.kacAvoid, SocialNetwork.kac_identity, SocialNetwork.kac_tsum_le, SocialNetwork.measure_singleton_le_of_avoid, SocialNetwork.kacAvoid_skeletonKernel, SocialNetwork.lintegral_kacAvoid_skeletonKernel, SocialNetwork.returnStep, SocialNetwork.returnBound, SocialNetwork.isSteepLadder_skeleton_of_returnStep, SocialNetwork.returnBound_prod_le, SocialNetwork.one_sub_eta_le, SocialNetwork.eta_lt_one, SocialNetwork.one_div_zeta_le, SocialNetwork.one_add_mul_two_pow_le, SocialNetwork.exp_le_pow_of_one_lt}
   \leanok
-  \uses{def:steep}
+  \uses{def4}
   For any $\beta > 0$ and $u \notin \steep$,
   $\muskel(u) \le C' e^{-\beta(N-1)}$ with $C' = (NM)^{(M+1)N+1}$.
 \end{proposition}
 \begin{proof}
   \leanok
-  \uses{prop:reach-ladder, lem:eta, lem:eta-pow, prop:greedy-prob, lem:greedy-avoids}
-  By Kac's lemma $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]
-  \ge \sum_{m \ge (M+1)N} \mathbb{P}(\Rskel{u}(u) \ge m)$.  A run of events
-  $\xi_j^u$ takes the process to $\ladder$ without visiting $u$
-  (Proposition~\ref{prop:reach-ladder} and
-  Lemma~\ref{lem:greedy-avoids}) with the probability of
-  Proposition~\ref{prop:greedy-prob}, and Lemma~\ref{lem:eta-pow} then keeps it
-  in $\steep$.  Summing the geometric series
-  $\sum_{m \ge 0} \eta^m = 1/(1-\eta)$ and using
-  $1 - \eta \le (1 + MN) e^{-\beta(N-1)}$ gives the bound.
+  \uses{prop7, rem5-eta, rem5-eta-iter, prop8, aux-greedy-avoids}
+  By Kac's lemma $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)] \ge \sum_{m \ge
+  (M+1)N} \mathbb{P}(\Rskel{u}(u) \ge m)$.  A run of events $\xi_j^u$ takes the
+  process to $\ladder$ without visiting $u$ (\ref{prop7} and
+  \ref{aux-greedy-avoids}) with the probability of \ref{prop8}, and
+  \ref{rem5-eta-iter} then keeps it in $\steep$.  Summing the geometric series
+  $\sum_{m \ge 0} \eta^m = 1/(1-\eta)$ and using $1 - \eta \le (1 + MN)
+  e^{-\beta(N-1)}$ gives the bound.
 
   \textbf{Follows the paper's proof}, and departs from it in one place.  The
-  paper writes Kac's lemma as the identity
-  $1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]$, which needs the chain to be
-  irreducible and hence Theorem~\ref{thm:invariant-skeleton}; the proof uses
-  only $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, and \emph{that} inequality
+  paper writes Kac's lemma as the identity $1/\muskel(u) =
+  \mathbb{E}[\Rskel{u}(u)]$, which needs the chain to be irreducible and hence
+  \ref{thm1-2-skeleton}; the proof uses only
+  $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, and \emph{that} inequality
   holds for every invariant probability measure, with no irreducibility and no
   existence theorem.  It is proved here outright, at the generality of a Markov
-  kernel on a countable space
-  (\texttt{SocialNetwork.kac\_tsum\_le}), by decomposing the event of visiting
-  $u$ before time $m$ over the last such visit.  So this proposition does not
-  wait on Doeblin's criterion, and it is stated for an arbitrary invariant
-  probability measure rather than for a named $\muskel$.
+  kernel on a countable space (\texttt{SocialNetwork.kac\_tsum\_le}), by
+  decomposing the event of visiting $u$ before time $m$ over the last such
+  visit.  So this proposition does not wait on Doeblin's criterion, and it is
+  stated for an arbitrary invariant probability measure rather than for a named
+  $\muskel$.
 
-  \textbf{Supplies two steps the paper asserts.}  The composition of
-  Proposition~\ref{prop:reach-ladder} with Lemma~\ref{lem:eta-pow} is done on
-  the realisation --- the greedy expressions and then the positive ones are one
-  event of the sample space --- rather than by restarting the chain at time
-  $(M+1)N$.  And the arithmetic that reaches the printed constant needs the
-  regime $MN e^{-\beta/(M-1)} > 1$ to be treated separately: there $C'$ already
-  exceeds $e^{\beta(N-1)}$ and $\muskel(u) \le 1$ suffices.
+  \textbf{Supplies two steps the paper asserts.} The composition of \ref{prop7}
+  with \ref{rem5-eta-iter} is done on the realisation --- the greedy
+  expressions and then the positive ones are one event of the sample space ---
+  rather than by restarting the chain at time $(M+1)N$.  And the arithmetic
+  that reaches the printed constant needs the regime $MN e^{-\beta/(M-1)} > 1$
+  to be treated separately: there $C'$ already exceeds $e^{\beta(N-1)}$ and
+  $\muskel(u) \le 1$ suffices.
 
   \textbf{Adds the hypothesis $u \in \Sspace$}, which the paper works under
-  throughout and which Proposition~\ref{prop:reach-ladder} --- called here ---
-  is stated with.
+  throughout and which \ref{prop7} --- called here --- is stated with.
 
-  \textbf{Rests on} Lemma~\ref{lem:greedy-avoids}, and through
-  Proposition~\ref{prop:reach-ladder} on Lemmas~\ref{lem:lemma19}
-  and~\ref{lem:lemma20}.
+  \textbf{Rests on} \ref{aux-greedy-avoids}, and through \ref{prop7} on
+  \ref{lem19} and~\ref{lem20}.
 \end{proof}
 
-\begin{corollary}[Corollary~10]
-  \label{cor:zero}
+\paper{Corollary 10}
+\begin{corollary}[The zero matrix]
+  \label{cor10}
   \lean{SocialNetwork.measure_zero_le}
   \leanok
-  \uses{prop:skeleton-concentration}
+  \uses{prop9}
   $\muskel(0) \le C'' e^{-\beta(N-1+\pressone)}$ with $C'' = (NM) C'$.
 \end{corollary}
 \begin{proof}
@@ -1167,11 +1196,12 @@ the process pointwise.
   \textbf{Not formalised}.
 \end{proof}
 
-\begin{corollary}[Corollary~11]
-  \label{cor:hitting-zero}
+\paper{Corollary 11}
+\begin{corollary}[Hitting a ladder from the zero matrix]
+  \label{cor11}
   \lean{SocialNetwork.tendsto_hittingTime_ladderSet_zero}
   \leanok
-  \uses{thm:concentration}
+  \uses{thm2}
   For every fixed $\delta > 0$,
   $\mathbb{P}\bigl(\Rhit{0}(\ladder) > \tau + e^{-\frac{\beta}{M-1}(1-\delta)}\bigr) \to 0$
   as $\beta \to +\infty$, where $\tau$ is exponential of mean $1/(MN)$,
@@ -1181,14 +1211,14 @@ the process pointwise.
   \textbf{Not formalised}.
 \end{proof}
 
-\begin{remark}[Remark~6]
-  \label{rem:remark6}
-  \uses{cor:hitting-zero}
+\paper{Remark 6}
+\begin{remark}[Reaching $\ladder^o$ before leaving $C^o$]
+  \label{rem6}
+  \uses{cor11}
   The paper's own note that the first term on the right of equation~(14) may be
-  replaced by
-  $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) < \Rhit{u}(C^{-o}))$,
-  whence, by the same steps as part~2 of Theorem~\ref{thm:invariant}, for every
-  fixed $o$ and $\delta > 0$,
+  replaced by $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) <
+  \Rhit{u}(C^{-o}))$, whence, by the same steps as part~2 of \ref{thm1-2}, for
+  every fixed $o$ and $\delta > 0$,
   \[
     \inf_{u \in C^o} \mathbb{P}\Bigl(
       \Rhit{u}(\ladder^o) < \min\bigl\{e^{-\frac{\beta}{M-1}(1-\delta)},
@@ -1196,20 +1226,20 @@ the process pointwise.
     \qquad \beta \to +\infty .
   \]
 
-  \textbf{Not stated in Lean.}  It is the one numbered statement of the paper
+  \textbf{Not stated in Lean.} It is the one numbered statement of the paper
   with no counterpart here, and it is recorded so that the count is honest.
-  Nothing downstream uses it: it strengthens Corollary~\ref{cor:hitting-zero}
-  in the direction Lemma~\ref{lem:exit-bounds} needs, and both are blocked on
-  the same continuous-time analysis.
+  Nothing downstream uses it: it strengthens \ref{cor11} in the direction
+  \ref{lem14} needs, and both are blocked on the same continuous-time analysis.
 \end{remark}
 
 \section{Metastability}
 
-\begin{proposition}[The exponential-approximation criterion, Proposition~12]
-  \label{prop:exit-exponential}
+\paper{Proposition 12}
+\begin{proposition}[The exponential-approximation criterion]
+  \label{prop12}
   \lean{SocialNetwork.exitTime_approx_exponential, SocialNetwork.IsCharacteristicTime}
   \leanok
-  \uses{def:consensus, def:ladder}
+  \uses{def2, def1}
   Fix $o$.  Let $c_\beta$ be the positive real with
   $\mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta) = e^{-1}$ for $l \in \ladder^o$.  For
   $\varepsilon_1, \varepsilon_2, s_1, s_2 > 0$ with
@@ -1255,11 +1285,12 @@ the process pointwise.
   therefore needs its own twin; one axiom cannot serve both models.
 \end{proof}
 
+\aux{Lemma}
 \begin{lemma}[Inside the proof of part~2 of Theorem~2]
-  \label{lem:hitting-rate}
+  \label{aux-hitting-rate}
   \lean{SocialNetwork.probHittingGT_ladderSet_le_of_ne_zero}
   \leanok
-  \uses{def:ladder}
+  \uses{def1}
   For any $u \in \Sspace \setminus \{0\}$ and any $t > 0$,
   \[
     \mathbb{P}(\Rhit{u}(\ladder) > t)
@@ -1268,21 +1299,21 @@ the process pointwise.
   \]
 \end{lemma}
 \begin{proof}
-  \uses{prop:confinement, prop:greedy-prob}
+  \uses{prop6, prop8}
   \textbf{Not formalised, and not a numbered statement of the paper}: this
-  inequality is displayed inside the proof of part~2 of
-  Theorem~\ref{thm:invariant}, and Theorem~2.2 is the limit it gives at
-  $t = e^{-\beta(1-\delta)/(M-1)}$.  It is stated here because
-  Lemma~\ref{lem:hitting-2beta} uses the inequality and not the limit: taking
+  inequality is displayed inside the proof of part~2 of \ref{thm1-2}, and
+  Theorem~2.2 is the limit it gives at $t = e^{-\beta(1-\delta)/(M-1)}$.  It is
+  stated here because \ref{lem13} uses the inequality and not the limit: taking
   the limit throws the rate away, so Lemma~13 cannot rest on Theorem~2.2 as
   stated.  See Section~\ref{sec:corrections}.
 \end{proof}
 
-\begin{lemma}[Equation~(19)]
-  \label{lem:hitting-zero-decomp}
+\paper{Equation (19)}
+\begin{lemma}[Displayed inside the proof of Lemma~13]
+  \label{eq19}
   \lean{SocialNetwork.probHittingGT_ladderSet_zero_le}
   \leanok
-  \uses{def:ladder}
+  \uses{def1}
   \[
     \mathbb{P}(\Rhit{0}(\ladder) > 2\beta)
       \;\le\; \mathbb{P}(\tau > \beta)
@@ -1292,47 +1323,47 @@ the process pointwise.
   $e^{-\beta/(MN)}$.
 \end{lemma}
 \begin{proof}
-  \uses{cor:hitting-zero}
+  \uses{cor11}
   \textbf{Not formalised, and not a numbered statement of the paper}: it is
-  displayed as equation~(19) inside the proof of
-  Lemma~\ref{lem:hitting-2beta} and attributed there to
-  Corollary~\ref{cor:hitting-zero}, which is itself stated as a limit.  Note
-  that $\tau$ is declared exponential of mean $1/(MN)$, for which
-  $\mathbb{P}(\tau > \beta) = e^{-MN\beta}$ and not $e^{-\beta/(MN)}$; since
-  $e^{-MN\beta} \le e^{-\beta/(MN)}$ for $\beta \ge 0$, the form written here
-  is the weaker of the two and Lemma~13 follows from either reading.
+  displayed as equation~(19) inside the proof of \ref{lem13} and attributed
+  there to \ref{cor11}, which is itself stated as a limit.  Note that $\tau$ is
+  declared exponential of mean $1/(MN)$, for which $\mathbb{P}(\tau > \beta) =
+  e^{-MN\beta}$ and not $e^{-\beta/(MN)}$; since $e^{-MN\beta} \le
+  e^{-\beta/(MN)}$ for $\beta \ge 0$, the form written here is the weaker of
+  the two and Lemma~13 follows from either reading.
 \end{proof}
 
-\begin{lemma}[Lemma~13]
-  \label{lem:hitting-2beta}
+\paper{Lemma 13}
+\begin{lemma}[Hitting a ladder within $2\beta$]
+  \label{lem13}
   \lean{SocialNetwork.probHittingGT_ladderSet_le}
   \leanok
-  \uses{def:ladder}
+  \uses{def1}
   For any $u \in \Sspace$,
   $\mathbb{P}(\Rhit{u}(\ladder) > 2\beta) \le (M+1)^2 N^2 e^{-\beta/((M+1)N)}$.
   This is \eqref{eq:h16} with $s_2 = 2\beta$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \uses{lem:hitting-zero-decomp, lem:hitting-rate, rem:bernoulli}
+  \uses{eq19, aux-hitting-rate, rem4}
   Split according to whether the start is $0$.  From $0$, equation~(19) of
-  Lemma~\ref{lem:hitting-zero-decomp}; from any other state the event at
-  $2\beta$ is contained in the event at $\beta$.  Both are then bounded by
-  Lemma~\ref{lem:hitting-rate} at $t = \beta$, and $1 - \zeta_\beta^{(M+1)N}$
-  by Remark~\ref{rem:bernoulli}.  \emph{Formalised, but not sorry-free}: the
-  proof is complete in Lean and inherits \texttt{sorryAx} from the two
-  displays above alone.  \textbf{Supplies a step the paper asserts}: ``putting
-  the inequalities above together'' is the comparison of each of the three
-  terms with $e^{-\beta/((M+1)N)}$ --- using $MN \le (M+1)N$, $M-1 \le (M+1)N$
-  and $e^{\beta/(M-1)} \ge 1$ --- which leaves the integer inequality
-  $1 + (M+1)N \le (M+1)N^2$, true since $N \ge 3$.
+  \ref{eq19}; from any other state the event at $2\beta$ is contained in the
+  event at $\beta$.  Both are then bounded by \ref{aux-hitting-rate} at $t =
+  \beta$, and $1 - \zeta_\beta^{(M+1)N}$ by \ref{rem4}. \emph{Formalised, but
+  not sorry-free}: the proof is complete in Lean and inherits \texttt{sorryAx}
+  from the two displays above alone. \textbf{Supplies a step the paper
+  asserts}: ``putting the inequalities above together'' is the comparison of
+  each of the three terms with $e^{-\beta/((M+1)N)}$ --- using $MN \le (M+1)N$,
+  $M-1 \le (M+1)N$ and $e^{\beta/(M-1)} \ge 1$ --- which leaves the integer
+  inequality $1 + (M+1)N \le (M+1)N^2$, true since $N \ge 3$.
 \end{proof}
 
-\begin{lemma}[Lemma~14]
-  \label{lem:exit-bounds}
+\paper{Lemma 14}
+\begin{lemma}[Two-sided control of the exit from a consensus set]
+  \label{lem14}
   \lean{SocialNetwork.le_probHittingGT_consensusOther, SocialNetwork.probHittingLE_consensusOther_le}
   \leanok
-  \uses{def:consensus, def:ladder}
+  \uses{def2, def1}
   For any $t > 0$ and any $o$:
   \begin{enumerate}
     \item for $l \in \ladder^o$,
@@ -1345,36 +1376,38 @@ the process pointwise.
   Proved in Appendix~B of the paper.  \textbf{Not formalised}.
 \end{proof}
 
-\begin{corollary}[Corollary~15]
-  \label{cor:cbeta}
+\paper{Corollary 15}
+\begin{corollary}[A lower bound for $c_\beta$]
+  \label{cor15}
   \lean{SocialNetwork.le_characteristicTime}
   \leanok
-  \uses{prop:exit-exponential, lem:exit-bounds}
+  \uses{prop12, lem14}
   For any $\beta \ge 0$,
   $c_\beta \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{M-1}}$.
 \end{corollary}
 \begin{proof}
   \leanok
-  \uses{lem:exit-bounds, lem:ladder-nonempty}
-  Apply Lemma~\ref{lem:exit-bounds}, part 1, at $t = c_\beta$ to the ladder
-  $l$ of Lemma~\ref{lem:ladder-nonempty}, so that
+  \uses{lem14, aux-ladder-nonempty}
+  Apply \ref{lem14}, part 1, at $t = c_\beta$ to the ladder $l$ of
+  \ref{aux-ladder-nonempty}, so that
   \[
     e^{-1} \;=\; \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
     \;\ge\; e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}} ,
   \]
-  and rearrange.  \emph{Formalised, but not sorry-free}: the proof above is
-  complete in Lean, and inherits \texttt{sorryAx} from
-  Lemma~\ref{lem:exit-bounds} alone.  Its only addition to the paper is the
-  witness: the statement quantifies over $l \in L^o$, so it is vacuous
-  unless $L^o \ne \emptyset$, which the paper does not record.
+  and rearrange. \emph{Formalised, but not sorry-free}: the proof above is
+  complete in Lean, and inherits \texttt{sorryAx} from \ref{lem14} alone.  Its
+  only addition to the paper is the witness: the statement quantifies over $l
+  \in L^o$, so it is vacuous unless $L^o \ne \emptyset$, which the paper does
+  not record.
 \end{proof}
 
-\begin{lemma}[$L^o$ is inhabited]
-  \label{lem:ladder-nonempty}
+\aux{Lemma}
+\begin{lemma}[$\ladder^o$ is inhabited]
+  \label{aux-ladder-nonempty}
   \lean{SocialNetwork.ladderOf, SocialNetwork.isLadder_ladderOf,
     SocialNetwork.exists_isLadder, SocialNetwork.ladderSet_nonempty}
   \leanok
-  \uses{def:ladder}
+  \uses{def1}
   For every $o \in O$ the set $L^o$ is non-empty: the matrix
   $l(a, o) = a$, $l(a, p) = -a/(M-1)$ for $p \ne o$, is a ladder supporting
   $o$.
@@ -1391,57 +1424,58 @@ the process pointwise.
 
 \section{The negative-bias regime}
 
-\begin{theorem}[Theorem~16]
-  \label{thm:biased-nonexplosion}
+\paper{Theorem 16}
+\begin{theorem}[The biased process does not explode]
+  \label{thm16}
   \lean{SocialNetwork.Bias.biasedNonExplosion}
   \leanok
-  \uses{def:biased-generator}
+  \uses{eq7}
   For $\beta \ge 0$, $\alpha < 0$ and $u \in \Salpha$, the biased process does
   not explode.
 \end{theorem}
 \begin{proof}
-  \uses{prop:biased-low-pressure, thm:nonexplosion}
-  As Theorem~\ref{thm:nonexplosion}, with
-  Proposition~\ref{prop:biased-low-pressure} in place of
-  Proposition~\ref{prop:low-pressure}.  \textbf{Not formalised}.
+  \uses{prop21, thm1-1}
+  As \ref{thm1-1}, with \ref{prop21} in place of \ref{prop5}. \textbf{Not
+  formalised}.
 \end{proof}
 
-\begin{proposition}[Proposition~17]
-  \label{prop:biased-bounded}
+\paper{Proposition 17}
+\begin{proposition}[Reaching bounded pressures]
+  \label{prop17}
   \lean{SocialNetwork.Bias.measure_biasedBounded_ge, SocialNetwork.Bias.biasedBounded}
   \leanok
-  \uses{def:biased-generator}
+  \uses{eq7}
   For $\alpha < 0$, $\beta \ge 0$ and $u \in \Salpha$,
   $\mathbb{P}(U^{\alpha,u}_{T_N} \in B_N^\alpha) \ge (NM)^{-N}$, where
   $B_N^\alpha = \{ u \in \Salpha : \max_{a,o} u(a,o) \le N \}$.
 \end{proposition}
 \begin{proof}
   \leanok
-  \uses{prop:confinement, prop:greedy-prob}
-  As Proposition~\ref{prop:confinement},
-  $\bigcap_{j=1}^N \xi_j^{\alpha,u} \subset \{U^{\alpha,u}_{T_N} \in B_N^\alpha\}$,
-  and each $\xi_j^{\alpha,u}$ is the most probable of $NM$ choices.
-  \textbf{Follows the paper's proof of Proposition~17}, in its two halves.
+  \uses{prop6, prop8}
+  As \ref{prop6}, $\bigcap_{j=1}^N \xi_j^{\alpha,u} \subset
+  \{U^{\alpha,u}_{T_N} \in B_N^\alpha\}$, and each $\xi_j^{\alpha,u}$ is the
+  most probable of $NM$ choices. \textbf{Follows the paper's proof of
+  Proposition~17}, in its two halves.
 
-  The inclusion is Proposition~\ref{prop:confinement}'s argument with $n_a$ in
-  place of $\|U(a,\cdot)\|_\infty$, in its two cases: either the first $N$
-  expressions come from $N$ distinct actors, and every row was reset, or some
-  actor expresses at $j < k < N$ and greediness at $k$ caps the whole profile at
-  $n_a = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.
-  Unlike Proposition~\ref{prop:biased-confinement}, the chain closes here:
-  greediness is \emph{exact}, so the maximum at the repeat time is the expressing
-  actor's own entry, with no slack of $1/(2\gamma)$ to absorb.
+  The inclusion is \ref{prop6}'s argument with $n_a$ in place of
+  $\|U(a,\cdot)\|_\infty$, in its two cases: either the first $N$ expressions
+  come from $N$ distinct actors, and every row was reset, or some actor
+  expresses at $j < k < N$ and greediness at $k$ caps the whole profile at $n_a
+  = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.  Unlike
+  \ref{prop22}, the chain closes here: greediness is \emph{exact}, so the
+  maximum at the repeat time is the expressing actor's own entry, with no slack
+  of $1/(2\gamma)$ to absorb.
 
-  The probability is the one-step bound: with $\beta \ge 0$ the maximising pairs
-  carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
-  weight, and the iteration is the one of
-  Proposition~\ref{prop:greedy-prob}.  That iteration is run once in Lean, for
-  an arbitrary choice of admissible pairs at each profile, and instantiated both
-  here and at Proposition~\ref{prop:biased-greedy-prob}.
+  The probability is the one-step bound: with $\beta \ge 0$ the maximising
+  pairs carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
+  weight, and the iteration is the one of \ref{prop8}.  That iteration is run
+  once in Lean, for an arbitrary choice of admissible pairs at each profile,
+  and instantiated both here and at \ref{prop24}.
 \end{proof}
 
-\begin{proposition}[Proposition~18]
-  \label{prop:biased-absorb}
+\paper{Proposition 18}
+\begin{proposition}[One actor expresses for ever]
+  \label{prop18}
   \lean{SocialNetwork.Bias.inf_measure_forall_eq_first_pos,
     SocialNetwork.Bias.exists_pos_le_pathMeasure_forall_lt_fst,
     SocialNetwork.Bias.soloPath,
@@ -1458,7 +1492,7 @@ the process pointwise.
     SocialNetwork.exists_uniformSeq_freqGood_pos,
     SocialNetwork.uniformSeq_freqGood_le}
   \leanok
-  \uses{prop:biased-bounded}
+  \uses{prop17}
   For $\alpha < 0$ and $\beta > 0$,
   $\inf_{u \in B_N^\alpha} \mathbb{P}\bigl( \bigcap_{j \ge 1} \{A_j^u = A_1^u\} \bigr) > 0$.
 \end{proposition}
@@ -1501,11 +1535,12 @@ the process pointwise.
 
 \chapter{Appendix A: the road to Proposition~7}
 
-\begin{definition}[Matrices favouring an opinion, Definition~5]
-  \label{def:favouring}
+\paper{Definition 5}
+\begin{definition}[Matrices favouring an opinion]
+  \label{def5-favouring}
   \lean{SocialNetwork.IsFavouring, SocialNetwork.IsFavouringWith, SocialNetwork.favouringSet}
   \leanok
-  \uses{def:state}
+  \uses{eq2}
   $u \in S^o$ when there are $r \in [0,1)$, $n(u) \in \{1, \dots, N-1\}$ and
   $n(u)$ distinct actors $a_1(u), \dots, a_{n(u)}(u)$ with
   \[
@@ -1518,11 +1553,12 @@ the process pointwise.
   entry.
 \end{definition}
 
-\begin{definition}[The first repeat time, Definition~5]
-  \label{def:tau}
+\paper{Definition 5}
+\begin{definition}[The first repeat time]
+  \label{def5-repeat}
   \lean{SocialNetwork.firstRepeat, SocialNetwork.firstRepeat_le, SocialNetwork.actor_injOn_lt_firstRepeat, SocialNetwork.exists_repeat}
   \leanok
-  \uses{def:trajectory}
+  \uses{aux-trajectory}
   $\tau(u) := \inf\{ n \ge 1 : A_n \in \{A_1, \dots, A_{n-1}\} \}$, the number of
   expressions until an actor expresses for the second time.  Then
   $\tau(u) \in \{2, \dots, N+1\}$.
@@ -1532,91 +1568,93 @@ the process pointwise.
   Pigeonhole: among $A_1, \dots, A_{N+1}$ two must coincide.
 \end{proof}
 
-\begin{lemma}[Lemma~19]
-  \label{lem:lemma19}
+\paper{Lemma 19}
+\begin{lemma}[The first repeat time reaches $\bigcup_o S^o$]
+  \label{lem19}
   \lean{SocialNetwork.isFavouring_state_firstRepeat}
   \leanok
-  \uses{def:favouring, def:tau, def:greedy}
+  \uses{def5-favouring, def5-repeat, aux-greedy}
   For any $u \in \Sspace$, the event $\xi^u_{\tau(u)}$ implies
   $\Uskel{u}_{\tau(u)} \in \bigcup_{o} S^o$.
 \end{lemma}
 \begin{proof}
-  \textbf{Not formalised, and not blocked on Mathlib}: the written proof asserts
-  a sequence of $\lfloor m \rfloor + 1$ distinct actors ``by (25)'' without
-  giving the construction, and rules out $m = 0$ through $\tau(u) = 2$ rather
-  than through $m = 0$ itself.  See Remark~\ref{rem:lemma19} for a construction
+  \textbf{Not formalised, and not blocked on Mathlib}: the written proof
+  asserts a sequence of $\lfloor m \rfloor + 1$ distinct actors ``by (25)''
+  without giving the construction, and rules out $m = 0$ through $\tau(u) = 2$
+  rather than through $m = 0$ itself.  See \ref{note-lem19} for a construction
   that works and the corrected case split.
 \end{proof}
 
-\begin{lemma}[Lemma~20]
-  \label{lem:lemma20}
+\paper{Lemma 20}
+\begin{lemma}[From a favouring matrix to a consensus state]
+  \label{lem20}
   \lean{SocialNetwork.isConsensus_state_of_favouring}
   \leanok
-  \uses{def:favouring, def:consensus, def:greedy}
+  \uses{def5-favouring, def2, aux-greedy}
   For any $u \in S^o$, the event $\bigcap_{j=1}^{(M-1)(n(u)+1)-1} \xi_j^u$
   implies $\Uskel{u}_{(M-1)(n(u)+1)-1} \in C^o$.
 \end{lemma}
 \begin{proof}
-  \uses{lem:favouring-max, lem:closing}
-  The proof opens with Lemma~\ref{lem:favouring-max} and closes with
-  Lemma~\ref{lem:closing}; its induction is the part that fails, see
-  Remark~\ref{rem:lemma20}.  \textbf{Not formalised, and not blocked on
-  Mathlib}.
+  \uses{lem20-opening, lem20-closing}
+  The proof opens with \ref{lem20-opening} and closes with \ref{lem20-closing};
+  its induction is the part that fails, see \ref{note-lem20}. \textbf{Not
+  formalised, and not blocked on Mathlib}.
 \end{proof}
 
-\begin{lemma}[The opening step of Lemma~20]
-  \label{lem:favouring-max}
+\paper{Lemma 20}
+\begin{lemma}[The opening step]
+  \label{lem20-opening}
   \lean{SocialNetwork.opinion_eq_of_isMax_of_favouring}
   \leanok
-  \uses{def:favouring}
+  \uses{def5-favouring}
   In a state of $S^o$ every maximising entry lies in column $o$, so a greedy
   expression expresses $o$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{Supplies a step the paper asserts}: the proof of
-  Lemma~\ref{lem:lemma20} opens ``then $\Uskel{u}_0(A_1,O_1) = \max u(a,o)$ and
-  $O_1 = o$'', asserting $O_1 = o$.
-  The witness $a_{n(u)}$ carries at least $n(u) + r$ in column $o$, which
+  \textbf{Supplies a step the paper asserts}: the proof of \ref{lem20} opens
+  ``then $\Uskel{u}_0(A_1,O_1) = \max u(a,o)$ and $O_1 = o$'', asserting $O_1 =
+  o$.  The witness $a_{n(u)}$ carries at least $n(u) + r$ in column $o$, which
   strictly exceeds the bound $n(u) + r - \pressone$ imposed on every other
   column.
 \end{proof}
 
-\begin{lemma}[The closing step of Lemma~20]
-  \label{lem:closing}
+\paper{Lemma 20}
+\begin{lemma}[The closing step]
+  \label{lem20-closing}
   \lean{SocialNetwork.isConsensus_of_nonpos}
   \leanok
-  \uses{def:consensus, def:state}
+  \uses{def2, eq2}
   A non-zero state of $\Sspace$ whose columns other than $o$ are non-positive is
   a consensus state for $o$.
 \end{lemma}
 \begin{proof}
   \leanok
-  \textbf{Supplies a step the paper asserts}: the proof of
-  Lemma~\ref{lem:lemma20} ends ``by taking $k = (M-1)(n(u)+1)-1$ we conclude
-  the proof'', the passage to $C^o$ being left to the reader.
-  The vanishing row sums turn the sign condition on the other columns into
-  non-negativity on column $o$.
+  \textbf{Supplies a step the paper asserts}: the proof of \ref{lem20} ends
+  ``by taking $k = (M-1)(n(u)+1)-1$ we conclude the proof'', the passage to
+  $C^o$ being left to the reader.  The vanishing row sums turn the sign
+  condition on the other columns into non-negativity on column $o$.
 \end{proof}
 
 \chapter{Appendix C: the biased analogues}
 
-\begin{proposition}[Proposition~21]
-  \label{prop:biased-low-pressure}
+\paper{Proposition 21}
+\begin{proposition}[Low pressure recurs, under bias]
+  \label{prop21}
   \lean{SocialNetwork.Bias.exists_pressure_lt}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   For any $u \in \Salpha$,
   $\inf\{ n \ge 1 : \|U^{\alpha,u}_{T_{n-1}}(A_n^\alpha, \cdot)\|_\infty < N \} \le N$.
 \end{proposition}
 \begin{proof}
   \leanok
-  \uses{prop:low-pressure}
-  The proof of Proposition~\ref{prop:low-pressure} is combinatorial and does not
-  see the bias.  \textbf{Follows the paper's proof of Proposition~5}, which
-  Section~5.4 invokes verbatim: if each of the first $N$ expressions came from an
-  actor carrying pressure at least $N$, then none of them is the actor whose row
-  is null, and no two of them coincide, exhibiting $N+1$ distinct actors in a
+  \uses{prop5}
+  The proof of \ref{prop5} is combinatorial and does not see the bias.
+  \textbf{Follows the paper's proof of Proposition~5}, which Section~5.4
+  invokes verbatim: if each of the first $N$ expressions came from an actor
+  carrying pressure at least $N$, then none of them is the actor whose row is
+  null, and no two of them coincide, exhibiting $N+1$ distinct actors in a
   network of $N$.
 
   One step is supplied.  The quantity that is reset by expressing and then grows
@@ -1626,11 +1664,12 @@ the process pointwise.
   since $c_p \le n_a$ --- immediate from equation~(6), but not recorded there.
 \end{proof}
 
-\begin{definition}[The near-greedy event, Remark~7]
-  \label{def:near-greedy}
+\paper{Remark 7}
+\begin{definition}[The near-greedy event]
+  \label{rem7}
   \lean{SocialNetwork.Bias.IsNearGreedyAt, SocialNetwork.Bias.nearGreedyEvents, SocialNetwork.Bias.IsBiasedGreedyAt, SocialNetwork.Bias.biasedGreedyEvents, SocialNetwork.Bias.ofHistoryPath, SocialNetwork.Bias.stateAfter_ofHistoryPath_frestrictLe, SocialNetwork.Bias.measurableSet_nearGreedyEvents, SocialNetwork.Bias.measurableSet_biasedGreedyEvents}
   \leanok
-  \uses{def:biased-state}
+  \uses{eq6}
   \[
     \tilde{\xi}_n^{\alpha,u} = \Bigl\{ U^{\alpha,u}_{T_{n-1}}(A_n^\alpha, O_n^\alpha)
       > \max_{(a,o)} U^{\alpha,u}_{T_{n-1}}(a,o) - \tfrac{1}{2\gamma} \Bigr\} .
@@ -1640,42 +1679,45 @@ the process pointwise.
   $\mathbb{P}(\tilde{\xi}_n^{\alpha,u})$ available.
 
   The two measurability lemmas named above have \textbf{no counterpart in the
-  paper} (Remark~\ref{rem:green}).
+  paper} (\ref{note-green}).
 \end{definition}
 
-\begin{proposition}[Proposition~22]
-  \label{prop:biased-confinement}
+\paper{Proposition 22}
+\begin{proposition}[Confinement under bias]
+  \label{prop22}
   \lean{SocialNetwork.Bias.entry_mem_of_nearGreedy}
   \leanok
-  \uses{def:near-greedy}
+  \uses{rem7}
   For any $u \in \Salpha$,
   $\bigcap_{j=1}^{N} \tilde{\xi}_j^{\alpha,u} \subset \{ -MN < U^{\alpha,u}_{T_N} < N \}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:confinement}
-  \textbf{Not formalised, and it does not follow from Proposition~6 as the
-  text asserts.}  See Remark~\ref{rem:prop22}.
+  \uses{prop6}
+  \textbf{Not formalised, and it does not follow from Proposition~6 as the text
+  asserts.} See \ref{note-prop22}.
 \end{proof}
 
-\begin{proposition}[Proposition~23]
-  \label{prop:biased-reach-ladder}
+\paper{Proposition 23}
+\begin{proposition}[Reaching a biased ladder]
+  \label{prop23}
   \lean{SocialNetwork.Bias.exists_horizon_isBiasedLadder}
   \leanok
-  \uses{def:near-greedy, def:biased-sets}
+  \uses{rem7, eq8}
   There is $C(\alpha, M, N) \in \mathbb{N}$ with
   $\bigcap_{j=1}^{C} \tilde{\xi}_j^{\alpha,u}
    \subset \{ U^{\alpha,u}_{T_{C}} \in \ladder_\alpha \}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:reach-ladder}
+  \uses{prop7}
   \textbf{Not formalised}.
 \end{proof}
 
-\begin{proposition}[Proposition~24]
-  \label{prop:biased-greedy-prob}
+\paper{Proposition 24}
+\begin{proposition}[Probability of a biased greedy run]
+  \label{prop24}
   \lean{SocialNetwork.Bias.biasedZeta, SocialNetwork.Bias.biasedZeta_pow_le}
   \leanok
-  \uses{def:near-greedy}
+  \uses{rem7}
   For all $m \ge 1$,
   $\mathbb{P}\bigl( \bigcap_{j=1}^{m} \tilde{\xi}_j^{\alpha,u} \bigr)
    \ge (\zeta_{\alpha,\beta})^m$ with
@@ -1684,53 +1726,56 @@ the process pointwise.
 \end{proposition}
 \begin{proof}
   \leanok
-  \uses{prop:greedy-prob}
-  As Proposition~\ref{prop:greedy-prob}, with the lattice gap replaced by the
-  slack of Definition~\ref{def:near-greedy}.  \textbf{Follows the paper's proof
-  of Proposition~8}, which Appendix~C invokes for this statement.
+  \uses{prop8}
+  As \ref{prop8}, with the lattice gap replaced by the slack of \ref{rem7}.
+  \textbf{Follows the paper's proof of Proposition~8}, which Appendix~C invokes
+  for this statement.
 
-  The one-step bound is the same computation: the maximising pair carries weight
-  $e^{\beta y}$, every pair outside $\tilde{Y}_\gamma$ carries at most
+  The one-step bound is the same computation: the maximising pair carries
+  weight $e^{\beta y}$, every pair outside $\tilde{Y}_\gamma$ carries at most
   $e^{\beta y} e^{-\beta/(2\gamma)}$, and there are at most $MN$ of them.  What
   the lattice supplied in the unbiased model --- a gap of $1/(M-1)$ below the
   maximum --- the event $\tilde{\xi}$ supplies by construction, which is what
-  Remark~7 is for.  As in Proposition~\ref{prop:greedy-prob} the iteration goes
-  through the finite-horizon kernels of the Ionescu--Tulcea construction rather
-  than the conditioning of~(10).
+  Remark~7 is for.  As in \ref{prop8} the iteration goes through the
+  finite-horizon kernels of the Ionescu--Tulcea construction rather than the
+  conditioning of~(10).
 \end{proof}
 
-\begin{theorem}[Theorem~25]
-  \label{thm:biased-existence}
+\paper{Theorem 25}
+\begin{theorem}[Existence and uniqueness of $\mu_{\beta,\alpha}$]
+  \label{thm25}
   \lean{SocialNetwork.Bias.existsUnique_biasedInvariant}
   \leanok
-  \uses{def:biased-generator}
+  \uses{eq7}
   For $\beta > 0$ and $0 < \alpha < \pressone$, the biased process does not
   explode and has a unique invariant probability measure $\mu_{\beta,\alpha}$.
 \end{theorem}
 \begin{proof}
-  \uses{thm:invariant}
-  As Theorem~\ref{thm:invariant}.  \textbf{Not formalised}.
+  \uses{thm1-2}
+  As \ref{thm1-2}.  \textbf{Not formalised}.
 \end{proof}
 
-\begin{proposition}[Proposition~26]
-  \label{prop:biased-skeleton-concentration}
+\paper{Proposition 26}
+\begin{proposition}[Concentration off the biased steep ladders]
+  \label{prop26}
   \lean{SocialNetwork.Bias.biasedMeasure_le_of_notMem_steepLadder}
   \leanok
-  \uses{def:biased-sets, thm:biased-existence}
+  \uses{eq8, thm25}
   For $0 < \alpha < \pressone$, $\beta > 0$ and $u \notin \steep_\alpha$,
   $\tilde{\mu}_{\alpha,\beta}(u) \le \tilde{C} e^{-\beta(N-1)}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop:skeleton-concentration, rem:remark8}
-  As Proposition~\ref{prop:skeleton-concentration}, using
-  Remark~\ref{rem:remark8} and $0 \notin \Salpha$.  \textbf{Not formalised}.
+  \uses{prop9, rem8}
+  As \ref{prop9}, using \ref{rem8} and $0 \notin \Salpha$. \textbf{Not
+  formalised}.
 \end{proof}
 
-\begin{theorem}[Theorem~27]
-  \label{thm:biased-concentration}
+\paper{Theorem 27}
+\begin{theorem}[Concentration of $\mu_{\alpha,\beta}$]
+  \label{thm27}
   \lean{SocialNetwork.Bias.biasedMeasure_ladderSet_ge, SocialNetwork.Bias.tendsto_biasedHittingTime}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   For $0 < \alpha < \pressone$ there is $C > 0$ with
   $\mu_{\alpha,\beta}(\ladder_\alpha) \ge 1 - C e^{-\beta(M-1)\alpha}$, and for
   every fixed $\delta > 0$,
@@ -1738,97 +1783,98 @@ the process pointwise.
    > e^{-\beta(M-1)\alpha(1-\delta)} \bigr) \to 0$.
 \end{theorem}
 \begin{proof}
-  \uses{thm:concentration, prop:biased-skeleton-concentration, rem:remark8}
-  As Theorem~\ref{thm:concentration}: the lower bound for the jump rate of a
-  non-null state is $e^{\beta(M-1)\alpha}$ by Remark~\ref{rem:remark8}, and the
-  contribution of the zero matrix vanishes because $0 \notin \Salpha$.
-  \textbf{Not formalised}.
+  \uses{thm2, prop26, rem8}
+  As \ref{thm2}: the lower bound for the jump rate of a non-null state is
+  $e^{\beta(M-1)\alpha}$ by \ref{rem8}, and the contribution of the zero matrix
+  vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
 \end{proof}
 
-\begin{lemma}[Lemma~28]
-  \label{lem:biased-hitting}
+\paper{Lemma 28}
+\begin{lemma}[Hitting a biased ladder within $2\beta$]
+  \label{lem28}
   \lean{SocialNetwork.Bias.biasedProbHitting_le}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   For any $u \in \Salpha$,
   $\mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > 2\beta) \le C e^{-\frac{\beta}{2\gamma}}$,
   with $C$ depending only on $\alpha$, $M$ and $N$.
 \end{lemma}
 \begin{proof}
-  \uses{lem:hitting-2beta}
-  \textbf{Not formalised.}  \emph{Restated}: the Lean statement of this lemma
-  used to be about the skeleton path measure and the discrete steps
-  $k \le \lceil 2\beta \rceil$ rather than about the continuous-time hitting
-  time $R^{\alpha,\beta,u}$, and it bound $C$ after $\beta$ and $u$, so the
-  constant was free to depend on both.  Neither matches the display above, and
-  neither can serve as \eqref{eq:h16} for
-  Proposition~\ref{prop:biased-exit-exponential}, which is what this lemma
-  exists for.  It now has the shape of Lemma~\ref{lem:hitting-2beta} with
-  $\pressone$ replaced by $\tfrac{1}{2\gamma}$.  A formalisation-side
-  correction, not a correction to the paper.
+  \uses{lem13}
+  \textbf{Not formalised.} \emph{Restated}: the Lean statement of this lemma
+  used to be about the skeleton path measure and the discrete steps $k \le
+  \lceil 2\beta \rceil$ rather than about the continuous-time hitting time
+  $R^{\alpha,\beta,u}$, and it bound $C$ after $\beta$ and $u$, so the constant
+  was free to depend on both.  Neither matches the display above, and neither
+  can serve as \eqref{eq:h16} for \ref{prop12-biased}, which is what this lemma
+  exists for.  It now has the shape of \ref{lem13} with $\pressone$ replaced by
+  $\tfrac{1}{2\gamma}$.  A formalisation-side correction, not a correction to
+  the paper.
 \end{proof}
 
-\begin{lemma}[Lemma~29]
-  \label{lem:biased-exit-bounds}
+\paper{Lemma 29}
+\begin{lemma}[Two-sided control of the exit, under bias]
+  \label{lem29}
   \lean{SocialNetwork.Bias.le_biasedProbHittingGT, SocialNetwork.Bias.biasedProbHittingLE_le}
   \leanok
-  \uses{def:biased-sets}
-  The two-sided control of Lemma~\ref{lem:exit-bounds}, with $\pressone$
-  replaced by $\tfrac{1}{2\gamma}$.
+  \uses{eq8}
+  The two-sided control of \ref{lem14}, with $\pressone$ replaced by
+  $\tfrac{1}{2\gamma}$.
 \end{lemma}
 \begin{proof}
-  \uses{lem:exit-bounds}
+  \uses{lem14}
   \textbf{Not formalised}.
 \end{proof}
 
-\begin{corollary}[Corollary~30]
-  \label{cor:biased-cbeta}
+\paper{Corollary 30}
+\begin{corollary}[A lower bound for $c_{\alpha,\beta}$]
+  \label{cor30}
   \lean{SocialNetwork.Bias.le_biasedCharacteristicTime, SocialNetwork.Bias.IsBiasedCharacteristicTime}
   \leanok
-  \uses{lem:biased-exit-bounds}
+  \uses{lem29}
   For $0 < \alpha < \pressone$ and $\beta \ge 0$,
   $c_{\alpha,\beta} \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{2\gamma}}$.
 \end{corollary}
 \begin{proof}
   \leanok
-  \uses{cor:cbeta, lem:biased-exit-bounds, lem:biased-ladder-nonempty}
-  The rearrangement of Corollary~\ref{cor:cbeta}, with $\pressone$ replaced by
-  $\tfrac{1}{2\gamma}$: apply Lemma~\ref{lem:biased-exit-bounds}, part~1, at
-  $t = c_{\alpha,\beta}$ to the ladder of
-  Lemma~\ref{lem:biased-ladder-nonempty}.  \emph{Formalised, but not
-  sorry-free}: complete in Lean, inheriting \texttt{sorryAx} from
-  Lemma~\ref{lem:biased-exit-bounds} alone.  Its only addition to the paper is
-  the witness Corollary~\ref{cor:cbeta} needed as well.
+  \uses{cor15, lem29, aux-biased-ladder-nonempty}
+  The rearrangement of \ref{cor15}, with $\pressone$ replaced by
+  $\tfrac{1}{2\gamma}$: apply \ref{lem29}, part~1, at $t = c_{\alpha,\beta}$ to
+  the ladder of \ref{aux-biased-ladder-nonempty}. \emph{Formalised, but not
+  sorry-free}: complete in Lean, inheriting \texttt{sorryAx} from \ref{lem29}
+  alone.  Its only addition to the paper is the witness \ref{cor15} needed as
+  well.
 \end{proof}
 
-\begin{lemma}[$L_\alpha^o$ is inhabited]
-  \label{lem:biased-ladder-nonempty}
+\aux{Lemma}
+\begin{lemma}[$\ladder_\alpha^o$ is inhabited]
+  \label{aux-biased-ladder-nonempty}
   \lean{SocialNetwork.Bias.biasedLadderOf,
     SocialNetwork.Bias.pressure_biasedLadderOf,
     SocialNetwork.Bias.isBiasedLadder_biasedLadderOf,
     SocialNetwork.Bias.exists_isBiasedLadder,
     SocialNetwork.Bias.biasedLadderSet_nonempty}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   For every $o \in O$ the set $L_\alpha^o$ is non-empty: the profile in which
   actor $a$ has heard exactly $a$ expressions, all of them of $o$, is a biased
   ladder supporting $o$.
 \end{lemma}
 \begin{proof}
   \leanok
-  That memory has $c_o = n_a = a$ and $c_p = 0$ for $p \ne o$, so
-  $u(a,o) = a(1+\gamma) - \gamma a = a$ and $u(a,p) = -\gamma a$, which is
-  equation~(9).  Actor $1$ has heard nothing and the $n_a$ are pairwise
-  distinct, so the profile lies in $S^\alpha$.  \textbf{No counterpart in the
-  paper}, exactly as for Lemma~\ref{lem:ladder-nonempty}: without it
-  Corollary~\ref{cor:biased-cbeta} is vacuous.
+  That memory has $c_o = n_a = a$ and $c_p = 0$ for $p \ne o$, so $u(a,o) =
+  a(1+\gamma) - \gamma a = a$ and $u(a,p) = -\gamma a$, which is equation~(9).
+  Actor $1$ has heard nothing and the $n_a$ are pairwise distinct, so the
+  profile lies in $S^\alpha$. \textbf{No counterpart in the paper}, exactly as
+  for \ref{aux-ladder-nonempty}: without it \ref{cor30} is vacuous.
 \end{proof}
 
-\begin{theorem}[Theorem~31]
-  \label{thm:biased-metastability}
+\paper{Theorem 31}
+\begin{theorem}[Metastability under bias]
+  \label{thm31}
   \lean{SocialNetwork.Bias.biasedMetastability}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   For $0 < \alpha < \pressone$ there are $\beta_0, C_1 > 0$ and $C_2 > 0$,
   depending only on $\alpha$, $M$ and $N$, such that the rescaled exit time from
   a biased consensus set is exponential of parameter one up to
@@ -1836,28 +1882,26 @@ the process pointwise.
 \end{theorem}
 \begin{proof}
   \leanok
-  \uses{prop:biased-exit-exponential, thm:metastability, cor:biased-cbeta,
-    lem:biased-hitting, lem:biased-exit-bounds, lem:biased-ladder-consensus}
-  As Theorem~\ref{thm:metastability}, which is all Appendix~C says.
-  \emph{Formalised, but neither sorry-free nor axiom-free}: the assembly is
-  complete in Lean, and inherits \texttt{sorryAx} from
-  Lemmas~\ref{lem:biased-hitting} and~\ref{lem:biased-exit-bounds} together
-  with the second [LM22] axiom, Proposition~\ref{prop:biased-exit-exponential}.
+  \uses{prop12-biased, thm3, cor30,
+    lem28, lem29, aux-biased-ladder-consensus}
+  As \ref{thm3}, which is all Appendix~C says. \emph{Formalised, but neither
+  sorry-free nor axiom-free}: the assembly is complete in Lean, and inherits
+  \texttt{sorryAx} from \ref{lem28} and~\ref{lem29} together with the second
+  [LM22] axiom, the biased twin \ref{prop12-biased}.
 
   The four assumptions are checked as in Section~5.3, with $\pressone$ replaced
   by $\tfrac{1}{2\gamma}$ throughout:
   \begin{itemize}
     \item \eqref{eq:h15} at $s_1 = 1$,
       $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(2\gamma)}$, from part 1 of
-      Lemma~\ref{lem:biased-exit-bounds} through $1 - e^{-x} \le x$;
+      \ref{lem29} through $1 - e^{-x} \le x$;
     \item \eqref{eq:h16} at $s_2 = 2\beta$, from
-      Lemma~\ref{lem:biased-hitting} and the inclusion
-      $\ladder_\alpha \subseteq \ladder_\alpha^o \cup C_\alpha^{-o}$ of
-      Lemma~\ref{lem:biased-ladder-consensus};
+      \ref{lem28} and the inclusion $\ladder_\alpha \subseteq \ladder_\alpha^o
+      \cup C_\alpha^{-o}$ of \ref{aux-biased-ladder-consensus};
     \item \eqref{eq:h17} at $\delta = 1/(4\gamma)$, from
-      Corollary~\ref{cor:biased-cbeta};
+      \ref{cor30};
     \item \eqref{eq:h18} at $\theta = 1/(4\gamma)$, from part 2 of
-      Lemma~\ref{lem:biased-exit-bounds} at $t = 2\beta$.
+      \ref{lem29} at $t = 2\beta$.
   \end{itemize}
 
   \textbf{Supplies a step the paper asserts}: Appendix~C names none of the
@@ -1870,29 +1914,29 @@ the process pointwise.
   uniform over the finitely many opinions.
 \end{proof}
 
-\begin{proposition}[Proposition~12 for the biased process]
-  \label{prop:biased-exit-exponential}
+\paper{Proposition 12}
+\begin{proposition}[For the biased process]
+  \label{prop12-biased}
   \lean{SocialNetwork.Bias.biasedExitTime_approx_exponential}
   \leanok
-  \uses{def:biased-sets}
+  \uses{eq8}
   Under \eqref{eq:h15}--\eqref{eq:h18} read for the biased process, the
   rescaled exit time from $C_\alpha^o$ is exponential of parameter one up to
   $K'\beta^3 e^{-\min(\delta/3,\,1/2,\,\theta)\beta}$, and the mean exit time
   barely depends on the starting profile.
 \end{proposition}
 \begin{proof}
-  \uses{prop:exit-exponential}
+  \uses{prop12}
   \textbf{An axiom, not a theorem, and the second one this development asks the
-  reader to trust.}  Appendix~C never states it: it says only that ``the proof
-  of Theorem~31 follows exactly as the proof of Theorem~3'', and that proof runs
-  through Proposition~\ref{prop:exit-exponential}, which is stated for the
-  unbiased process alone.
+  reader to trust.} Appendix~C never states it: it says only that ``the proof
+  of Theorem~31 follows exactly as the proof of Theorem~3'', and that proof
+  runs through \ref{prop12}, which is stated for the unbiased process alone.
 
-  One axiom cannot serve both models, for the reason recorded at
-  Proposition~\ref{prop:exit-exponential}: stated abstractly the assertion is
-  \textbf{inconsistent}, so it has to be attached to a concrete process, and the
-  unbiased axiom is attached to the unbiased one.  Everything resting on this
-  one is listed separately in the CI axiom inventory.
+  One axiom cannot serve both models, for the reason recorded at \ref{prop12}:
+  stated abstractly the assertion is \textbf{inconsistent}, so it has to be
+  attached to a concrete process, and the unbiased axiom is attached to the
+  unbiased one.  Everything resting on this one is listed separately in the CI
+  axiom inventory.
 \end{proof}
 
 \chapter{Notes on the formalisation}
@@ -1904,8 +1948,9 @@ the process pointwise.
 Formalising surfaced five places where the written text needs correcting.
 None of them affects the results.
 
+\aux{Remark}
 \begin{remark}[Lemma~19: the $\lfloor m \rfloor + 1$ distinct actors]
-  \label{rem:lemma19}
+  \label{note-lem19}
   The proof writes ``Therefore by (25), we obtain a sequence of
   $\lfloor m \rfloor + 1$ distinct actors'' without giving the construction.  One
   that works: read the actors $A_{\tau(u)-1}, A_{\tau(u)-2}, \dots$ backwards in
@@ -1917,15 +1962,16 @@ None of them affects the results.
   strictly below $j+1+r$.  The $\lfloor m \rfloor + 1$ first-passage times are
   therefore distinct and name $\lfloor m \rfloor + 1$ distinct actors.
 
-  Separately, Definition~\ref{def:favouring} requires $n(u) = \lfloor m \rfloor \ge 1$,
+  Separately, \ref{def5-favouring} requires $n(u) = \lfloor m \rfloor \ge 1$,
   that is $m \ge 1$.  The proof rules out $m = 0$ only through the case
   $\tau(u) = 2$, but $m = 0$ forces $\Uskel{u}_{\tau(u)-1} = 0$ for any
   $\tau(u)$, so the degenerate branch has to be taken on $m = 0$ rather than on
   $\tau(u) = 2$.  The argument given for $\tau(u) = 2$ covers it unchanged.
 \end{remark}
 
+\aux{Remark}
 \begin{remark}[Lemma~20: the induction invariant is not preserved]
-  \label{rem:lemma20}
+  \label{note-lem20}
   The induction carries, for every $k$,
   $\Uskel{}_k(a,p) \le n(u) + r - \tfrac{k+1}{M-1}$ for all $a$ and all
   $p \ne o$.  The actor that expresses at step $k$ has its whole row reset to
@@ -1944,13 +1990,13 @@ None of them affects the results.
   the typical case — expressing resets it and only $n(u)-1$ survive.  The
   missing witness is replenished by the actors that have just expressed, which
   accumulate pressure for $o$ and form a staircase; that is the mechanism of
-  Lemma~\ref{lem:consensus-ladder}, but it is not the argument written in the
-  proof.
+  \ref{aux-consensus-ladder}, but it is not the argument written in the proof.
 \end{remark}
 
+\aux{Remark}
 \begin{remark}[Definition~4 needs a sign condition]
-  \label{rem:steep}
-  \uses{def:steep}
+  \label{note-def4}
+  \uses{def4}
   Definition~4 reads $0 = u(a_1,o) < u(a_2,o) < \dots < u(a_N,o)$, which says
   two things: the values are pairwise distinct, \emph{and} the smallest is $0$.
   A first formalisation of $\steep^o$ recorded only the first, together with
@@ -1961,13 +2007,14 @@ None of them affects the results.
 
   \texttt{SocialNetwork.IsSteepLadder} therefore carries a \texttt{nonneg}
   field.  It costs nothing elsewhere: the only place that builds a steep ladder
-  from scratch is Remark~\ref{rem:ladder-steep}, and the non-negativity of a
-  ladder supplies it.  Without it Lemma~\ref{lem:steep-stable} is false.
+  from scratch is \ref{rem5}, and the non-negativity of a ladder supplies it.
+  Without it \ref{rem5-stable} is false.
 \end{remark}
 
+\aux{Remark}
 \begin{remark}[Proposition~22 does not follow from Proposition~6]
-  \label{rem:prop22}
-  \uses{def:near-greedy, prop:confinement}
+  \label{note-prop22}
+  \uses{rem7, prop6}
   Appendix~C says only that ``the proof of Propositions 22, 23 and 24 follows
   as the proofs of Propositions 6, 7 and 8''.  For Proposition~24 that is
   right.  For Proposition~22 the transported argument does not reach the
@@ -2006,9 +2053,10 @@ None of them affects the results.
   $\alpha, M, N$ --- would settle it.
 \end{remark}
 
+\aux{Remark}
 \begin{remark}[Equation~(6) is not stable]
-  \label{rem:eq6}
-  \uses{def:biased-state}
+  \label{note-eq6}
+  \uses{eq6}
   Equation~(6) pins down $\Salpha$ by two conditions on the memory profile: some
   actor has heard nothing, and $\sum_a n_a \ge N(N-1)/2$.  Remark~1 asserts that
   $\Salpha$ is stable under every $\expressa{a}{o}$.
@@ -2047,9 +2095,8 @@ are the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
-\ref{thm:invariant-skeleton}, \ref{thm:concentration}, \ref{thm:metastability},
-\ref{thm:phase} and their auxiliaries.  Verified against the pinned revision
+\ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
+\ref{thm2}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
@@ -2060,13 +2107,11 @@ Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
     lemma.
   \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
     recurrence exists for a measure-preserving \emph{map}, which does not
-    transport to a kernel.  (Kac's lemma is likewise absent --- every
-    \texttt{Kac} in Mathlib is a Kac--Moody algebra --- but it turned out not to
-    be needed: the inequality
-    $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, which is all
-    Proposition~\ref{prop:skeleton-concentration} uses, holds for every
-    invariant probability measure and is proved outright at
-    \texttt{SocialNetwork.kac\_tsum\_le}.)
+    transport to a kernel. (Kac's lemma is likewise absent --- every
+    \texttt{Kac} in Mathlib is a Kac--Moody algebra --- but it turned out not
+    to be needed: the inequality $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$,
+    which is all \ref{prop9} uses, holds for every invariant probability
+    measure and is proved outright at \texttt{SocialNetwork.kac\_tsum\_le}.)
   \item \textbf{Total-variation distance between measures}: nothing usable.
   \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
@@ -2075,65 +2120,57 @@ Theorems~\ref{thm:nonexplosion}, \ref{thm:invariant},
     the Kolmogorov-type bound is absent.
 \end{itemize}
 
-Theorems~\ref{thm:concentration} and~\ref{thm:metastability} live, in the
-paper's own architecture, on the skeleton; they are blocked by the discrete-time
-items, not by the continuous-time ones.  Only
-Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion} need Poisson
-point processes.  The shortest path is therefore Doeblin alone:
-Proposition~\ref{prop:skeleton-concentration} is already proved from
-Propositions~\ref{prop:reach-ladder} and~\ref{prop:greedy-prob},
-Lemma~\ref{lem:eta} and Kac's inequality, and
-Theorem~\ref{thm:concentration} follows from it by
-Lemma~\ref{lem:transfer} once $\muskel$ exists.
+\ref{thm2} and~\ref{thm3} live, in the paper's own architecture, on the
+skeleton; they are blocked by the discrete-time items, not by the
+continuous-time ones.  Only \ref{thm1-1} and~\ref{thm16} need Poisson point
+processes.  The shortest path is therefore Doeblin alone: \ref{prop9} is
+already proved from \ref{prop7} and~\ref{prop8}, \ref{rem5-eta} and Kac's
+inequality, and \ref{thm2} follows from it by \ref{eq13} once $\muskel$ exists.
 
 \subsection*{Blocked on the paper}
 
-Lemmas~\ref{lem:lemma19}, \ref{lem:lemma20} and~\ref{lem:greedy-avoids}, and
-Proposition~\ref{prop:biased-confinement}; through them
-Propositions~\ref{prop:reach-ladder}, \ref{prop:skeleton-concentration}
-and~\ref{prop:biased-reach-ladder}.  See
-Remarks~\ref{rem:lemma19}, \ref{rem:lemma20} and~\ref{rem:prop22}, and the node
-of Lemma~\ref{lem:greedy-avoids}: in each case
-the written proof does not compose, and the repair changes the argument rather
-than its presentation, so it is recorded rather than guessed at in Lean.
-Proposition~\ref{prop:reach-ladder} is nonetheless \emph{proved}, along a route
-that does not need the step the written proof asserts --- the one departure of
-that kind in this repository, and the reason is written at its node.
+\ref{lem19}, \ref{lem20} and~\ref{aux-greedy-avoids}, and \ref{prop22}; through
+them \ref{prop7}, \ref{prop9} and~\ref{prop23}.  See \ref{note-lem19},
+\ref{note-lem20} and~\ref{note-prop22}, and the node of
+\ref{aux-greedy-avoids}: in each case the written proof does not compose, and
+the repair changes the argument rather than its presentation, so it is recorded
+rather than guessed at in Lean. \ref{prop7} is nonetheless \emph{proved}, along
+a route that does not need the step the written proof asserts --- the one
+departure of that kind in this repository, and the reason is written at its
+node.
 
 \subsection*{Cited from outside the paper}
 
 Four statements are not results of arXiv:2607.19651 at all, and nothing in this
 library can discharge them.
 
-Proposition~\ref{prop:exit-exponential} and its twin
-Proposition~\ref{prop:biased-exit-exponential} are Theorem~5.3 of [LM22].  They
+\ref{prop12} and its twin for the biased process, \ref{prop12-biased}, are
+Theorem~5.3 of [LM22].  They
 are declared as \texttt{axiom}s rather than left carrying a \texttt{sorry},
 because a \texttt{sorry} would put them in the inventory of work someone could
 pick up, and they are not that.  Two are needed rather than one: stated
 abstractly, over an arbitrary family of measures and an arbitrary hitting time,
 the statement is \emph{inconsistent} --- the zero measure with an empty ladder
 set satisfies the hypotheses vacuously and falsifies the conclusion at $t = 0$
---- so it has to be attached to a concrete process, and there are two processes.
-They are the same citation applied twice, not two assumptions.
+--- so it has to be attached to a concrete process, and there are two
+processes.  They are the same citation applied twice, not two assumptions.
 
-Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} are the two
-inequalities the paper \emph{displays inside proofs} and never states.
-Lemma~\ref{lem:hitting-2beta} uses them, and it cannot use the numbered
-statements they are attributed to --- Theorem~2.2 and
-Corollary~\ref{cor:hitting-zero} --- because those are limits, and a limit has
-thrown the rate away.  They are transcribed verbatim and carry a
-\texttt{sorry}; whether either should become a numbered statement of the paper
-is a question for the authors.
+\ref{aux-hitting-rate} and~\ref{eq19} are the two inequalities the paper
+\emph{displays inside proofs} and never states. \ref{lem13} uses them, and it
+cannot use the numbered statements they are attributed to --- Theorem~2.2 and
+\ref{cor11} --- because those are limits, and a limit has thrown the rate away.
+They are transcribed verbatim and carry a \texttt{sorry}; whether either should
+become a numbered statement of the paper is a question for the authors.
 
 \subsection*{Routine, and now done}
 
 Seven statements were listed here as neither deep nor blocked.  They are now
 proved, and the paragraph is kept as the record of what they cost.  The first
-four fall in the third case of Remark~\ref{rem:green}: the paper proves none of
-them, so none of these is a check of anything it wrote.  The last three, added
-as the earlier ones were cleared, do not: Remark~\ref{rem:remark8} is argued in
-the paper and the Lean proof follows it, and Lemmas~\ref{lem:eta}
-and~\ref{lem:eta-pow} supply arguments the paper asserts.
+four fall in the third case of \ref{note-green}: the paper proves none of them,
+so none of these is a check of anything it wrote.  The last three, added as the
+earlier ones were cleared, do not: \ref{rem8} is argued in the paper and the
+Lean proof follows it, and \ref{rem5-eta} and~\ref{rem5-eta-iter} supply
+arguments the paper asserts.
 
 \begin{itemize}
   \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
@@ -2160,12 +2197,12 @@ and~\ref{lem:eta-pow} supply arguments the paper asserts.
     measurable into $\mathbb{N}$; gluing it to
     \texttt{measurable\_state\_ofStepPath} along that countable index gives the
     result.
-  \item Remark~\ref{rem:remark8}.  The pigeonhole step was already there; what
+  \item \ref{rem8}.  The pigeonhole step was already there; what
     was left was the identity
     $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma (M c_p - n_a)$,
     \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, after which both terms
     are visibly non-negative.  Cheap, as advertised.
-  \item Lemma~\ref{lem:eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
+  \item \ref{rem5-eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
     one item on this list that checks something the paper wrote down without
     argument.  Two thirds of it is bookkeeping --- the positive entries of a
     steep ladder are exactly the non-minimal entries of the supported column,
@@ -2176,38 +2213,37 @@ and~\ref{lem:eta-pow} supply arguments the paper asserts.
     dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
     \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
     on the largest element.
-  \item Lemma~\ref{lem:eta-pow}, the iterate $\eta^m$.  As advertised: the
-    induction of Proposition~\ref{prop:greedy-prob} along the Ionescu--Tulcea
-    kernels, transcribed against the one-step bound of Lemma~\ref{lem:eta}, with
-    the event that every expression so far was made from a positive entry in
-    place of the greedy one.  The one real difference is that $\eta$, unlike
-    $\zeta_\beta$, is not uniform in the matrix, so the finite-horizon step has
-    to carry the steepness of the state the history reaches.
+  \item \ref{rem5-eta-iter}, the iterate $\eta^m$.  As advertised: the
+    induction of \ref{prop8} along the Ionescu--Tulcea kernels, transcribed
+    against the one-step bound of \ref{rem5-eta}, with the event that every
+    expression so far was made from a positive entry in place of the greedy
+    one.  The one real difference is that $\eta$, unlike $\zeta_\beta$, is not
+    uniform in the matrix, so the finite-horizon step has to carry the
+    steepness of the state the history reaches.
 \end{itemize}
 
 Nothing is left on this list, and the one item that outlived it,
-Lemma~\ref{lem:measurable-hitting}, is now proved as well; the subsection after
-next records what its diagnosis got wrong.  What is unproved here is blocked on
-Mathlib, blocked on the paper, cited from outside it, or --- for
-Remark~\ref{rem:remark6} alone --- simply not done.
+\ref{aux-measurable-hitting}, is now proved as well; the subsection after next
+records what its diagnosis got wrong.  What is unproved here is blocked on
+Mathlib, blocked on the paper, cited from outside it, or --- for \ref{rem6}
+alone --- simply not done.
 
 \subsection*{Was here, and is now closed}
 
 \textbf{Kac's lemma} stood in the list above as the second gap in Mathlib, and
-Proposition~\ref{prop:skeleton-concentration}, Corollary~\ref{cor:zero} and
-three results below them were recorded as waiting on it.  They were not.  What
-the paper's proof uses is the inequality
+\ref{prop9}, \ref{cor10} and three results below them were recorded as waiting
+on it.  They were not.  What the paper's proof uses is the inequality
 $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, not the identity, and the
-inequality holds for \emph{every} invariant probability measure --- the identity
-is what needs irreducibility, and the counterexample is two absorbing states
-with $\muskel = (\tfrac12, \tfrac12)$, where the return time is $1$ and not
-$2$.  The inequality is proved at \texttt{SocialNetwork.kac\_tsum\_le}, for a
-Markov kernel on a countable space, from \texttt{Kernel.Invariant} and nothing
-else, by decomposing the event of visiting $u$ before time $m$ over the last
-such visit.  The lesson is the same as the one below: a citation is not an
+inequality holds for \emph{every} invariant probability measure --- the
+identity is what needs irreducibility, and the counterexample is two absorbing
+states with $\muskel = (\tfrac12, \tfrac12)$, where the return time is $1$ and
+not $2$.  The inequality is proved at \texttt{SocialNetwork.kac\_tsum\_le}, for
+a Markov kernel on a countable space, from \texttt{Kernel.Invariant} and
+nothing else, by decomposing the event of visiting $u$ before time $m$ over the
+last such visit.  The lesson is the same as the one below: a citation is not an
 obstruction until one has checked which half of it the proof needs.
 
-Lemma~\ref{lem:measurable-hitting} stood in this chapter as a fourth kind of
+\ref{aux-measurable-hitting} stood in this chapter as a fourth kind of
 obstruction: not a gap in Mathlib, not a gap in the paper, not a citation, but
 a statement whose Lean formulation had still to be settled.  It is now
 \emph{proved}, and the diagnosis that put it here was wrong.
@@ -2216,11 +2252,11 @@ What was written was that reducing the infimum over $\{t \ge 0\}$ to a
 countable one needs right-continuity of $t \mapsto \Uproc{u}_t(\omega)$, that
 right-continuity holds only almost surely, and that the statement therefore
 wanted an almost-sure formulation or an argument through the null set.  The
-first clause is the error: right-continuity is \emph{a} route to the
-reduction, not the only one, and the reduction holds pointwise.  The
-argument that works is at Lemma~\ref{lem:measurable-hitting}; it reads the
-level sets of the jump count directly, and never mentions the holding times,
-so it costs nothing to transport to the biased process.
+first clause is the error: right-continuity is \emph{a} route to the reduction,
+not the only one, and the reduction holds pointwise.  The argument that works
+is at \ref{aux-measurable-hitting}; it reads the level sets of the jump count
+directly, and never mentions the holding times, so it costs nothing to
+transport to the biased process.
 
 The paragraph is kept because the mistake is instructive.  A property that
 fails on a null set is a reason to look for a different argument before it is a
@@ -2232,151 +2268,125 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-Remark~\ref{rem:green}: does it follow what the paper wrote?  Thirty-eight
-proofs carry \texttt{\textbackslash leanok}; the audit below also covers the
-bound $\tau(u) \le N+1$, which lives inside a definition rather than at a node
-of its own, so it counts thirty-nine entries.
+\ref{note-green}: does it follow what the paper wrote?  Thirty-eight proofs
+carry \texttt{\textbackslash leanok}; the audit below also covers the bound
+$\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
+own, so it counts thirty-nine entries.
 
-\medskip
-\noindent\textbf{Follow the paper's proof} (nineteen).
-Propositions~\ref{prop:low-pressure}, \ref{prop:confinement},
-\ref{prop:reach-ladder}, \ref{prop:skeleton-concentration},
-\ref{prop:biased-low-pressure},
-\ref{prop:biased-bounded}, \ref{prop:biased-greedy-prob}
-and~\ref{prop:biased-absorb}, part~1 of Theorem~\ref{thm:phase},
-the gap estimate of Lemma~\ref{lem:gap},
-the bound of Proposition~\ref{prop:greedy-prob},
-Lemma~\ref{lem:hitting-2beta},
-Corollaries~\ref{cor:cbeta} and~\ref{cor:biased-cbeta},
-Theorems~\ref{thm:metastability} and~\ref{thm:biased-metastability}, and
-Remarks~\ref{rem:biased-row}, \ref{rem:bernoulli} and~\ref{rem:remark8}.  These are the statements in the
-paper whose proofs are both given there and formalised here, and each Lean
-proof reproduces the written argument.  Four places carry a note: the passage
-from the repeat time to the global bound in Proposition~\ref{prop:confinement},
-which the paper compresses into ``this implies'', is carried out explicitly;
-the iteration in Proposition~\ref{prop:greedy-prob} goes through the
-Ionescu--Tulcea kernels rather than the conditioning of~(10), Mathlib offering
-nothing of that shape; Remark~\ref{rem:bernoulli} names Bernoulli's inequality
-as the route and the degenerate case $MNe^{-\beta/(M-1)} \ge 1$ is supplied; and
-Remark~\ref{rem:remark8} keeps the count $c_p$ the pigeonhole returns instead of
-rounding it down to the paper's $k = \lceil n_a/M \rceil$, which only makes the
-intermediate bound larger, and supplies $k \ge 1$.
+\medskip \noindent\textbf{Follow the paper's proof} (nineteen). \ref{prop5},
+\ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{prop21}, \ref{prop17}, \ref{prop24}
+and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of \ref{aux-gap}, the
+bound of \ref{prop8}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
+\ref{thm3} and~\ref{thm31}, and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
+are the statements in the paper whose proofs are both given there and
+formalised here, and each Lean proof reproduces the written argument.  Four
+places carry a note: the passage from the repeat time to the global bound in
+\ref{prop6}, which the paper compresses into ``this implies'', is carried out
+explicitly; the iteration in \ref{prop8} goes through the Ionescu--Tulcea
+kernels rather than the conditioning of~(10), Mathlib offering nothing of that
+shape; \ref{rem4} names Bernoulli's inequality as the route and the degenerate
+case $MNe^{-\beta/(M-1)} \ge 1$ is supplied; and \ref{rem8} keeps the count
+$c_p$ the pigeonhole returns instead of rounding it down to the paper's $k =
+\lceil n_a/M \rceil$, which only makes the intermediate bound larger, and
+supplies $k \ge 1$.
 
-Three more carry notes.  Proposition~\ref{prop:biased-low-pressure} is the
-proof of Proposition~5 run on $n_a$ rather than on
-$\|U(a,\cdot)\|_\infty$, the passage between them being
-$u(a,p) \le n_a$, which equation~(6) gives but does not state.
-Theorem~\ref{thm:metastability} is Section~5.3's verification of
-\eqref{eq:h15}--\eqref{eq:h18}, with three steps supplied: the inclusion
-$\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum of~(20), and the
-threshold $\beta_1$; and its Proposition~\ref{prop:exit-exponential} is an
-axiom, not a theorem.  Corollary~\ref{cor:cbeta} is the paper's rearrangement,
-but needs $\ladder^o \ne \emptyset$, which is
-Lemma~\ref{lem:ladder-nonempty}; Corollary~\ref{cor:biased-cbeta} is that same
+Three more carry notes. \ref{prop21} is the proof of Proposition~5 run on $n_a$
+rather than on $\|U(a,\cdot)\|_\infty$, the passage between them being $u(a,p)
+\le n_a$, which equation~(6) gives but does not state. \ref{thm3} is
+Section~5.3's verification of \eqref{eq:h15}--\eqref{eq:h18}, with three steps
+supplied: the inclusion $\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum
+of~(20), and the threshold $\beta_1$; and its \ref{prop12} is an axiom, not a
+theorem. \ref{cor15} is the paper's rearrangement, but needs $\ladder^o \ne
+\emptyset$, which is \ref{aux-ladder-nonempty}; \ref{cor30} is that same
 rearrangement with $\pressone$ replaced by $\tfrac{1}{2\gamma}$, and needs the
-same witness, Lemma~\ref{lem:biased-ladder-nonempty}.
-Lemma~\ref{lem:hitting-2beta} is the paper's case split, resting on two
-inequalities the paper displays inside proofs rather than states ---
-Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp} --- and
-supplying the arithmetic of ``putting the inequalities above together''.
-Theorem~\ref{thm:biased-metastability} is the same verification as
-Theorem~\ref{thm:metastability} with $\pressone$ replaced by
+same witness, \ref{aux-biased-ladder-nonempty}. \ref{lem13} is the paper's case
+split, resting on two inequalities the paper displays inside proofs rather than
+states --- \ref{aux-hitting-rate} and~\ref{eq19} --- and supplying the
+arithmetic of ``putting the inequalities above together''. \ref{thm31} is the
+same verification as \ref{thm3} with $\pressone$ replaced by
 $\tfrac{1}{2\gamma}$, which is all Appendix~C asks for; it names none of the
 constants, so the four they take here are supplied, and it rests on a
-\emph{second} axiom, Proposition~\ref{prop:biased-exit-exponential}, since one
-cannot serve both models.
-Proposition~\ref{prop:reach-ladder} is the paper's three-stage assembly with
-its arithmetic unchanged, but it applies Lemma~\ref{lem:lemma20} at $\tau(u)$
-rather than at $N+1$: the written route needs $\bigcup_o S^o$ to be stable
-under a greedy expression, which the paper does not establish, and starting
-where Lemma~\ref{lem:lemma19} actually lands removes the need.  It is the one
-place where a formalised proof takes a different route through the paper's own
-lemmas, and the reason is written out at the node.
-Propositions~\ref{prop:biased-bounded}
-and~\ref{prop:biased-greedy-prob} are the arguments of
-Propositions~\ref{prop:confinement} and~\ref{prop:greedy-prob} that
-Appendix~C invokes; the iteration common to the two is run once in Lean, for an
-arbitrary choice of admissible pairs at each profile, since that is all either
-uses.
-Proposition~\ref{prop:biased-absorb} is the paper's decomposition~(21), its
-bound~(22), its passage through $\ln(1+x) \ge x/(1+x)$ and its event
-$E_\varepsilon^k$, in that order, with the strong law of large numbers taken from
-Mathlib as the paper takes it from the literature.  Two steps are supplied: the
-paper's ``without loss of generality $u(1,o) = 0$ for all $o$'', which is the
-choice of an actor whose row is null and which equation~(6) always provides;
-and the terms of index below $k$, which $E_\varepsilon^k$ does not constrain and
-which the paper absorbs silently into its generic constant $C$.
-Proposition~\ref{prop:skeleton-concentration} is the paper's own proof --- Kac's
-lemma, then Proposition~\ref{prop:reach-ladder} and Lemma~\ref{lem:eta-pow} to
+\emph{second} axiom, the biased twin \ref{prop12-biased}, since one cannot serve
+both models.
+\ref{prop7} is the paper's three-stage assembly with its arithmetic unchanged,
+but it applies \ref{lem20} at $\tau(u)$ rather than at $N+1$: the written route
+needs $\bigcup_o S^o$ to be stable under a greedy expression, which the paper
+does not establish, and starting where \ref{lem19} actually lands removes the
+need.  It is the one place where a formalised proof takes a different route
+through the paper's own lemmas, and the reason is written out at the node.
+\ref{prop17} and~\ref{prop24} are the arguments of \ref{prop6} and~\ref{prop8}
+that Appendix~C invokes; the iteration common to the two is run once in Lean,
+for an arbitrary choice of admissible pairs at each profile, since that is all
+either uses. \ref{prop18} is the paper's decomposition~(21), its bound~(22),
+its passage through $\ln(1+x) \ge x/(1+x)$ and its event $E_\varepsilon^k$, in
+that order, with the strong law of large numbers taken from Mathlib as the
+paper takes it from the literature.  Two steps are supplied: the paper's
+``without loss of generality $u(1,o) = 0$ for all $o$'', which is the choice of
+an actor whose row is null and which equation~(6) always provides; and the
+terms of index below $k$, which $E_\varepsilon^k$ does not constrain and which
+the paper absorbs silently into its generic constant $C$. \ref{prop9} is the
+paper's own proof --- Kac's lemma, then \ref{prop7} and \ref{rem5-eta-iter} to
 bound the return time below --- with one departure and two supplied steps.  The
-departure is Kac: the paper states it as the identity
-$1/\muskel(u) = \mathbb{E}[\Rskel{u}(u)]$, which needs irreducibility and hence
-Theorem~\ref{thm:invariant-skeleton}, and the proof uses only the inequality
+departure is Kac: the paper states it as the identity $1/\muskel(u) =
+\mathbb{E}[\Rskel{u}(u)]$, which needs irreducibility and hence
+\ref{thm1-2-skeleton}, and the proof uses only the inequality
 $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, which holds for every invariant
 probability measure and is proved here outright, so the proposition waits on
-neither Doeblin's criterion nor Mathlib.  The supplied steps are the composition
-of the two estimates, done on the realisation rather than by restarting the
-chain, and the arithmetic of the printed constant, which needs the regime
-$MNe^{-\beta/(M-1)} > 1$ treated separately.  It rests on
-Lemma~\ref{lem:greedy-avoids}, the ``without visiting $u$'' its proof reads off
-Proposition~\ref{prop:reach-ladder}, and adds the hypothesis $u \in \Sspace$.
-Part~1 of Theorem~\ref{thm:phase} is the estimate the paper applies at the
-failure times $\eta_n$, applied at the same time and with the same constant, but
-run as the single fixed-point step $q \le (1-c) q$ rather than as a recursion
-over $n$; the two supplied steps --- the Markov property itself, which the paper
-calls strong but applies at what is for the skeleton a deterministic time, and
-the measurability of the failure events --- are written out at the node.  Only
-part~1 is formalised; part~2 is Theorems~\ref{thm:biased-existence},
-\ref{thm:biased-concentration} and~\ref{thm:biased-metastability}, and Theorem~4
-rests on them.
+neither Doeblin's criterion nor Mathlib.  The supplied steps are the
+composition of the two estimates, done on the realisation rather than by
+restarting the chain, and the arithmetic of the printed constant, which needs
+the regime $MNe^{-\beta/(M-1)} > 1$ treated separately.  It rests on
+\ref{aux-greedy-avoids}, the ``without visiting $u$'' its proof reads off
+\ref{prop7}, and adds the hypothesis $u \in \Sspace$.  Part~1 of \ref{thm4} is
+the estimate the paper applies at the failure times $\eta_n$, applied at the
+same time and with the same constant, but run as the single fixed-point step $q
+\le (1-c) q$ rather than as a recursion over $n$; the two supplied steps ---
+the Markov property itself, which the paper calls strong but applies at what is
+for the skeleton a deterministic time, and the measurability of the failure
+events --- are written out at the node.  Only part~1 is formalised; part~2 is
+\ref{thm25}, \ref{thm27} and~\ref{thm31}, and Theorem~4 rests on them.
 
-\medskip
-\noindent\textbf{Supply a step the paper asserts} (ten).
-Lemmas~\ref{lem:state-stable}, \ref{lem:consensus-pos}, \ref{lem:steep-stable},
-\ref{lem:favouring-max}, \ref{lem:closing}, \ref{lem:eta}
-and~\ref{lem:eta-pow}, Remarks~\ref{rem:ladder-steep}
-and~\ref{rem:degenerate}, and the bound
-$\tau(u) \le N+1$ of Definition~\ref{def:tau}.  Each corresponds to a sentence
-in the paper of the form ``note that'', ``indeed'', or an unremarked clause
-inside a proof --- ``Note that $\ladder \subset \steep$'', ``Note that
-$\tau(u) \in \{2, \dots, N+1\}$''.  All ten are true and none is deep; what
-they are not is checks of anything the paper argued.  Lemmas~\ref{lem:eta}
-and~\ref{lem:eta-pow} are the substantial ones: the paper writes the two
-inequalities defining $\eta$ in a single line and argues neither, and uses the
-$m$-step bound in the sketch of Proposition~\ref{prop:skeleton-concentration}
-without deriving it.
+\medskip \noindent\textbf{Supply a step the paper asserts} (ten).
+\ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
+\ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
+and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, and the bound $\tau(u) \le
+N+1$ of \ref{def5-repeat}.  Each corresponds to a sentence in the paper of the
+form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
+``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
+N+1\}$''.  All ten are true and none is deep; what they are not is checks of
+anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
+substantial ones: the paper writes the two inequalities defining $\eta$ in a
+single line and argues neither, and uses the $m$-step bound in the sketch of
+\ref{prop9} without deriving it.
 
-\medskip
-\noindent\textbf{No counterpart in the paper} (ten).
-Lemmas~\ref{lem:trust}, \ref{lem:ladder-consensus}, \ref{lem:state-along},
-\ref{lem:consensus-ladder}, \ref{lem:ladder-nonempty},
-\ref{lem:biased-ladder-nonempty}, \ref{lem:biased-ladder-consensus},
-\ref{lem:shift} and~\ref{lem:measurable-hitting} and
-Remark~\ref{rem:biased-ladder-steep},
-together with the rest of the
-plumbing of the sample space, which is not made of numbered statements and so
-appears here only inside definitions and remarks.
+\medskip \noindent\textbf{No counterpart in the paper} (ten). \ref{aux-trust},
+\ref{aux-ladder-consensus}, \ref{aux-state-along}, \ref{aux-consensus-ladder},
+\ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
+\ref{aux-biased-ladder-consensus}, \ref{aux-shift}
+and~\ref{aux-measurable-hitting} and \ref{aux-biased-ladder-steep}, together
+with the rest of the plumbing of the sample space, which is not made of
+numbered statements and so appears here only inside definitions and remarks.
 
-\medskip
-\noindent\textbf{No proof departs from the paper for convenience, and no proof
-of a statement of the paper has been invented here.}  That is the result of the
-audit, and the rule of Remark~\ref{rem:green} is written to keep it that way.
-Where the paper's route does not close --- Lemmas~19 and~20, and
+\medskip \noindent\textbf{No proof departs from the paper for convenience, and
+no proof of a statement of the paper has been invented here.} That is the
+result of the audit, and the rule of \ref{note-green} is written to keep it
+that way.  Where the paper's route does not close --- Lemmas~19 and~20, and
 Proposition~22 --- the statement is left unproved and the obstruction is
 recorded in Section~\ref{sec:corrections} above, rather than repaired by an
 argument the authors have not seen.  Where the route closes but leaves the
 numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
-are transcribed as statements of their own,
-Lemmas~\ref{lem:hitting-rate} and~\ref{lem:hitting-zero-decomp}, and carry
-their own \texttt{sorry}.  And where the route needs a step the paper does not
-have but a shorter route through the same lemmas does not ---
-Proposition~\ref{prop:reach-ladder} --- the shorter route is taken and the
-difference is written down, rather than the missing step being assumed.  \texttt{FOR-THE-AUTHORS.md} at the root of
-the repository collects those, and the decisions they call for, in one place.
+are transcribed as statements of their own, \ref{aux-hitting-rate}
+and~\ref{eq19}, and carry their own \texttt{sorry}.  And where the route needs
+a step the paper does not have but a shorter route through the same lemmas does
+not --- \ref{prop7} --- the shorter route is taken and the difference is
+written down, rather than the missing step being assumed.
+\texttt{FOR-THE-AUTHORS.md} at the root of the repository collects those, and
+the decisions they call for, in one place.
 
+\aux{Remark}
 \begin{remark}[``By definition'' at the end of Proposition~7]
-  \label{rem:by-definition}
+  \label{note-prop7}
   One entry above deserves singling out.  The proof of Proposition~7 ends:
 
   \begin{quote}
@@ -2385,21 +2395,19 @@ the repository collects those, and the decisions they call for, in one place.
   \end{quote}
 
   It is not by definition.  Getting from a consensus state to the exact
-  staircase of Definition~\ref{def:ladder} takes three stages, none of them
-  formal: every one of the $N$ greedy expressions expresses $o$, and this has
-  to be propagated, since it is stability of $C^o$ under $\express{a}{o}$ that
-  keeps it true; no actor expresses twice, which is the argument of
-  Proposition~\ref{prop:low-pressure} run again against the growth of the
-  $o$-column; and the actor that expressed at step $i$ ends at exactly $N-1-i$
-  on column $o$, so that $i \mapsto N-1-i$ delivers Definition~\ref{def:ladder}
-  as a bijection.  In Lean this is a file of its own,
+  staircase of \ref{def1} takes three stages, none of them formal: every one of
+  the $N$ greedy expressions expresses $o$, and this has to be propagated,
+  since it is stability of $C^o$ under $\express{a}{o}$ that keeps it true; no
+  actor expresses twice, which is the argument of \ref{prop5} run again against
+  the growth of the $o$-column; and the actor that expressed at step $i$ ends
+  at exactly $N-1-i$ on column $o$, so that $i \mapsto N-1-i$ delivers
+  \ref{def1} as a bijection.  In Lean this is a file of its own,
   \texttt{SocialNetwork/Consensus.lean}.
 
-  Nothing is wrong with the claim --- unlike Lemmas~\ref{lem:lemma19}
-  and~\ref{lem:lemma20}, it is true as written and now proved.  What is
-  misleading is ``by definition'', which invites a reader to check nothing.
-  This is the mechanism behind the paper's fast consensus formation, and it
-  earns an argument.
+  Nothing is wrong with the claim --- unlike \ref{lem19} and~\ref{lem20}, it is
+  true as written and now proved.  What is misleading is ``by definition'',
+  which invites a reader to check nothing.  This is the mechanism behind the
+  paper's fast consensus formation, and it earns an argument.
 \end{remark}
 
 \section{Where to go next}
@@ -2407,32 +2415,27 @@ the repository collects those, and the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item Remark~\ref{rem:remark6}, the one numbered statement of the paper with
-    no Lean counterpart, and Corollary~\ref{cor:zero}, whose extra exponent
-    $\pressone$ needs the states from which the zero matrix can be entered to be
-    described.  These two are what is left that is nobody's fault, now that
-    Lemma~\ref{lem:measurable-hitting}, Proposition~\ref{prop:biased-absorb},
-    Theorem~\ref{thm:phase} part~1 and
-    Proposition~\ref{prop:skeleton-concentration} are closed.
-  \item Lemmas~\ref{lem:lemma19} and~\ref{lem:lemma20}, with the repairs of
-    Remarks~\ref{rem:lemma19} and~\ref{rem:lemma20}, and
-    Lemma~\ref{lem:greedy-avoids}, the step the proof of
-    Proposition~\ref{prop:skeleton-concentration} asserts.  Worth settling with
-    the authors first, since the repairs change the written proofs.
-    Proposition~\ref{prop:reach-ladder} then follows by assembling the first two
-    with Lemma~\ref{lem:consensus-ladder}, and
-    Proposition~\ref{prop:skeleton-concentration} is proved outright once the
-    third is.
+  \item \ref{rem6}, the one numbered statement of the paper with
+    no Lean counterpart, and \ref{cor10}, whose extra exponent $\pressone$
+    needs the states from which the zero matrix can be entered to be described.
+    These two are what is left that is nobody's fault, now that
+    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1 and
+    \ref{prop9} are closed.
+  \item \ref{lem19} and~\ref{lem20}, with the repairs of
+    \ref{note-lem19} and~\ref{note-lem20}, and \ref{aux-greedy-avoids}, the
+    step the proof of \ref{prop9} asserts.  Worth settling with the authors
+    first, since the repairs change the written proofs. \ref{prop7} then
+    follows by assembling the first two with \ref{aux-consensus-ladder}, and
+    \ref{prop9} is proved outright once the third is.
   \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure for
-    a countable-state Markov kernel.}  The keystone:
-    Theorems~\ref{thm:invariant} and~\ref{thm:invariant-skeleton}, and through
-    them Theorems~\ref{thm:concentration}, \ref{thm:metastability},
-    \ref{thm:biased-existence}, \ref{thm:biased-concentration} and
-    \ref{thm:biased-metastability}, all wait on it.  It is self-contained, of
-    independent value, and depends on nothing else in this list.
+    a countable-state Markov kernel.} The keystone: \ref{thm1-2} and its
+    skeleton half \ref{thm1-2-skeleton}, and through them \ref{thm2}, \ref{thm3},
+    \ref{thm25}, \ref{thm27} and \ref{thm31}, all wait on it.  It is
+    self-contained, of independent value, and depends on nothing else in this
+    list.
   \item \textbf{Poisson point processes} and the superposition comparison, for
-    Theorems~\ref{thm:nonexplosion} and~\ref{thm:biased-nonexplosion}.  The
-    largest item, and the one the fewest results depend on.
+    \ref{thm1-1} and~\ref{thm16}.  The largest item, and the one the fewest
+    results depend on.
 \end{enumerate}
 
 Items 3 and 4 are contributions to Mathlib rather than to this repository.

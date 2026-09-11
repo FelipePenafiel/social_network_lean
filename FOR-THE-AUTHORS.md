@@ -72,7 +72,7 @@ page that needs a decision.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
 
-*Blueprint:* `rem:lemma19`. *Lean:* `SocialNetwork.isFavouring_state_firstRepeat`.
+*Blueprint:* `note-lem19`. *Lean:* `SocialNetwork.isFavouring_state_firstRepeat`.
 
 The written proof asserts, "by (25)", a sequence of `⌊m⌋ + 1` distinct actors
 without giving the construction, and rules out the degenerate case `m = 0` through
@@ -85,7 +85,7 @@ as something the formalisation has adopted.
 
 ### 1.2 Lemma 20 — the induction invariant is not preserved
 
-*Blueprint:* `rem:lemma20`. *Lean:* `SocialNetwork.isConsensus_state_of_favouring`.
+*Blueprint:* `note-lem20`. *Lean:* `SocialNetwork.isConsensus_state_of_favouring`.
 
 The invariant of the written proof, `Ũₖ (a, p) ≤ n(u) + r - (k+1)/(M-1)` for
 `p ≠ o`, is not preserved: the actor that expresses at step `k` has its row reset
@@ -97,7 +97,7 @@ replenishes the witnesses, again as a proposal to check.
 
 ### 1.3 Proposition 22 — does not follow from Proposition 6
 
-*Blueprint:* `rem:prop22`. *Lean:* `SocialNetwork.Bias.entry_mem_of_nearGreedy`.
+*Blueprint:* `note-prop22`. *Lean:* `SocialNetwork.Bias.entry_mem_of_nearGreedy`.
 
 Appendix C says only that "the proof of Propositions 22, 23 and 24 follows as the
 proofs of Propositions 6, 7 and 8".  For Proposition 24 that holds.  For
@@ -136,7 +136,7 @@ is precisely what the argument cannot carry.
 
 ### 1.4 Proposition 7 — the written route needs a step that is not there
 
-*Blueprint:* `prop:reach-ladder`. *Lean:* `SocialNetwork.isLadder_state_of_greedy`,
+*Blueprint:* `prop7`. *Lean:* `SocialNetwork.isLadder_state_of_greedy`,
 **proved** (modulo Lemmas 19 and 20).
 
 The written proof has three stages and its arithmetic is right.  What it does not
@@ -181,7 +181,7 @@ stability lemma or to restate Proposition 7's proof along the shorter route.
 
 ### 1.5 Lemma 28 — inherits Lemma 13's missing displays
 
-*Blueprint:* `lem:biased-hitting`. *Lean:* `SocialNetwork.Bias.biasedProbHitting_le`.
+*Blueprint:* `lem28`. *Lean:* `SocialNetwork.Bias.biasedProbHitting_le`.
 
 Lemma 28 is Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and Appendix C gives
 it no proof of its own.  Lemma 13's proof runs on two inequalities the paper
@@ -198,7 +198,7 @@ than of the paper; it is now restated in the paper's own form.  See §2.9.
 
 ### 1.6 Proposition 9 — "without visiting `u`" does not come from Proposition 7
 
-*Blueprint:* `lem:greedy-avoids`. *Lean:* `SocialNetwork.skeleton_ne_of_greedy`.
+*Blueprint:* `aux-greedy-avoids`. *Lean:* `SocialNetwork.skeleton_ne_of_greedy`.
 *Proposition 9 itself:* `SocialNetwork.measure_le_of_notMem_steepLadderSet`,
 **proved** modulo this one step (and, through Proposition 7, modulo Lemmas 19
 and 20).
@@ -242,12 +242,12 @@ cannot be used, and the Lean statement differs from the paper's display.
 | # | Where | What is wrong | What was done |
 |---|---|---|---|
 | 2.1 | **Proposition 12**, (15)–(18) | `ε₁ ε₂ s₁ s₂` are introduced before `β`, but Section 5.3 instantiates them at `s₂ = 2β` and `ε₂ = (M+1)²N²e^{-β/((M+1)N)}`, and needs `ε₁ + ε₂ ≤ 1/2` only "for β sufficiently big".  Bound as constants ahead of `β`, **the hypotheses are unsatisfiable** — Theorem 3 could never have been derived from them. | Made functions of `β`; (15)–(18) required only above a threshold `β₁`.  Theorem 3 now follows. |
-| 2.2 | **Corollary 15** (and 30) | Quantifies over `l ∈ L^o` and concludes about `L^o`, so it is vacuous unless `L^o ≠ ∅`, which the paper never records. | `SocialNetwork.ladderOf` and `SocialNetwork.Bias.biasedLadderOf` supply the witnesses — the staircase itself, and the profile in which actor `a` has heard exactly `a` expressions of `o`.  Blueprint `lem:ladder-nonempty` and `lem:biased-ladder-nonempty`.  Both corollaries are now proved. |
-| 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `rem:eq6`; the stronger condition is what `IsBiasedState` carries. |
-| 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `rem:steep`; recorded, and the Lean definition carries it. |
+| 2.2 | **Corollary 15** (and 30) | Quantifies over `l ∈ L^o` and concludes about `L^o`, so it is vacuous unless `L^o ≠ ∅`, which the paper never records. | `SocialNetwork.ladderOf` and `SocialNetwork.Bias.biasedLadderOf` supply the witnesses — the staircase itself, and the profile in which actor `a` has heard exactly `a` expressions of `o`.  Blueprint `aux-ladder-nonempty` and `aux-biased-ladder-nonempty`.  Both corollaries are now proved. |
+| 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `note-eq6`; the stronger condition is what `IsBiasedState` carries. |
+| 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `note-def4`; recorded, and the Lean definition carries it. |
 | 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed.  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what the paper uses and is not what is stated.  **Your call** whether to restate it. |
 | 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is proved** from it.  See §3.3.  Proposition 23 is untouched. |
-| 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `lem:hitting-rate` and `lem:hitting-zero-decomp` — each carrying a `sorry`, and Lemma 13 is proved from them.  **Your call** whether either should become a numbered statement of the paper. |
+| 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `aux-hitting-rate` and `eq19` — each carrying a `sorry`, and Lemma 13 is proved from them.  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
 | 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
 | 2.10 | **Proposition 9** | The statement quantifies over `β > 0` and `u ∉ L̂`, with no hypothesis on `u` beyond that; its proof calls Proposition 7, which is stated for `u ∈ S`, and the whole paper works in `S`. | `IsState u` added to the Lean statement.  Also stated for an *arbitrary* invariant probability measure of the skeleton rather than for a named `μ̃^β`, since its existence is Theorem 1.2 — which, with Kac's inequality in place of Kac's identity, Proposition 9 no longer needs. |
@@ -320,7 +320,7 @@ blueprint's audit section classifies every formalised proof this way.
   intermediate bound.
 * **Proposition 6.**  The passage from the repeat time to the global bound, which
   the paper compresses into "this implies", is carried out explicitly.
-* **Proposition 7.**  The "by definition" at the end; blueprint `rem:by-definition`.
+* **Proposition 7.**  The "by definition" at the end; blueprint `note-prop7`.
 * **Proposition 8.**  The iteration over `m`, which the paper does by conditioning
   in (10), goes through the Ionescu–Tulcea kernels — Mathlib offers no
   decomposition of that shape.  Same Markov property, different formalism.

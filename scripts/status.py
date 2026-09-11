@@ -4,7 +4,9 @@
 The blueprint (``blueprint/src/content.tex``) is the single source of truth.  Each
 numbered statement of arXiv:2607.19651 is a node there, carrying
 
-* ``\\lean{...}``  the Lean declarations that are its counterpart,
+* ``\\paper{...}``               the paper's own name for it, or ``\\aux{...}``
+                                 when the paper does not state it,
+* ``\\lean{...}``                the Lean declarations that are its counterpart,
 * ``\\leanok`` on the statement  the statement is written in Lean,
 * ``\\leanok`` on the proof      the proof is written in Lean,
 * ``\\uses{...}``                what the proof rests on.
@@ -71,88 +73,88 @@ HEADNOTE = {
 # is recorded rather than computed.
 REASONS: dict[str, tuple[str, str]] = {
     # -- the written proof does not compose ---------------------------------
-    "lem:lemma19": (
+    "lem19": (
         BLOCKED_ON_PAPER,
         "the sequence of `⌊m⌋ + 1` distinct actors is asserted "
         '("by (25)"), never constructed, and the degenerate case is ruled out '
         "through `τ(u) = 2` rather than through `m = 0`",
     ),
-    "lem:lemma20": (
+    "lem20": (
         BLOCKED_ON_PAPER,
         "the induction invariant is not preserved: the actor that expresses at step `k` "
         "has its row reset, and at the terminal `k` the bound is negative",
     ),
-    "prop:biased-confinement": (
+    "prop22": (
         BLOCKED_ON_PAPER,
         "does not follow from Proposition 6 as Appendix C asserts: under near-greedy "
         "expression the chain gives `N - 1 + 1/(2γ)`, which reaches `N` only for "
         "`γ ≥ 1/2`, and here `γ < 1/(M-1)`",
     ),
-    "prop:biased-reach-ladder": (
+    "prop23": (
         BLOCKED_ON_PAPER,
         "assembles biased analogues of Lemmas 19 and 20, which the paper does not state",
     ),
-    "lem:biased-hitting": (
+    "lem28": (
         BLOCKED_ON_PAPER,
         "the biased twin of Lemma 13, and its ingredients — the biased forms of the two "
         "displays below — are not in the paper either",
     ),
-    "lem:greedy-avoids": (
+    "aux-greedy-avoids": (
         BLOCKED_ON_PAPER,
         "asserted inside the proof of Proposition 9 and read off Proposition 7, which "
         "says where the greedy run ends and nothing about where it passes",
     ),
-    "prop:biased-skeleton-concentration": (
+    "prop26": (
         BLOCKED_ON_PAPER,
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "
         "on the biased Proposition 7",
     ),
     # -- citations ----------------------------------------------------------
-    "prop:exit-exponential": (
+    "prop12": (
         CITED,
         "Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry`",
     ),
-    "prop:biased-exit-exponential": (
+    "prop12-biased": (
         CITED,
         "the same citation over `Profile N M`.  Two are needed because the abstract "
         "statement is inconsistent",
     ),
-    "lem:hitting-rate": (
+    "aux-hitting-rate": (
         CITED,
         "displayed inside the proof of Theorem 2.2 and never stated; Theorem 2.2 is a "
         "limit, and a limit has thrown the rate away",
     ),
-    "lem:hitting-zero-decomp": (
+    "eq19": (
         CITED,
         "equation (19), displayed inside the proof of Lemma 13 and attributed to "
         "Corollary 11, which is likewise only a limit",
     ),
     # -- Mathlib ------------------------------------------------------------
-    "thm:invariant-skeleton": (
+    "thm1-2-skeleton": (
         BLOCKED_ON_MATHLIB,
         "Doeblin's minorisation criterion.  The keystone: six results below wait on it",
     ),
-    "thm:invariant": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
-    "thm:biased-existence": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
-    "lem:transfer": (
+    "thm1-2": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
+    "thm25": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
+    "eq13": (
         BLOCKED_ON_MATHLIB,
         "the stationary-law transfer; needs Doeblin to be worth stating, and its own "
         "statement is one the authors may want to change",
     ),
-    "thm:concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
-    "thm:biased-concentration": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 26"),
-    "cor:hitting-zero": (BLOCKED_ON_MATHLIB, "Doeblin, through Theorem 2"),
-    "thm:nonexplosion": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
-    "thm:biased-nonexplosion": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
-    "lem:exit-bounds": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
-    "lem:biased-exit-bounds": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
+    "thm2": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
+    "thm27": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 26"),
+    "cor11": (BLOCKED_ON_MATHLIB, "Doeblin, through Theorem 2"),
+    "thm1-1": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
+    "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
+    "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
+    "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "cor:zero": (
+    "cor10": (
         NOT_YET,
         "the extra `1/(M-1)` in the exponent needs the description of the states from "
         "which the zero matrix can be entered; Proposition 9 no longer stands in the way",
     ),
-    "rem:remark6": (
+    "rem6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
         "downstream uses it",
@@ -160,48 +162,51 @@ REASONS: dict[str, tuple[str, str]] = {
 }
 
 
-# The reference a node's title carries is not always the statement it formalises, and a
-# few titles are mostly mathematics.  Both are fixed here rather than by contorting the
-# blueprint's own prose.  ``None`` demotes a node to the auxiliary table: the two
-# displays Lemma 13 rests on are references *into* proofs, not numbered statements.
+# The name a node is given is not always the statement it formalises: two nodes carry a
+# half of one statement each and have to be told apart in the tables.  ``None`` demotes a
+# node to the auxiliary table: the two displays Lemma 13 rests on are references *into*
+# proofs, not numbered statements.
 PAPER_OVERRIDE: dict[str, str | None] = {
-    "thm:invariant-skeleton": "Theorem 1.2, skeleton half",
-    "prop:biased-exit-exponential": "Proposition 12, biased twin",
-    "lem:hitting-rate": None,
-    "lem:hitting-zero-decomp": None,
-    "lem:greedy-avoids": None,
+    "thm1-2-skeleton": "Theorem 1.2, skeleton half",
+    "prop12-biased": "Proposition 12, biased twin",
+    "aux-hitting-rate": None,
+    "eq19": None,
+    "aux-greedy-avoids": None,
 }
 
 NAME_OVERRIDE: dict[str, str] = {
-    "lem:greedy-avoids": "the greedy run does not revisit `u`",
-    "lem:hitting-rate": "the display inside the proof of Theorem 2.2",
-    "lem:hitting-zero-decomp": "equation (19)",
-    "lem:state-stable": "S is stable under expression",
-    "lem:state-along": "S along a realisation",
-    "lem:ladder-consensus": "a ladder is a consensus state",
-    "rem:biased-ladder-steep": "a biased ladder is a biased steep ladder",
-    "lem:ladder-nonempty": "the ladder set is inhabited",
-    "lem:biased-ladder-nonempty": "the biased ladder set is inhabited",
-    "rem:ladder-steep": "every ladder is a steep ladder",
-    "lem:eta": "the bound η",
-    "lem:eta-pow": "the bound η, iterated",
-    "lem:gap": "the gap estimate",
-    "lem:consensus-ladder": "from a consensus state to a ladder",
-    "lem:favouring-max": "the opening step",
-    "lem:closing": "the closing step",
+    "aux-greedy-avoids": "the greedy run does not revisit `u`",
+    "aux-hitting-rate": "the display inside the proof of Theorem 2.2",
+    "eq19": "equation (19)",
+    "aux-state-stable": "S is stable under expression",
+    "aux-state-along": "S along a realisation",
+    "aux-ladder-consensus": "a ladder is a consensus state",
+    "aux-biased-ladder-steep": "a biased ladder is a biased steep ladder",
+    "aux-ladder-nonempty": "the ladder set is inhabited",
+    "aux-biased-ladder-nonempty": "the biased ladder set is inhabited",
+    "rem5": "every ladder is a steep ladder",
+    "rem5-eta": "the bound η",
+    "rem5-eta-iter": "the bound η, iterated",
+    "aux-gap": "the gap estimate",
+    "aux-consensus-ladder": "from a consensus state to a ladder",
+    "lem20-opening": "the opening step",
+    "lem20-closing": "the closing step",
 }
 
 
 class Node:
-    __slots__ = ("label", "kind", "title", "paper", "lean", "stmt_ok", "proof_ok",
-                 "has_proof", "uses", "order")
+    __slots__ = ("label", "kind", "title", "naming", "named", "paper", "lean",
+                 "stmt_ok", "proof_ok", "has_proof", "uses", "order")
 
-    def __init__(self, label: str, kind: str, title: str, order: int) -> None:
+    def __init__(self, label: str, kind: str, title: str, naming: str | None,
+                 named: str | None, order: int) -> None:
         self.label = label
         self.kind = kind
         self.title = title
+        self.naming = naming
+        self.named = named
         self.paper = (PAPER_OVERRIDE[label] if label in PAPER_OVERRIDE
-                      else paper_reference(title))
+                      else paper_reference(named))
         self.lean: list[str] = []
         self.stmt_ok = False
         self.proof_ok = False
@@ -210,25 +215,17 @@ class Node:
         self.order = order
 
 
-PAPER_REF = re.compile(
-    r"\b(Theorem|Proposition|Lemma|Corollary|Definition|Remark)~([0-9]+(?:\.[0-9]+)?)"
-)
-EQUATION_REF = re.compile(r"\b(?:equation|eq\.)~?\(([0-9]+)\)")
-
-
-def paper_reference(title: str) -> str | None:
+def paper_reference(named: str | None) -> str | None:
     """The statement of the paper a blueprint node corresponds to, if any.
 
-    Nodes whose title carries no reference are auxiliaries of the formalisation: they
-    have no counterpart in arXiv:2607.19651 and are not counted as progress on it.
+    Every node in the blueprint is preceded by ``\\paper{...}``, which names it as the
+    paper names it, or by ``\\aux{...}``, which says the paper does not state it.  This
+    reads the first and returns ``None`` for the second: a node named by ``\\aux`` is an
+    auxiliary of the formalisation and is not counted as progress on the paper.
     """
-    m = PAPER_REF.search(title)
-    if m:
-        return f"{m.group(1)} {m.group(2)}"
-    m = EQUATION_REF.search(title)
-    if m:
-        return f"equation ({m.group(1)})"
-    return None
+    if named is None:
+        return None
+    return re.sub(r"^Equations?\b", lambda m: m.group(0).lower(), named)
 
 
 def strip_braces(text: str, start: int) -> tuple[str, int]:
@@ -265,11 +262,15 @@ def parse_blueprint() -> list[Node]:
     pos = 0
     order = 0
     begin = re.compile(r"\\begin\{(" + "|".join(ENVIRONMENTS) + r")\}")
+    naming = re.compile(r"\\(paper|aux)\{([^}]*)\}\s*$")
     while True:
         m = begin.search(text, pos)
         if m is None:
             break
         kind = m.group(1)
+        naming_m = naming.search(text, pos, m.start())
+        kind_of_name = naming_m.group(1) if naming_m else None
+        named = naming_m.group(2) if kind_of_name == "paper" else None
         title, after = read_optional_title(text, m.end())
         end = text.find("\\end{" + kind + "}", after)
         if end == -1:
@@ -279,7 +280,7 @@ def parse_blueprint() -> list[Node]:
         if label_m is None:
             pos = end
             continue
-        node = Node(label_m.group(1), kind, title, order)
+        node = Node(label_m.group(1), kind, title, kind_of_name, named, order)
         order += 1
         lean_m = re.search(r"\\lean\{", body)
         if lean_m:
@@ -464,8 +465,6 @@ def short_title(node: Node) -> str:
         return NAME_OVERRIDE[node.label]
     title = re.sub(r"\$[^$]*\$", "", node.title)
     title = re.sub(r"\\[a-zA-Z]+", "", title).replace("~", " ")
-    title = re.sub(r",\s*(Theorem|Proposition|Lemma|Corollary|Definition|Remark|eq\.)"
-                   r"[^,]*$", "", title)
     return re.sub(r"\s+", " ", title).strip().strip(",")
 
 
@@ -474,9 +473,16 @@ def name(node: Node) -> str:
     return node.paper or short_title(node)
 
 
+# A node that carries a statement of the paper whole, while other nodes carry a piece of
+# the same one.  Lemma 20 is stated here as the paper states it, and its opening and
+# closing steps are nodes of their own; the tables name the statement by its number alone
+# and only the steps by what they are.
+WHOLE = frozenset({"lem20"})
+
+
 def display(node: Node, shared: set[str]) -> str:
     """``name``, disambiguated when several nodes decompose one statement of the paper."""
-    if node.paper and node.paper in shared:
+    if node.paper and node.paper in shared and node.label not in WHOLE:
         title = short_title(node)
         if title and not title.startswith(node.paper):
             return f"{node.paper} — {title}"
@@ -766,6 +772,11 @@ def main() -> int:
     known, axioms, sorries = declarations()
 
     problems: list[str] = []
+    # Every statement has to be named, or it silently inherits the name of the one above.
+    for node in nodes:
+        if node.naming is None:
+            problems.append(f"{node.label}: the environment is preceded by no \\paper "
+                            f"or \\aux, so it inherits the name of the statement above it")
     for node in nodes:
         for cited in node.lean:
             if cited not in known:
