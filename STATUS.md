@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-24 statements. They are unproved for four different reasons, and
+23 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -68,27 +68,26 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (2)
+### Not formalised yet (1)
 
 No obstruction known.
 Nothing here stands in the way; the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Corollary 10 | `measure_zero_le` | the extra `1/(M-1)` in the exponent needs the description of the states from which the zero matrix can be entered; Proposition 9 no longer stands in the way |
 | Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 17 | 13 | 30 |
-| Proof written, resting on an unproved statement | 8 | 0 | 8 |
+| Proved | 17 | 14 | 31 |
+| Proof written, resting on an unproved statement | 9 | 0 | 9 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 18 | 3 | 21 |
+| Stated in Lean, unproved | 17 | 3 | 20 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
-| **Total** | **61** | **20** | **81** |
+| **Total** | **61** | **21** | **82** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 55 statements and displayed equations
@@ -130,7 +129,7 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Proposition 8 | `zeta` +5 | proved |
 | Remark 4 | `one_sub_le_zeta_pow` +4 | proved |
 | Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on the greedy run does not revisit `u`, Lemma 19, Lemma 20 |
-| Corollary 10 | `measure_zero_le` | unproved — not formalised yet |
+| Corollary 10 | `measure_zero_le` | proof written, rests on the greedy run does not revisit `u`, Lemma 19, Lemma 20 |
 | Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | unproved — blocked on Mathlib |
 | Remark 6 | — | not stated — not formalised yet |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
@@ -183,6 +182,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Restarting a realisation | `Trajectory.shift` +2 | proved |
 | the gap estimate | `entrySup` +3 | proved |
 | the greedy run does not revisit `u` | `skeleton_ne_of_greedy` | unproved — blocked on the paper |
+| The predecessors of the zero matrix | `zeroPredecessor` +7 | proved |
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | unproved — cited from outside the paper |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | unproved — cited from outside the paper |
 | the ladder set is inhabited | `ladderOf` +3 | proved |

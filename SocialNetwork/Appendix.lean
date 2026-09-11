@@ -36,12 +36,21 @@ positive expressions.  The one step it does not have is the paper's "without vis
 which the written proof reads off Proposition 7 and which Proposition 7 does not give;
 `SocialNetwork.skeleton_ne_of_greedy` states it and carries the `sorry`.
 
+And it proves **Corollary 10**, the same bound at the zero matrix with the extra exponent
+`1/(M-1)`.  The paper reads that exponent off the states from which the zero matrix can be
+entered, in a clause it does not argue; `SocialNetwork.zeroPredecessor` is one of those states,
+there are `NM` of them, and the three things the clause needs — that the description is
+exhaustive, that none of those states is a steep ladder, and that the step into the zero matrix
+costs `e^{-β/(M-1)}` — are proved here.
+
 ## Main definitions
 
 * `SocialNetwork.favouringSet` — `⋃_{o ∈ O} S^o`, the target of Lemma 19.
 * `SocialNetwork.consensusUnion` — `⋃_{o ∈ O} C^o`, the target of Lemma 20.
 * `SocialNetwork.eta` — the constant `η` of Remark 5.
 * `SocialNetwork.positivePressureEvent` — the event `{U_0 (A₁, O₁) > 0}` of Remark 5.
+* `SocialNetwork.zeroPredecessor` — the state from which expressing `(a, o)` reaches the zero
+  matrix, the object of the clause Corollary 10 asserts.
 
 ## Main statements
 
@@ -61,6 +70,13 @@ which the written proof reads off Proposition 7 and which Proposition 7 does not
   unproved.
 * `SocialNetwork.measure_le_of_notMem_steepLadderSet` — **Proposition 9**, proved modulo that
   step and, through Proposition 7, modulo Lemmas 19 and 20.
+* `SocialNetwork.eq_zeroPredecessor_of_express_eq_zero` — a matrix with a null row from which
+  one expression reaches `0` is a `SocialNetwork.zeroPredecessor`, proved.
+* `SocialNetwork.measure_exists_zero_row_eq_one` — the invariant measure charges only the
+  matrices with a null row, which is what makes that description exhaustive, proved.
+* `SocialNetwork.skeletonKernel_zeroPredecessor_le` — the step into the zero matrix costs
+  `e^{-β/(M-1)}`, proved.
+* `SocialNetwork.measure_zero_le` — **Corollary 10**, proved modulo Proposition 9.
 -/
 
 namespace SocialNetwork
@@ -1150,20 +1166,314 @@ theorem measure_le_of_notMem_steepLadderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {β : 
           gcongr
           exact one_add_mul_two_pow_le hM hN
 
+/-! ### Corollary 10: the zero matrix
+
+The extra exponent of Corollary 10 rests on one observation, which the paper makes and does not
+argue: the zero matrix can only be entered from a state in which one actor carries no pressure
+at all, while every other carries `-1` on the expressed opinion and `1/(M-1)` on each of the
+others.  `SocialNetwork.zeroPredecessor` is that state — there are `NM` of them, one per pair
+`(a, o)` — and `SocialNetwork.eq_zeroPredecessor_of_express_eq_zero` is the observation.
+
+Two things then have to be checked rather than asserted.  The first is that the observation
+applies where it is used: a predecessor of `0` is pinned down only once it is known to have a
+null row, and the invariant measure charges nothing else
+(`SocialNetwork.measure_exists_zero_row_eq_one`), because every matrix the kernel reaches in one
+step has one.  The second is the exponent itself: at a `zeroPredecessor` the pair that leads to
+`0` carries the rate `e^0 = 1`, against a total that already contains the `e^{β/(M-1)}` of any
+actor that is not `a` on any opinion that is not `o`, so the step into `0` costs `e^{-β/(M-1)}`
+(`SocialNetwork.skeletonKernel_zeroPredecessor_le`). -/
+
+section Predecessors
+
+-- Nothing in this block needs the network to be non-empty: it is the arithmetic of `π^{a,o}`.
+omit [NeZero N] [NeZero M]
+
+/-- The state from which expressing `(a, o)` leads to the zero matrix: actor `a` carries no
+pressure at all, and every other actor carries `-1` on `o` and `1/(M-1)` on each of the other
+opinions — in the scaled coordinates of `SocialNetwork.Defs`, `1 - M` on `o` and `1` elsewhere.
+
+**Supplies a step the paper asserts.**  The description is read off in one line in the proof of
+Corollary 10; that it is the *only* such state is
+`SocialNetwork.eq_zeroPredecessor_of_express_eq_zero`. -/
+def zeroPredecessor (a : Actor N) (o : Opinion M) : Pressure N M :=
+  fun b p => if b = a then 0 else if p = o then 1 - (M : ℤ) else 1
+
+@[simp]
+theorem zeroPredecessor_self (a : Actor N) (o p : Opinion M) :
+    zeroPredecessor a o a p = 0 := by
+  simp [zeroPredecessor]
+
+theorem zeroPredecessor_of_ne {a b : Actor N} (hb : b ≠ a) (o p : Opinion M) :
+    zeroPredecessor a o b p = if p = o then 1 - (M : ℤ) else 1 := by
+  simp [zeroPredecessor, hb]
+
+/-- Expressing `(a, o)` at `zeroPredecessor a o` does lead to the zero matrix: the row of `a`
+is reset, the `-1` on `o` is cancelled by the gain of `M - 1`, and each `1` elsewhere by the
+loss of `1`. -/
+theorem express_zeroPredecessor (a : Actor N) (o : Opinion M) :
+    express a o (zeroPredecessor a o) = (0 : Pressure N M) := by
+  funext b p
+  simp only [Pi.zero_apply]
+  by_cases hb : b = a
+  · subst hb; simp
+  · by_cases hp : p = o
+    · subst hp
+      rw [express_of_ne_of_eq hb, zeroPredecessor_of_ne hb, if_pos rfl]
+      ring
+    · rw [express_of_ne_of_ne hb hp, zeroPredecessor_of_ne hb, if_neg hp]
+      ring
+
+/-- **The observation behind Corollary 10.**  A matrix with a null row from which one expression
+reaches `0` is a `SocialNetwork.zeroPredecessor`.
+
+The null row is what makes the description exhaustive, and it is not a restriction here: the
+skeleton reaches nothing else (`SocialNetwork.measure_exists_zero_row_eq_one`).  Without it the
+predecessors of `0` form an infinite family, since the row of the expressing actor is reset and
+so is unconstrained. -/
+theorem eq_zeroPredecessor_of_express_eq_zero (hM : 2 ≤ M) {v : Pressure N M} {a : Actor N}
+    {o : Opinion M} (h : express a o v = 0) (hz : ∃ b, ∀ p, v b p = 0) :
+    v = zeroPredecessor a o := by
+  have hM' : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+  obtain ⟨b, hb⟩ := hz
+  have hrow : ∀ c, c ≠ a → ∀ p, v c p = if p = o then 1 - (M : ℤ) else 1 := by
+    intro c hc p
+    have hcp := congrFun (congrFun h c) p
+    simp only [Pi.zero_apply] at hcp
+    by_cases hp : p = o
+    · subst hp
+      rw [express_of_ne_of_eq hc] at hcp
+      rw [if_pos rfl]
+      linarith
+    · rw [express_of_ne_of_ne hc hp] at hcp
+      rw [if_neg hp]
+      linarith
+  have hba : b = a := by
+    by_contra hne
+    have h0 := hrow b hne o
+    rw [hb o, if_pos rfl] at h0
+    linarith
+  have ha0 : ∀ p, v a p = 0 := hba ▸ hb
+  funext c p
+  by_cases hc : c = a
+  · subst hc
+    rw [ha0 p, zeroPredecessor_self]
+  · rw [hrow c hc p, zeroPredecessor_of_ne hc]
+
+/-- A `SocialNetwork.zeroPredecessor` is a state of `S`: the row of `a` is null, and every other
+row carries `1 - M` once and `1` on each of the remaining `M - 1` opinions, hence has trust `0`. -/
+theorem isState_zeroPredecessor (a : Actor N) (o : Opinion M) :
+    IsState (zeroPredecessor a o) := by
+  refine ⟨fun c => ?_, ⟨a, fun p => zeroPredecessor_self a o p⟩⟩
+  by_cases hc : c = a
+  · subst hc; simp [trust]
+  · have hval : ∀ p : Opinion M,
+        zeroPredecessor a o c p = 1 + (if p = o then -(M : ℤ) else 0) := by
+      intro p
+      rw [zeroPredecessor_of_ne hc]
+      by_cases hp : p = o
+      · simp [hp]; ring
+      · simp [hp]
+    rw [trust, Finset.sum_congr rfl fun p _ => hval p, Finset.sum_add_distrib,
+      Finset.sum_ite_eq' Finset.univ o fun _ => -(M : ℤ)]
+    simp
+
+/-- A `SocialNetwork.zeroPredecessor` is not a steep ladder, so Proposition 9 bounds its mass.
+With `N ≥ 3` at least two actors are not `a`, and they carry the same pressure on every opinion;
+Definition 4 asks the column of the favoured opinion to be injective. -/
+theorem notMem_steepLadderSet_zeroPredecessor (hN : 3 ≤ N) (a : Actor N) (o : Opinion M) :
+    zeroPredecessor a o ∉ steepLadderSet N M := by
+  rintro ⟨q, hq⟩
+  have hcard : 1 < ({a}ᶜ : Finset (Actor N)).card := by
+    rw [Finset.card_compl, Finset.card_singleton, Fintype.card_fin]
+    omega
+  obtain ⟨b, hbmem, c, hcmem, hbc⟩ := Finset.one_lt_card.1 hcard
+  have hb : b ≠ a := by simpa using hbmem
+  have hc : c ≠ a := by simpa using hcmem
+  have : zeroPredecessor a o b q = zeroPredecessor a o c q := by
+    rw [zeroPredecessor_of_ne hb, zeroPredecessor_of_ne hc]
+  exact hbc (hq.injective this)
+
+/-- At a `SocialNetwork.zeroPredecessor`, the only expression that reaches `0` is the one it is
+named for.  This is what makes the cost of the step into `0` a single jump probability rather
+than a sum of them. -/
+theorem eq_of_express_zeroPredecessor_eq_zero (hM : 2 ≤ M) (hN : 2 ≤ N) {a c : Actor N}
+    {o q : Opinion M} (h : express c q (zeroPredecessor a o) = (0 : Pressure N M)) :
+    c = a ∧ q = o := by
+  have hM' : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+  have hca : c = a := by
+    by_contra hne
+    have hac : a ≠ c := fun hh => hne hh.symm
+    have haq := congrFun (congrFun h a) q
+    simp only [Pi.zero_apply, express_of_ne_of_eq hac, zeroPredecessor_self] at haq
+    linarith
+  subst hca
+  refine ⟨rfl, ?_⟩
+  obtain ⟨b, hb⟩ := Fintype.exists_ne_of_one_lt_card
+    (by simp only [Fintype.card_fin]; omega) c
+  have hbq := congrFun (congrFun h b) q
+  simp only [Pi.zero_apply, express_of_ne_of_eq hb, zeroPredecessor_of_ne hb] at hbq
+  by_contra hq
+  rw [if_neg hq] at hbq
+  linarith
+
+end Predecessors
+
+/-- **The exponent of Corollary 10.**  One step from a `SocialNetwork.zeroPredecessor` lands on
+the zero matrix with probability at most `e^{-β/(M-1)}`.
+
+The pair `(a, o)` is the only one that reaches `0`, and it carries the rate `e^{β · 0} = 1`,
+while the normalisation already contains the rate `e^{β/(M-1)}` of any other actor on any other
+opinion.  The other `NM - 1` rates in the normalisation are discarded, which is why this is a
+bound and not the exact probability. -/
+theorem skeletonKernel_zeroPredecessor_le (hM : 2 ≤ M) (hN : 2 ≤ N) (β : ℝ) (a : Actor N)
+    (o : Opinion M) :
+    skeletonKernel β (zeroPredecessor a o) {(0 : Pressure N M)}
+      ≤ ENNReal.ofReal (Real.exp (-β * (1 / ((M : ℝ) - 1)))) := by
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by
+    have : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  set v : Pressure N M := zeroPredecessor a o with hv
+  -- The only pair that reaches `0` is `(a, o)`.
+  have hone : skeletonKernel β v {(0 : Pressure N M)} = jumpPMF β v (a, o) := by
+    rw [skeletonKernel_apply, PMF.toMeasure_apply_singleton _ _ MeasurableSet.of_discrete,
+      PMF.map_apply]
+    refine tsum_eq_single (a, o) ?_ |>.trans ?_
+    · intro p hp
+      refine if_neg fun hcontra => hp ?_
+      obtain ⟨h1, h2⟩ := eq_of_express_zeroPredecessor_eq_zero hM hN hcontra.symm
+      exact Prod.ext h1 h2
+    · exact if_pos (express_zeroPredecessor a o).symm
+  -- Its rate is `1`, and the total is at least the rate of some `(b, q)` with `b ≠ a`, `q ≠ o`.
+  have hweight : jumpWeight β v (a, o) = 1 := by
+    rw [jumpWeight, jumpRate, hv, zeroPredecessor_self]
+    norm_num
+  obtain ⟨b, hb⟩ := Fintype.exists_ne_of_one_lt_card
+    (by simp only [Fintype.card_fin]; omega) a
+  obtain ⟨q, hq⟩ := Fintype.exists_ne_of_one_lt_card
+    (by simp only [Fintype.card_fin]; omega) o
+  have hlow : ENNReal.ofReal (Real.exp (β * (1 / ((M : ℝ) - 1))))
+      ≤ ∑' p : Jump N M, jumpWeight β v p := by
+    refine le_trans (le_of_eq ?_) (ENNReal.le_tsum (b, q))
+    rw [jumpWeight, jumpRate, hv, zeroPredecessor_of_ne hb, if_neg hq]
+    norm_num [div_eq_mul_inv]
+  rw [hone, jumpPMF_apply, hweight, one_mul]
+  calc (∑' p : Jump N M, jumpWeight β v p)⁻¹
+      ≤ (ENNReal.ofReal (Real.exp (β * (1 / ((M : ℝ) - 1)))))⁻¹ := ENNReal.inv_le_inv.2 hlow
+    _ = ENNReal.ofReal (Real.exp (-β * (1 / ((M : ℝ) - 1)))) := by
+        rw [← ENNReal.ofReal_inv_of_pos (Real.exp_pos _), ← Real.exp_neg]
+        ring_nf
+
+/-- The invariant measure of the skeleton charges only the matrices with a null row.
+
+Nothing is needed beyond the shape of `π^{a,o}`: every matrix the kernel reaches has the row of
+the expressing actor reset, so the set of matrices with a null row has full mass under
+`κ v` for every `v`, and invariance carries that to `μ`.
+
+**No counterpart in the paper**, which works throughout in `S`; the proof of Corollary 10 needs
+only the second half of the definition of `S`, and gets it for free. -/
+theorem measure_exists_zero_row_eq_one (β : ℝ) {μ : Measure (Pressure N M)}
+    [IsProbabilityMeasure μ] (hinv : Kernel.Invariant (skeletonKernel β) μ) :
+    μ {v : Pressure N M | ∃ b, ∀ p, v b p = 0} = 1 := by
+  set Z : Set (Pressure N M) := {v | ∃ b, ∀ p, v b p = 0} with hZ
+  have hker : ∀ v : Pressure N M, skeletonKernel β v Z = 1 := by
+    intro v
+    refine le_antisymm prob_le_one ?_
+    calc (1 : ℝ≥0∞) = skeletonKernel β v {w | ∃ a o, w = express a o v} :=
+          (skeletonKernel_reachable β v).symm
+      _ ≤ skeletonKernel β v Z := by
+          refine measure_mono ?_
+          rintro w ⟨c, q, rfl⟩
+          exact ⟨c, fun p => express_self c q p v⟩
+  calc μ Z = (μ.bind (skeletonKernel β)) Z := by rw [hinv.def]
+    _ = ∫⁻ v, skeletonKernel β v Z ∂μ :=
+        Measure.bind_apply MeasurableSet.of_discrete (Kernel.aemeasurable _)
+    _ = 1 := by simp [hker]
+
 /-- **Corollary 10.**  `μ̃^β (0) ≤ C'' e^{-β(N-1+1/(M-1))}` with `C'' = (NM) C'`.
 
-The extra `1/(M-1)` in the exponent comes from the observation that the zero matrix can only
-be entered from a state in which one actor has a null row and every other actor carries `-1`
-on one opinion and `1/(M-1)` on the others — a state whose maximum is `1/(M-1)`.
+**Follows the paper's proof.**  Invariance writes `μ̃^β (0)` as `∑_v μ̃^β (v) P (Ũ_1^{β,v} = 0)`;
+only the `NM` states `SocialNetwork.zeroPredecessor a o` contribute, since the invariant
+measure charges only matrices with a null row and those are the only predecessors of `0` with
+one; each is bounded by Proposition 9, since none of them is a steep ladder; and each step
+into `0` costs `e^{-β/(M-1)}`, which is the extra exponent.
 
-**Unproved**, since Proposition 9 is. -/
+**Rests on** Proposition 9, and through it on `SocialNetwork.skeleton_ne_of_greedy` and
+Lemmas 19 and 20. -/
 theorem measure_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 < β)
     {μ : Measure (Pressure N M)} (hμ : IsProbabilityMeasure μ)
     (hinv : Kernel.Invariant (skeletonKernel β) μ) :
     μ {(0 : Pressure N M)} ≤ ENNReal.ofReal
       ((((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 2)) *
         Real.exp (-β * ((N : ℝ) - 1 + 1 / ((M : ℝ) - 1)))) := by
-  sorry
+  have := hμ
+  set c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-β * (1 / ((M : ℝ) - 1)))) with hc
+  set P : Set (Pressure N M) := {w | ∃ a o, w = zeroPredecessor a o} with hP
+  set C : ℝ :=
+    ((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 1) * Real.exp (-β * ((N : ℝ) - 1)) with hC
+  -- Invariance, at the singleton `{0}`.
+  have hbind : μ {(0 : Pressure N M)}
+      = ∫⁻ v, skeletonKernel β v {(0 : Pressure N M)} ∂μ := by
+    conv_lhs => rw [← hinv.def]
+    exact Measure.bind_apply MeasurableSet.of_discrete (Kernel.aemeasurable _)
+  -- Only the `NM` predecessors contribute, and each contributes at most `c`.
+  have hpt : ∀ v : Pressure N M, (∃ b, ∀ p, v b p = 0) →
+      skeletonKernel β v {(0 : Pressure N M)} ≤ Set.indicator P (fun _ => c) v := by
+    intro v hz
+    by_cases hvP : v ∈ P
+    · rw [Set.indicator_of_mem hvP]
+      obtain ⟨a, o, rfl⟩ := hvP
+      exact skeletonKernel_zeroPredecessor_le hM (by omega) β a o
+    · rw [Set.indicator_of_notMem hvP]
+      have h0R : (0 : Pressure N M) ∉ {w : Pressure N M | ∃ a o, w = express a o v} := by
+        rintro ⟨a, o, ha⟩
+        exact hvP ⟨a, o, eq_zeroPredecessor_of_express_eq_zero hM ha.symm hz⟩
+      calc skeletonKernel β v {(0 : Pressure N M)}
+          ≤ skeletonKernel β v {w : Pressure N M | ∃ a o, w = express a o v}ᶜ :=
+            measure_mono (Set.singleton_subset_iff.2 h0R)
+        _ = 0 := (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2
+              (skeletonKernel_reachable β v)
+  have hZ : ∀ᵐ v ∂μ, ∃ b, ∀ p, v b p = 0 := by
+    rw [MeasureTheory.ae_iff]
+    exact (prob_compl_eq_zero_iff MeasurableSet.of_discrete).2
+      (measure_exists_zero_row_eq_one β hinv)
+  have hint : ∫⁻ v, skeletonKernel β v {(0 : Pressure N M)} ∂μ ≤ c * μ P := by
+    calc ∫⁻ v, skeletonKernel β v {(0 : Pressure N M)} ∂μ
+        ≤ ∫⁻ v, Set.indicator P (fun _ => c) v ∂μ := by
+          refine lintegral_mono_ae ?_
+          filter_upwards [hZ] with v hv using hpt v hv
+      _ = c * μ P := by
+          rw [lintegral_indicator MeasurableSet.of_discrete, setLIntegral_const]
+  -- The `NM` predecessors are states off `L̂`, so Proposition 9 bounds each of them.
+  have hPle : μ P ≤ ((N * M : ℕ) : ℝ≥0∞) * ENNReal.ofReal C := by
+    have hcover : P = ⋃ p : Jump N M, {zeroPredecessor p.1 p.2} := by
+      ext w
+      simp [hP, Prod.exists, eq_comm]
+    have hterm : ∀ p : Jump N M, μ {zeroPredecessor p.1 p.2} ≤ ENNReal.ofReal C := fun p =>
+      measure_le_of_notMem_steepLadderSet hM hN hβ hμ hinv (isState_zeroPredecessor p.1 p.2)
+        (notMem_steepLadderSet_zeroPredecessor hN p.1 p.2)
+    calc μ P ≤ ∑' p : Jump N M, μ {zeroPredecessor p.1 p.2} := by
+          rw [hcover]; exact measure_iUnion_le _
+      _ = ∑ p : Jump N M, μ {zeroPredecessor p.1 p.2} := tsum_fintype _
+      _ ≤ ∑ _p : Jump N M, ENNReal.ofReal C := Finset.sum_le_sum fun p _ => hterm p
+      _ = ((N * M : ℕ) : ℝ≥0∞) * ENNReal.ofReal C := by
+          rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+          congr 2
+          simp [Jump]
+  -- The arithmetic: `e^{-β/(M-1)} · NM · C' e^{-β(N-1)} = C'' e^{-β(N-1+1/(M-1))}`.
+  have harith : c * (((N * M : ℕ) : ℝ≥0∞) * ENNReal.ofReal C)
+      = ENNReal.ofReal ((((N * M : ℕ) : ℝ) ^ ((M + 1) * N + 2)) *
+        Real.exp (-β * ((N : ℝ) - 1 + 1 / ((M : ℝ) - 1)))) := by
+    rw [hc, ← ENNReal.ofReal_natCast (N * M), ← ENNReal.ofReal_mul (by positivity),
+      ← ENNReal.ofReal_mul (Real.exp_pos _).le]
+    congr 1
+    rw [hC, show (-β * ((N : ℝ) - 1 + 1 / ((M : ℝ) - 1)))
+        = (-β * ((N : ℝ) - 1)) + (-β * (1 / ((M : ℝ) - 1))) by ring, Real.exp_add,
+      show (M + 1) * N + 2 = ((M + 1) * N + 1) + 1 from rfl, pow_succ]
+    ring
+  calc μ {(0 : Pressure N M)} = ∫⁻ v, skeletonKernel β v {(0 : Pressure N M)} ∂μ := hbind
+    _ ≤ c * μ P := hint
+    _ ≤ c * (((N * M : ℕ) : ℝ≥0∞) * ENNReal.ofReal C) := by gcongr
+    _ = _ := harith
 
 end Proposition9
 

@@ -1181,6 +1181,54 @@ process pointwise.
   \ref{lem19} and~\ref{lem20}.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The predecessors of the zero matrix]
+  \label{aux-zero-predecessors}
+  \lean{SocialNetwork.zeroPredecessor, SocialNetwork.express_zeroPredecessor, SocialNetwork.eq_zeroPredecessor_of_express_eq_zero, SocialNetwork.isState_zeroPredecessor, SocialNetwork.notMem_steepLadderSet_zeroPredecessor, SocialNetwork.eq_of_express_zeroPredecessor_eq_zero, SocialNetwork.skeletonKernel_zeroPredecessor_le, SocialNetwork.measure_exists_zero_row_eq_one}
+  \leanok
+  \uses{eq2, def3, def4}
+  Write $w^{a,o}$ for the matrix whose row $a$ vanishes while every other row
+  carries $-1$ on $o$ and $\pressone$ on each of the other opinions.  Then
+  \begin{enumerate}
+    \item $\muskel$ charges only the matrices with a null row;
+    \item a matrix with a null row from which one expression reaches $0$ is one
+      of the $NM$ matrices $w^{a,o}$, and $w^{a,o} \in \Sspace \setminus \steep$
+      for $N \ge 3$;
+    \item the skeleton steps from $w^{a,o}$ to $0$ with probability at most
+      $e^{-\frac{\beta}{M-1}}$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  \leanok
+  Part 1 is the shape of $\express{a}{o}$ and nothing else: it resets the row of
+  the expressing actor, so every matrix the skeleton can reach in one step has a
+  null row, and invariance carries that from the kernel to $\muskel$.
+
+  Part 2.  If $\express{a}{o}(v) = 0$ then $v(b,o) = -1$ and $v(b,p) =
+  \pressone$ for every $b \ne a$ and $p \ne o$, while the row of $a$ is reset
+  and so is left unconstrained --- which is why the null row is needed, and why
+  without it the predecessors of $0$ are an infinite family.  With it: no row
+  $b \ne a$ vanishes, since $M \ge 2$ makes $-1 \ne 0$, so the null row is the
+  row of $a$ and $v = w^{a,o}$.  That $w^{a,o} \in \Sspace$ is the row sum
+  $-1 + (M-1)\pressone = 0$.  That $w^{a,o} \notin \steep$ is that for $N \ge 3$
+  two actors other than $a$ carry the same pressure on every opinion, where
+  \ref{def4} asks the column of the favoured opinion to be injective.
+
+  Part 3.  Read backwards, part 2 says that $(a,o)$ is the only pair whose
+  expression carries $w^{a,o}$ to $0$, so the step into $0$ has the probability
+  of that one pair.  Its rate is $e^{\beta \cdot 0} = 1$, since the row of $a$
+  vanishes, and the normalisation of \ref{def3} already contains the rate
+  $e^{\frac{\beta}{M-1}}$ of any actor other than $a$ on any opinion other than
+  $o$; the other $NM - 1$ rates in the normalisation are discarded, which is why
+  this is a bound and not the probability itself.
+
+  \textbf{Supplies a step the paper asserts.}  \ref{cor10} states parts 2
+  and~3 in a single clause and argues neither.  Part 1 has no counterpart at
+  all: the paper works throughout in $\Sspace$, where a null row is part of the
+  definition, and here it is not assumed but earned --- which is what makes the
+  description of the predecessors exhaustive.
+\end{proof}
+
 \paper{Corollary 10}
 \begin{corollary}[The zero matrix]
   \label{cor10}
@@ -1190,10 +1238,24 @@ process pointwise.
   $\muskel(0) \le C'' e^{-\beta(N-1+\pressone)}$ with $C'' = (NM) C'$.
 \end{corollary}
 \begin{proof}
-  The zero matrix can only be entered from a state in which one actor has a null
-  row while every other carries $-1$ on one opinion and $\pressone$ on the
-  others; such a state has maximum $\pressone$, which is the extra exponent.
-  \textbf{Not formalised}.
+  \leanok
+  \uses{prop9, aux-zero-predecessors}
+  Invariance writes $\muskel(0)$ as $\sum_v \muskel(v)\,
+  \mathbb{P}(\Uskel{v}_1 = 0)$, the mass of each predecessor of $0$ times the
+  probability of the step into it.  By
+  \ref{aux-zero-predecessors} the sum has $NM$ terms, one per matrix $w^{a,o}$;
+  each of them lies in $\Sspace \setminus \steep$ and so carries at most
+  $C' e^{-\beta(N-1)}$ by \ref{prop9}; and each step into $0$ costs
+  $e^{-\frac{\beta}{M-1}}$.  The three factors give
+  $C'' e^{-\beta(N-1+\pressone)}$ with $C'' = (NM) C'$.
+
+  \textbf{Follows the paper's proof}, which reads the extra exponent off the
+  maximum $\pressone$ of the states from which $0$ can be entered.  That the
+  maximum is what the step costs is the normalisation of the rates of
+  \ref{def3}, and that is part 3 of \ref{aux-zero-predecessors}.
+
+  \textbf{Rests on} \ref{prop9}, and through it on \ref{aux-greedy-avoids},
+  \ref{lem19} and~\ref{lem20}.
 \end{proof}
 
 \paper{Corollary 11}
@@ -2415,12 +2477,12 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \ref{rem6}, the one numbered statement of the paper with
-    no Lean counterpart, and \ref{cor10}, whose extra exponent $\pressone$
-    needs the states from which the zero matrix can be entered to be described.
-    These two are what is left that is nobody's fault, now that
-    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1 and
-    \ref{prop9} are closed.
+  \item \ref{rem6}, the one numbered statement of the paper with no Lean
+    counterpart.  It is what is left that is nobody's fault, now that
+    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9}
+    and \ref{cor10} are closed --- and even it is only half free: stating it
+    costs nothing, but proving it goes through \ref{cor11}, which waits on
+    Doeblin below.
   \item \ref{lem19} and~\ref{lem20}, with the repairs of
     \ref{note-lem19} and~\ref{note-lem20}, and \ref{aux-greedy-avoids}, the
     step the proof of \ref{prop9} asserts.  Worth settling with the authors

@@ -149,11 +149,6 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "cor10": (
-        NOT_YET,
-        "the extra `1/(M-1)` in the exponent needs the description of the states from "
-        "which the zero matrix can be entered; Proposition 9 no longer stands in the way",
-    ),
     "rem6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
