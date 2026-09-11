@@ -121,7 +121,7 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Remark 1 | `Bias.IsBiasedState.express` +7 | proved |
 | Remark 2 | `Bias.pressure_lt_pressure_hear_of_neg` +1 | proved |
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
-| equation (8) | `Bias.IsBiasedConsensus` +6 | stated |
+| equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
 | Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, the display inside the proof of Theorem 2.2, equation (19), Lemma 14, Theorem 25, Theorem 27, Lemma 28, Lemma 29, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |

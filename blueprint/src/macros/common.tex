@@ -1,18 +1,33 @@
 % Macros and settings used by both the pdf and the web version.
 
-% Theorem-like environments collected by the dependency graph.  They all share
-% the `theorem` counter and it is never reset, so a number identifies a
-% statement uniquely across the whole blueprint.
-\newtheorem{theorem}{Theorem}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
+% Theorem-like environments collected by the dependency graph.  They carry no
+% name and no number of their own: every statement is named by the \paper or
+% \aux command that precedes it, so that a statement of arXiv:2607.19651 is
+% called here exactly what the paper calls it.  The environment then decides
+% only the style, and which shape the dependency graph draws.
+\newtheorem{theorem}{}
+\newtheorem{proposition}[theorem]{}
+\newtheorem{lemma}[theorem]{}
+\newtheorem{corollary}[theorem]{}
 
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
+\newtheorem{definition}[theorem]{}
 
 \theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
+\newtheorem{remark}[theorem]{}
+
+% \paper{Proposition 9} names the next statement as the paper names it; the
+% name is what \ref prints, so a reference reads as the paper's own.  Several
+% nodes may carry one name: Remark 5 makes four claims, and each is a node.
+\newcommand{\paper}[1]{\renewcommand{\thetheorem}{#1}}
+
+% \aux{Lemma} names a statement the paper does not make --- a step it leaves
+% implicit, plumbing for the sample space, a witness.  Those are numbered A.1,
+% A.2, ... in their own sequence, so that no number here is ever mistaken for
+% one of the paper's.
+\newcounter{auxthm}
+\newcommand{\aux}[1]{\stepcounter{auxthm}%
+  \renewcommand{\thetheorem}{#1~A.\arabic{auxthm}}}
 
 % Notation of the paper.
 \newcommand{\actors}{\mathcal{A}}
