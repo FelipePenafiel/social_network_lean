@@ -33,7 +33,9 @@ The **deterministic layer** is proved: the state space, the expression operator 
 conservation law behind it, the ladder/consensus geometry of Definitions 1, 2 and 4,
 Propositions 5 and 6, and the vocabulary of Appendix A. Proposition 7 is assembled from
 its three stages and waits only on Lemmas 19 and 20 — the two written proofs of
-Appendix A that do not compose.
+Appendix A that do not compose. Proposition 9 waits on nothing else: the step its proof
+asserts, that the greedy run reaches `L` without visiting `u`, is Corollary 8 of [GL24]
+and is proved here ([`GL24.md`](GL24.md) §2.1).
 
 The **discrete-time probabilistic layer** is built and proved: the jump rates of equation
 (3), the skeleton kernel of Definition 3 as a `Kernel (Pressure N M) (Pressure N M)`, the

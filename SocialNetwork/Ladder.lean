@@ -5,6 +5,7 @@ Released under the Apache 2.0 license.
 import SocialNetwork.Defs
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Finset.Card
+import Mathlib.Data.Fintype.EquivFin
 
 /-!
 # Ladder sets and consensus sets
@@ -224,6 +225,21 @@ theorem IsConsensus.express (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o u)
       omega
 
 /-! ### Remark 5: steep ladders are stable under expressing a positive entry -/
+
+/-- A steep ladder carries a strictly positive pressure for its opinion.  The `o`-column is
+non-negative and injective, so at most one actor sits at `0`, and `N ≥ 2` supplies another.
+
+**No counterpart in the paper**, which needs it wherever a greedy expression on `L̂` has to be
+an expression made from a positive entry --- the hypothesis of Remark 5. -/
+theorem IsSteepLadder.exists_pos (hN : 2 ≤ N) (hu : IsSteepLadder o u) : ∃ a, 0 < u a o := by
+  obtain ⟨a, ha⟩ := hu.exists_zero
+  have hcard : 1 < Fintype.card (Actor N) := by
+    simp only [Fintype.card_fin]; omega
+  obtain ⟨b, hb⟩ := Fintype.exists_ne_of_one_lt_card hcard a
+  refine ⟨b, ?_⟩
+  rcases lt_or_eq_of_le (hu.nonneg b) with h | h
+  · exact h
+  · exact absurd (hu.injective (show u b o = u a o by rw [← h, ha])) hb
 
 /-- In a steep ladder every entry outside the supported column is non-positive, so a strictly
 positive entry lies in the column `o`. -/

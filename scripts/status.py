@@ -99,11 +99,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "the biased twin of Lemma 13, and its ingredients — the biased forms of the two "
         "displays below — are not in the paper either",
     ),
-    "aux-greedy-avoids": (
-        BLOCKED_ON_PAPER,
-        "asserted inside the proof of Proposition 9 and read off Proposition 7, which "
-        "says where the greedy run ends and nothing about where it passes",
-    ),
     "prop26": (
         BLOCKED_ON_PAPER,
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "
