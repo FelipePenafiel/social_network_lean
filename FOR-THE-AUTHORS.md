@@ -367,11 +367,15 @@ Appendix B (Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering
 audit of what Mathlib does and does not provide, checked against the pinned
 revision.
 
-Two statements are unproved for neither reason — nobody's fault, and no
+One statement is unproved for neither reason — nobody's fault, and no
 obstruction known.  **Remark 6** has no Lean counterpart at all, and nothing
-downstream uses it.  **Corollary 10** needs the description of the states from
-which the zero matrix can be entered, which is the extra exponent `1/(M-1)`;
-that is work, not a decision, and Proposition 9 no longer stands in its way.
+downstream uses it; stating it costs nothing, and proving it goes through
+Corollary 11, which waits on Doeblin.  **Corollary 10**, which stood here until
+the description of the states from which the zero matrix can be entered was
+written out, is now proved modulo Proposition 9: the description is exhaustive
+because the invariant measure charges only matrices with a null row, and the
+extra exponent `1/(M-1)` is what the step into the zero matrix costs against the
+normalisation of the rates.
 
 ### Kac's lemma: listed as a gap in Mathlib, and it was not one
 
