@@ -16,20 +16,19 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-23 statements. They are unproved for four different reasons, and
+22 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (7)
+### Blocked on the paper (6)
 
 The written proof does not compose.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
 
 | Statement | Lean | Why |
 |---|---|---|
-| the greedy run does not revisit `u` | `skeleton_ne_of_greedy` | asserted inside the proof of Proposition 9 and read off Proposition 7, which says where the greedy run ends and nothing about where it passes |
 | Lemma 19 | `isFavouring_state_firstRepeat` | the sequence of `⌊m⌋ + 1` distinct actors is asserted ("by (25)"), never constructed, and the degenerate case is ruled out through `τ(u) = 2` rather than through `m = 0` |
 | Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | does not follow from Proposition 6 as Appendix C asserts: under near-greedy expression the chain gives `N - 1 + 1/(2γ)`, which reaches `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` |
@@ -82,9 +81,9 @@ Nothing here stands in the way; the work is simply not done.
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
 | Proved | 17 | 14 | 31 |
-| Proof written, resting on an unproved statement | 9 | 0 | 9 |
+| Proof written, resting on an unproved statement | 9 | 1 | 10 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 17 | 3 | 20 |
+| Stated in Lean, unproved | 17 | 2 | 19 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **61** | **21** | **82** |
@@ -128,8 +127,8 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
 | Proposition 8 | `zeta` +5 | proved |
 | Remark 4 | `one_sub_le_zeta_pow` +4 | proved |
-| Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on the greedy run does not revisit `u`, Lemma 19, Lemma 20 |
-| Corollary 10 | `measure_zero_le` | proof written, rests on the greedy run does not revisit `u`, Lemma 19, Lemma 20 |
+| Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 19, Lemma 20 |
+| Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 19, Lemma 20 |
 | Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | unproved — blocked on Mathlib |
 | Remark 6 | — | not stated — not formalised yet |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
@@ -181,7 +180,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | from a consensus state to a ladder | `isLadder_state` +6 | proved |
 | Restarting a realisation | `Trajectory.shift` +2 | proved |
 | the gap estimate | `entrySup` +3 | proved |
-| the greedy run does not revisit `u` | `skeleton_ne_of_greedy` | unproved — blocked on the paper |
+| the greedy run does not revisit `u` | `skeleton_ne_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
 | The predecessors of the zero matrix | `zeroPredecessor` +7 | proved |
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | unproved — cited from outside the paper |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | unproved — cited from outside the paper |

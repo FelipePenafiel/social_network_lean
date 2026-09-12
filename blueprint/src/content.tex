@@ -1115,7 +1115,7 @@ process pointwise.
 \aux{Lemma}
 \begin{lemma}[The greedy run does not revisit $u$]
   \label{aux-greedy-avoids}
-  \lean{SocialNetwork.skeleton_ne_of_greedy}
+  \lean{SocialNetwork.skeleton_ne_of_greedy, SocialNetwork.IsSteepLadder.exists_pos, SocialNetwork.isPositiveAt_of_isSteepLadder, SocialNetwork.isSteepLadder_state_of_greedy}
   \leanok
   \uses{prop7, def4}
   For $u \in \Sspace \setminus \steep$, the greedy run of \ref{prop7} does not
@@ -1123,14 +1123,39 @@ process pointwise.
   one has $\Uskel{u}_k \ne u$.
 \end{lemma}
 \begin{proof}
-  The proof of Proposition~9 reads this off \ref{prop7} --- ``a sequence of
-  events $\xi_j^u$ \dots leads the process to $\ladder$, without visiting $u$''
-  --- but \ref{prop7} says where the greedy run ends and nothing about where it
-  passes.  Once the run has reached $\steep$ the claim is immediate, since it
-  stays there and $u \notin \steep$; what is missing is the transient.
-  \textbf{Not formalised}, and it is not a formality: greedy runs do return to
-  matrices they have already visited --- from a ladder they cycle with period
-  $N$ --- so the hypothesis $u \notin \steep$ is doing work.
+  \leanok
+  \uses{prop7, rem5-stable, def4}
+  Suppose the run returns, $\Uskel{u}_k = u$ with $k \le (M+1)N$, and repeat its
+  first $k$ expressions for ever.  The greedy event at a step reads only the
+  matrix and the expression at that step, and the repeated realisation has the
+  same state at $n$ as the original at $n \bmod k$ --- which is where the return
+  is used --- so the repeated realisation is greedy at \emph{every} step, and it
+  sits at $u$ at every multiple of $k$.  By \ref{prop7} it is on $\ladder$ at
+  step $(M+1)N$, and a greedy expression on a steep ladder is made from a
+  positive entry, so \ref{rem5-stable} keeps it on $\steep$ from there on ---
+  including at the multiple $k(M+1)N$.  Hence $u \in \steep$, against the
+  hypothesis.
+
+  \textbf{Follows Corollary~8 of [GL24]}, which states this for $M = 2$ and
+  proves it ``directly by Part~2 of Proposition~5, by contradiction''.  The
+  contradiction is the one above; [GL24] does not write it out, and what it
+  needs is the periodicity, which is why the transient is not a formality.
+  Greedy runs do return to matrices they have already visited --- from a ladder
+  they cycle with period $N$ --- so the hypothesis $u \notin \steep$ is doing
+  work, and it does it at the last step.
+
+  \textbf{Supplies a step the paper asserts}, and one it does not: the paper
+  reads this off \ref{prop7} --- ``a sequence of events $\xi_j^u$ \dots leads
+  the process to $\ladder$, without visiting $u$'' --- and \ref{prop7} says
+  where the greedy run ends and nothing about where it passes.  That a greedy
+  expression on $\steep$ is a positive expression, which is what lets
+  \ref{rem5-stable} apply to a greedy run at all, is
+  \texttt{SocialNetwork.IsSteepLadder.exists\_pos}: the $o$-column of a steep
+  ladder is non-negative and injective, so with $N \ge 2$ some actor carries
+  strictly positive pressure.
+
+  The argument is deterministic, so it is stated on one realisation: no restart
+  and no Markov property are needed anywhere in it.
 \end{proof}
 
 \paper{Proposition 9}
@@ -1279,7 +1304,7 @@ process pointwise.
   \uses{cor11}
   The paper's own note that the first term on the right of equation~(14) may be
   replaced by $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) <
-  \Rhit{u}(C^{-o}))$, whence, by the same steps as part~2 of \ref{thm1-2}, for
+  \Rhit{u}(C^{-o}))$, whence, by the same steps as part~2 of \ref{thm2}, for
   every fixed $o$ and $\delta > 0$,
   \[
     \inf_{u \in C^o} \mathbb{P}\Bigl(
@@ -1363,7 +1388,7 @@ process pointwise.
 \begin{proof}
   \uses{prop6, prop8}
   \textbf{Not formalised, and not a numbered statement of the paper}: this
-  inequality is displayed inside the proof of part~2 of \ref{thm1-2}, and
+  inequality is displayed inside the proof of part~2 of \ref{thm2}, and
   Theorem~2.2 is the limit it gives at $t = e^{-\beta(1-\delta)/(M-1)}$.  It is
   stated here because \ref{lem13} uses the inequality and not the limit: taking
   the limit throws the rate away, so Lemma~13 cannot rest on Theorem~2.2 as

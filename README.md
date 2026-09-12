@@ -14,17 +14,18 @@ else's. The results are fast consensus formation, existence and uniqueness of an
 measure, metastability as `β → ∞`, and — on introducing a communication bias `α` — a phase
 transition at `α = 0`.
 
-## Three questions, three files
+## Four questions, four files
 
 | | |
 |---|---|
 | **Which proofs of the paper resist formalisation?** | [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) — every obstruction, sorted by what it asks of the authors, with the mathematics in the blueprint |
 | **How far has the formalisation got?** | [`STATUS.md`](STATUS.md) — every statement of the paper and its status, generated from the blueprint and the sources, checked by CI |
 | **How is the translation written?** | [`CONVENTIONS.md`](CONVENTIONS.md) — the three rules, the markers, the coordinates, the naming |
+| **Where are the steps the paper shortens?** | [`GL24.md`](GL24.md) — the `M = 2` paper the proofs follow, read against every obstruction |
 
 The blueprint at
 <https://FelipePenafiel.github.io/social_network_lean/blueprint/> is the mathematical
-contract between the paper and the repository, and holds the detail behind all three.
+contract between the paper and the repository, and holds the detail behind all four.
 
 ## Where things stand
 
@@ -32,7 +33,9 @@ The **deterministic layer** is proved: the state space, the expression operator 
 conservation law behind it, the ladder/consensus geometry of Definitions 1, 2 and 4,
 Propositions 5 and 6, and the vocabulary of Appendix A. Proposition 7 is assembled from
 its three stages and waits only on Lemmas 19 and 20 — the two written proofs of
-Appendix A that do not compose.
+Appendix A that do not compose. Proposition 9 waits on nothing else: the step its proof
+asserts, that the greedy run reaches `L` without visiting `u`, is Corollary 8 of [GL24]
+and is proved here ([`GL24.md`](GL24.md) §2.1).
 
 The **discrete-time probabilistic layer** is built and proved: the jump rates of equation
 (3), the skeleton kernel of Definition 3 as a `Kernel (Pressure N M) (Pressure N M)`, the

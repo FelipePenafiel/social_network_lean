@@ -19,6 +19,10 @@ CI, so it cannot drift.  The blueprint (`blueprint/src/content.tex`, chapter *No
 the formalisation*) holds the mathematics of each item.  **This file says what each one
 asks of you**, and nothing else.
 
+[`GL24.md`](GL24.md) reads the `M = 2` paper your proofs follow against this list:
+which of the shortened steps are written out there, which are not, and which of
+the requests below [GL24] has already answered.
+
 ---
 
 ## At a glance
@@ -30,7 +34,6 @@ asks of you**, and nothing else.
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
-| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | its proof reads "leads the process to `L`, without visiting `u`" off Proposition 7, which says where the greedy run ends and nothing about where it passes | the argument that the greedy run does not return to `u`.  Everything else in Proposition 9 is now **proved** |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement |
 
@@ -40,6 +43,7 @@ repository has already taken the only route available, and says so at the declar
 | | Statement | What was found |
 |---|---|---|
 | [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Proved** |
+| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7, and was the fourth item needing a decision.  It is Corollary 8 of [GL24], and the argument is now written out and machine-checked.  **Proved** modulo Lemmas 19 and 20 |
 | [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | the biased twin of Lemma 13, so it inherits Lemma 13's two missing displays in biased form |
 | [§2.1](#2-statements-that-had-to-be-changed) | **Proposition 12** | with `ε₁ ε₂ s₁ s₂` bound ahead of `β`, the hypotheses are unsatisfiable and Theorem 3 could never have followed.  Made functions of `β` |
 | [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
@@ -66,9 +70,9 @@ Three more belong here for different reasons.  **Proposition 7** (§1.4) compose
 only along a different route; the missing step turned out to be avoidable, so it
 is proved, but you should know the written route does not run.  **Lemma 28**
 (§1.5) is blocked one level up, on ingredients Lemma 13 needs that the paper
-displays inside proofs rather than states.  And **Proposition 9** (§1.6) is
-proved except for one clause of one sentence, which is the fourth item on this
-page that needs a decision.
+displays inside proofs rather than states.  And **Proposition 9** (§1.6) stood
+here as a fourth item needing a decision, for one clause of one sentence; it does
+not any more, because [GL24] states that clause as its Corollary 8.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
 
@@ -226,11 +230,22 @@ a return has to use it.  A monotone quantity will not do it either — the maxim
 entry can fall along a greedy step, and on the ladder cycle every symmetric
 function of the matrix is constant.
 
-**What we need from you.**  Either the argument, or a different route to the
-lower bound on `P(R̃^{β,u}(u) ≥ m)`.  Everything else Proposition 9 needs is in
-place and machine-checked: Kac's inequality (§5), the composition of
-Proposition 7 with Remark 5, the geometric series, and the arithmetic of the
-constant `C' = (NM)^{(M+1)N+1}`.
+**This no longer needs anything from you.**  It is Corollary 8 of [GL24], stated
+there for `M = 2` and proved "directly by Part 2 of Proposition 5, by
+contradiction".  Written out: suppose the run returns to `u` at step `k`, and
+repeat its first `k` expressions for ever.  The greedy event at a step reads only
+the matrix and the expression at that step, and the repeated realisation has the
+same state at `n` as the original at `n mod k` — which is where the return is
+used — so it is greedy at *every* step and sits at `u` at every multiple of `k`.
+Proposition 7 puts it on `L` at step `(M+1)N`; a greedy expression on a steep
+ladder is made from a positive entry, so Remark 5 keeps it on `L̂` from there on,
+including at the multiple `k(M+1)N`.  Hence `u ∈ L̂`, against the hypothesis —
+and the hypothesis is used exactly once, at that last step.
+
+The argument is deterministic, so it needed no restart and no Markov property,
+and it is stated on one realisation.  **Proved**; Proposition 9 now rests only on
+Lemmas 19 and 20, through Proposition 7.  [`GL24.md`](GL24.md) §2.1 records how
+it was found.
 
 ---
 
@@ -404,7 +419,8 @@ counterexample to the identity without it is two absorbing states with
 `SocialNetwork/Kac.lean` proves the inequality outright, for a Markov kernel on
 a countable space, in about a hundred lines and using nothing from Mathlib
 beyond `Kernel.Invariant` and the Lebesgue integral.  So Proposition 9 waits on
-neither Mathlib nor Doeblin, and what it does wait on is §1.6.
+neither Mathlib nor Doeblin, and §1.6, the one thing it did wait on, is now
+proved as well.
 
 The lesson is the one below, again: **a citation is not an obstruction until one
 has checked which half of it the proof needs.**

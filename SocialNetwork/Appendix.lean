@@ -32,9 +32,10 @@ of Proposition 8 against a one-step bound that holds only on `L̂`.
 And it proves **Proposition 9**, which puts those together: Kac's inequality
 (`SocialNetwork.kac_tsum_le`) bounds the invariant measure of a matrix by the reciprocal of its
 mean return time, and the return time is bounded below by a greedy run to `L` followed by
-positive expressions.  The one step it does not have is the paper's "without visiting `u`",
-which the written proof reads off Proposition 7 and which Proposition 7 does not give;
-`SocialNetwork.skeleton_ne_of_greedy` states it and carries the `sorry`.
+positive expressions.  The paper's "without visiting `u`" does not come from Proposition 7,
+which says where the greedy run ends and nothing about where it passes; it is Corollary 8 of
+[GL24], and `SocialNetwork.skeleton_ne_of_greedy` proves it by repeating the returning run for
+ever, which is greedy at every step and therefore on `L̂` at a time it is also at `u`.
 
 And it proves **Corollary 10**, the same bound at the zero matrix with the extra exponent
 `1/(M-1)`.  The paper reads that exponent off the states from which the zero matrix can be
@@ -66,10 +67,12 @@ costs `e^{-β/(M-1)}` — are proved here.
   on `L̂` for `m` steps with probability at least `η^m`.
 * `SocialNetwork.returnBound_prod_le` — the lower bound on the return time to `u`, the greedy
   run and the positive expressions composed on the realisation.
+* `SocialNetwork.isSteepLadder_state_of_greedy` — a greedy run that has reached a steep
+  ladder stays on it, Remark 5 with its hypothesis read off the greedy event.
 * `SocialNetwork.skeleton_ne_of_greedy` — the step the proof of Proposition 9 asserts,
-  unproved.
-* `SocialNetwork.measure_le_of_notMem_steepLadderSet` — **Proposition 9**, proved modulo that
-  step and, through Proposition 7, modulo Lemmas 19 and 20.
+  proved after Corollary 8 of [GL24].
+* `SocialNetwork.measure_le_of_notMem_steepLadderSet` — **Proposition 9**, proved modulo
+  Lemmas 19 and 20, through Proposition 7.
 * `SocialNetwork.eq_zeroPredecessor_of_express_eq_zero` — a matrix with a null row from which
   one expression reaches `0` is a `SocialNetwork.zeroPredecessor`, proved.
 * `SocialNetwork.measure_exists_zero_row_eq_one` — the invariant measure charges only the
@@ -894,6 +897,35 @@ theorem isSteepLadder_skeleton_of_returnStep (hM : 2 ≤ M) (hN : 3 ≤ N) {u : 
   rw [hstate] at hsteep
   exact hsteep
 
+omit [NeZero N] [NeZero M] in
+/-- On a steep ladder a greedy expression is an expression made from a strictly positive
+entry, so Remark 5 applies to it: the greedy pair attains the maximum, and the maximum is at
+least the positive pressure of `SocialNetwork.IsSteepLadder.exists_pos`. -/
+theorem isPositiveAt_of_isSteepLadder (hN : 2 ≤ N) {T : Trajectory N M} {u : Pressure N M}
+    {o : Opinion M} {k : ℕ} (hl : IsSteepLadder o (T.state u k)) (hg : IsGreedyAt T u k) :
+    IsPositiveAt T u k := by
+  obtain ⟨a, ha⟩ := hl.exists_pos hN
+  exact lt_of_lt_of_le ha (hg a o)
+
+omit [NeZero N] [NeZero M] in
+/-- **Remark 5 along a greedy run.**  Once the run is on a steep ladder it stays there, since
+a greedy expression there is made from a positive entry.  This is
+`SocialNetwork.IsSteepLadder.state_of_isPositiveAt` with the hypothesis it needs read off the
+greedy event rather than assumed. -/
+theorem isSteepLadder_state_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) {T : Trajectory N M}
+    {u : Pressure N M} {o : Opinion M} {m : ℕ} (hl : IsSteepLadder o (T.state u m)) (n : ℕ)
+    (hg : ∀ j, m ≤ j → j < m + n → IsGreedyAt T u j) :
+    IsSteepLadder o (T.state u (m + n)) := by
+  induction n with
+  | zero => simpa using hl
+  | succ n ih =>
+      have hstep : IsSteepLadder o (T.state u (m + n)) :=
+        ih fun j hj hj' => hg j hj (by omega)
+      rw [show m + (n + 1) = (m + n) + 1 by ring, Trajectory.state_succ]
+      exact hstep.express_of_pos hM
+        (isPositiveAt_of_isSteepLadder hN hstep (hg (m + n) (by omega) (by omega)))
+
+omit [NeZero M] in
 /-- **The step the proof of Proposition 9 asserts.**  Proposition 9 needs the greedy run of
 Proposition 7 to reach `L` *without visiting `u`*, and reads that off Proposition 7:
 
@@ -905,16 +937,73 @@ Proposition 7 says where the greedy run ends, and nothing about where it passes.
 run reaches `L̂` the claim is immediate — the process stays in `L̂` and `u ∉ L̂` — so what is
 missing is only the transient, the times `1 ≤ k < (M+1)N` before `L` is reached.
 
-**Unproved**, and left as the one gap of Proposition 9.  It is not a formality: greedy runs do
-return to earlier matrices — from a ladder they cycle with period `N` — so the hypothesis
-`u ∉ L̂` is doing work, and the argument that rules out a return has to use it.
+**Follows the proof of Corollary 8 of [GL24]**, which states this for `M = 2` and proves it
+"directly by Part 2 of Proposition 5, by contradiction".  The contradiction is this.  Suppose
+the run returns to `u` at step `k`.  Repeat its first `k` expressions for ever: since the
+greedy event at a step reads only the state and the expression at that step, and the state
+sequence of the repeated realisation has period `k`, the repeated realisation is greedy at
+*every* step, and it sits at `u` at every multiple of `k`.  But Proposition 7 puts it on `L`
+at step `(M+1)N`, and a greedy expression on a steep ladder is made from a positive entry, so
+Remark 5 keeps it on `L̂` from there on — including at the multiple `k (M+1) N` of `k`.  Hence
+`u ∈ L̂`, against the hypothesis.
 
-`FOR-THE-AUTHORS.md` §1.6 records what would settle it. -/
+The argument is deterministic, which is why it can be stated on one realisation: no restart
+and no Markov property are needed, and the periodic realisation is `fun n => ω (n % k)`.
+
+It is not a formality: greedy runs do return to matrices they have already visited — from a
+ladder they cycle with period `N` — so the hypothesis `u ∉ L̂` is doing the work, and it does
+it at the last step of the argument. -/
 theorem skeleton_ne_of_greedy (hM : 2 ≤ M) (hN : 3 ≤ N) {u : Pressure N M} (hu : IsState u)
     (hu' : u ∉ steepLadderSet N M) {ω : ℕ → Jump N M} {k : ℕ} (hk1 : 1 ≤ k)
-    (hk : k ≤ (M + 1) * N) (hgreedy : ∀ j < k, IsGreedyAt (Trajectory.ofPath ω) u j) :
+    (hgreedy : ∀ j < k, IsGreedyAt (Trajectory.ofPath ω) u j) :
     skeleton u k ω ≠ u := by
-  sorry
+  intro hreturn
+  refine hu' ?_
+  -- The realisation that repeats the first `k` expressions for ever.
+  set ω' : ℕ → Jump N M := fun n => ω (n % k) with hω'
+  have hmod : ∀ n : ℕ, (n + 1) % k = (n % k + 1) % k := by
+    intro n
+    conv_lhs => rw [← Nat.div_add_mod n k]
+    rw [show k * (n / k) + n % k + 1 = (n % k + 1) + k * (n / k) by ring,
+      Nat.add_mul_mod_self_left]
+  -- Its state at `n` is the state of `ω` at `n % k`: the return at `k` closes the cycle.
+  have hstate : ∀ n, skeleton u n ω' = skeleton u (n % k) ω := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+        have hlt : n % k < k := Nat.mod_lt _ hk1
+        have ih' : (Trajectory.ofPath ω').state u n
+            = (Trajectory.ofPath ω).state u (n % k) := ih
+        have hstep : skeleton u (n + 1) ω' = skeleton u (n % k + 1) ω := by
+          show (Trajectory.ofPath ω').state u (n + 1)
+            = (Trajectory.ofPath ω).state u (n % k + 1)
+          rw [Trajectory.state_succ, Trajectory.state_succ, ih']
+          rfl
+        rw [hstep, hmod]
+        rcases Nat.lt_or_ge (n % k + 1) k with hc | hc
+        · rw [Nat.mod_eq_of_lt hc]
+        · have hc' : n % k + 1 = k := by omega
+          rw [hc', Nat.mod_self, skeleton_zero]
+          exact hreturn
+  -- The repeated realisation is greedy at every step, not only the first `k`.
+  have hgreedy' : ∀ j, IsGreedyAt (Trajectory.ofPath ω') u j := by
+    intro j a o
+    have hj := hgreedy (j % k) (Nat.mod_lt _ hk1)
+    show skeleton u j ω' a o ≤ skeleton u j ω' (ω' j).1 (ω' j).2
+    rw [hstate j]
+    exact hj a o
+  -- Proposition 7 lands it on a ladder, and Remark 5 keeps it there for ever after.
+  obtain ⟨o, hlad⟩ : skeleton u ((M + 1) * N) ω' ∈ ladderSet N M :=
+    isLadder_state_of_greedy (Trajectory.ofPath ω') hM hN hu fun j _ => hgreedy' j
+  have hsteep : IsSteepLadder o (skeleton u (k * ((M + 1) * N)) ω') := by
+    have hle : (M + 1) * N ≤ k * ((M + 1) * N) := Nat.le_mul_of_pos_left _ hk1
+    have := isSteepLadder_state_of_greedy (T := Trajectory.ofPath ω') hM (by omega)
+      (hlad.isSteepLadder hM) (k * ((M + 1) * N) - (M + 1) * N) fun j _ _ => hgreedy' j
+    rwa [Nat.add_sub_cancel' hle] at this
+  -- That time is a multiple of `k`, so the state there is `u` itself.
+  rw [hstate, Nat.mul_mod_right] at hsteep
+  exact ⟨o, hsteep⟩
 
 /-- **The lower bound on the return time**, as Proposition 9 uses it: the probability of not
 coming back to `u` within `n` steps is at least `ζ_β^{(M+1)N} η^{n - (M+1)N}`. -/
@@ -934,7 +1023,7 @@ theorem returnBound_prod_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 �
   refine le_trans (prod_le_pathMeasure_stepEvents hone n) (measure_mono ?_)
   intro ω hω k hk
   by_cases hkT : k + 1 ≤ (M + 1) * N
-  · refine skeleton_ne_of_greedy hM hN hu hu' (by omega) hkT fun j hj => ?_
+  · refine skeleton_ne_of_greedy hM hN hu hu' (by omega) fun j hj => ?_
     have hj' := hω j (by omega)
     rw [returnStep, if_pos (by omega)] at hj'
     exact (mem_greedyEvent_iff u j ω).2 hj'
