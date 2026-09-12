@@ -14,17 +14,18 @@ else's. The results are fast consensus formation, existence and uniqueness of an
 measure, metastability as `β → ∞`, and — on introducing a communication bias `α` — a phase
 transition at `α = 0`.
 
-## Three questions, three files
+## Four questions, four files
 
 | | |
 |---|---|
 | **Which proofs of the paper resist formalisation?** | [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) — every obstruction, sorted by what it asks of the authors, with the mathematics in the blueprint |
 | **How far has the formalisation got?** | [`STATUS.md`](STATUS.md) — every statement of the paper and its status, generated from the blueprint and the sources, checked by CI |
 | **How is the translation written?** | [`CONVENTIONS.md`](CONVENTIONS.md) — the three rules, the markers, the coordinates, the naming |
+| **Where are the steps the paper shortens?** | [`GL24.md`](GL24.md) — the `M = 2` paper the proofs follow, read against every obstruction |
 
 The blueprint at
 <https://FelipePenafiel.github.io/social_network_lean/blueprint/> is the mathematical
-contract between the paper and the repository, and holds the detail behind all three.
+contract between the paper and the repository, and holds the detail behind all four.
 
 ## Where things stand
 

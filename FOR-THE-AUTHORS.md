@@ -19,6 +19,10 @@ CI, so it cannot drift.  The blueprint (`blueprint/src/content.tex`, chapter *No
 the formalisation*) holds the mathematics of each item.  **This file says what each one
 asks of you**, and nothing else.
 
+[`GL24.md`](GL24.md) reads the `M = 2` paper your proofs follow against this list:
+which of the shortened steps are written out there, which are not, and which of
+the requests below [GL24] has already answered.
+
 ---
 
 ## At a glance
