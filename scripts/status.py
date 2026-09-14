@@ -136,9 +136,8 @@ REASONS: dict[str, tuple[str, str]] = {
     "cor11": (
         NOT_YET,
         "part 2 again, after the exponential waiting time that is why the zero matrix had "
-        "to be excluded from it — but **the Lean statement is false as written**: it "
-        "averages over `τ` with a supremum rather than an integral, and at `s = 0` that "
-        "leaves a probability tending to `1`.  It has to be restated first",
+        "to be excluded from it; what is missing is a restart of the continuous-time "
+        "process at the first jump, which this library does not have",
     ),
     "rem6": (
         NOT_YET,

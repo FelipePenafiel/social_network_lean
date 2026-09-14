@@ -56,6 +56,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
+| [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
 
 ---
@@ -266,6 +267,7 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
 | 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
 | 2.10 | **Proposition 9** | The statement quantifies over `β > 0` and `u ∉ L̂`, with no hypothesis on `u` beyond that; its proof calls Proposition 7, which is stated for `u ∈ S`, and the whole paper works in `S`. | `IsState u` added to the Lean statement.  Also stated for an *arbitrary* invariant probability measure of the skeleton rather than for a named `μ̃^β`, since its existence is Theorem 1.2 — which, with Kac's inequality in place of Kac's identity, Proposition 9 no longer needs. |
+| 2.11 | **Corollary 11**, as formalised | The Lean statement rendered "`τ` exponential of mean `1/(MN)`, independent from `(U_t^{β,u})_t`" as a supremum over `s ≥ 0` of `e^{-MNs} · P(R^{β,0}(L) > s + ε_β)`.  Its `s = 0` term is `P(R^{β,0}(L) > ε_β)` at weight `1`, which tends to **one**, so the statement was **false**. | Restated as `P(R^{β,0}(L) > T₁ + ε_β) → 0` with `T₁` the process's own first jump time — `probHittingGTAfterFirstJump` — which from `0` is exponential of mean `1/(MN)` (`totalRate_zero`, now proved).  **A formalisation-side correction, not a correction to the paper.**  But see the reading below: your `τ` has to be `T₁`, and the sentence can be read otherwise. |
 
 ---
 
@@ -461,30 +463,29 @@ Nothing was asked of you and nothing is now.  It is recorded because this file
 had claimed otherwise, and a claim of ours that turned out to be wrong belongs
 here as visibly as one about the paper.
 
-### Corollary 11: the Lean statement is ours, and it is false
+### Corollary 11: our transcription was false, and one word of yours decides it
 
-Found while trying to prove it, and recorded here for the same reason.  Your
-Corollary 11 says `P(R^{β,0}(L) > τ + e^{-β(1-δ)/(M-1)}) → 0`, with `τ`
-exponential of mean `1/(MN)` and independent of the process.  The Lean
-statement renders that independence as a supremum over `s ≥ 0` of
-`e^{-MNs} · P(R^{β,0}(L) > s + e^{-β(1-δ)/(M-1)})`.  At `s = 0` the weight is
-`1`, and what is left is `P(R^{β,0}(L) > e^{-β(1-δ)/(M-1)})` on its own — which
-tends to **one**, not zero: from `0` every rate equals `1`, `0 ∉ L`, so the
-hitting time is at least a first holding time of rate `MN`.  The supremum
-cannot tend to zero for any `δ ∈ (0,1)`.
+Found while trying to prove it.  The Lean statement was ours and it was wrong;
+that is §2.11 and it is now repaired.  What is worth a line to you is *why* the
+repair had only one possible shape.
 
-Averaging against the law of `τ` is an integral, not a supremum, and that is
-what the statement has to become:
+Corollary 11 reads `P(R^{β,0}(L) > τ + e^{-β(1-δ)/(M-1)}) → 0`, "where `τ` is an
+exponentially distributed random variable with mean `1/(MN)` independent from
+`(U_t^{β,u})_t`".  Everything turns on that superscript `u`.  Read as you use it
+in equation (19) — `τ` is the process's own first jump time from `0`, and the
+independence asserted is from what happens *after* it, from the state `u` it
+lands on — the corollary is true and is exactly Theorem 2, part 2, applied at
+`u`.  That is the reading the Lean statement now carries.
 
-    ∫_0^∞ MN e^{-MNs} P(R^{β,0}(L) > s + e^{-β(1-δ)/(M-1)}) ds → 0.
+Read as "`τ` independent of the process", full stop, the corollary is **false**.
+From `0` we have `0 ∉ L`, so `R^{β,0}(L) ≥ T₁`, and `R^{β,0}(L) = T₁ + O(ε_β)`;
+the left-hand side then tends to `P(T₁ > τ)` with `T₁` and `τ` independent, both
+exponential of rate `MN` — which is `1/2`.
 
-**Nothing is asked of you here either** — the paper's corollary is right and
-only its transcription is wrong.  It is left standing, flagged at the
-declaration and in `STATUS.md`, rather than quietly replaced, because
-restating a numbered result is a choice and you may prefer it carried on a
-product space with an explicit independent `τ`.  Equation (19) (§2.7), which
-your proof of Lemma 13 attributes to Corollary 11, is unaffected: it is an
-inequality with no `τ` in it.
+**Nothing is asked of you**, and nothing in the paper needs changing: your proof
+of Lemma 13 uses the right reading.  It is recorded because the sentence as
+written admits a reading under which the corollary fails, and a formalisation is
+the kind of reader that takes it.
 
 **Remark 6** is the one numbered statement of the paper with no Lean counterpart.
 It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,

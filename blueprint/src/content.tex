@@ -208,7 +208,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \aux{Remark}
 \begin{remark}[How the process is built in Lean]
   \label{aux-construction}
-  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process}
+  \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.totalRate_zero, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process}
   \leanok
   \uses{def3}
   Mathlib has no theory of continuous-time Markov jump processes on a countable
@@ -218,7 +218,11 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   exponential of rate $\jumprate$, turns Mathlib's Ionescu--Tulcea theorem
   \texttt{ProbabilityTheory.Kernel.traj} into a construction of the whole
   process.  From it the jump times $T_n$, the process $\Uproc{u}_t$, the
-  transition semigroup and the hitting times are plain definitions.
+  transition semigroup and the hitting times are plain definitions.  One rate is
+  worth reading off at once: at the zero matrix every $\jumprate$ summand is
+  $e^0 = 1$, so $\jumprate(0) = MN$ and the first holding time from $0$ is
+  exponential of mean $1/(MN)$ (\texttt{SocialNetwork.totalRate\_zero}).  That
+  is the $\tau$ of \ref{cor11} and of \ref{eq19}.
 
   The chain is driven by the expressed pairs rather than by the matrices, which
   is legitimate because \texttt{Kernel.traj} allows the kernels to depend on the
@@ -1318,13 +1322,13 @@ process pointwise.
 \paper{Corollary 11}
 \begin{corollary}[Hitting a ladder from the zero matrix]
   \label{cor11}
-  \lean{SocialNetwork.tendsto_hittingTime_ladderSet_zero}
+  \lean{SocialNetwork.tendsto_hittingTime_ladderSet_zero, SocialNetwork.probHittingGTAfterFirstJump}
   \leanok
   \uses{def1}
   For every fixed $\delta > 0$,
   $\mathbb{P}\bigl(\Rhit{0}(\ladder) > \tau + e^{-\frac{\beta}{M-1}(1-\delta)}\bigr) \to 0$
   as $\beta \to +\infty$, where $\tau$ is exponential of mean $1/(MN)$,
-  independent of the process.
+  independent of the process that follows it.
 \end{corollary}
 \begin{proof}
   \uses{thm2-2}
@@ -1333,30 +1337,35 @@ process pointwise.
   that is not $0$, to which \ref{thm2-2} applies. \textbf{Not formalised}, and
   --- since \ref{thm2-2} does not --- no longer waiting on Doeblin.
 
-  \textbf{The Lean statement is not this one, and is false as written.}  It
-  renders ``$\tau$ exponential of mean $1/(MN)$, independent of the process''
-  as a supremum over $s \ge 0$ of $e^{-MNs}\,
-  \mathbb{P}(\Rhit{0}(\ladder) > s + e^{-\frac{\beta}{M-1}(1-\delta)})$.  At
-  $s = 0$ the weight is $1$, and what is left standing is
-  $\mathbb{P}(\Rhit{0}(\ladder) > e^{-\frac{\beta}{M-1}(1-\delta)})$ on its
-  own.  From $0$ every rate equals $1$, so the first holding time is
-  exponential of rate $MN$ and $\Rhit{0}(\ladder)$ is at least that time, since
-  $0 \notin \ladder$; the probability is therefore at least
-  $e^{-MN e^{-\frac{\beta}{M-1}(1-\delta)}}$, which tends to $1$ for every
-  $\delta \in (0,1)$.  The supremum cannot tend to $0$.
+  \textbf{Which $\tau$.}  It is the process's own first jump time $T_1$, and
+  nothing else will do.  The paper says ``exponential of mean $1/(MN)$,
+  independent from $(\Uproc{u}_t)_t$'', and the superscript is the point: the
+  independence asserted is from the process \emph{after} the jump, $u$ being
+  the state it lands on.  That is what \ref{eq19} decomposes --- either the
+  first jump takes longer than $\beta$, or it does not and the rest of the
+  journey, which starts somewhere other than $0$, takes longer than $\beta$.
 
-  What excluding $0$ from \ref{thm2-2} costs is an \emph{average} against the
-  law of $\tau$, which is an integral and not a supremum:
-  \[
-    \int_0^{\infty} MN e^{-MNs}\;
-      \mathbb{P}\bigl(\Rhit{0}(\ladder) > s + e^{-\tfrac{\beta}{M-1}(1-\delta)}\bigr)
-      \,\mathrm{d}s \;\longrightarrow\; 0 .
-  \]
-  That is what the corollary says and what the Lean statement has to become
-  before it can be proved.  \textbf{A formalisation-side error, not an error of
-  the paper}; it is recorded rather than quietly repaired because restating a
-  numbered result is a choice, and \ref{eq19} --- which the paper attributes to
-  this corollary --- is unaffected, being an inequality with no $\tau$ in it.
+  Read the other way --- $\tau$ an independent copy, independent of
+  $\Rhit{0}(\ladder)$ as well --- the corollary is \textbf{false}.  Since
+  $0 \notin \ladder$ and $\Rhit{0}(\ladder) = T_1 + O(e^{-\beta/(M-1)})$, the
+  left-hand side tends to $\mathbb{P}(T_1 > \tau)$ with $T_1$ and $\tau$
+  independent and both exponential of rate $MN$, which is $\tfrac12$.
+
+  \textbf{The Lean statement was wrong, and is now restated.}  It rendered the
+  independence as a supremum over $s \ge 0$ of $e^{-MNs}\,
+  \mathbb{P}(\Rhit{0}(\ladder) > s + e^{-\frac{\beta}{M-1}(1-\delta)})$, whose
+  $s = 0$ term is $\mathbb{P}(\Rhit{0}(\ladder) >
+  e^{-\frac{\beta}{M-1}(1-\delta)})$ with weight $1$ --- at least
+  $e^{-MN e^{-\frac{\beta}{M-1}(1-\delta)}}$, which tends to $1$ and not to
+  $0$.  It now reads
+  $\mathbb{P}(\Rhit{0}(\ladder) > T_1 + e^{-\frac{\beta}{M-1}(1-\delta)})$,
+  which is the corollary, with $T_1$ exponential of mean $1/(MN)$ by
+  \ref{aux-construction}.  \textbf{A formalisation-side error, not an error of
+  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.11.
+
+  What it still waits on is a restart of the continuous-time process at $T_1$,
+  which this library does not have: \texttt{Trajectory.shift} restarts the
+  skeleton, and nothing yet restarts $\Uproc{u}$.
 \end{proof}
 
 \paper{Remark 6}
@@ -2617,11 +2626,11 @@ In rough order of cost.
   \item \textbf{The continuous-time estimates around part~2 of Theorem~2}.
     \ref{thm2-2} is written, and rests on \ref{aux-hitting-rate} alone; that
     display is next, and it is the only real work of the group, an exponential
-    race among the holding times against the greedy event.  \ref{cor11} needs a
-    first-jump decomposition of \texttt{ctsPathMeasure}, which this library does
-    not yet have --- and its Lean statement has to be repaired first, for the
-    reason written at its node.  \ref{eq19} follows the same decomposition, and
-    \ref{rem6} can be stated at any time.
+    race among the holding times against the greedy event.  \ref{cor11} and
+    \ref{eq19} both need a restart of $\Uproc{u}$ at the first jump, which this
+    library does not yet have --- \texttt{Trajectory.shift} restarts the
+    skeleton and nothing restarts the continuous-time process --- and that one
+    lemma serves both.  \ref{rem6} can be stated at any time.
 
     This is what is left that is nobody's fault, now that
     \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9},

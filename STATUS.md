@@ -71,7 +71,7 @@ Nothing here stands in the way; the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | part 2 again, after the exponential waiting time that is why the zero matrix had to be excluded from it — but **the Lean statement is false as written**: it averages over `τ` with a supremum rather than an integral, and at `s = 0` that leaves a probability tending to `1`.  It has to be restated first |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | part 2 again, after the exponential waiting time that is why the zero matrix had to be excluded from it; what is missing is a restart of the continuous-time process at the first jump, which this library does not have |
 | Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it, and its route is part 2, not Corollary 11 |
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | a step of the paper's own proof of part 2, displayed and never numbered: the greedy run reaches `L` within `(M+1)N` steps, and on that event every holding time is dominated by an exponential of mean `e^{-β/(M-1)}` |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | equation (19), displayed inside the proof of Lemma 13: the decomposition Corollary 11's own proof makes at the first expression from the zero matrix |
@@ -130,7 +130,7 @@ are covered, of which 55 are stated in Lean. The only one that is not is Remark 
 | Remark 4 | `one_sub_le_zeta_pow` +4 | proved |
 | Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 19, Lemma 20 |
 | Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 19, Lemma 20 |
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | unproved — not formalised yet |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | unproved — not formalised yet |
 | Remark 6 | — | not stated — not formalised yet |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on the display inside the proof of Theorem 2.2, equation (19) |
@@ -169,7 +169,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Conservation of trust | `trust_express` +2 | proved |
 | S is stable under expression | `IsState.express` | proved |
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
-| How the process is built in Lean | `ctsPathMeasure` +9 | stated |
+| How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |

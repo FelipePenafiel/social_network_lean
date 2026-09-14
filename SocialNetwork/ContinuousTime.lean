@@ -81,6 +81,19 @@ noncomputable def totalRate (β : ℝ) (v : Pressure N M) : ℝ :=
 theorem totalRate_nonneg (β : ℝ) (v : Pressure N M) : 0 ≤ totalRate β v :=
   Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le
 
+/-- At the zero matrix every rate equals `1`, so the total rate is `MN` and the first
+expression takes an exponential time of mean `1/(MN)`.
+
+This is the constant Corollary 11 and equation (19) are stated with, and it is the reason the
+zero matrix has to be excluded from part 2 of Theorem 2: everywhere else on `S` some entry is
+at least `1`, so the total rate is at least `e^{β/(M-1)}`. -/
+@[simp]
+theorem totalRate_zero (β : ℝ) : totalRate β (0 : Pressure N M) = ((M * N : ℕ) : ℝ) := by
+  have h : ∀ p : Jump N M, jumpRate β (0 : Pressure N M) p.1 p.2 = 1 := by
+    intro p; simp [jumpRate]
+  rw [totalRate, Finset.sum_congr rfl fun p _ => h p]
+  simp [Finset.card_univ, Fintype.card_prod, Nat.mul_comm]
+
 variable [NeZero N] [NeZero M]
 
 theorem totalRate_pos (β : ℝ) (v : Pressure N M) : 0 < totalRate β v :=
@@ -594,6 +607,17 @@ noncomputable def probHittingGT (β : ℝ) (u : Pressure N M) (θ : Set (Pressur
     (t : ℝ≥0∞) : ℝ≥0∞ :=
   ctsPathMeasure β u {ω | t < hittingTimeCts u θ ω}
 
+/-- `P (R^{β,u} (θ) > T₁ + t)`: the hitting time of `θ` exceeds the first jump time by more
+than `t`.
+
+This is the shape Corollary 11 is stated in.  Writing the waiting time as the process's own
+`T₁` rather than as a separate random variable is what makes `τ` exponential of mean `1/(MN)`
+from `0` — `totalRate_zero` — and independent of the process that follows it, which is what
+the corollary asserts of it. -/
+noncomputable def probHittingGTAfterFirstJump (β : ℝ) (u : Pressure N M)
+    (θ : Set (Pressure N M)) (t : ℝ) : ℝ≥0∞ :=
+  ctsPathMeasure β u {ω | ENNReal.ofReal (jumpTime 1 ω + t) < hittingTimeCts u θ ω}
+
 /-- The expectation `E (R^{β,u} (θ))` appearing in Theorem 3. -/
 noncomputable def expHittingTimeCts (β : ℝ) (u : Pressure N M) (θ : Set (Pressure N M)) :
     ℝ≥0∞ :=
@@ -818,31 +842,35 @@ theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (
     (Filter.Eventually.of_forall fun _ => by simp) ?_
   filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with β hβ using key β hβ
 
-/-- **Corollary 11.** From the zero matrix, the hitting time of `L` is bounded by an
-exponential waiting time of mean `1/(MN)` plus the same `e^{-β(1-δ)/(M-1)}`.
+/-- **Corollary 11.** For every fixed `δ > 0`,
+
+```
+P (R^{β,0} (L) > τ + e^{-β(1-δ)/(M-1)})  →  0   as β → +∞,
+```
+
+with `τ` exponentially distributed of mean `1/(MN)` and independent of the process that
+follows it.
 
 Theorem 2.2 again, after the waiting time that is why Theorem 2.2 excludes the zero matrix:
 every rate at `0` equals `1`, and the first expression lands on a state that is not `0`.
 
-**This statement is false as written, and has to be restated before it can be proved.**  It
-renders "`τ` exponential of mean `1/(MN)`, independent of the process" as a supremum over
-`s ≥ 0` weighted by `e^{-MNs}`.  At `s = 0` the weight is `1`, leaving
-`P (R^{β,0} (L) > e^{-β(1-δ)/(M-1)})` alone; since `0 ∉ L` and the first holding time is
-exponential of rate `MN`, that is at least `e^{-MN e^{-β(1-δ)/(M-1)}}`, which tends to `1`
-for every `δ ∈ (0,1)`.  Averaging against the law of `τ` is an integral:
+`τ` is the process's **own first jump time** `T₁`, and that is the reading the paper's proof
+uses.  From `0` it is exponential of mean `1/(MN)` by `totalRate_zero`, and the paper's clause
+"independent from `(U_t^{β,u})_t`" is independence from the process *after* the jump, `u`
+being the state it lands on; that is what equation (19) below decomposes.
 
-```
-∫_0^∞ MN e^{-MNs} P (R^{β,0} (L) > s + e^{-β(1-δ)/(M-1)}) ds  →  0.
-```
+Read the other way — `τ` an independent copy, and independent of `R^{β,0}(L)` itself — the
+corollary is **false**: `R^{β,0}(L) = T₁ + o(1)` in probability, so the left-hand side tends to
+`P (T₁ > τ)` with `T₁` and `τ` independent and both exponential of rate `MN`, which is `1/2`.
 
-A formalisation-side error, not an error of the paper.  See the blueprint node `cor11`;
-equation (19) below, which the paper attributes to this corollary, is unaffected. -/
+An earlier version of this statement rendered the independence as a supremum over `s ≥ 0`
+weighted by `e^{-MNs}`, which at `s = 0` leaves `P (R^{β,0} (L) > e^{-β(1-δ)/(M-1)})` standing
+alone and tends to `1`.  That was an error of this formalisation, not of the paper; see the
+blueprint node `cor11` and `FOR-THE-AUTHORS.md` §2.11. -/
 theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
-      (fun β : ℝ => ⨆ s ∈ Set.Ici (0 : ℝ),
-        ENNReal.ofReal (Real.exp (-(((M * N : ℕ) : ℝ)) * s)) *
-          probHittingGT β 0 (ladderSet N M)
-            (ENNReal.ofReal (s + Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
+      (fun β : ℝ => probHittingGTAfterFirstJump β 0 (ladderSet N M)
+        (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))))
       Filter.atTop (nhds 0) := by
   sorry
 
@@ -861,7 +889,8 @@ Corollary 11, but what it decomposes is Corollary 11's *proof*: the waiting time
 Theorem 2.2.
 
 `P (τ > β)` is written here as the paper evaluates it, `e^{-β/(MN)}`.  Note that `τ` is
-declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; since
+declared exponential of mean `1/(MN)` — and is, by `totalRate_zero` — for which
+`P (τ > β) = e^{-MNβ}`; since
 `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, the form written here is the weaker of the two, so
 Lemma 13 follows from either reading. -/
 theorem probHittingGT_ladderSet_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
