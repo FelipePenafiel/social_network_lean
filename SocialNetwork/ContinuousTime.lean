@@ -2,7 +2,7 @@
 Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
-import SocialNetwork.Skeleton
+import SocialNetwork.Appendix
 import Mathlib.Probability.Distributions.Exponential
 import Mathlib.Probability.Kernel.Invariance
 import Mathlib.Analysis.Complex.ExponentialBounds
@@ -34,11 +34,17 @@ non-explosion (Theorem 1.1), existence and uniqueness of the invariant measure (
 which needs a Doeblin minorisation), the concentration of that measure (Theorem 2.1) and the
 metastability estimate (Theorem 3).  Those carry a `sorry`.  See `blueprint/blueprint.md`.
 
-Theorem 2.2 and the results around it also carry a `sorry`, and for a different reason.  They
-say nothing about the invariant measure — they are statements about the process started at a
-fixed `u` — so nothing outside this file is missing for them: what is left is an exponential
-race between the holding times and a union bound, which `ctsPathMeasure` already supports.
-The work is simply not done.
+Theorem 2.2 is **proved**, and so is the display inside its proof.  It says nothing about the
+invariant measure — it is a statement about the process started at a fixed `u` — so Doeblin
+never enters, and what it needs instead is the analysis of the clock in
+`### The holding times, and the greedy event in continuous time` below: conditionally on the
+past, each holding time is exponential of rate `q_β` at the matrix the history reaches, a
+greedy run never sits at the zero matrix where that rate is small, and Proposition 8
+transports from the skeleton to this sample space.  Both inherit `sorryAx` from Proposition 7,
+and so from Lemmas 19 and 20, and from nothing else.
+
+That is why this file imports `SocialNetwork.Appendix`, where Proposition 7 lives, rather than
+the other way round: `Appendix` used to import this file and never used anything from it.
 
 ## Main definitions
 
@@ -56,7 +62,12 @@ The work is simply not done.
 * `SocialNetwork.nonExplosion` — **Theorem 1.1**, unproved.
 * `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, unproved.
 * `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, unproved.
-* `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, unproved.
+* `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, proved from the display
+  below, modulo Proposition 7.
+* `SocialNetwork.probHittingGT_ladderSet_le_of_ne_zero` — the display inside the proof of
+  Theorem 2.2, proved modulo Proposition 7.
+* `SocialNetwork.zeta_pow_le_ctsPathMeasure_greedyEvents` — **Proposition 8** on this sample
+  space, proved.
 * `SocialNetwork.metastability` — **Theorem 3**, unproved.
 -/
 
@@ -704,6 +715,524 @@ theorem invariantCts_eq_of_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β :
 
 end Invariant
 
+/-! ### The holding times, and the greedy event in continuous time
+
+Everything Theorem 2 needs about the clock.  Three facts, and they are all the jump-hold
+representation says: conditionally on the first `n + 1` steps, the holding time that follows
+is exponential of rate `q_β` at the matrix the history reaches; a greedy run keeps the process
+off the zero matrix, where that rate is at least `e^{β/(M-1)}`; and Proposition 8 transports
+from the skeleton to this sample space, since the pairs are the first marginal of a step.
+
+The iteration is the one of `SocialNetwork.Greedy`, along the finite-horizon kernels of the
+Ionescu-Tulcea construction, carried out here for `SocialNetwork.ctsDrivingKernel` instead of
+`SocialNetwork.drivingKernel`. -/
+
+section HoldingTimes
+
+/-! ### The tail of an exponential holding time -/
+
+theorem expMeasure_Iic_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
+    expMeasure r (Set.Iic x) = ENNReal.ofReal (1 - Real.exp (-(r * x))) := by
+  have : IsProbabilityMeasure (expMeasure r) := isProbabilityMeasure_expMeasure hr
+  rw [← ofReal_cdf, cdf_expMeasure_eq hr, if_pos hx]
+
+theorem expMeasure_Ioi_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
+    expMeasure r (Set.Ioi x) = ENNReal.ofReal (Real.exp (-(r * x))) := by
+  have hp : IsProbabilityMeasure (expMeasure r) := isProbabilityMeasure_expMeasure hr
+  have hcompl : Set.Ioi x = (Set.Iic x)ᶜ := by ext y; simp
+  rw [hcompl, prob_compl_eq_one_sub measurableSet_Iic, expMeasure_Iic_of_nonneg hr hx]
+  have h1 : Real.exp (-(r * x)) ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith)
+  rw [show (1 : ℝ≥0∞) = ENNReal.ofReal 1 by simp, ← ENNReal.ofReal_sub _ (by linarith)]
+  congr 1
+  ring
+
+theorem expMeasure_Iic_zero {r : ℝ} (hr : 0 < r) : expMeasure r (Set.Iic 0) = 0 := by
+  rw [expMeasure_Iic_of_nonneg hr le_rfl]
+  simp
+
+/-! ### The law of one holding time -/
+
+variable {N M : ℕ} [NeZero N] [NeZero M] {β : ℝ} {u : Pressure N M}
+
+/-- The law of the first `n + 1` steps. -/
+noncomputable def ctsHistoryMeasure (β : ℝ) (u : Pressure N M) (n : ℕ) :
+    Measure ((i : Finset.Iic n) → Step N M) :=
+  Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 n ∘ₘ
+    ((stepLaw β u).map toStepHistoryZero)
+
+instance isProbabilityMeasure_ctsHistoryMeasure (β : ℝ) (u : Pressure N M) (n : ℕ) :
+    IsProbabilityMeasure (ctsHistoryMeasure β u n) := by
+  rw [ctsHistoryMeasure]
+  have : IsProbabilityMeasure ((stepLaw β u).map (toStepHistoryZero (N := N) (M := M))) :=
+    Measure.isProbabilityMeasure_map measurable_toStepHistoryZero.aemeasurable
+  infer_instance
+
+theorem ctsPathMeasure_map_frestrictLe (β : ℝ) (u : Pressure N M) (n : ℕ) :
+    (ctsPathMeasure β u).map (Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n)
+      = ctsHistoryMeasure β u n := by
+  unfold ctsHistoryMeasure ctsPathMeasure
+  rw [Measure.map_comp _ _ (Preorder.measurable_frestrictLe n), Kernel.traj_map_frestrictLe]
+
+/-- The second marginal of one step is the exponential holding law. -/
+theorem stepLaw_preimage_snd (β : ℝ) (v : Pressure N M) (A : Set ℝ) :
+    stepLaw β v ((fun z : Step N M => z.2) ⁻¹' A) = expMeasure (totalRate β v) A := by
+  have hp : IsProbabilityMeasure (expMeasure (totalRate β v)) :=
+    isProbabilityMeasure_expMeasure (totalRate_pos β v)
+  have hset : (fun z : Step N M => z.2) ⁻¹' A = (Set.univ : Set (Jump N M)) ×ˢ A := by
+    ext z; simp
+  rw [stepLaw, hset, Measure.prod_prod, measure_univ, one_mul]
+
+/-- The first marginal of one step is the Gibbs law of equation (3). -/
+theorem stepLaw_preimage_fst (β : ℝ) (v : Pressure N M) (B : Set (Jump N M)) :
+    stepLaw β v ((fun z : Step N M => z.1) ⁻¹' B) = (jumpPMF β v).toMeasure B := by
+  have hp : IsProbabilityMeasure (expMeasure (totalRate β v)) :=
+    isProbabilityMeasure_expMeasure (totalRate_pos β v)
+  have hset : (fun z : Step N M => z.1) ⁻¹' B = B ×ˢ (Set.univ : Set ℝ) := by
+    ext z; simp
+  rw [stepLaw, hset, Measure.prod_prod, measure_univ, mul_one]
+
+/-! ### The greedy event on step histories -/
+
+/-- The greedy event `⋂_{j=1}^{n+1} ξⱼ^u`, read on histories of the first `n + 1` steps. -/
+def ctsGreedyHistory (u : Pressure N M) (n : ℕ) : Set ((i : Finset.Iic n) → Step N M) :=
+  {h | ∀ k ≤ n, IsGreedyAt (Trajectory.ofStepHistory h) u k}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_ctsGreedyHistory (u : Pressure N M) (n : ℕ) :
+    MeasurableSet (ctsGreedyHistory u n) := by
+  have : ctsGreedyHistory u n
+      = (fun h : (i : Finset.Iic n) → Step N M => fun i => (h i).1) ⁻¹' greedyHistory u n := rfl
+  rw [this]
+  exact (measurable_stepHistoryJumps n) (measurableSet_greedyHistory u n)
+
+/-- The greedy event on step realisations. -/
+def ctsGreedyEvents (u : Pressure N M) (n : ℕ) : Set (ℕ → Step N M) :=
+  {ω | ∀ k < n, IsGreedyAt (Trajectory.ofStepPath ω) u k}
+
+omit [NeZero N] [NeZero M] in
+theorem ctsGreedyEvents_eq_preimage (u : Pressure N M) (n : ℕ) :
+    ctsGreedyEvents u (n + 1)
+      = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n ⁻¹' ctsGreedyHistory u n := by
+  have h1 : ctsGreedyEvents u (n + 1)
+      = (fun ω : ℕ → Step N M => fun k => (ω k).1) ⁻¹' greedyEvents u (n + 1) := rfl
+  have h2 : Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n ⁻¹' ctsGreedyHistory u n
+      = (fun ω : ℕ → Step N M => fun k => (ω k).1) ⁻¹'
+        (Preorder.frestrictLe (π := fun _ : ℕ => Jump N M) n ⁻¹' greedyHistory u n) := rfl
+  rw [h1, h2, greedyEvents_eq_preimage]
+
+/-! ### The induction step, on the step kernels -/
+
+theorem mem_ctsGreedyHistory_succ {n : ℕ} {x : (i : Finset.Iic (n + 1)) → Step N M}
+    {h : (i : Finset.Iic n) → Step N M}
+    (hx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.le_succ n) x = h)
+    (hh : h ∈ ctsGreedyHistory u n)
+    (hlast : (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).1
+      ∈ argmaxFinset ((Trajectory.ofStepHistory h).state u (n + 1))) :
+    x ∈ ctsGreedyHistory u (n + 1) := by
+  refine mem_greedyHistory_succ (x := fun i => (x i).1) (h := fun i => (h i).1) ?_ hh hlast
+  funext i
+  exact congrArg (fun y : (i : Finset.Iic n) → Step N M => (y i).1) hx
+
+theorem zeta_le_ctsPartialTraj_succ (hM : 2 ≤ M) (hβ : 0 ≤ β) (n : ℕ)
+    {h : (i : Finset.Iic n) → Step N M} (hh : h ∈ ctsGreedyHistory u n) :
+    ENNReal.ofReal (zeta N M β)
+      ≤ Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) n (n + 1) h
+          (ctsGreedyHistory u (n + 1)) := by
+  set κ := Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) n (n + 1)
+    with hκ
+  -- the past is almost surely `h`
+  have hmapA : (κ h).map
+      (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.le_succ n)) = Measure.dirac h := by
+    rw [hκ, Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Step N M) h
+      (Nat.le_succ n), Kernel.partialTraj_self, Kernel.id_apply]
+  have hmeasA : MeasurableSet (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M)
+      (Nat.le_succ n) ⁻¹' {h}) :=
+    (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Step N M) (Nat.le_succ n))
+      (measurableSet_singleton h)
+  have hAone : κ h (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M)
+      (Nat.le_succ n) ⁻¹' {h}) = 1 := by
+    have hm := Measure.map_apply (μ := κ h)
+      (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Step N M) (Nat.le_succ n))
+      (measurableSet_singleton h)
+    rw [hmapA] at hm
+    rw [← hm]
+    exact Measure.dirac_apply_of_mem rfl
+  have hAcompl : κ h (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M)
+      (Nat.le_succ n) ⁻¹' {h})ᶜ = 0 := (prob_compl_eq_zero_iff hmeasA).2 hAone
+  -- the last coordinate follows the law of one step at the matrix `h` reaches
+  have hlastmeas : Measurable fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+      x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩ := measurable_pi_apply _
+  have hmapB : (κ h).map (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+      x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) = ctsDrivingKernel β u n h := by
+    rw [hκ, ← Kernel.map_apply _ hlastmeas, Kernel.map_partialTraj_succ_self]
+  have hB : ENNReal.ofReal (zeta N M β)
+      ≤ κ h ((fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+          (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).1) ⁻¹'
+        (argmaxFinset ((Trajectory.ofStepHistory h).state u (n + 1)))) := by
+    have hset : (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+          (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).1) ⁻¹'
+        (argmaxFinset ((Trajectory.ofStepHistory h).state u (n + 1)) : Set (Jump N M))
+        = (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+            x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+          ((fun z : Step N M => z.1) ⁻¹'
+            (argmaxFinset ((Trajectory.ofStepHistory h).state u (n + 1)) : Set (Jump N M))) := rfl
+    rw [hset, ← Measure.map_apply hlastmeas (measurable_fst MeasurableSet.of_discrete), hmapB,
+      ctsDrivingKernel_apply, stepLaw_preimage_fst]
+    exact zeta_le_jumpPMF_argmaxFinset hM hβ _
+  exact le_measure_of_inter hAcompl hB fun x hx => mem_ctsGreedyHistory_succ hx.1 hh hx.2
+
+/-! ### Proposition 8 on the step realisations -/
+
+theorem zeta_le_ctsHistoryMeasure_zero (hM : 2 ≤ M) (hβ : 0 ≤ β) :
+    ENNReal.ofReal (zeta N M β) ≤ ctsHistoryMeasure β u 0 (ctsGreedyHistory u 0) := by
+  have hpre : toStepHistoryZero ⁻¹' ctsGreedyHistory u 0
+      = (fun z : Step N M => z.1) ⁻¹' (argmaxFinset u : Set (Jump N M)) := by
+    ext z
+    have hact : (Trajectory.ofStepHistory (toStepHistoryZero z)).actor 0 = z.1.1 :=
+      Trajectory.ofHistory_actor _ (le_refl 0)
+    have hopi : (Trajectory.ofStepHistory (toStepHistoryZero z)).opinion 0 = z.1.2 :=
+      Trajectory.ofHistory_opinion _ (le_refl 0)
+    constructor
+    · intro hz
+      have h0 := (isGreedyAt_iff_entrySup
+        (Trajectory.ofStepHistory (toStepHistoryZero z)) u 0).1 (hz 0 le_rfl)
+      rw [Trajectory.state_zero, hact, hopi] at h0
+      exact mem_argmaxFinset.2 h0
+    · intro hz k hk
+      have hk0 : k = 0 := Nat.le_zero.1 hk
+      subst hk0
+      rw [isGreedyAt_iff_entrySup, Trajectory.state_zero, hact, hopi]
+      exact mem_argmaxFinset.1 hz
+  unfold ctsHistoryMeasure
+  rw [Kernel.partialTraj_self, Measure.id_comp,
+    Measure.map_apply measurable_toStepHistoryZero (measurableSet_ctsGreedyHistory u 0), hpre,
+    stepLaw_preimage_fst]
+  exact zeta_le_jumpPMF_argmaxFinset hM hβ u
+
+theorem zeta_pow_le_ctsHistoryMeasure (hM : 2 ≤ M) (hβ : 0 ≤ β) (n : ℕ) :
+    ENNReal.ofReal (zeta N M β) ^ (n + 1) ≤ ctsHistoryMeasure β u n (ctsGreedyHistory u n) := by
+  induction n with
+  | zero => simpa using zeta_le_ctsHistoryMeasure_zero hM hβ
+  | succ n ih =>
+      have hstep : ctsHistoryMeasure β u (n + 1) (ctsGreedyHistory u (n + 1))
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+              (ctsDrivingKernel β u) n (n + 1) h (ctsGreedyHistory u (n + 1))
+              ∂(ctsHistoryMeasure β u n) := by
+        unfold ctsHistoryMeasure
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply (measurableSet_ctsGreedyHistory u (n + 1)) (Kernel.aemeasurable _)]
+      rw [hstep]
+      calc ENNReal.ofReal (zeta N M β) ^ (n + 1 + 1)
+          = ENNReal.ofReal (zeta N M β) * ENNReal.ofReal (zeta N M β) ^ (n + 1) := by ring
+        _ ≤ ENNReal.ofReal (zeta N M β) * ctsHistoryMeasure β u n (ctsGreedyHistory u n) := by
+            gcongr
+        _ = ∫⁻ h, (ctsGreedyHistory u n).indicator
+              (fun _ => ENNReal.ofReal (zeta N M β)) h ∂(ctsHistoryMeasure β u n) := by
+            rw [lintegral_indicator (measurableSet_ctsGreedyHistory u n), setLIntegral_const]
+        _ ≤ ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+              (ctsDrivingKernel β u) n (n + 1) h (ctsGreedyHistory u (n + 1))
+              ∂(ctsHistoryMeasure β u n) := by
+            refine lintegral_mono fun h => ?_
+            by_cases hh : h ∈ ctsGreedyHistory u n
+            · rw [Set.indicator_of_mem hh]
+              exact zeta_le_ctsPartialTraj_succ hM hβ n hh
+            · rw [Set.indicator_of_notMem hh]
+              exact zero_le
+
+/-- **Proposition 8**, read on the sample space of the continuous-time process. -/
+theorem zeta_pow_le_ctsPathMeasure_greedyEvents (hM : 2 ≤ M) (hβ : 0 ≤ β) (m : ℕ) :
+    ENNReal.ofReal (zeta N M β) ^ m ≤ ctsPathMeasure β u (ctsGreedyEvents u m) := by
+  rcases Nat.eq_zero_or_pos m with rfl | hm
+  · have huniv : ctsGreedyEvents u 0 = Set.univ := by
+      ext ω; simp [ctsGreedyEvents]
+    rw [pow_zero, huniv, measure_univ]
+  · obtain ⟨n, rfl⟩ : ∃ n, m = n + 1 := ⟨m - 1, by omega⟩
+    rw [ctsGreedyEvents_eq_preimage, ← Measure.map_apply (Preorder.measurable_frestrictLe n)
+      (measurableSet_ctsGreedyHistory u n), ctsPathMeasure_map_frestrictLe]
+    exact zeta_pow_le_ctsHistoryMeasure hM hβ n
+
+/-! ### The law of one holding time -/
+
+/-- Under one step of the kernel, the past is almost surely the history it started from. -/
+theorem ctsPartialTraj_frestrictLe₂_apply (β : ℝ) (u : Pressure N M) (n : ℕ)
+    (h : (i : Finset.Iic n) → Step N M) {T : Set ((i : Finset.Iic n) → Step N M)}
+    (hT : MeasurableSet T) :
+    Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) n (n + 1) h
+        (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.le_succ n) ⁻¹' T)
+      = Measure.dirac h T := by
+  rw [← Measure.map_apply (Preorder.measurable_frestrictLe₂
+      (X := fun _ : ℕ => Step N M) (Nat.le_succ n)) hT,
+    Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Step N M) h (Nat.le_succ n),
+    Kernel.partialTraj_self, Kernel.id_apply]
+
+/-- Under one step of the kernel, the new coordinate follows the law of one step at the matrix
+the history reaches. -/
+theorem ctsPartialTraj_last_apply (β : ℝ) (u : Pressure N M) (n : ℕ)
+    (h : (i : Finset.Iic n) → Step N M) {B : Set (Step N M)} (hB : MeasurableSet B) :
+    Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) n (n + 1) h
+        ((fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+          x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' B)
+      = stepLaw β ((Trajectory.ofStepHistory h).state u (n + 1)) B := by
+  have hmeas : Measurable fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+      x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩ := measurable_pi_apply _
+  rw [← Measure.map_apply hmeas hB, ← Kernel.map_apply _ hmeas,
+    Kernel.map_partialTraj_succ_self, ctsDrivingKernel_apply]
+
+/-- The law of the first holding time is exponential of rate `q_β (u)`. -/
+theorem ctsPathMeasure_holdingTime_zero (β : ℝ) (u : Pressure N M) {A : Set ℝ}
+    (hA : MeasurableSet A) :
+    ctsPathMeasure β u {ω | holdingTime 0 ω ∈ A} = expMeasure (totalRate β u) A := by
+  have hset : {ω : ℕ → Step N M | holdingTime 0 ω ∈ A}
+      = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) 0 ⁻¹'
+        ((fun h : (i : Finset.Iic 0) → Step N M => (h ⟨0, Finset.mem_Iic.2 le_rfl⟩).2) ⁻¹' A) :=
+    rfl
+  have hmeas : MeasurableSet ((fun h : (i : Finset.Iic 0) → Step N M =>
+      (h ⟨0, Finset.mem_Iic.2 le_rfl⟩).2) ⁻¹' A) :=
+    (measurable_snd.comp (measurable_pi_apply _)) hA
+  rw [hset, ← Measure.map_apply (Preorder.measurable_frestrictLe 0) hmeas,
+    ctsPathMeasure_map_frestrictLe]
+  unfold ctsHistoryMeasure
+  rw [Kernel.partialTraj_self, Measure.id_comp,
+    Measure.map_apply measurable_toStepHistoryZero hmeas]
+  exact stepLaw_preimage_snd β u A
+
+/-- **The holding-time bound.**  If, after every history of the first `n + 1` expressions
+lying in `G`, the holding time that follows has `expMeasure` mass at most `c` on `A`, then the
+event that the history lies in `G` and that holding time lands in `A` has probability at most
+`c`. -/
+theorem ctsPathMeasure_history_holdingTime_le (β : ℝ) (u : Pressure N M) (n : ℕ)
+    {G : Set ((i : Finset.Iic n) → Step N M)} (hmeasG : MeasurableSet G) {A : Set ℝ}
+    (hA : MeasurableSet A) {c : ℝ≥0∞}
+    (hc : ∀ h ∈ G, expMeasure (totalRate β ((Trajectory.ofStepHistory h).state u (n + 1))) A ≤ c) :
+    ctsPathMeasure β u ((Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n ⁻¹' G)
+        ∩ {ω | holdingTime (n + 1) ω ∈ A}) ≤ c := by
+  set S : Set ((i : Finset.Iic (n + 1)) → Step N M) :=
+    (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.le_succ n) ⁻¹' G) ∩
+      ((fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+        (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).2) ⁻¹' A) with hS
+  have hmeasLast : MeasurableSet ((fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+      (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).2) ⁻¹' A) :=
+    (measurable_snd.comp (measurable_pi_apply _)) hA
+  have hmeasS : MeasurableSet S :=
+    ((Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Step N M) (Nat.le_succ n)) hmeasG).inter
+      hmeasLast
+  have hsplit : (Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n ⁻¹' G)
+        ∩ {ω : ℕ → Step N M | holdingTime (n + 1) ω ∈ A}
+      = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) (n + 1) ⁻¹' S := rfl
+  rw [hsplit, ← Measure.map_apply (Preorder.measurable_frestrictLe (n + 1)) hmeasS,
+    ctsPathMeasure_map_frestrictLe]
+  have hstep : ctsHistoryMeasure β u (n + 1) S
+      = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+          (ctsDrivingKernel β u) n (n + 1) h S ∂(ctsHistoryMeasure β u n) := by
+    unfold ctsHistoryMeasure
+    rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+      Measure.bind_apply hmeasS (Kernel.aemeasurable _)]
+  rw [hstep]
+  calc ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+        (ctsDrivingKernel β u) n (n + 1) h S ∂(ctsHistoryMeasure β u n)
+      ≤ ∫⁻ _, c ∂(ctsHistoryMeasure β u n) := by
+        refine lintegral_mono fun h => ?_
+        by_cases hh : h ∈ G
+        · refine le_trans (measure_mono Set.inter_subset_right) ?_
+          have hcomp : ((fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+                (x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩).2) ⁻¹' A)
+              = (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+                  x ⟨n + 1, Finset.mem_Iic.2 le_rfl⟩) ⁻¹'
+                ((fun z : Step N M => z.2) ⁻¹' A) := rfl
+          rw [hcomp, ctsPartialTraj_last_apply β u n h (measurable_snd hA),
+            stepLaw_preimage_snd]
+          exact hc h hh
+        · refine le_trans (measure_mono Set.inter_subset_left) ?_
+          rw [ctsPartialTraj_frestrictLe₂_apply β u n h hmeasG,
+            Measure.dirac_apply' _ hmeasG, Set.indicator_of_notMem hh]
+          exact zero_le
+    _ = c := by rw [lintegral_const, measure_univ, mul_one]
+
+/-- The greedy specialisation of the holding-time bound. -/
+theorem ctsPathMeasure_greedy_holdingTime_le (β : ℝ) (u : Pressure N M) (n : ℕ) {A : Set ℝ}
+    (hA : MeasurableSet A) {c : ℝ≥0∞}
+    (hc : ∀ h ∈ ctsGreedyHistory u n,
+      expMeasure (totalRate β ((Trajectory.ofStepHistory h).state u (n + 1))) A ≤ c) :
+    ctsPathMeasure β u (ctsGreedyEvents u (n + 1) ∩ {ω | holdingTime (n + 1) ω ∈ A}) ≤ c := by
+  rw [ctsGreedyEvents_eq_preimage]
+  exact ctsPathMeasure_history_holdingTime_le β u n (measurableSet_ctsGreedyHistory u n) hA hc
+
+/-- The unconditional holding-time bound. -/
+theorem ctsPathMeasure_holdingTime_succ_le (β : ℝ) (u : Pressure N M) (n : ℕ) {A : Set ℝ}
+    (hA : MeasurableSet A) {c : ℝ≥0∞}
+    (hc : ∀ h : (i : Finset.Iic n) → Step N M,
+      expMeasure (totalRate β ((Trajectory.ofStepHistory h).state u (n + 1))) A ≤ c) :
+    ctsPathMeasure β u {ω | holdingTime (n + 1) ω ∈ A} ≤ c := by
+  have huniv : {ω : ℕ → Step N M | holdingTime (n + 1) ω ∈ A}
+      = (Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n ⁻¹' Set.univ)
+        ∩ {ω : ℕ → Step N M | holdingTime (n + 1) ω ∈ A} := by
+    rw [Set.preimage_univ, Set.univ_inter]
+  rw [huniv]
+  exact ctsPathMeasure_history_holdingTime_le β u n MeasurableSet.univ hA fun h _ => hc h
+
+/-! ### Off the zero matrix, the total rate is at least `e^{β/(M-1)}` -/
+
+omit [NeZero N] [NeZero M] in
+/-- A state of `S` other than the zero matrix has an entry at least `1`. -/
+theorem exists_one_le_of_ne_zero {v : Pressure N M} (hv : IsState v) (hv0 : v ≠ 0) :
+    ∃ a o, 1 ≤ v a o := by
+  obtain ⟨a, o, hao⟩ : ∃ a o, v a o ≠ 0 := by
+    by_contra hcon
+    push Not at hcon
+    exact hv0 (funext fun a => funext fun o => hcon a o)
+  by_cases hpos : 0 < v a o
+  · exact ⟨a, o, hpos⟩
+  · have hne : ∃ p, 0 < v a p := by
+      by_contra hcon
+      push Not at hcon
+      have hzero : ∀ p ∈ Finset.univ, v a p = 0 :=
+        (Finset.sum_eq_zero_iff_of_nonpos fun p _ => hcon p).1 (hv.trust_eq_zero a)
+      exact hao (hzero o (Finset.mem_univ o))
+    obtain ⟨p, hp⟩ := hne
+    exact ⟨a, p, hp⟩
+
+omit [NeZero N] [NeZero M] in
+/-- Off the zero matrix, the total jump rate out of a state of `S` is at least
+`e^{β/(M-1)}`: some entry is at least `1`, and every rate is positive. -/
+theorem exp_le_totalRate (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {v : Pressure N M}
+    (hv : IsState v) (hv0 : v ≠ 0) :
+    Real.exp (β / ((M : ℝ) - 1)) ≤ totalRate β v := by
+  obtain ⟨a, o, hao⟩ := exists_one_le_of_ne_zero hv hv0
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have h1 : (1 : ℝ) ≤ (v a o : ℝ) := by exact_mod_cast hao
+  have hterm : Real.exp (β / ((M : ℝ) - 1)) ≤ jumpRate β v a o := by
+    rw [jumpRate]
+    refine Real.exp_le_exp.2 ?_
+    rw [div_le_div_iff_of_pos_right hM1]
+    nlinarith
+  refine hterm.trans ?_
+  rw [totalRate]
+  exact Finset.single_le_sum (f := fun p : Jump N M => jumpRate β v p.1 p.2)
+    (fun p _ => (jumpRate_pos β v p.1 p.2).le) (Finset.mem_univ (a, o))
+
+omit [NeZero N] [NeZero M] in
+/-- **The greedy run never sits at the zero matrix.**  The zero row that `S` provides has to
+be the row of the actor that expressed, and then the entry it expressed was `0` while some
+other entry was `1` --- which no greedy expression allows. -/
+theorem state_ne_zero_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) {T : Trajectory N M}
+    {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) {n : ℕ}
+    (hg : ∀ k < n, IsGreedyAt T u k) : T.state u n ≠ 0 := by
+  cases n with
+  | zero => simpa using hu0
+  | succ m =>
+      intro hzero
+      set v := T.state u m with hv
+      set a := T.actor m with ha
+      set o := T.opinion m with ho
+      have hvS : IsState v := T.isState_state hu m
+      have hgm : ∀ b p, v b p ≤ v a o := hg m (by omega)
+      have hstep : T.state u (m + 1) = express a o v := Trajectory.state_succ T u m
+      rw [hstep] at hzero
+      have hentry : ∀ b p, express a o v b p = 0 := fun b p => by
+        rw [hzero]; rfl
+      obtain ⟨c, hc⟩ := hvS.exists_zero_row
+      by_cases hca : c = a
+      · have hco : v a o = 0 := by rw [← hca]; exact hc o
+        obtain ⟨b, hb⟩ := Fintype.exists_ne_of_one_lt_card
+          (show 1 < Fintype.card (Actor N) by simp only [Fintype.card_fin]; omega) a
+        obtain ⟨p, hp⟩ := Fintype.exists_ne_of_one_lt_card
+          (show 1 < Fintype.card (Opinion M) by simp only [Fintype.card_fin]; omega) o
+        have hbp := hentry b p
+        rw [express, if_neg hb, if_neg hp] at hbp
+        have hge : (1 : ℤ) ≤ v b p := by omega
+        have hle := hgm b p
+        omega
+      · have hcc := hentry c o
+        rw [express, if_neg hca, if_pos rfl, hc o] at hcc
+        have : (2 : ℤ) ≤ (M : ℤ) := by exact_mod_cast hM
+        omega
+
+/-! ### Each holding time of a greedy run is dominated by `Exp (e^{β/(M-1)})` -/
+
+theorem expMeasure_Ioi_le (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {v : Pressure N M}
+    (hv : IsState v) (hv0 : v ≠ 0) {s : ℝ} (hs : 0 ≤ s) :
+    expMeasure (totalRate β v) (Set.Ioi s)
+      ≤ ENNReal.ofReal (Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * s))) := by
+  rw [expMeasure_Ioi_of_nonneg (totalRate_pos β v) hs]
+  refine ENNReal.ofReal_le_ofReal (Real.exp_le_exp.2 ?_)
+  have := exp_le_totalRate hM hβ hv hv0
+  nlinarith [Real.exp_pos (β / ((M : ℝ) - 1))]
+
+theorem ctsPathMeasure_greedy_holdingTime_gt (hM : 2 ≤ M) (hN : 2 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) (n : ℕ) {s : ℝ} (hs : 0 ≤ s) :
+    ctsPathMeasure β u (ctsGreedyEvents u n ∩ {ω | s < holdingTime n ω})
+      ≤ ENNReal.ofReal (Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * s))) := by
+  cases n with
+  | zero =>
+      refine le_trans (measure_mono Set.inter_subset_right) ?_
+      have hset : {ω : ℕ → Step N M | s < holdingTime 0 ω}
+          = {ω : ℕ → Step N M | holdingTime 0 ω ∈ Set.Ioi s} := rfl
+      rw [hset, ctsPathMeasure_holdingTime_zero β u measurableSet_Ioi]
+      exact expMeasure_Ioi_le hM hβ hu hu0 hs
+  | succ m =>
+      refine ctsPathMeasure_greedy_holdingTime_le β u m measurableSet_Ioi fun h hh => ?_
+      refine expMeasure_Ioi_le hM hβ ((Trajectory.ofStepHistory h).isState_state hu (m + 1)) ?_ hs
+      exact state_ne_zero_of_greedy hM hN hu hu0 fun k hk => hh k (by omega)
+
+/-! ### The holding times are almost surely positive -/
+
+theorem ctsPathMeasure_holdingTime_nonpos (β : ℝ) (u : Pressure N M) (n : ℕ) :
+    ctsPathMeasure β u {ω | holdingTime n ω ≤ 0} = 0 := by
+  have hzero : ∀ v : Pressure N M, expMeasure (totalRate β v) (Set.Iic 0) = 0 := fun v =>
+    expMeasure_Iic_zero (totalRate_pos β v)
+  cases n with
+  | zero =>
+      have hset : {ω : ℕ → Step N M | holdingTime 0 ω ≤ 0}
+          = {ω : ℕ → Step N M | holdingTime 0 ω ∈ Set.Iic (0 : ℝ)} := rfl
+      rw [hset, ctsPathMeasure_holdingTime_zero β u measurableSet_Iic]
+      exact hzero u
+  | succ m =>
+      refine le_antisymm ?_ zero_le
+      have hset : {ω : ℕ → Step N M | holdingTime (m + 1) ω ≤ 0}
+          = {ω : ℕ → Step N M | holdingTime (m + 1) ω ∈ Set.Iic (0 : ℝ)} := rfl
+      rw [hset]
+      exact ctsPathMeasure_holdingTime_succ_le β u m measurableSet_Iic
+        (c := 0) fun h => le_of_eq (hzero _)
+
+/-! ### From the skeleton to the clock -/
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_ctsGreedyEvents (u : Pressure N M) (n : ℕ) :
+    MeasurableSet (ctsGreedyEvents u n) := by
+  cases n with
+  | zero =>
+      have : ctsGreedyEvents u 0 = Set.univ := by ext ω; simp [ctsGreedyEvents]
+      rw [this]; exact MeasurableSet.univ
+  | succ m =>
+      rw [ctsGreedyEvents_eq_preimage]
+      exact (Preorder.measurable_frestrictLe m) (measurableSet_ctsGreedyHistory u m)
+
+omit [NeZero N] [NeZero M] in
+/-- On a realisation whose holding times are all positive, the jump count at `T_k` is `k`. -/
+theorem jumpCount_jumpTime (ω : ℕ → Step N M) (hpos : ∀ n, 0 < holdingTime n ω) {k : ℕ}
+    (hk : k ≠ 0) : jumpCount ω (jumpTime k ω) = k := by
+  have hmono : StrictMono fun n => jumpTime n ω := by
+    refine strictMono_nat_of_lt_succ fun n => ?_
+    rw [jumpTime_succ]
+    linarith [hpos n]
+  rw [jumpCount_eq_iff (jumpTime k ω) ω hk]
+  exact ⟨le_rfl, fun m hm => hmono.le_iff_le.1 hm⟩
+
+omit [NeZero N] [NeZero M] in
+/-- If the `k`-th matrix of a realisation is already in `θ`, the hitting time of `θ` is at
+most the `k`-th jump time. -/
+theorem hittingTimeCts_le_jumpTime {u : Pressure N M} {θ : Set (Pressure N M)}
+    {ω : ℕ → Step N M} (hpos : ∀ n, 0 < holdingTime n ω) {k : ℕ} (hk : k ≠ 0)
+    (hmem : (Trajectory.ofStepPath ω).state u k ∈ θ) :
+    hittingTimeCts u θ ω ≤ ENNReal.ofReal (jumpTime k ω) := by
+  refine sInf_le ⟨jumpTime k ω, ⟨?_, ?_⟩, rfl⟩
+  · exact Finset.sum_nonneg fun n _ => (hpos n).le
+  · rw [process, jumpCount_jumpTime ω hpos hk]
+    exact hmem
+
+end HoldingTimes
+
 /-! ### Theorem 2: concentration of the invariant measure on the ladder sets -/
 
 section Theorem2
@@ -736,18 +1265,94 @@ the inequality and not the limit, so it cannot be derived from Theorem 2.2 as st
 the limit has thrown the rate away.  The display is transcribed here so that Lemma 13 has
 something to rest on; whether it should be numbered is asked in `FOR-THE-AUTHORS.md`.
 
-It is a step of the paper's own proof of Theorem 2.2, not a citation.  The argument, written
-out for `M = 2` in [GL24]: split on the greedy event, which reaches `L` within `(M+1)N` steps
-by Proposition 7 and costs `1 - ζ_β^{(M+1)N}` by Remark 4; on that event no state visited is
-`0`, so `totalRate ≥ e^{β/(M-1)}` and each of the `(M+1)N` holding times is dominated by an
-exponential of that rate; a union bound gives the second term. -/
+It is a step of the paper's own proof of Theorem 2.2, not a citation, and it is **proved**
+here, following the argument [GL24] writes out for `M = 2`: split on the greedy event, which
+reaches `L` within `(M+1)N` steps by Proposition 7 and costs `1 - ζ_β^{(M+1)N}` by
+Proposition 8 and Remark 4; on that event no matrix visited is `0`, so `totalRate` is at least
+`e^{β/(M-1)}` and each of the `(M+1)N` holding times is dominated by an exponential of that
+rate; `T_{(M+1)N} > t` forces one of them to exceed `t/((M+1)N)`, and a union bound finishes.
+It inherits `sorryAx` from Proposition 7 and from nothing else. -/
 theorem probHittingGT_ladderSet_le_of_ne_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) {t : ℝ} (ht : 0 < t) :
     probHittingGT β u (ladderSet N M) (ENNReal.ofReal t)
       ≤ ENNReal.ofReal (1 - zeta N M β ^ ((M + 1) * N)
           + (((M + 1) * N : ℕ) : ℝ) *
             Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * t) / (((M + 1) * N : ℕ) : ℝ))) := by
-  sorry
+  have hN2 : 2 ≤ N := by omega
+  set K : ℕ := (M + 1) * N with hKdef
+  have hK0 : K ≠ 0 := by simp only [hKdef]; positivity
+  have hKr : (0 : ℝ) < (K : ℝ) := by
+    exact_mod_cast Nat.pos_of_ne_zero hK0
+  set r : ℝ := Real.exp (β / ((M : ℝ) - 1)) with hrdef
+  have hrpos : 0 < r := Real.exp_pos _
+  -- the holding times are almost surely positive
+  set Z : Set (ℕ → Step N M) := {ω | ∃ n, holdingTime n ω ≤ 0} with hZdef
+  have hZnull : ctsPathMeasure β u Z = 0 := by
+    have hcover : Z = ⋃ n, {ω : ℕ → Step N M | holdingTime n ω ≤ 0} := by
+      ext ω; simp [hZdef]
+    rw [hcover]
+    exact measure_iUnion_null fun n => ctsPathMeasure_holdingTime_nonpos β u n
+  -- either the run is not greedy, or some holding time vanishes, or `T_K` exceeds `t`
+  have hsub : {ω : ℕ → Step N M | ENNReal.ofReal t < hittingTimeCts u (ladderSet N M) ω}
+      ⊆ ((ctsGreedyEvents u K)ᶜ ∪ Z)
+        ∪ (ctsGreedyEvents u K ∩ {ω | t < jumpTime K ω}) := by
+    intro ω hω
+    by_cases hg : ω ∈ ctsGreedyEvents u K
+    · by_cases hz : ω ∈ Z
+      · exact Or.inl (Or.inr hz)
+      · refine Or.inr ⟨hg, ?_⟩
+        have hpos : ∀ n, 0 < holdingTime n ω := fun n => by
+          by_contra hcon
+          exact hz ⟨n, not_lt.1 hcon⟩
+        have hmem : (Trajectory.ofStepPath ω).state u K ∈ ladderSet N M :=
+          isLadder_state_of_greedy (Trajectory.ofStepPath ω) hM hN hu fun k hk => hg k hk
+        exact (ENNReal.ofReal_lt_ofReal_iff_of_nonneg ht.le).1
+          (lt_of_lt_of_le hω (hittingTimeCts_le_jumpTime hpos hK0 hmem))
+    · exact Or.inl (Or.inl hg)
+  -- the greedy event
+  have hzle : zeta N M β ^ K ≤ 1 :=
+    pow_le_one₀ (zeta_pos N M β).le (zeta_le_one N M β)
+  have h1 : ctsPathMeasure β u ((ctsGreedyEvents u K)ᶜ ∪ Z)
+      ≤ ENNReal.ofReal (1 - zeta N M β ^ K) := by
+    refine le_trans (measure_union_le _ _) ?_
+    rw [hZnull, add_zero, prob_compl_eq_one_sub (measurableSet_ctsGreedyEvents u K)]
+    have hge : ENNReal.ofReal (zeta N M β ^ K) ≤ ctsPathMeasure β u (ctsGreedyEvents u K) := by
+      rw [ENNReal.ofReal_pow (zeta_pos N M β).le]
+      exact zeta_pow_le_ctsPathMeasure_greedyEvents hM hβ K
+    rw [ENNReal.ofReal_sub _ (pow_nonneg (zeta_pos N M β).le K), ENNReal.ofReal_one]
+    exact tsub_le_tsub_left hge 1
+  -- the clock
+  have h2 : ctsPathMeasure β u (ctsGreedyEvents u K ∩ {ω | t < jumpTime K ω})
+      ≤ ENNReal.ofReal ((K : ℝ) * Real.exp (-(r * t) / (K : ℝ))) := by
+    have hcover : ctsGreedyEvents u K ∩ {ω : ℕ → Step N M | t < jumpTime K ω}
+        ⊆ ⋃ n ∈ Finset.range K,
+            (ctsGreedyEvents u n ∩ {ω : ℕ → Step N M | t / (K : ℝ) < holdingTime n ω}) := by
+      rintro ω ⟨hg, hj⟩
+      have hsum : ∑ _n ∈ Finset.range K, t / (K : ℝ)
+          < ∑ n ∈ Finset.range K, holdingTime n ω := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+        rw [mul_div_cancel₀ _ hKr.ne']
+        exact hj
+      obtain ⟨n, hn, hlt⟩ := Finset.exists_lt_of_sum_lt hsum
+      exact Set.mem_biUnion hn
+        ⟨fun k hk => hg k (lt_trans hk (Finset.mem_range.1 hn)), hlt⟩
+    refine le_trans (measure_mono hcover) ?_
+    refine le_trans (measure_biUnion_finset_le _ _) ?_
+    have hbound : ∀ n ∈ Finset.range K,
+        ctsPathMeasure β u
+            (ctsGreedyEvents u n ∩ {ω : ℕ → Step N M | t / (K : ℝ) < holdingTime n ω})
+          ≤ ENNReal.ofReal (Real.exp (-(r * (t / (K : ℝ))))) := fun n _ =>
+      ctsPathMeasure_greedy_holdingTime_gt hM hN2 hβ hu hu0 n (by positivity)
+    refine le_trans (Finset.sum_le_sum hbound) ?_
+    rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, ← ENNReal.ofReal_natCast,
+      ← ENNReal.ofReal_mul (by positivity)]
+    refine ENNReal.ofReal_le_ofReal ?_
+    have : -(r * (t / (K : ℝ))) = -(r * t) / (K : ℝ) := by field_simp
+    rw [this]
+  -- putting the two together
+  refine le_trans (le_trans (measure_mono hsub) (measure_union_le _ _)) ?_
+  refine le_trans (add_le_add h1 h2) ?_
+  rw [← ENNReal.ofReal_add (by linarith) (by positivity)]
 
 /-- **Theorem 2.2.** For every fixed `δ > 0`,
 
@@ -762,7 +1367,7 @@ it, at the price of an extra exponential random variable.
 Unlike Theorem 2.1 this does not mention `μ^β`, and so does not wait on the existence of one.
 **Proved** from the display above at `t = e^{-β(1-δ)/(M-1)}`, where
 `e^{β/(M-1)} t = e^{βδ/(M-1)} → ∞` kills the second term and Remark 4 kills the first; it
-inherits `sorryAx` from that display and from nothing else. -/
+inherits `sorryAx` from that display, hence from Proposition 7, and from nothing else. -/
 theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
       (fun β : ℝ => ⨆ u ∈ (stateSet N M \ {0} : Set (Pressure N M)),

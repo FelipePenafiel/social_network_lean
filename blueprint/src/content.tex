@@ -1449,6 +1449,47 @@ process pointwise.
 \end{proof}
 
 \aux{Lemma}
+\begin{lemma}[The clock of a greedy run]
+  \label{aux-holding-times}
+  \lean{SocialNetwork.exp_le_totalRate, SocialNetwork.state_ne_zero_of_greedy, SocialNetwork.zeta_pow_le_ctsPathMeasure_greedyEvents, SocialNetwork.ctsPathMeasure_greedy_holdingTime_gt, SocialNetwork.ctsPathMeasure_holdingTime_nonpos, SocialNetwork.hittingTimeCts_le_jumpTime, SocialNetwork.expMeasure_Ioi_of_nonneg}
+  \leanok
+  \uses{def3, aux-construction, prop8, aux-greedy}
+  Let $u \in \Sspace$, $u \ne 0$.  Along the greedy event:
+  \begin{enumerate}
+    \item no matrix visited is $0$, and the total rate out of a matrix of
+      $\Sspace \setminus \{0\}$ is at least $e^{\beta/(M-1)}$;
+    \item each holding time is therefore dominated by an exponential of that
+      rate: $\mathbb{P}(\bigcap_{j \le n} \xi_j^u \cap \{E_n > s\}) \le
+      e^{-e^{\beta/(M-1)} s}$ for $s \ge 0$;
+    \item every holding time is almost surely positive, so $T_k$ is the time of
+      the $k$-th expression and $\Rhit{u}(\theta) \le T_k$ whenever
+      $\Uskel{u}_k \in \theta$;
+    \item \ref{prop8} holds on this sample space as it does on the skeleton's.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{prop5, prop8}
+  Part 1 is where $\Sspace$ earns its keep.  The zero row that \eqref{eq2}
+  provides must, if one expression lands on $0$, be the row of the actor that
+  expressed --- every other row would have to carry $M-1$ there --- so that
+  actor expressed a $0$ entry, while some other actor carries a $1$.  No greedy
+  expression allows that.  And a matrix of $\Sspace$ other than $0$ has an entry
+  at least $1$, because a row summing to $0$ with a non-zero entry has a
+  positive one; the single term $e^{\beta \cdot 1/(M-1)}$ of $\jumprate$ then
+  bounds the sum below.
+
+  Parts 2, 3 and 4 are the same induction along the finite-horizon kernels of
+  \ref{aux-construction} that \ref{prop8} uses on the skeleton, and they need
+  nothing of it but its two marginals: the expressed pair follows the Gibbs law
+  of \eqref{eq3}, which gives 4, and the holding time is exponential of rate
+  $\jumprate$, which
+  gives 2 with $\mathbb{P}(E > s) = e^{-q s}$ and 3 with
+  $\mathbb{P}(E \le 0) = 0$.  That $T_k$ is then the $k$-th expression time is
+  the strict monotonicity of $k \mapsto T_k$.
+\end{proof}
+
+\aux{Lemma}
 \begin{lemma}[Inside the proof of part~2 of Theorem~2]
   \label{aux-hitting-rate}
   \lean{SocialNetwork.probHittingGT_ladderSet_le_of_ne_zero}
@@ -1462,7 +1503,8 @@ process pointwise.
   \]
 \end{lemma}
 \begin{proof}
-  \uses{prop7, rem4}
+  \leanok
+  \uses{prop7, rem4, aux-holding-times}
   \textbf{Not a numbered statement of the paper}: this inequality is displayed
   inside the proof of \ref{thm2-2}, which is the limit it gives at
   $t = e^{-\beta(1-\delta)/(M-1)}$.  It is stated here because \ref{lem13} uses
@@ -1471,17 +1513,20 @@ process pointwise.
   numbered is a question for the authors, and one that
   Section~\ref{sec:corrections} still puts to them.
 
-  \textbf{Not formalised}, and it is a step of the paper's own proof rather
-  than a citation, which is where this node used to be filed.  [GL24] writes
-  that proof out at its p.~19, as its equations (16)--(18): split on the greedy
-  event, which puts the process in $\ladder$ by step $(M+1)N$ by \ref{prop7}
-  and costs $1 - \zeta_\beta^{(M+1)N}$ by \ref{rem4}; on that event no state
-  visited is $0$, so every holding time is dominated by an exponential of mean
-  $e^{-\beta/(M-1)}$, and a union bound over the $(M+1)N$ of them gives the
-  second term.  Every ingredient is in this library: the holding times are
-  exponential of parameter $\jumprate$ by construction
-  (\texttt{SocialNetwork.ctsPathMeasure}), and $\jumprate(v) \ge
-  e^{\beta/(M-1)}$ for every $v \ne 0$ of $\Sspace$.
+  \textbf{Follows the proof [GL24] writes out at its p.~19}, as its equations
+  (16)--(18).  Split on the greedy event.  Its complement costs
+  $1 - \zeta_\beta^{(M+1)N}$, by \ref{prop8} and \ref{rem4}.  On it \ref{prop7}
+  puts the process in $\ladder$ by the $(M+1)N$-th expression, so
+  $\Rhit{u}(\ladder) \le T_{(M+1)N}$ --- part 3 of \ref{aux-holding-times} --- and
+  $T_{(M+1)N} > t$ forces one of the $(M+1)N$ holding times to exceed
+  $t/((M+1)N)$, each of which costs at most
+  $\exp(-e^{\beta/(M-1)} t/((M+1)N))$ by part 2.  A union bound finishes.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop7}, and so from \ref{lem19}
+  and~\ref{lem20}, and from nothing else.  It was filed as a citation from
+  outside the paper until [GL24] showed it is a step of the paper's own proof;
+  it is neither, now that it is proved.
 \end{proof}
 
 \paper{Equation (19)}
@@ -2327,8 +2372,8 @@ a route that does not need the step the written proof asserts --- the one
 departure of that kind in this repository, and the reason is written at its
 node.
 
-\ref{thm2-2} joined this queue as soon as its proof was written, and
-\ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and~\ref{rem6} will: none of
+\ref{aux-hitting-rate} and~\ref{thm2-2} joined this queue as soon as their
+proofs were written, and \ref{cor11}, \ref{eq19} and~\ref{rem6} will: none of
 them is blocked on anything today, and each rests on \ref{prop7} once written,
 hence on \ref{lem19} and~\ref{lem20}.  They are listed as not done rather than
 as blocked because that is what they are: the obstruction is recorded once, at
@@ -2417,8 +2462,8 @@ Nothing is left on this list, and the one item that outlived it,
 \ref{aux-measurable-hitting}, is now proved as well; the subsection after next
 records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or simply not done ---
-and the last of those groups now has \ref{cor11}, \ref{aux-hitting-rate}
-and~\ref{eq19} in it beside \ref{rem6}.
+and the last of those groups now has \ref{cor11} and~\ref{eq19} in it beside
+\ref{rem6}.
 
 \subsection*{Was here, and is now closed}
 
@@ -2445,7 +2490,9 @@ not attributed to anything outside the paper; they are steps of the paper's
 \emph{own} proofs, left as displays instead of being numbered, and [GL24]
 writes both of them out --- the first as its equations (16)--(18), the second
 as its Corollary~13, both at p.~19.  Nothing in them is out of reach of this
-library, so they move to the last group, work not done.  What survives as a
+library, so they moved to the last group, work not done --- and the first of
+them is now \emph{proved}, from \ref{aux-holding-times} and \ref{prop7}, which
+is the best evidence that the reclassification was right.  What survives as a
 question for the authors is only whether either should be numbered, and that
 question is asked in \texttt{FOR-THE-AUTHORS.md} rather than recorded as an
 obstruction here.  The lesson is again the one above: a citation is not an
@@ -2623,22 +2670,23 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{The continuous-time estimates around part~2 of Theorem~2}.
-    \ref{thm2-2} is written, and rests on \ref{aux-hitting-rate} alone; that
-    display is next, and it is the only real work of the group, an exponential
-    race among the holding times against the greedy event.  \ref{cor11} and
-    \ref{eq19} both need a restart of $\Uproc{u}$ at the first jump, which this
-    library does not yet have --- \texttt{Trajectory.shift} restarts the
-    skeleton and nothing restarts the continuous-time process --- and that one
-    lemma serves both.  \ref{rem6} can be stated at any time.
+  \item \textbf{What is left around part~2 of Theorem~2}.  \ref{thm2-2} and
+    \ref{aux-hitting-rate} are written, and with them \ref{aux-holding-times},
+    which is proved outright.  \ref{cor11} and \ref{eq19} are what remains, and
+    they want one lemma between them: a restart of $\Uproc{u}$ at the first
+    jump.  \texttt{Trajectory.shift} restarts the skeleton and nothing yet
+    restarts the continuous-time process; the pieces are there, since
+    \ref{aux-holding-times} already reads the law of one step off the kernels.
+    \ref{rem6} can be stated at any time.
 
     This is what is left that is nobody's fault, now that
     \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9},
-    \ref{cor10} and~\ref{aux-greedy-avoids} are closed.  Nothing outside this
-    repository is needed: the process, its holding times and its hitting times
-    are all built.  None of them will be \emph{proved} before item~2, since
-    each rests on \ref{prop7}; but a written proof turns green with no edit the
-    moment its ancestors do, which is why writing them is worth doing first.
+    \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate}
+    and~\ref{thm2-2} are closed.  Nothing outside this repository is needed:
+    the process, its holding times and its hitting times are all built.
+    Neither will be \emph{proved} before item~2, since both rest on
+    \ref{prop7}; but a written proof turns green with no edit the moment its
+    ancestors do, which is why writing them is worth doing first.
   \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
     and~\ref{note-lem20}.  Worth settling with the authors first, since the
     repairs change the written proofs. \ref{prop7} then follows by assembling

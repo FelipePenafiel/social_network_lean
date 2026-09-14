@@ -144,12 +144,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "the one numbered statement of the paper with no Lean counterpart; nothing "
         "downstream uses it, and its route is part 2, not Corollary 11",
     ),
-    "aux-hitting-rate": (
-        NOT_YET,
-        "a step of the paper's own proof of part 2, displayed and never numbered: the "
-        "greedy run reaches `L` within `(M+1)N` steps, and on that event every holding "
-        "time is dominated by an exponential of mean `e^{-β/(M-1)}`",
-    ),
     "eq19": (
         NOT_YET,
         "equation (19), displayed inside the proof of Lemma 13: the decomposition "
