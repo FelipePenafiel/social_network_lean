@@ -2,7 +2,6 @@
 Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
-import SocialNetwork.ContinuousTime
 import SocialNetwork.Favouring
 import SocialNetwork.Greedy
 import SocialNetwork.Markov

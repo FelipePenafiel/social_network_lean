@@ -114,20 +114,10 @@ REASONS: dict[str, tuple[str, str]] = {
         "the same citation over `Profile N M`.  Two are needed because the abstract "
         "statement is inconsistent",
     ),
-    "aux-hitting-rate": (
-        CITED,
-        "displayed inside the proof of Theorem 2.2 and never stated; Theorem 2.2 is a "
-        "limit, and a limit has thrown the rate away",
-    ),
-    "eq19": (
-        CITED,
-        "equation (19), displayed inside the proof of Lemma 13 and attributed to "
-        "Corollary 11, which is likewise only a limit",
-    ),
     # -- Mathlib ------------------------------------------------------------
     "thm1-2-skeleton": (
         BLOCKED_ON_MATHLIB,
-        "Doeblin's minorisation criterion.  The keystone: six results below wait on it",
+        "Doeblin's minorisation criterion.  The keystone: five results below wait on it",
     ),
     "thm1-2": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
     "thm25": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
@@ -136,18 +126,28 @@ REASONS: dict[str, tuple[str, str]] = {
         "the stationary-law transfer; needs Doeblin to be worth stating, and its own "
         "statement is one the authors may want to change",
     ),
-    "thm2": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
+    "thm2-1": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
     "thm27": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 26"),
-    "cor11": (BLOCKED_ON_MATHLIB, "Doeblin, through Theorem 2"),
     "thm1-1": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
+    "cor11": (
+        NOT_YET,
+        "part 2 again, after the exponential waiting time that is why the zero matrix had "
+        "to be excluded from it; what is missing is a restart of the continuous-time "
+        "process at the first jump, which this library does not have",
+    ),
     "rem6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
-        "downstream uses it",
+        "downstream uses it, and its route is part 2, not Corollary 11",
+    ),
+    "eq19": (
+        NOT_YET,
+        "equation (19), displayed inside the proof of Lemma 13: the decomposition "
+        "Corollary 11's own proof makes at the first expression from the zero matrix",
     ),
 }
 
