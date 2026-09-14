@@ -205,11 +205,19 @@ continuous-time versions follow from the discrete ones through the transfer (13)
 control of the holding times.  So they are blocked by items 1–3, not by 6.  Only Theorem 1.1 —
 and its biased twin Theorem 16 — genuinely needs the continuous-time item 6.
 
-The shortest path to Theorem 2 is therefore item 1 alone.  Proposition 9 no longer waits on
+Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
+mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting
+matrix, and its proof is Proposition 7 together with an exponential race among the holding
+times, which `SocialNetwork.ctsPathMeasure` already supplies.  Nothing on the list above is
+missing for it, nor for Corollary 11 and the two displays below it; the blueprint node
+`thm2-2` says so at length.
+
+The shortest path to Theorem 2.1 is therefore item 1 alone.  Proposition 9 no longer waits on
 Mathlib at all: it is proved from Proposition 7, Remark 5, the bound of Proposition 8
 (`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, modulo the one
-step its own proof asserts (`SocialNetwork.skeleton_ne_of_greedy`).  Theorem 2.1 follows from
-it by (13) once `μ̃` exists, which is item 1.
+step its own proof asserts, which is now proved as well
+(`SocialNetwork.skeleton_ne_of_greedy`).  Theorem 2.1 follows from it by (13) once `μ̃`
+exists, which is item 1.
 
 ## A smaller gap, outside probability — closed, but still a gap
 

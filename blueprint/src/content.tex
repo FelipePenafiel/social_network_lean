@@ -25,7 +25,7 @@ the paper's.
 
 Two files at the root of the repository read this one.  \texttt{STATUS.md} is
 generated from it: every statement, its status, and --- for the ones that are
-not proved --- which of five kinds of obstruction it has met.
+not proved --- which of four kinds of obstruction it has met.
 \texttt{FOR-THE-AUTHORS.md} says what each obstruction asks of the authors.
 
 \aux{Remark}
@@ -333,7 +333,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{theorem}
 \begin{proof}
   This is the Doeblin step. \textbf{Not formalised}, and it is the keystone:
-  \ref{thm1-2}, \ref{thm2}, \ref{thm3}, \ref{thm25}, \ref{thm27} and
+  \ref{thm1-2}, \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and
   \ref{thm31} all rest on it.
 \end{proof}
 
@@ -531,28 +531,54 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   (\texttt{SocialNetwork.IsSteepLadder.state\_of\_isPositiveAt}).
 \end{proof}
 
-\paper{Theorem 2}
+\paper{Theorem 2.1}
 \begin{theorem}[Concentration of $\muinv$]
-  \label{thm2}
-  \lean{SocialNetwork.measure_ladderSet_ge, SocialNetwork.tendsto_hittingTime_ladderSet}
+  \label{thm2-1}
+  \lean{SocialNetwork.measure_ladderSet_ge}
   \leanok
   \uses{def1, thm1-2}
-  \begin{enumerate}
-    \item There is $C > 0$ such that $\muinv(\ladder) \ge 1 - C e^{-\beta/(M-1)}$
-      for every $\beta \ge 0$.
-    \item For every fixed $\delta > 0$,
-      $\sup_{u \in \Sspace \setminus \{0\}}
-       \mathbb{P}\bigl(\Rhit{u}(\ladder) > e^{-\frac{\beta}{M-1}(1-\delta)}\bigr) \to 0$
-      as $\beta \to +\infty$.
-  \end{enumerate}
+  There is $C > 0$ such that $\muinv(\ladder) \ge 1 - C e^{-\beta/(M-1)}$ for
+  every $\beta \ge 0$.
+\end{theorem}
+\begin{proof}
+  \uses{prop9, eq13}
+  From \ref{prop9} and the transfer of \ref{eq13}. \textbf{Not formalised}: the
+  statement is about $\muinv$, and there is no $\muinv$ to be concentrated
+  until \ref{thm1-2-skeleton} supplies one.
+\end{proof}
+
+\paper{Theorem 2.2}
+\begin{theorem}[Reaching a ladder in time $e^{-\beta/(M-1)}$]
+  \label{thm2-2}
+  \lean{SocialNetwork.tendsto_hittingTime_ladderSet}
+  \leanok
+  \uses{def1}
+  For every fixed $\delta > 0$,
+  \[
+    \sup_{u \in \Sspace \setminus \{0\}}
+      \mathbb{P}\bigl(\Rhit{u}(\ladder) > e^{-\frac{\beta}{M-1}(1-\delta)}\bigr)
+      \longrightarrow 0, \qquad \beta \to +\infty .
+  \]
   The zero matrix must be excluded from the supremum: from $0$ every rate
   equals $1$, so the first expression takes a time of order $1$. \ref{cor11}
   covers it.
 \end{theorem}
 \begin{proof}
-  \uses{prop9, eq13}
-  Part 1 follows from \ref{prop9} and the transfer of \ref{eq13}; part 2 from
-  \ref{prop7} and \ref{prop8}. \textbf{Not formalised}.
+  \uses{aux-hitting-rate, rem4}
+  The limit \ref{aux-hitting-rate} gives at $t = e^{-\frac{\beta}{M-1}(1-\delta)}$:
+  there $e^{\beta/(M-1)} t = e^{\frac{\beta\delta}{M-1}} \to \infty$, so the
+  second term vanishes, and the first is $1 - \zeta_\beta^{(M+1)N} \le
+  (M+1)MN^2 e^{-\beta/(M-1)}$ by \ref{rem4}. \textbf{Not formalised}.
+
+  \textbf{This half does not wait on Doeblin}, and until this node was split
+  from \ref{thm2-1} the repository said it did.  Part~2 never mentions
+  $\muinv$: it is a statement about the process started at a fixed $u$, and its
+  proof is \ref{prop7} and \ref{prop8} by way of \ref{aux-hitting-rate}.  The
+  $M = 2$ case is proved that way, in three lines and with no appeal to an
+  invariant measure, at p.~19 of [GL24].  The split moves part~2 --- and with
+  it \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and \ref{rem6} --- out of
+  the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
+  which is to say behind \ref{lem19} and~\ref{lem20}.
 \end{proof}
 
 \paper{Theorem 3}
@@ -1288,23 +1314,27 @@ process pointwise.
   \label{cor11}
   \lean{SocialNetwork.tendsto_hittingTime_ladderSet_zero}
   \leanok
-  \uses{thm2}
+  \uses{def1}
   For every fixed $\delta > 0$,
   $\mathbb{P}\bigl(\Rhit{0}(\ladder) > \tau + e^{-\frac{\beta}{M-1}(1-\delta)}\bigr) \to 0$
   as $\beta \to +\infty$, where $\tau$ is exponential of mean $1/(MN)$,
   independent of the process.
 \end{corollary}
 \begin{proof}
-  \textbf{Not formalised}.
+  \uses{thm2-2}
+  Condition on the first expression: it comes after an exponential time $\tau$
+  of mean $1/(MN)$, since every rate at $0$ equals $1$, and lands on a state
+  that is not $0$, to which \ref{thm2-2} applies. \textbf{Not formalised}, and
+  --- since \ref{thm2-2} does not --- no longer waiting on Doeblin.
 \end{proof}
 
 \paper{Remark 6}
 \begin{remark}[Reaching $\ladder^o$ before leaving $C^o$]
   \label{rem6}
-  \uses{cor11}
+  \uses{thm2-2}
   The paper's own note that the first term on the right of equation~(14) may be
   replaced by $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) <
-  \Rhit{u}(C^{-o}))$, whence, by the same steps as part~2 of \ref{thm2}, for
+  \Rhit{u}(C^{-o}))$, whence, by the same steps as \ref{thm2-2}, for
   every fixed $o$ and $\delta > 0$,
   \[
     \inf_{u \in C^o} \mathbb{P}\Bigl(
@@ -1316,7 +1346,13 @@ process pointwise.
   \textbf{Not stated in Lean.} It is the one numbered statement of the paper
   with no counterpart here, and it is recorded so that the count is honest.
   Nothing downstream uses it: it strengthens \ref{cor11} in the direction
-  \ref{lem14} needs, and both are blocked on the same continuous-time analysis.
+  \ref{lem14} needs.
+
+  Its route is \ref{thm2-2} --- ``by the same steps as part~2 of Theorem~2'',
+  as the paper says and as Remark~14 of [GL24] says for $M = 2$ --- and not
+  \ref{cor11}, which this node used to be drawn from.  That edge was a
+  neighbour mistaken for a dependency, and it is what filed Remark~6 behind
+  Doeblin.
 \end{remark}
 
 \section{Metastability}
@@ -1386,13 +1422,26 @@ process pointwise.
   \]
 \end{lemma}
 \begin{proof}
-  \uses{prop6, prop8}
-  \textbf{Not formalised, and not a numbered statement of the paper}: this
-  inequality is displayed inside the proof of part~2 of \ref{thm2}, and
-  Theorem~2.2 is the limit it gives at $t = e^{-\beta(1-\delta)/(M-1)}$.  It is
-  stated here because \ref{lem13} uses the inequality and not the limit: taking
-  the limit throws the rate away, so Lemma~13 cannot rest on Theorem~2.2 as
-  stated.  See Section~\ref{sec:corrections}.
+  \uses{prop7, rem4}
+  \textbf{Not a numbered statement of the paper}: this inequality is displayed
+  inside the proof of \ref{thm2-2}, which is the limit it gives at
+  $t = e^{-\beta(1-\delta)/(M-1)}$.  It is stated here because \ref{lem13} uses
+  the inequality and not the limit: taking the limit throws the rate away, so
+  Lemma~13 cannot rest on \ref{thm2-2} as stated.  Whether it should be
+  numbered is a question for the authors, and one that
+  Section~\ref{sec:corrections} still puts to them.
+
+  \textbf{Not formalised}, and it is a step of the paper's own proof rather
+  than a citation, which is where this node used to be filed.  [GL24] writes
+  that proof out at its p.~19, as its equations (16)--(18): split on the greedy
+  event, which puts the process in $\ladder$ by step $(M+1)N$ by \ref{prop7}
+  and costs $1 - \zeta_\beta^{(M+1)N}$ by \ref{rem4}; on that event no state
+  visited is $0$, so every holding time is dominated by an exponential of mean
+  $e^{-\beta/(M-1)}$, and a union bound over the $(M+1)N$ of them gives the
+  second term.  Every ingredient is in this library: the holding times are
+  exponential of parameter $\jumprate$ by construction
+  (\texttt{SocialNetwork.ctsPathMeasure}), and $\jumprate(v) \ge
+  e^{\beta/(M-1)}$ for every $v \ne 0$ of $\Sspace$.
 \end{proof}
 
 \paper{Equation (19)}
@@ -1413,7 +1462,10 @@ process pointwise.
   \uses{cor11}
   \textbf{Not formalised, and not a numbered statement of the paper}: it is
   displayed as equation~(19) inside the proof of \ref{lem13} and attributed
-  there to \ref{cor11}, which is itself stated as a limit.  Note that $\tau$ is
+  there to \ref{cor11}, which is itself stated as a limit.  What it actually
+  decomposes is \ref{cor11}'s own proof --- the waiting time at $0$, then
+  \ref{thm2-2} --- which is how Corollary~13 of [GL24] reads at $M = 2$.  Note
+  that $\tau$ is
   declared exponential of mean $1/(MN)$, for which $\mathbb{P}(\tau > \beta) =
   e^{-MN\beta}$ and not $e^{-\beta/(MN)}$; since $e^{-MN\beta} \le
   e^{-\beta/(MN)}$ for $\beta \ge 0$, the form written here is the weaker of
@@ -1870,8 +1922,10 @@ process pointwise.
    > e^{-\beta(M-1)\alpha(1-\delta)} \bigr) \to 0$.
 \end{theorem}
 \begin{proof}
-  \uses{thm2, prop26, rem8}
-  As \ref{thm2}: the lower bound for the jump rate of a non-null state is
+  \uses{thm2-1, thm2-2, prop26, rem8}
+  As \ref{thm2-1} and~\ref{thm2-2}, which it bundles the way Theorem~2 was
+  bundled here until those two were split: the lower bound for the jump rate of
+  a non-null state is
   $e^{\beta(M-1)\alpha}$ by \ref{rem8}, and the contribution of the zero matrix
   vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
 \end{proof}
@@ -2183,7 +2237,7 @@ are the argument behind it.
 \subsection*{Blocked on Mathlib}
 
 \ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
-\ref{thm2}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
+\ref{thm2-1}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
@@ -2207,12 +2261,19 @@ are the argument behind it.
     the Kolmogorov-type bound is absent.
 \end{itemize}
 
-\ref{thm2} and~\ref{thm3} live, in the paper's own architecture, on the
+\ref{thm2-1} and~\ref{thm3} live, in the paper's own architecture, on the
 skeleton; they are blocked by the discrete-time items, not by the
 continuous-time ones.  Only \ref{thm1-1} and~\ref{thm16} need Poisson point
 processes.  The shortest path is therefore Doeblin alone: \ref{prop9} is
 already proved from \ref{prop7} and~\ref{prop8}, \ref{rem5-eta} and Kac's
-inequality, and \ref{thm2} follows from it by \ref{eq13} once $\muskel$ exists.
+inequality, and \ref{thm2-1} follows from it by \ref{eq13} once $\muskel$
+exists.
+
+What is \emph{not} on this list, and was until \ref{thm2-1} and~\ref{thm2-2}
+were split apart, is part~2 of Theorem~2 --- together with \ref{cor11}, which
+stood here as ``Doeblin, through Theorem~2''.  A statement blocked on Doeblin is
+one that needs $\muinv$ to exist before it can be proved; part~2 never mentions
+$\muinv$ at all.  See the node of \ref{thm2-2}.
 
 \subsection*{Blocked on the paper}
 
@@ -2226,9 +2287,16 @@ a route that does not need the step the written proof asserts --- the one
 departure of that kind in this repository, and the reason is written at its
 node.
 
+\ref{thm2-2}, \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and~\ref{rem6}
+join this queue rather than the one above once their proofs are written: none
+of them is blocked on anything today, and each rests on \ref{prop7} when it is
+written, hence on \ref{lem19} and~\ref{lem20}.  They are listed as not done
+rather than as blocked because that is what they are: the obstruction is
+recorded once, at \ref{lem19} and~\ref{lem20}, and not copied down the graph.
+
 \subsection*{Cited from outside the paper}
 
-Four statements are not results of arXiv:2607.19651 at all, and nothing in this
+Two statements are not results of arXiv:2607.19651 at all, and nothing in this
 library can discharge them.
 
 \ref{prop12} and its twin for the biased process, \ref{prop12-biased}, are
@@ -2242,12 +2310,8 @@ set satisfies the hypotheses vacuously and falsifies the conclusion at $t = 0$
 --- so it has to be attached to a concrete process, and there are two
 processes.  They are the same citation applied twice, not two assumptions.
 
-\ref{aux-hitting-rate} and~\ref{eq19} are the two inequalities the paper
-\emph{displays inside proofs} and never states. \ref{lem13} uses them, and it
-cannot use the numbered statements they are attributed to --- Theorem~2.2 and
-\ref{cor11} --- because those are limits, and a limit has thrown the rate away.
-They are transcribed verbatim and carry a \texttt{sorry}; whether either should
-become a numbered statement of the paper is a question for the authors.
+\ref{aux-hitting-rate} and~\ref{eq19} stood here as two more, and they do not
+belong: see below.
 
 \subsection*{Routine, and now done}
 
@@ -2312,8 +2376,9 @@ arguments the paper asserts.
 Nothing is left on this list, and the one item that outlived it,
 \ref{aux-measurable-hitting}, is now proved as well; the subsection after next
 records what its diagnosis got wrong.  What is unproved here is blocked on
-Mathlib, blocked on the paper, cited from outside it, or --- for \ref{rem6}
-alone --- simply not done.
+Mathlib, blocked on the paper, cited from outside it, or simply not done ---
+and the last of those groups now has \ref{thm2-2}, \ref{cor11},
+\ref{aux-hitting-rate} and~\ref{eq19} in it beside \ref{rem6}.
 
 \subsection*{Was here, and is now closed}
 
@@ -2329,6 +2394,22 @@ a Markov kernel on a countable space, from \texttt{Kernel.Invariant} and
 nothing else, by decomposing the event of visiting $u$ before time $m$ over the
 last such visit.  The lesson is the same as the one below: a citation is not an
 obstruction until one has checked which half of it the proof needs.
+
+\textbf{The two displays inside proofs}, \ref{aux-hitting-rate}
+and~\ref{eq19}, stood in the subsection above as citations, on the ground that
+the numbered statements they are attributed to --- part~2 of Theorem~2 and
+\ref{cor11} --- are limits, and a limit has thrown the rate away.  The second
+half of that is right and is why they are stated here at all: \ref{lem13} uses
+the inequalities and cannot use the limits.  The first half is wrong.  They are
+not attributed to anything outside the paper; they are steps of the paper's
+\emph{own} proofs, left as displays instead of being numbered, and [GL24]
+writes both of them out --- the first as its equations (16)--(18), the second
+as its Corollary~13, both at p.~19.  Nothing in them is out of reach of this
+library, so they move to the last group, work not done.  What survives as a
+question for the authors is only whether either should be numbered, and that
+question is asked in \texttt{FOR-THE-AUTHORS.md} rather than recorded as an
+obstruction here.  The lesson is again the one above: a citation is not an
+obstruction until one has checked what is actually being cited.
 
 \ref{aux-measurable-hitting} stood in this chapter as a fourth kind of
 obstruction: not a gap in Mathlib, not a gap in the paper, not a citation, but
@@ -2502,22 +2583,26 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \ref{rem6}, the one numbered statement of the paper with no Lean
-    counterpart.  It is what is left that is nobody's fault, now that
-    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9}
-    and \ref{cor10} are closed --- and even it is only half free: stating it
-    costs nothing, but proving it goes through \ref{cor11}, which waits on
-    Doeblin below.
-  \item \ref{lem19} and~\ref{lem20}, with the repairs of
-    \ref{note-lem19} and~\ref{note-lem20}, and \ref{aux-greedy-avoids}, the
-    step the proof of \ref{prop9} asserts.  Worth settling with the authors
-    first, since the repairs change the written proofs. \ref{prop7} then
-    follows by assembling the first two with \ref{aux-consensus-ladder}, and
-    \ref{prop9} is proved outright once the third is.
+  \item \textbf{The four continuous-time estimates around part~2 of Theorem~2}:
+    \ref{aux-hitting-rate} first, since \ref{thm2-2} is its limit, \ref{cor11}
+    and \ref{eq19} after it, and \ref{rem6} stated at last.  This is what is
+    left that is nobody's fault, now that \ref{aux-measurable-hitting},
+    \ref{prop18}, \ref{thm4} part~1, \ref{prop9}, \ref{cor10}
+    and~\ref{aux-greedy-avoids} are closed.  Nothing outside this repository is
+    needed for any of them: the process, its holding times and its hitting
+    times are all built, and what is missing is an exponential race and a union
+    bound.  None of them will be \emph{proved} before item~2 --- they rest on
+    \ref{prop7} --- but each turns green with no edit the moment it is.
+  \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
+    and~\ref{note-lem20}.  Worth settling with the authors first, since the
+    repairs change the written proofs. \ref{prop7} then follows by assembling
+    them with \ref{aux-consensus-ladder}, and \ref{prop9}, \ref{cor10}
+    and~\ref{aux-greedy-avoids} --- all three of them already written --- are
+    proved outright.
   \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure for
     a countable-state Markov kernel.} The keystone: \ref{thm1-2} and its
-    skeleton half \ref{thm1-2-skeleton}, and through them \ref{thm2}, \ref{thm3},
-    \ref{thm25}, \ref{thm27} and \ref{thm31}, all wait on it.  It is
+    skeleton half \ref{thm1-2-skeleton}, and through them \ref{thm2-1},
+    \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31}, all wait on it.  It is
     self-contained, of independent value, and depends on nothing else in this
     list.
   \item \textbf{Poisson point processes} and the superposition comparison, for

@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-22 statements. They are unproved for four different reasons, and
+23 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -36,7 +36,7 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | the biased twin of Proposition 9: the proof would transpose that one, and rests on the biased Proposition 7 |
 | Lemma 28 | `Bias.biasedProbHitting_le` | the biased twin of Lemma 13, and its ingredients — the biased forms of the two displays below — are not in the paper either |
 
-### Cited from outside the paper (4)
+### Cited from outside the paper (2)
 
 Not results of arXiv:2607.19651 at all.
 Nothing in this library can discharge them, so no amount of work here will close them.
@@ -44,11 +44,9 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Statement | Lean | Why |
 |---|---|---|
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
-| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | displayed inside the proof of Theorem 2.2 and never stated; Theorem 2.2 is a limit, and a limit has thrown the rate away |
-| equation (19) | `probHittingGT_ladderSet_zero_le` | equation (19), displayed inside the proof of Lemma 13 and attributed to Corollary 11, which is likewise only a limit |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Blocked on Mathlib (11)
+### Blocked on Mathlib (10)
 
 The paper's proof is fine; Mathlib has no theory of the object it uses.
 Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the audit of exactly what is absent, checked against the pinned revision.
@@ -57,24 +55,27 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 |---|---|---|
 | Theorem 1.1 | `nonExplosion` | Poisson point processes |
 | Theorem 1.2 | `existsUnique_invariantCts` | Doeblin, then the transfer of equation (13) |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | Doeblin's minorisation criterion.  The keystone: six results below wait on it |
+| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | Doeblin's minorisation criterion.  The keystone: five results below wait on it |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer; needs Doeblin to be worth stating, and its own statement is one the authors may want to change |
-| Theorem 2 | `measure_ladderSet_ge` +1 | Doeblin, then Proposition 9 |
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | Doeblin, through Theorem 2 |
+| Theorem 2.1 | `measure_ladderSet_ge` | Doeblin, then Proposition 9 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
 | Theorem 16 | `Bias.biasedNonExplosion` | Poisson point processes |
 | Theorem 25 | `Bias.existsUnique_biasedInvariant` | Doeblin, as Theorem 1.2 |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (1)
+### Not formalised yet (5)
 
 No obstruction known.
 Nothing here stands in the way; the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it |
+| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | the limit the display below gives at `t = e^{-β(1-δ)/(M-1)}`.  It never mentions the invariant measure, so it does not wait on Doeblin; part 1 does |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | part 2 again, after the exponential waiting time that is why the zero matrix had to be excluded from it |
+| Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it, and its route is part 2, not Corollary 11 |
+| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | a step of the paper's own proof of part 2, displayed and never numbered: the greedy run reaches `L` within `(M+1)N` steps, and on that event every holding time is dominated by an exponential of mean `e^{-β/(M-1)}` |
+| equation (19) | `probHittingGT_ladderSet_zero_le` | equation (19), displayed inside the proof of Lemma 13: the decomposition Corollary 11's own proof makes at the first expression from the zero matrix |
 
 ## 2. How far the formalisation has got
 
@@ -83,14 +84,14 @@ Nothing here stands in the way; the work is simply not done.
 | Proved | 17 | 14 | 31 |
 | Proof written, resting on an unproved statement | 9 | 1 | 10 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 17 | 2 | 19 |
+| Stated in Lean, unproved | 18 | 2 | 20 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
-| **Total** | **61** | **21** | **82** |
+| **Total** | **62** | **21** | **83** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
-the paper. Counted as the paper numbers them, 55 statements and displayed equations
-are covered, of which 54 are stated in Lean. The only one that is not is Remark 6.
+the paper. Counted as the paper numbers them, 56 statements and displayed equations
+are covered, of which 55 are stated in Lean. The only one that is not is Remark 6.
 
 ### The statements of the paper
 
@@ -112,7 +113,8 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Remark 5 — Steep ladders are stable | `IsSteepLadder.express_of_pos` +3 | proved |
 | Remark 5 — the bound η | `eta` +9 | proved |
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
-| Theorem 2 | `measure_ladderSet_ge` +1 | unproved — blocked on Mathlib |
+| Theorem 2.1 | `measure_ladderSet_ge` | unproved — blocked on Mathlib |
+| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | unproved — not formalised yet |
 | Theorem 3 | `metastability` | proof written, rests on Proposition 12, the display inside the proof of Theorem 2.2, equation (19), Lemma 14 |
 | equation (5) | `Bias.Profile.express` +4 | stated |
 | equation (6) | `Bias.Profile` +7 | stated |
@@ -129,7 +131,7 @@ are covered, of which 54 are stated in Lean. The only one that is not is Remark 
 | Remark 4 | `one_sub_le_zeta_pow` +4 | proved |
 | Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 19, Lemma 20 |
 | Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 19, Lemma 20 |
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | unproved — blocked on Mathlib |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | unproved — not formalised yet |
 | Remark 6 | — | not stated — not formalised yet |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on the display inside the proof of Theorem 2.2, equation (19) |
@@ -182,8 +184,8 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | the gap estimate | `entrySup` +3 | proved |
 | the greedy run does not revisit `u` | `skeleton_ne_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
 | The predecessors of the zero matrix | `zeroPredecessor` +7 | proved |
-| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | unproved — cited from outside the paper |
-| equation (19) | `probHittingGT_ladderSet_zero_le` | unproved — cited from outside the paper |
+| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | unproved — not formalised yet |
+| equation (19) | `probHittingGT_ladderSet_zero_le` | unproved — not formalised yet |
 | the ladder set is inhabited | `ladderOf` +3 | proved |
 | the biased ladder set is inhabited | `Bias.biasedLadderOf` +4 | proved |
 

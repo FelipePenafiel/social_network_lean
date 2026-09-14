@@ -31,8 +31,14 @@ transition semigroup are all definable.  That is what this file does.
 
 What Mathlib does not have, and what this file therefore only *states*, is the analysis:
 non-explosion (Theorem 1.1), existence and uniqueness of the invariant measure (Theorem 1.2,
-which needs a Doeblin minorisation), the concentration of that measure (Theorem 2) and the
+which needs a Doeblin minorisation), the concentration of that measure (Theorem 2.1) and the
 metastability estimate (Theorem 3).  Those carry a `sorry`.  See `blueprint/blueprint.md`.
+
+Theorem 2.2 and the results around it also carry a `sorry`, and for a different reason.  They
+say nothing about the invariant measure — they are statements about the process started at a
+fixed `u` — so nothing outside this file is missing for them: what is left is an exponential
+race between the holding times and a union bound, which `ctsPathMeasure` already supports.
+The work is simply not done.
 
 ## Main definitions
 
@@ -699,7 +705,11 @@ sup_{u ∈ S \ {0}} P (R^{β,u} (L) > e^{-β(1-δ)/(M-1)})  →  0   as β → +
 
 The zero matrix has to be excluded: from `0` every rate equals `1`, so the first expression
 takes a time of order `1` rather than `e^{-β/(M-1)}`.  Corollary 11 is the version that covers
-it, at the price of an extra exponential random variable. -/
+it, at the price of an extra exponential random variable.
+
+Unlike Theorem 2.1 this does not mention `μ^β`, and so does not wait on the existence of one:
+it is the limit of `probHittingGT_ladderSet_le_of_ne_zero` below at
+`t = e^{-β(1-δ)/(M-1)}`. -/
 theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
       (fun β : ℝ => ⨆ u ∈ (stateSet N M \ {0} : Set (Pressure N M)),
@@ -709,7 +719,10 @@ theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (
   sorry
 
 /-- **Corollary 11.** From the zero matrix, the hitting time of `L` is bounded by an
-exponential waiting time of mean `1/(MN)` plus the same `e^{-β(1-δ)/(M-1)}`. -/
+exponential waiting time of mean `1/(MN)` plus the same `e^{-β(1-δ)/(M-1)}`.
+
+Theorem 2.2 again, after the waiting time that is why Theorem 2.2 excludes the zero matrix:
+every rate at `0` equals `1`, and the first expression lands on a state that is not `0`. -/
 theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
       (fun β : ℝ => ⨆ s ∈ Set.Ici (0 : ℝ),
@@ -731,7 +744,13 @@ P (R^{β,u} (L) > t) ≤ 1 - ζ_β^{(M+1)N} + (M+1) N exp (-e^{β/(M-1)} t / ((M
 `t = e^{-β(1-δ)/(M-1)}`, and the inequality itself never becomes a statement.  Lemma 13 uses
 the inequality and not the limit, so it cannot be derived from Theorem 2.2 as stated: taking
 the limit has thrown the rate away.  The display is transcribed here so that Lemma 13 has
-something to rest on; see `FOR-THE-AUTHORS.md`. -/
+something to rest on; whether it should be numbered is asked in `FOR-THE-AUTHORS.md`.
+
+It is a step of the paper's own proof of Theorem 2.2, not a citation.  The argument, written
+out for `M = 2` in [GL24]: split on the greedy event, which reaches `L` within `(M+1)N` steps
+by Proposition 7 and costs `1 - ζ_β^{(M+1)N}` by Remark 4; on that event no state visited is
+`0`, so `totalRate ≥ e^{β/(M-1)}` and each of the `(M+1)N` holding times is dominated by an
+exponential of that rate; a union bound gives the second term. -/
 theorem probHittingGT_ladderSet_le_of_ne_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) {t : ℝ} (ht : 0 < t) :
     probHittingGT β u (ladderSet N M) (ENNReal.ofReal t)
@@ -750,7 +769,9 @@ with `τ` the waiting time before the first expression from the zero matrix.
 
 **No counterpart among the numbered statements of the paper.**  Corollary 11 above --- the Lean
 `SocialNetwork.tendsto_hittingTime_ladderSet_zero` --- is a limit, and this is the inequality
-its proof gives; Lemma 13 uses the inequality.
+its proof gives; Lemma 13 uses the inequality.  The paper attributes equation (19) to
+Corollary 11, but what it decomposes is Corollary 11's *proof*: the waiting time at `0`, then
+Theorem 2.2.
 
 `P (τ > β)` is written here as the paper evaluates it, `e^{-β/(MN)}`.  Note that `τ` is
 declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; since
