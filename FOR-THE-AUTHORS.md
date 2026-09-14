@@ -382,20 +382,21 @@ continuous-time analysis of Appendix B (Lemma 14, Lemma 29).  `blueprint/bluepri
 audit of what Mathlib does and does not provide, checked against the pinned
 revision.
 
-Five statements are unproved for neither reason — nobody's fault, and no
-obstruction known.  Four of them stand around **part 2 of Theorem 2**: part 2
-itself and **Corollary 11**, which were filed under Doeblin, and the two displays
-of §2.7, which were filed as citations.  Reading part 2 apart from part 1 moves
-all four.  Part 2 says nothing about the invariant measure — it is a statement
+Four statements are unproved for neither reason — nobody's fault, and no
+obstruction known.  Three stand around **part 2 of Theorem 2**: **Corollary
+11**, which was filed under Doeblin, and the two displays of §2.7, which were
+filed as citations.  Reading part 2 apart from part 1 moved all of them, part 2
+included.  Part 2 says nothing about the invariant measure — it is a statement
 about the process started at a fixed `u` — so nothing it needs is missing from
-this repository, and the same goes for everything under it.  The fifth is
-**Remark 6**, which has no Lean counterpart at all and which nothing downstream
-uses; stating it costs nothing, and proving it goes through part 2, not — as
-this file used to say — through Corollary 11 and Doeblin.
+this repository, and the same goes for everything under it; **part 2 is now
+proved** from the first of those two displays, and rests on nothing else.  The
+fourth is **Remark 6**, which has no Lean counterpart at all and which nothing
+downstream uses; stating it costs nothing, and proving it goes through part 2,
+not — as this file used to say — through Corollary 11 and Doeblin.
 
-None of the five will be *proved* before Lemmas 19 and 20, since each rests on
-Proposition 7.  What changed is what they are waiting for: work here, rather
-than a contribution to Mathlib or a decision from you.
+None of them will be *proved outright* before Lemmas 19 and 20, since each
+rests on Proposition 7.  What changed is what they are waiting for: work here,
+rather than a contribution to Mathlib or a decision from you.
 
 **Corollary 10**, which stood here until the description of the states from
 which the zero matrix can be entered was written out, is now proved modulo
@@ -460,6 +461,31 @@ Nothing was asked of you and nothing is now.  It is recorded because this file
 had claimed otherwise, and a claim of ours that turned out to be wrong belongs
 here as visibly as one about the paper.
 
+### Corollary 11: the Lean statement is ours, and it is false
+
+Found while trying to prove it, and recorded here for the same reason.  Your
+Corollary 11 says `P(R^{β,0}(L) > τ + e^{-β(1-δ)/(M-1)}) → 0`, with `τ`
+exponential of mean `1/(MN)` and independent of the process.  The Lean
+statement renders that independence as a supremum over `s ≥ 0` of
+`e^{-MNs} · P(R^{β,0}(L) > s + e^{-β(1-δ)/(M-1)})`.  At `s = 0` the weight is
+`1`, and what is left is `P(R^{β,0}(L) > e^{-β(1-δ)/(M-1)})` on its own — which
+tends to **one**, not zero: from `0` every rate equals `1`, `0 ∉ L`, so the
+hitting time is at least a first holding time of rate `MN`.  The supremum
+cannot tend to zero for any `δ ∈ (0,1)`.
+
+Averaging against the law of `τ` is an integral, not a supremum, and that is
+what the statement has to become:
+
+    ∫_0^∞ MN e^{-MNs} P(R^{β,0}(L) > s + e^{-β(1-δ)/(M-1)}) ds → 0.
+
+**Nothing is asked of you here either** — the paper's corollary is right and
+only its transcription is wrong.  It is left standing, flagged at the
+declaration and in `STATUS.md`, rather than quietly replaced, because
+restating a numbered result is a choice and you may prefer it carried on a
+product space with an explicit independent `τ`.  Equation (19) (§2.7), which
+your proof of Lemma 13 attributes to Corollary 11, is unaffected: it is an
+inequality with no `τ` in it.
+
 **Remark 6** is the one numbered statement of the paper with no Lean counterpart.
 It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,
 and it is listed here rather than quietly omitted: the repository claims to state
@@ -498,7 +524,7 @@ sequence of expressed pairs, and non-explosion is what makes the continuous-time
 defined. And your part 1 indexes from 1, the formalisation from 0, so where you write
 `⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean reads `∀ m ≥ N, A_m = A_N`.
 
-With this closed, **Remark 6** and the four statements around part 2 of Theorem 2 are what
+With this closed, **Remark 6** and the three statements around part 2 of Theorem 2 are what
 is left in the repository that is nobody's fault.
 
 ---

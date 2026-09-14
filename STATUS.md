@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-23 statements. They are unproved for four different reasons, and
+22 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, one
 needs mathematics only the authors can supply, and one is only work.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
@@ -64,15 +64,14 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (5)
+### Not formalised yet (4)
 
 No obstruction known.
 Nothing here stands in the way; the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | the limit the display below gives at `t = e^{-β(1-δ)/(M-1)}`.  It never mentions the invariant measure, so it does not wait on Doeblin; part 1 does |
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | part 2 again, after the exponential waiting time that is why the zero matrix had to be excluded from it |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` | part 2 again, after the exponential waiting time that is why the zero matrix had to be excluded from it — but **the Lean statement is false as written**: it averages over `τ` with a supremum rather than an integral, and at `s = 0` that leaves a probability tending to `1`.  It has to be restated first |
 | Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it, and its route is part 2, not Corollary 11 |
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | a step of the paper's own proof of part 2, displayed and never numbered: the greedy run reaches `L` within `(M+1)N` steps, and on that event every holding time is dominated by an exponential of mean `e^{-β/(M-1)}` |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | equation (19), displayed inside the proof of Lemma 13: the decomposition Corollary 11's own proof makes at the first expression from the zero matrix |
@@ -82,9 +81,9 @@ Nothing here stands in the way; the work is simply not done.
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
 | Proved | 17 | 14 | 31 |
-| Proof written, resting on an unproved statement | 9 | 1 | 10 |
+| Proof written, resting on an unproved statement | 10 | 1 | 11 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 18 | 2 | 20 |
+| Stated in Lean, unproved | 17 | 2 | 19 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **62** | **21** | **83** |
@@ -114,7 +113,7 @@ are covered, of which 55 are stated in Lean. The only one that is not is Remark 
 | Remark 5 — the bound η | `eta` +9 | proved |
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
 | Theorem 2.1 | `measure_ladderSet_ge` | unproved — blocked on Mathlib |
-| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | unproved — not formalised yet |
+| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on the display inside the proof of Theorem 2.2 |
 | Theorem 3 | `metastability` | proof written, rests on Proposition 12, the display inside the proof of Theorem 2.2, equation (19), Lemma 14 |
 | equation (5) | `Bias.Profile.express` +4 | stated |
 | equation (6) | `Bias.Profile` +7 | stated |

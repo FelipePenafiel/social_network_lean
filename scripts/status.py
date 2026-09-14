@@ -133,15 +133,12 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "thm2-2": (
-        NOT_YET,
-        "the limit the display below gives at `t = e^{-β(1-δ)/(M-1)}`.  It never mentions "
-        "the invariant measure, so it does not wait on Doeblin; part 1 does",
-    ),
     "cor11": (
         NOT_YET,
         "part 2 again, after the exponential waiting time that is why the zero matrix had "
-        "to be excluded from it",
+        "to be excluded from it — but **the Lean statement is false as written**: it "
+        "averages over `τ` with a supremum rather than an integral, and at `s = 0` that "
+        "leaves a probability tending to `1`.  It has to be restated first",
     ),
     "rem6": (
         NOT_YET,

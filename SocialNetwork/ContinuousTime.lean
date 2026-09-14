@@ -697,41 +697,6 @@ theorem measure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) :
         ENNReal.ofReal (1 - C * Real.exp (-β / ((M : ℝ) - 1))) ≤ μ (ladderSet N M) := by
   sorry
 
-/-- **Theorem 2.2.** For every fixed `δ > 0`,
-
-```
-sup_{u ∈ S \ {0}} P (R^{β,u} (L) > e^{-β(1-δ)/(M-1)})  →  0   as β → +∞.
-```
-
-The zero matrix has to be excluded: from `0` every rate equals `1`, so the first expression
-takes a time of order `1` rather than `e^{-β/(M-1)}`.  Corollary 11 is the version that covers
-it, at the price of an extra exponential random variable.
-
-Unlike Theorem 2.1 this does not mention `μ^β`, and so does not wait on the existence of one:
-it is the limit of `probHittingGT_ladderSet_le_of_ne_zero` below at
-`t = e^{-β(1-δ)/(M-1)}`. -/
-theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
-    Filter.Tendsto
-      (fun β : ℝ => ⨆ u ∈ (stateSet N M \ {0} : Set (Pressure N M)),
-        probHittingGT β u (ladderSet N M)
-          (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
-      Filter.atTop (nhds 0) := by
-  sorry
-
-/-- **Corollary 11.** From the zero matrix, the hitting time of `L` is bounded by an
-exponential waiting time of mean `1/(MN)` plus the same `e^{-β(1-δ)/(M-1)}`.
-
-Theorem 2.2 again, after the waiting time that is why Theorem 2.2 excludes the zero matrix:
-every rate at `0` equals `1`, and the first expression lands on a state that is not `0`. -/
-theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
-    Filter.Tendsto
-      (fun β : ℝ => ⨆ s ∈ Set.Ici (0 : ℝ),
-        ENNReal.ofReal (Real.exp (-(((M * N : ℕ) : ℝ)) * s)) *
-          probHittingGT β 0 (ladderSet N M)
-            (ENNReal.ofReal (s + Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
-      Filter.atTop (nhds 0) := by
-  sorry
-
 /-- **The bound displayed inside the proof of part 2 of Theorem 2.**  For any `u ∈ S \ {0}`
 and any `t > 0`,
 
@@ -739,9 +704,10 @@ and any `t > 0`,
 P (R^{β,u} (L) > t) ≤ 1 - ζ_β^{(M+1)N} + (M+1) N exp (-e^{β/(M-1)} t / ((M+1) N)).
 ```
 
-**No counterpart among the numbered statements of the paper.**  Theorem 2.2 above --- the Lean
+**No counterpart among the numbered statements of the paper.**  Theorem 2.2 below --- the Lean
 `SocialNetwork.tendsto_hittingTime_ladderSet` --- is the limit this inequality gives at
-`t = e^{-β(1-δ)/(M-1)}`, and the inequality itself never becomes a statement.  Lemma 13 uses
+`t = e^{-β(1-δ)/(M-1)}`, and the inequality itself never becomes a statement.  It is stated
+here, out of the paper's order, because Theorem 2.2 is *proved* from it.  Lemma 13 uses
 the inequality and not the limit, so it cannot be derived from Theorem 2.2 as stated: taking
 the limit has thrown the rate away.  The display is transcribed here so that Lemma 13 has
 something to rest on; whether it should be numbered is asked in `FOR-THE-AUTHORS.md`.
@@ -757,6 +723,127 @@ theorem probHittingGT_ladderSet_le_of_ne_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {β 
       ≤ ENNReal.ofReal (1 - zeta N M β ^ ((M + 1) * N)
           + (((M + 1) * N : ℕ) : ℝ) *
             Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * t) / (((M + 1) * N : ℕ) : ℝ))) := by
+  sorry
+
+/-- **Theorem 2.2.** For every fixed `δ > 0`,
+
+```
+sup_{u ∈ S \ {0}} P (R^{β,u} (L) > e^{-β(1-δ)/(M-1)})  →  0   as β → +∞.
+```
+
+The zero matrix has to be excluded: from `0` every rate equals `1`, so the first expression
+takes a time of order `1` rather than `e^{-β/(M-1)}`.  Corollary 11 is the version that covers
+it, at the price of an extra exponential random variable.
+
+Unlike Theorem 2.1 this does not mention `μ^β`, and so does not wait on the existence of one.
+**Proved** from the display above at `t = e^{-β(1-δ)/(M-1)}`, where
+`e^{β/(M-1)} t = e^{βδ/(M-1)} → ∞` kills the second term and Remark 4 kills the first; it
+inherits `sorryAx` from that display and from nothing else. -/
+theorem tendsto_hittingTime_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
+    Filter.Tendsto
+      (fun β : ℝ => ⨆ u ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+        probHittingGT β u (ladderSet N M)
+          (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
+      Filter.atTop (nhds 0) := by
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hN3 : (3 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hKpos : (0 : ℝ) < (((M + 1) * N : ℕ) : ℝ) := by push_cast; nlinarith
+  set b : ℝ → ℝ := fun β =>
+    1 - zeta N M β ^ ((M + 1) * N)
+      + (((M + 1) * N : ℕ) : ℝ) *
+        Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) *
+          Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))) / (((M + 1) * N : ℕ) : ℝ)) with hbdef
+  have key : ∀ β : ℝ, 0 ≤ β →
+      (⨆ u ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+        probHittingGT β u (ladderSet N M)
+          (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
+        ≤ ENNReal.ofReal (b β) := by
+    intro β hβ
+    refine iSup₂_le fun u hu => ?_
+    exact probHittingGT_ladderSet_le_of_ne_zero hM hN hβ hu.1
+      (by simpa using hu.2) (Real.exp_pos _)
+  -- the bound tends to zero
+  have hb : Filter.Tendsto b Filter.atTop (nhds 0) := by
+    have h1 : Filter.Tendsto (fun β : ℝ => 1 - zeta N M β ^ ((M + 1) * N))
+        Filter.atTop (nhds 0) := by
+      have hle : ∀ β : ℝ, 1 - zeta N M β ^ ((M + 1) * N)
+          ≤ (((M + 1) * N : ℕ) : ℝ) *
+            ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) := by
+        intro β
+        have := one_sub_le_zeta_pow N M β ((M + 1) * N)
+        linarith
+      have hnn : ∀ β : ℝ, 0 ≤ 1 - zeta N M β ^ ((M + 1) * N) := by
+        intro β
+        have h := pow_le_one₀ (zeta_pos N M β).le (zeta_le_one N M β) (n := (M + 1) * N)
+        linarith
+      have hright : Filter.Tendsto
+          (fun β : ℝ => (((M + 1) * N : ℕ) : ℝ) *
+            ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))))
+          Filter.atTop (nhds 0) := by
+        have hdiv : Filter.Tendsto (fun β : ℝ => -(β / ((M : ℝ) - 1)))
+            Filter.atTop Filter.atBot :=
+          Filter.tendsto_neg_atTop_atBot.comp (Filter.tendsto_id.atTop_div_const hM1)
+        have := Real.tendsto_exp_atBot.comp hdiv
+        simpa [mul_assoc] using this.const_mul ((((M + 1) * N : ℕ) : ℝ) * ((M : ℝ) * (N : ℝ)))
+      exact squeeze_zero hnn hle (by simpa [mul_assoc] using hright)
+    have h2 : Filter.Tendsto
+        (fun β : ℝ => (((M + 1) * N : ℕ) : ℝ) *
+          Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) *
+            Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))) / (((M + 1) * N : ℕ) : ℝ)))
+        Filter.atTop (nhds 0) := by
+      have hin : ∀ β : ℝ, Real.exp (β / ((M : ℝ) - 1)) *
+          Real.exp (-(β / ((M : ℝ) - 1) * (1 - δ))) = Real.exp (β / ((M : ℝ) - 1) * δ) := by
+        intro β
+        rw [← Real.exp_add]
+        congr 1
+        field_simp
+        ring
+      have hgrow : Filter.Tendsto (fun β : ℝ => Real.exp (β / ((M : ℝ) - 1) * δ))
+          Filter.atTop Filter.atTop :=
+        Real.tendsto_exp_atTop.comp
+          ((Filter.tendsto_id.atTop_div_const hM1).atTop_mul_const hδ)
+      have hneg : Filter.Tendsto
+          (fun β : ℝ => -Real.exp (β / ((M : ℝ) - 1) * δ) / (((M + 1) * N : ℕ) : ℝ))
+          Filter.atTop Filter.atBot :=
+        (Filter.tendsto_neg_atTop_atBot.comp hgrow).atBot_div_const hKpos
+      have := (Real.tendsto_exp_atBot.comp hneg).const_mul
+        ((((M + 1) * N : ℕ) : ℝ))
+      simp only [Function.comp_def, mul_zero] at this
+      simpa [hin, neg_div] using this
+    simpa [hbdef] using h1.add h2
+  have hbE : Filter.Tendsto (fun β : ℝ => ENNReal.ofReal (b β)) Filter.atTop (nhds 0) := by
+    simpa [Function.comp_def] using (ENNReal.continuous_ofReal.tendsto 0).comp hb
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hbE
+    (Filter.Eventually.of_forall fun _ => by simp) ?_
+  filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with β hβ using key β hβ
+
+/-- **Corollary 11.** From the zero matrix, the hitting time of `L` is bounded by an
+exponential waiting time of mean `1/(MN)` plus the same `e^{-β(1-δ)/(M-1)}`.
+
+Theorem 2.2 again, after the waiting time that is why Theorem 2.2 excludes the zero matrix:
+every rate at `0` equals `1`, and the first expression lands on a state that is not `0`.
+
+**This statement is false as written, and has to be restated before it can be proved.**  It
+renders "`τ` exponential of mean `1/(MN)`, independent of the process" as a supremum over
+`s ≥ 0` weighted by `e^{-MNs}`.  At `s = 0` the weight is `1`, leaving
+`P (R^{β,0} (L) > e^{-β(1-δ)/(M-1)})` alone; since `0 ∉ L` and the first holding time is
+exponential of rate `MN`, that is at least `e^{-MN e^{-β(1-δ)/(M-1)}}`, which tends to `1`
+for every `δ ∈ (0,1)`.  Averaging against the law of `τ` is an integral:
+
+```
+∫_0^∞ MN e^{-MNs} P (R^{β,0} (L) > s + e^{-β(1-δ)/(M-1)}) ds  →  0.
+```
+
+A formalisation-side error, not an error of the paper.  See the blueprint node `cor11`;
+equation (19) below, which the paper attributes to this corollary, is unaffected. -/
+theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
+    Filter.Tendsto
+      (fun β : ℝ => ⨆ s ∈ Set.Ici (0 : ℝ),
+        ENNReal.ofReal (Real.exp (-(((M * N : ℕ) : ℝ)) * s)) *
+          probHittingGT β 0 (ladderSet N M)
+            (ENNReal.ofReal (s + Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
+      Filter.atTop (nhds 0) := by
   sorry
 
 /-- **Equation (19)**, the quantitative form of Corollary 11:

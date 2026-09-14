@@ -564,11 +564,15 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   covers it.
 \end{theorem}
 \begin{proof}
+  \leanok
   \uses{aux-hitting-rate, rem4}
   The limit \ref{aux-hitting-rate} gives at $t = e^{-\frac{\beta}{M-1}(1-\delta)}$:
   there $e^{\beta/(M-1)} t = e^{\frac{\beta\delta}{M-1}} \to \infty$, so the
   second term vanishes, and the first is $1 - \zeta_\beta^{(M+1)N} \le
-  (M+1)MN^2 e^{-\beta/(M-1)}$ by \ref{rem4}. \textbf{Not formalised}.
+  (M+1)MN^2 e^{-\beta/(M-1)}$ by \ref{rem4}.  The supremum is bounded by that
+  one $u$-free quantity and squeezed.  \emph{Formalised, but not sorry-free}:
+  the proof is complete in Lean and inherits \texttt{sorryAx} from
+  \ref{aux-hitting-rate} and from nothing else.
 
   \textbf{This half does not wait on Doeblin}, and until this node was split
   from \ref{thm2-1} the repository said it did.  Part~2 never mentions
@@ -578,7 +582,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   invariant measure, at p.~19 of [GL24].  The split moves part~2 --- and with
   it \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and \ref{rem6} --- out of
   the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
-  which is to say behind \ref{lem19} and~\ref{lem20}.
+  which is to say behind \ref{lem19} and~\ref{lem20}.  Writing this proof is
+  what showed the split was not only bookkeeping: nothing but
+  \ref{aux-hitting-rate} was in the way.
 \end{proof}
 
 \paper{Theorem 3}
@@ -1326,6 +1332,31 @@ process pointwise.
   of mean $1/(MN)$, since every rate at $0$ equals $1$, and lands on a state
   that is not $0$, to which \ref{thm2-2} applies. \textbf{Not formalised}, and
   --- since \ref{thm2-2} does not --- no longer waiting on Doeblin.
+
+  \textbf{The Lean statement is not this one, and is false as written.}  It
+  renders ``$\tau$ exponential of mean $1/(MN)$, independent of the process''
+  as a supremum over $s \ge 0$ of $e^{-MNs}\,
+  \mathbb{P}(\Rhit{0}(\ladder) > s + e^{-\frac{\beta}{M-1}(1-\delta)})$.  At
+  $s = 0$ the weight is $1$, and what is left standing is
+  $\mathbb{P}(\Rhit{0}(\ladder) > e^{-\frac{\beta}{M-1}(1-\delta)})$ on its
+  own.  From $0$ every rate equals $1$, so the first holding time is
+  exponential of rate $MN$ and $\Rhit{0}(\ladder)$ is at least that time, since
+  $0 \notin \ladder$; the probability is therefore at least
+  $e^{-MN e^{-\frac{\beta}{M-1}(1-\delta)}}$, which tends to $1$ for every
+  $\delta \in (0,1)$.  The supremum cannot tend to $0$.
+
+  What excluding $0$ from \ref{thm2-2} costs is an \emph{average} against the
+  law of $\tau$, which is an integral and not a supremum:
+  \[
+    \int_0^{\infty} MN e^{-MNs}\;
+      \mathbb{P}\bigl(\Rhit{0}(\ladder) > s + e^{-\tfrac{\beta}{M-1}(1-\delta)}\bigr)
+      \,\mathrm{d}s \;\longrightarrow\; 0 .
+  \]
+  That is what the corollary says and what the Lean statement has to become
+  before it can be proved.  \textbf{A formalisation-side error, not an error of
+  the paper}; it is recorded rather than quietly repaired because restating a
+  numbered result is a choice, and \ref{eq19} --- which the paper attributes to
+  this corollary --- is unaffected, being an inequality with no $\tau$ in it.
 \end{proof}
 
 \paper{Remark 6}
@@ -2287,12 +2318,12 @@ a route that does not need the step the written proof asserts --- the one
 departure of that kind in this repository, and the reason is written at its
 node.
 
-\ref{thm2-2}, \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and~\ref{rem6}
-join this queue rather than the one above once their proofs are written: none
-of them is blocked on anything today, and each rests on \ref{prop7} when it is
-written, hence on \ref{lem19} and~\ref{lem20}.  They are listed as not done
-rather than as blocked because that is what they are: the obstruction is
-recorded once, at \ref{lem19} and~\ref{lem20}, and not copied down the graph.
+\ref{thm2-2} joined this queue as soon as its proof was written, and
+\ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and~\ref{rem6} will: none of
+them is blocked on anything today, and each rests on \ref{prop7} once written,
+hence on \ref{lem19} and~\ref{lem20}.  They are listed as not done rather than
+as blocked because that is what they are: the obstruction is recorded once, at
+\ref{lem19} and~\ref{lem20}, and not copied down the graph.
 
 \subsection*{Cited from outside the paper}
 
@@ -2377,8 +2408,8 @@ Nothing is left on this list, and the one item that outlived it,
 \ref{aux-measurable-hitting}, is now proved as well; the subsection after next
 records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or simply not done ---
-and the last of those groups now has \ref{thm2-2}, \ref{cor11},
-\ref{aux-hitting-rate} and~\ref{eq19} in it beside \ref{rem6}.
+and the last of those groups now has \ref{cor11}, \ref{aux-hitting-rate}
+and~\ref{eq19} in it beside \ref{rem6}.
 
 \subsection*{Was here, and is now closed}
 
@@ -2583,16 +2614,22 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{The four continuous-time estimates around part~2 of Theorem~2}:
-    \ref{aux-hitting-rate} first, since \ref{thm2-2} is its limit, \ref{cor11}
-    and \ref{eq19} after it, and \ref{rem6} stated at last.  This is what is
-    left that is nobody's fault, now that \ref{aux-measurable-hitting},
-    \ref{prop18}, \ref{thm4} part~1, \ref{prop9}, \ref{cor10}
-    and~\ref{aux-greedy-avoids} are closed.  Nothing outside this repository is
-    needed for any of them: the process, its holding times and its hitting
-    times are all built, and what is missing is an exponential race and a union
-    bound.  None of them will be \emph{proved} before item~2 --- they rest on
-    \ref{prop7} --- but each turns green with no edit the moment it is.
+  \item \textbf{The continuous-time estimates around part~2 of Theorem~2}.
+    \ref{thm2-2} is written, and rests on \ref{aux-hitting-rate} alone; that
+    display is next, and it is the only real work of the group, an exponential
+    race among the holding times against the greedy event.  \ref{cor11} needs a
+    first-jump decomposition of \texttt{ctsPathMeasure}, which this library does
+    not yet have --- and its Lean statement has to be repaired first, for the
+    reason written at its node.  \ref{eq19} follows the same decomposition, and
+    \ref{rem6} can be stated at any time.
+
+    This is what is left that is nobody's fault, now that
+    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9},
+    \ref{cor10} and~\ref{aux-greedy-avoids} are closed.  Nothing outside this
+    repository is needed: the process, its holding times and its hitting times
+    are all built.  None of them will be \emph{proved} before item~2, since
+    each rests on \ref{prop7}; but a written proof turns green with no edit the
+    moment its ancestors do, which is why writing them is worth doing first.
   \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
     and~\ref{note-lem20}.  Worth settling with the authors first, since the
     repairs change the written proofs. \ref{prop7} then follows by assembling
