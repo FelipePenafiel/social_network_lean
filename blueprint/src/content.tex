@@ -326,6 +326,40 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   processes. \textbf{Not formalised}: Mathlib has no Doeblin criterion.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[Doeblin's criterion, the uniqueness half]
+  \label{aux-doeblin}
+  \lean{SocialNetwork.iterateKernel, SocialNetwork.invariant_iterateKernel, SocialNetwork.eq_of_invariant_of_minorisation_on, SocialNetwork.eq_of_invariant_of_minorisation, SocialNetwork.eq_of_invariant_of_iterate_minorisation, SocialNetwork.tsum_measure_singleton, SocialNetwork.measure_singleton_of_invariant, SocialNetwork.tsum_tsub}
+  \leanok
+  Let $\kappa$ be a Markov kernel on a countable space, $S$ a set, $l$ a point
+  and $c > 0$ with $\kappa^n(x, \{l\}) \ge c$ for every $x \in S$.  Then
+  $\kappa$ has \emph{at most one} invariant probability measure carried by $S$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Write $m(x) = \min\{\mu(x), \nu(x)\}$ for two such measures and
+  $T = \sum_x m(x)$, so that $\mu = \nu$ exactly when $T = 1$.  Invariance
+  carries $m$ forward --- $m(y) \ge \sum_x \kappa^n(x,\{y\})\, m(x)$, since each
+  of $\mu(y)$ and $\nu(y)$ is that sum against its own measure and $m$ is below
+  both --- and summing over $y$ gives $T \ge T$, which says nothing.  The
+  minorisation is what turns it into something: at $l$,
+  \[
+    \mu(l) = \sum_x \kappa^n(x,\{l\})\, m(x)
+      + \sum_x \kappa^n(x,\{l\})\, (\mu(x) - m(x))
+      \;\ge\; \sum_x \kappa^n(x,\{l\})\, m(x) + c\,(1 - T),
+  \]
+  and the same for $\nu$, so the term at $l$ carries a surplus of $c(1-T)$.
+  Summing over $y$ now gives $T \ge T + c(1-T)$, whence $T = 1$.
+
+  \textbf{No counterpart in the paper}, which cites Doeblin's criterion.  The
+  argument is written for a general Markov kernel on a countable space because
+  it is exactly as easy there, and it consumes nothing but
+  \texttt{Kernel.Invariant}: no irreducibility, no aperiodicity, no recurrence,
+  and --- this is the point --- no existence theorem.  The set $S$ is there
+  because the chain of the paper lives on the state space of \ref{eq2}, which is
+  not all of $\mathbb{Z}^{\actors \times \opinions}$.
+\end{proof}
+
 \paper{Theorem 1.2}
 \begin{theorem}[The invariant measure of the skeleton]
   \label{thm1-2-skeleton}
@@ -336,9 +370,32 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   carried by $\Sspace$.
 \end{theorem}
 \begin{proof}
-  This is the Doeblin step. \textbf{Not formalised}, and it is the keystone:
-  \ref{thm1-2}, \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and
-  \ref{thm31} all rest on it.
+  \uses{aux-doeblin, prop6, prop8}
+  This is the Doeblin step, and it is the keystone: \ref{thm1-2},
+  \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31} all rest
+  on it.  \textbf{Not formalised}, and what is missing is now precise rather
+  than wholesale.
+
+  \emph{The criterion} is \ref{aux-doeblin}, and it is proved.  What it wants is
+  a minorisation, at one state, of some iterate of the skeleton kernel, uniform
+  over $\Sspace$.
+
+  \emph{The minorisation} is the argument at p.~17 of the paper, and it is
+  work in this repository rather than a gap in Mathlib.  Its three ingredients
+  are: that $N$ expressions of $o$, made by the actors in decreasing order, send
+  \emph{any} matrix to the canonical ladder $l^o$ of \ref{def1} --- each row is
+  reset when its actor expresses and then rises by $M-1$ once per later
+  expression --- which is the paper's~(12); that after $N$ greedy expressions
+  the matrix is entrywise between $-MN$ and $N$, which is \ref{prop6}, with
+  probability at least $\zeta_\beta^N$ by \ref{prop8}; and that from a matrix so
+  bounded the $N$ expressions above each have probability bounded below, the
+  rates of \ref{def3} being ratios of exponentials of bounded exponents.
+
+  \emph{Existence} is the half that does need Markov-chain theory.  [GL24] gets
+  it from positive recurrence: the same minorisation bounds the return time to
+  $l^o$ by $2N$ times a geometric variable, so its expectation is finite, and
+  the invariant measure is then built from one excursion.  That construction is
+  what \texttt{blueprint/blueprint.md} records as absent.
 \end{proof}
 
 \paper{Equation (13)}
@@ -2426,6 +2483,14 @@ subsection that held that group is kept below as the record of what it cost.
 
 \subsection*{Blocked on Mathlib}
 
+\ref{aux-doeblin} has changed what the first item below means.  Doeblin's
+\emph{criterion} is no longer missing: it is proved here, for a general Markov
+kernel on a countable space, and it is the half that gives uniqueness.  What is
+missing at \ref{thm1-2-skeleton} is the \emph{existence} half --- the
+construction of an invariant measure from one excursion of a positive recurrent
+chain --- and, separately, the minorisation this chain satisfies, which is work
+in this repository and not a gap in Mathlib.  Its node says which three pieces.
+
 \ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
 \ref{thm2-1}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
@@ -2632,10 +2697,10 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Forty-nine proofs
+\ref{note-green}: does it follow what the paper wrote?  Fifty proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty entries.  Every one of them is named, and
+own, so it counts fifty-one entries.  Every one of them is named, and
 \texttt{scripts/status.py} now checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.  The check was added because the
@@ -2750,19 +2815,21 @@ single line and argues neither, and uses the $m$-step bound in the sketch of
 an outside source to settle: the paper reads ``without visiting $u$'' off
 \ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
 
-\medskip \noindent\textbf{No counterpart in the paper} (twelve).
-\ref{aux-trust}, \ref{aux-ladder-consensus}, \ref{aux-state-along},
-\ref{aux-consensus-ladder}, \ref{aux-ladder-nonempty},
-\ref{aux-biased-ladder-nonempty}, \ref{aux-biased-ladder-consensus},
-\ref{aux-shift} and~\ref{aux-measurable-hitting}, \ref{aux-biased-ladder-steep},
-and the two that carry the clock of the continuous-time process,
-\ref{aux-holding-times} and~\ref{aux-restart}, together
-with the rest of the plumbing of the sample space, which is not made of
-numbered statements and so appears here only inside definitions and remarks.
-The last two are the substantial ones, and neither is a check of anything the
-paper wrote: \ref{aux-holding-times} says what the jump times of a greedy run
-are, and \ref{aux-restart} is the Markov property at the first jump for the
-jump--hold representation.  The paper uses both without stating either.
+\medskip \noindent\textbf{No counterpart in the paper} (thirteen).
+\ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},
+\ref{aux-ladder-consensus}, \ref{aux-consensus-ladder},
+\ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
+\ref{aux-biased-ladder-consensus}, \ref{aux-biased-ladder-steep},
+\ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart}
+and~\ref{aux-doeblin}, together with the plumbing of the sample space, which is
+not made of numbered statements and so appears here only inside definitions and
+remarks.
+
+The last three are the substantial ones, and none of them checks anything the
+paper wrote.  \ref{aux-holding-times} says what the jump times of a greedy run
+are, and \ref{aux-restart} is the Markov property at the first jump; the paper
+uses both without stating either.  \ref{aux-doeblin} is Doeblin's criterion,
+which the paper cites.
 
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the

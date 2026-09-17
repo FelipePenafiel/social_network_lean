@@ -57,7 +57,7 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 |---|---|---|
 | Theorem 1.1 | `nonExplosion` | Poisson point processes |
 | Theorem 1.2 | `existsUnique_invariantCts` | Doeblin, then the transfer of equation (13) |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | Doeblin's minorisation criterion.  The keystone: five results below wait on it |
+| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | the existence half: the criterion itself is now proved (`eq_of_invariant_of_iterate_minorisation`), and what is left is an invariant measure to apply it to, plus this chain's minorisation.  The keystone: five results below wait on it |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer; needs Doeblin to be worth stating, and its own statement is one the authors may want to change |
 | Theorem 2.1 | `measure_ladderSet_ge` | Doeblin, then Proposition 9 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
@@ -70,12 +70,12 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 18 | 17 | 35 |
+| Proved | 18 | 18 | 36 |
 | Proof written, resting on an unproved statement | 11 | 2 | 13 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 16 | 0 | 16 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **23** | **85** |
+| **Total** | **62** | **24** | **86** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -160,6 +160,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
+| Doeblin's criterion, the uniqueness half | `iterateKernel` +7 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |
 | a biased ladder is a biased steep ladder | `Bias.IsBiasedLadder.isBiasedSteepLadder` +6 | proved |

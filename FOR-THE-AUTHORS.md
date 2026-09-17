@@ -395,6 +395,16 @@ continuous-time analysis of Appendix B (Lemma 14, Lemma 29).  `blueprint/bluepri
 audit of what Mathlib does and does not provide, checked against the pinned
 revision.
 
+The first of those has since been halved.  The **criterion** is now proved here
+(`SocialNetwork/Doeblin.lean`), for a general Markov kernel on a countable
+space: if some iterate is bounded below at one state by `c > 0`, uniformly over
+a set carrying the measures, there is at most one invariant probability measure
+carried by that set.  What is left at Theorem 1.2 is **existence**, which does
+need theory Mathlib lacks, and this chain's **minorisation**, which is your
+page 17 and is work here rather than a gap — its three ingredients are named at
+the blueprint node.  Nothing is asked of you; it is recorded because the entry
+used to say the whole criterion was missing, and that is no longer true.
+
 Nothing is unproved for neither reason any more.  **Every numbered statement of
 the paper is now stated in Lean**, and what is unproved is blocked on Mathlib,
 blocked on the paper, or cited from outside it.

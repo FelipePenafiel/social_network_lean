@@ -117,7 +117,10 @@ REASONS: dict[str, tuple[str, str]] = {
     # -- Mathlib ------------------------------------------------------------
     "thm1-2-skeleton": (
         BLOCKED_ON_MATHLIB,
-        "Doeblin's minorisation criterion.  The keystone: five results below wait on it",
+        "the existence half: the criterion itself is now proved "
+        "(`eq_of_invariant_of_iterate_minorisation`), and what is left is an invariant "
+        "measure to apply it to, plus this chain's minorisation.  The keystone: five "
+        "results below wait on it",
     ),
     "thm1-2": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
     "thm25": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
