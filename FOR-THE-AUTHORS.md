@@ -35,7 +35,7 @@ the requests below [GL24] has already answered.
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
-| [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and the first is now proved here |
+| [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
 repository has already taken the only route available, and says so at the declaration.
@@ -56,7 +56,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
-| [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses |
+| [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses, and **proved** under it |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
 
 ---
@@ -263,7 +263,7 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `note-def4`; recorded, and the Lean definition carries it. |
 | 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed.  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what the paper uses and is not what is stated.  **Your call** whether to restate it. |
 | 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is proved** from it.  See §3.3.  Proposition 23 is untouched. |
-| 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `aux-hitting-rate` and `eq19` — each carrying a `sorry`, and Lemma 13 is proved from them.  They were filed here as *citations from outside the paper*, which was wrong: they are steps of your own proofs of part 2 of Theorem 2 and of Corollary 11, and [GL24] writes both out at its p. 19 — the first as its equations (16)–(18), the second as its Corollary 13.  The first of them is now **proved**, along the [GL24] argument; the second waits on a restart of the continuous-time process at the first jump.  **Your call** whether either should become a numbered statement of the paper. |
+| 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `aux-hitting-rate` and `eq19` — each carrying a `sorry`, and Lemma 13 is proved from them.  They were filed here as *citations from outside the paper*, which was wrong: they are steps of your own proofs of part 2 of Theorem 2 and of Corollary 11, and [GL24] writes both out at its p. 19 — the first as its equations (16)–(18), the second as its Corollary 13.  Both are now **proved**: the first along the [GL24] argument, modulo Lemmas 19 and 20; the second outright, from a restart of the continuous-time process at its first jump (§4).  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
 | 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
 | 2.10 | **Proposition 9** | The statement quantifies over `β > 0` and `u ∉ L̂`, with no hypothesis on `u` beyond that; its proof calls Proposition 7, which is stated for `u ∈ S`, and the whole paper works in `S`. | `IsState u` added to the Lean statement.  Also stated for an *arbitrary* invariant probability measure of the skeleton rather than for a named `μ̃^β`, since its existence is Theorem 1.2 — which, with Kac's inequality in place of Kac's identity, Proposition 9 no longer needs. |
@@ -341,6 +341,17 @@ blueprint's audit section classifies every formalised proof this way.
 * **Proposition 8.**  The iteration over `m`, which the paper does by conditioning
   in (10), goes through the Ionescu–Tulcea kernels — Mathlib offers no
   decomposition of that shape.  Same Markov property, different formalism.
+* **Corollary 11 and equation (19), the restart.**  Both read the process after
+  its first expression — "conditionally on the first jump" — and the paper does
+  not say in what sense.  In Lean it is the Markov property at the first jump for
+  the jump–hold representation, proved from the construction: one step of the
+  driving kernel keeps the history and appends a step drawn at the matrix that
+  history reaches, so dropping the first entry of a history shifts that reading by
+  one.  The corresponding statement about hitting times,
+  `R^{β,u}(θ)(ω) ≤ T₁(ω) + R^{β,v}(θ)(σω)`, needs every holding time positive,
+  which is almost sure, and splits on the jump counter: on the explosion event the
+  counter is junk on both sides, and there the matrix at stake is the one the first
+  expression reaches, shown at `T₁` itself.  Theorem 1.1 would remove that case.
 * **Proposition 21.**  The quantity that resets and grows by one per step is `nₐ`,
   not the row supremum; the passage is `u (a, p) = cₚ(1+γ) - γnₐ ≤ nₐ`.
 * **Propositions 17 and 24.**  Appendix C invokes the proofs of Propositions 6
@@ -384,17 +395,21 @@ continuous-time analysis of Appendix B (Lemma 14, Lemma 29).  `blueprint/bluepri
 audit of what Mathlib does and does not provide, checked against the pinned
 revision.
 
-Three statements are unproved for neither reason — nobody's fault, and no
-obstruction known.  Two stand around **part 2 of Theorem 2**: **Corollary 11**,
-which was filed under Doeblin, and **equation (19)**, which was filed as a
-citation.  Reading part 2 apart from part 1 moved those, and part 2 and the
-first display of §2.7 with them — and **both of those are now proved**.  Part 2
-says nothing about the invariant measure, so nothing it needed was missing from
-this repository: what it wanted was the clock, and the clock is the
-construction's own (`aux-holding-times` in the blueprint).  The third is
-**Remark 6**, which has no Lean counterpart at all and which nothing downstream
-uses; stating it costs nothing, and proving it goes through part 2, not — as
-this file used to say — through Corollary 11 and Doeblin.
+One statement is unproved for neither reason — nobody's fault, and no
+obstruction known: **Remark 6**, which has no Lean counterpart at all and which
+nothing downstream uses.  Stating it costs nothing, and proving it goes through
+part 2 of Theorem 2, not — as this file used to say — through Corollary 11 and
+Doeblin.
+
+There were three.  **Corollary 11** was filed under Doeblin and **equation (19)**
+as a citation; reading part 2 apart from part 1 moved both, and part 2 and the
+first display of §2.7 with them.  All four are now written.  Part 2 says nothing
+about the invariant measure, so nothing it needed was missing from this
+repository: what it wanted was the clock, and the clock is the construction's own
+(`aux-holding-times` in the blueprint).  What Corollary 11 and equation (19)
+wanted beyond that was one lemma, the restart of the process at its first jump
+(§4), and **equation (19) is proved outright** — it turns out not to pass through
+part 2 at all.
 
 None of what is proved there is proved *outright*: part 2 and the display rest
 on Proposition 7, hence on Lemmas 19 and 20, and turn green with no edit the
@@ -486,7 +501,8 @@ exponential of rate `MN` — which is `1/2`.
 **Nothing is asked of you**, and nothing in the paper needs changing: your proof
 of Lemma 13 uses the right reading.  It is recorded because the sentence as
 written admits a reading under which the corollary fails, and a formalisation is
-the kind of reader that takes it.
+the kind of reader that takes it.  Under the right reading the corollary is now
+proved, and so is equation (19).
 
 **Remark 6** is the one numbered statement of the paper with no Lean counterpart.
 It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,
@@ -526,8 +542,8 @@ sequence of expressed pairs, and non-explosion is what makes the continuous-time
 defined. And your part 1 indexes from 1, the formalisation from 0, so where you write
 `⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean reads `∀ m ≥ N, A_m = A_N`.
 
-With this closed, **Remark 6**, **Corollary 11** and **equation (19)** are what is left in the
-repository that is nobody's fault.
+With this closed, and with **Corollary 11** and **equation (19)** since written,
+**Remark 6** is what is left in the repository that is nobody's fault.
 
 ---
 

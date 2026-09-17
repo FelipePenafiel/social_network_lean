@@ -133,21 +133,10 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "cor11": (
-        NOT_YET,
-        "part 2 again, after the exponential waiting time that is why the zero matrix had "
-        "to be excluded from it; what is missing is a restart of the continuous-time "
-        "process at the first jump, which this library does not have",
-    ),
     "rem6": (
         NOT_YET,
         "the one numbered statement of the paper with no Lean counterpart; nothing "
         "downstream uses it, and its route is part 2, not Corollary 11",
-    ),
-    "eq19": (
-        NOT_YET,
-        "equation (19), displayed inside the proof of Lemma 13: the decomposition "
-        "Corollary 11's own proof makes at the first expression from the zero matrix",
     ),
 }
 
@@ -317,6 +306,25 @@ STRUCTURE = re.compile(
 FIELD = re.compile(r"^\s+([a-z_][A-Za-z0-9_']*)\s*:[^=]")
 AXIOM = re.compile(r"^\s*axiom\s+([A-Za-z_][A-Za-z0-9_.'!?]*)")
 SORRY = re.compile(r"^\s*sorry\s*$")
+
+
+AUDIT_OPEN = "\\textbf{Follow the paper's proof}"
+AUDIT_CLOSE = "\\textbf{No proof departs from the paper"
+
+
+def audit_groups() -> str:
+    """The three groups of the blueprint's audit of the formalised proofs.
+
+    Every proof carrying ``\\leanok`` has to be classified in one of them.  Nothing else
+    checks that, and it drifts silently: a proof written without a line in the audit is
+    an unaudited proof, and the section claims there are none.
+    """
+    text = CONTENT.read_text(encoding="utf-8")
+    start = text.find(AUDIT_OPEN)
+    end = text.find(AUDIT_CLOSE, start + 1)
+    if start == -1 or end == -1:
+        raise ValueError("the blueprint's audit section no longer has its three groups")
+    return text[start:end]
 
 
 def declarations() -> tuple[set[str], set[str], set[str]]:
@@ -774,6 +782,11 @@ def main() -> int:
     cited_names = {n for node in nodes for n in node.lean}
     for orphan in sorted(sorries - cited_names):
         problems.append(f"{orphan} carries a sorry and no blueprint node cites it")
+    audit = audit_groups()
+    for node in nodes:
+        if node.proof_ok and f"\\ref{{{node.label}}}" not in audit:
+            problems.append(f"{node.label}: its proof is formalised, and the audit of "
+                            f"Section \"What the formalised proofs check\" does not name it")
 
     status = resolve(nodes, axioms, sorries)
     if args.axioms:

@@ -165,8 +165,9 @@ python3 blueprint/check_decls.py   # the same name check against plasTeX's own l
 ```
 
 `scripts/status.py` refuses a `sorry` that no blueprint node accounts for, a Lean name
-the blueprint cites that the library does not declare, and an unproved statement with
-no recorded reason. The CI axiom check is generated from the same source, so a
+the blueprint cites that the library does not declare, an unproved statement with
+no recorded reason, and a formalised proof that the blueprint's audit section does not
+classify. The CI axiom check is generated from the same source, so a
 `\leanok` that has not been earned fails the build rather than going unnoticed.
 
 `blueprint/blueprint.md` is the engineering companion and carries no statement tables —

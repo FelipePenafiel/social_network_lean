@@ -1233,6 +1233,567 @@ theorem hittingTimeCts_le_jumpTime {u : Pressure N M} {θ : Set (Pressure N M)}
 
 end HoldingTimes
 
+/-! ### Restarting the process at the first jump
+
+Corollary 11 and equation (19) both read the process after its first expression: the waiting
+time `τ = T₁` at the start, and then a process started at the matrix that expression reaches.
+Nothing in `SocialNetwork.Skeleton` restarts the continuous-time process --- `Trajectory.shift`
+restarts the skeleton, which carries no clock --- so the restart is built here.
+
+It is the Markov property at time `1` for the jump-hold representation, and it is exact: the
+driving kernel reads the history only through the matrix it reaches, and dropping the first
+step of a history shifts that reading by one.  The work is in three steps.
+
+* `SocialNetwork.ctsPartialTraj_succ_apply` describes one step of the kernel explicitly --- the
+  history is kept and one more step is drawn from `stepLaw` at the matrix it reaches --- which
+  turns the shift into a statement about `SocialNetwork.stepLaw` alone.
+* `SocialNetwork.map_ctsPartialTraj_shiftStepHistory` is the induction on the length of the
+  history, and `SocialNetwork.map_ctsTraj_shiftStepPath` passes to whole realisations by
+  checking the two laws on cylinders.
+* `SocialNetwork.hittingTimeCts_le_shift` is the pointwise half: with every holding time
+  positive, the hitting time from `u` is at most `T₁` plus the hitting time of the shifted
+  realisation.  Its proof splits on whether the shifted jump counter is finite at the time in
+  question; on the explosion event, where the counter is junk on both sides, the matrix at
+  stake is the one the first expression reaches, shown at `T₁` itself.  Non-explosion
+  (Theorem 1.1) would remove that case, and is not available.
+
+**No counterpart among the numbered statements of the paper**, which restarts the process at
+`τ` without comment. -/
+
+section Restart
+
+/-- The realisation shifted past its first step. -/
+def shiftStepPath (ω : ℕ → Step N M) : ℕ → Step N M := fun i => ω (1 + i)
+
+theorem measurable_shiftStepPath : Measurable (shiftStepPath (N := N) (M := M)) :=
+  measurable_pi_lambda _ fun i => measurable_pi_apply (1 + i)
+
+/-- A history of the first `n + 2` steps, shifted past its first entry. -/
+def shiftStepHistory (n : ℕ) (x : (i : Finset.Iic (n + 1)) → Step N M) :
+    (i : Finset.Iic n) → Step N M :=
+  fun i => x ⟨1 + i.1, Finset.mem_Iic.2 (by have := Finset.mem_Iic.1 i.2; omega)⟩
+
+theorem measurable_shiftStepHistory (n : ℕ) :
+    Measurable (shiftStepHistory (N := N) (M := M) n) :=
+  measurable_pi_lambda _ fun _ => measurable_pi_apply _
+
+/-- A history of the first `n + 1` steps, extended by one more step. -/
+def extendStepHistory {n : ℕ} (x : (i : Finset.Iic n) → Step N M) (z : Step N M) :
+    (i : Finset.Iic (n + 1)) → Step N M :=
+  fun i => if h : i.1 ≤ n then x ⟨i.1, Finset.mem_Iic.2 h⟩ else z
+
+theorem measurable_extendStepHistory {n : ℕ} (x : (i : Finset.Iic n) → Step N M) :
+    Measurable (extendStepHistory x) := by
+  refine measurable_pi_lambda _ fun i => ?_
+  by_cases h : i.1 ≤ n
+  · simp [extendStepHistory, h]
+  · simpa [extendStepHistory, h] using measurable_id'
+
+theorem shiftStepHistory_extendStepHistory {n : ℕ}
+    (x : (i : Finset.Iic (n + 1)) → Step N M) (z : Step N M) :
+    shiftStepHistory (n + 1) (extendStepHistory x z)
+      = extendStepHistory (shiftStepHistory n x) z := by
+  funext i
+  have hi : i.1 ≤ n + 1 := Finset.mem_Iic.1 i.2
+  simp only [shiftStepHistory, extendStepHistory]
+  by_cases h : i.1 ≤ n
+  · rw [dif_pos (by omega), dif_pos h]
+  · rw [dif_neg (by omega), dif_neg h]
+
+theorem frestrictLe_shiftStepPath (n : ℕ) (ω : ℕ → Step N M) :
+    Preorder.frestrictLe (π := fun _ : ℕ => Step N M) n (shiftStepPath ω)
+      = shiftStepHistory n (Preorder.frestrictLe (n + 1) ω) := rfl
+
+theorem ofStepPath_shiftStepPath (ω : ℕ → Step N M) :
+    Trajectory.ofStepPath (shiftStepPath ω) = (Trajectory.ofStepPath ω).shift 1 := rfl
+
+/-- Replaying a shifted history from the state the first step reaches is replaying the whole
+history one step further. -/
+theorem state_ofStepHistory_shiftStepHistory (u : Pressure N M) {n : ℕ}
+    (x : (i : Finset.Iic (n + 1)) → Step N M) {k : ℕ} (hk : k ≤ n + 1) :
+    (Trajectory.ofStepHistory (shiftStepHistory n x)).state
+        ((Trajectory.ofStepHistory x).state u 1) k
+      = (Trajectory.ofStepHistory x).state u (1 + k) := by
+  rw [Trajectory.state_add]
+  refine Trajectory.state_congr _ k (fun j hj => ?_) (fun j hj => ?_)
+  · rw [Trajectory.shift_actor]
+    show (Trajectory.ofHistory fun i => ((shiftStepHistory n x) i).1).actor j
+        = (Trajectory.ofHistory fun i => (x i).1).actor (1 + j)
+    rw [Trajectory.ofHistory_actor _ (show j ≤ n by omega),
+      Trajectory.ofHistory_actor _ (show 1 + j ≤ n + 1 by omega)]
+    rfl
+  · rw [Trajectory.shift_opinion]
+    show (Trajectory.ofHistory fun i => ((shiftStepHistory n x) i).1).opinion j
+        = (Trajectory.ofHistory fun i => (x i).1).opinion (1 + j)
+    rw [Trajectory.ofHistory_opinion _ (show j ≤ n by omega),
+      Trajectory.ofHistory_opinion _ (show 1 + j ≤ n + 1 by omega)]
+    rfl
+
+/-! ### One step of the driving kernel, explicitly -/
+
+variable [NeZero N] [NeZero M]
+
+omit [NeZero N] [NeZero M] in
+theorem IicProdIoc_prodMk_piSingleton {n : ℕ} (x : (i : Finset.Iic n) → Step N M) :
+    (IicProdIoc (X := fun _ : ℕ => Step N M) n (n + 1)) ∘ (Prod.mk x) ∘
+        (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Step N M) n)
+      = extendStepHistory x := by
+  funext z i
+  simp only [Function.comp_apply, IicProdIoc, extendStepHistory]
+  by_cases h : i.1 ≤ n
+  · rw [dif_pos h, dif_pos h]
+  · rw [dif_neg h, dif_neg h]
+    simp only [MeasurableEquiv.piSingleton, MeasurableEquiv.coe_mk, Equiv.coe_fn_mk,
+      eqRec_eq_cast, cast_eq]
+
+/-- One step of the kernel keeps the history it started from and appends a step drawn from the
+law at the matrix the history reaches. -/
+theorem ctsPartialTraj_succ_apply (β : ℝ) (u : Pressure N M) (n : ℕ)
+    (x : (i : Finset.Iic n) → Step N M) :
+    Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) n (n + 1) x
+      = (stepLaw β ((Trajectory.ofStepHistory x).state u (n + 1))).map (extendStepHistory x) := by
+  have hpi : Measurable (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Step N M) n) :=
+    (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Step N M) n).measurable
+  have hIic : Measurable (IicProdIoc (X := fun _ : ℕ => Step N M) n (n + 1)) :=
+    measurable_IicProdIoc
+  have hmk : Measurable (Prod.mk (β := (i : Finset.Ioc n (n + 1)) → Step N M) x) :=
+    measurable_prodMk_left
+  rw [Kernel.partialTraj_succ_self, Kernel.map_apply _ hIic, Kernel.prod_apply,
+    Kernel.id_apply, Kernel.map_apply _ hpi, ctsDrivingKernel_apply, Measure.dirac_prod,
+    Measure.map_map hmk hpi, Measure.map_map hIic (hmk.comp hpi),
+    IicProdIoc_prodMk_piSingleton]
+
+/-! ### Restarting the process at the first jump -/
+
+omit [NeZero N] [NeZero M] in
+theorem shiftStepHistory_zero_comp (y : (i : Finset.Iic 0) → Step N M) :
+    (shiftStepHistory (N := N) (M := M) 0) ∘ (extendStepHistory y) = toStepHistoryZero := by
+  funext z i
+  simp only [Function.comp_apply, shiftStepHistory, extendStepHistory, toStepHistoryZero]
+  rw [dif_neg (by omega)]
+
+omit [NeZero N] [NeZero M] in
+theorem state_one_frestrictLe₂ (u : Pressure N M) {n : ℕ}
+    (x : (i : Finset.Iic (n + 1)) → Step N M) :
+    (Trajectory.ofStepHistory x).state u 1
+      = (Trajectory.ofStepHistory (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M)
+          (Nat.zero_le (n + 1)) x)).state u 1 := by
+  refine Trajectory.state_congr u 1 (fun j hj => ?_) (fun j hj => ?_)
+  · have hj0 : j = 0 := by omega
+    subst hj0
+    show (Trajectory.ofHistory fun i => (x i).1).actor 0
+      = (Trajectory.ofHistory fun i =>
+          ((Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.zero_le (n + 1)) x) i).1).actor 0
+    rw [Trajectory.ofHistory_actor _ (Nat.zero_le (n + 1)),
+      Trajectory.ofHistory_actor _ (le_refl 0)]
+    rfl
+  · have hj0 : j = 0 := by omega
+    subst hj0
+    show (Trajectory.ofHistory fun i => (x i).1).opinion 0
+      = (Trajectory.ofHistory fun i =>
+          ((Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.zero_le (n + 1)) x) i).1).opinion 0
+    rw [Trajectory.ofHistory_opinion _ (Nat.zero_le (n + 1)),
+      Trajectory.ofHistory_opinion _ (le_refl 0)]
+    rfl
+
+/-- **The restart at the first jump, on histories.**  From a fixed first step, the history of
+the steps that follow is the history of the process started at the matrix that step reaches. -/
+theorem map_ctsPartialTraj_shiftStepHistory (β : ℝ) (u : Pressure N M) (n : ℕ)
+    (y : (i : Finset.Iic 0) → Step N M) :
+    (Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 (n + 1) y).map
+        (shiftStepHistory n)
+      = ctsHistoryMeasure β ((Trajectory.ofStepHistory y).state u 1) n := by
+  induction n with
+  | zero =>
+      rw [ctsPartialTraj_succ_apply, Measure.map_map (measurable_shiftStepHistory 0)
+        (measurable_extendStepHistory y), shiftStepHistory_zero_comp]
+      unfold ctsHistoryMeasure
+      rw [Kernel.partialTraj_self, Measure.id_comp]
+  | succ n ih =>
+      set v := (Trajectory.ofStepHistory y).state u 1 with hv
+      have hae : ∀ᵐ x ∂(Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+          (ctsDrivingKernel β u) 0 (n + 1) y), (Trajectory.ofStepHistory x).state u 1 = v := by
+        have hmap : (Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+              (ctsDrivingKernel β u) 0 (n + 1) y).map
+            (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+              (Trajectory.ofStepHistory x).state u 1) = Measure.dirac v := by
+          have hcomp : (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+                (Trajectory.ofStepHistory x).state u 1)
+              = (fun h : (i : Finset.Iic 0) → Step N M =>
+                  (Trajectory.ofStepHistory h).state u 1) ∘
+                (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) (Nat.zero_le (n + 1))) :=
+            funext fun x => state_one_frestrictLe₂ u x
+          rw [hcomp, ← Measure.map_map
+              (measurable_stepHistoryState u 0 1)
+              (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Step N M) (Nat.zero_le (n + 1))),
+            Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Step N M) y
+              (Nat.zero_le (n + 1)), Kernel.partialTraj_self, Kernel.id_apply,
+            Measure.map_dirac' (measurable_stepHistoryState u 0 1) y]
+        rw [Filter.eventually_iff, mem_ae_iff]
+        have hset : {x : (i : Finset.Iic (n + 1)) → Step N M |
+              (Trajectory.ofStepHistory x).state u 1 = v}ᶜ
+            = (fun x : (i : Finset.Iic (n + 1)) → Step N M =>
+                (Trajectory.ofStepHistory x).state u 1) ⁻¹' {v}ᶜ := rfl
+        rw [hset, ← Measure.map_apply (measurable_stepHistoryState u (n + 1) 1)
+            MeasurableSet.of_discrete, hmap,
+          Measure.dirac_apply' _ MeasurableSet.of_discrete]
+        simp
+      ext S hS
+      have hpt : ∀ x : (i : Finset.Iic (n + 1)) → Step N M,
+          (Trajectory.ofStepHistory x).state u 1 = v →
+          Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) (n + 1) (n + 2) x
+              (shiftStepHistory (n + 1) ⁻¹' S)
+            = Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β v) n (n + 1)
+                (shiftStepHistory n x) S := by
+        intro x hx
+        rw [ctsPartialTraj_succ_apply, ctsPartialTraj_succ_apply,
+          Measure.map_apply (measurable_extendStepHistory x)
+            ((measurable_shiftStepHistory (n + 1)) hS),
+          Measure.map_apply (measurable_extendStepHistory (shiftStepHistory n x)) hS]
+        have hpre : extendStepHistory x ⁻¹' (shiftStepHistory (n + 1) ⁻¹' S)
+            = extendStepHistory (shiftStepHistory n x) ⁻¹' S := by
+          rw [← Set.preimage_comp]
+          exact congrArg (fun f => f ⁻¹' S)
+            (funext fun z => shiftStepHistory_extendStepHistory x z)
+        have hstate : (Trajectory.ofStepHistory (shiftStepHistory n x)).state v (n + 1)
+            = (Trajectory.ofStepHistory x).state u (n + 1 + 1) := by
+          rw [← hx, state_ofStepHistory_shiftStepHistory u x (le_refl (n + 1)),
+            show 1 + (n + 1) = n + 1 + 1 from by omega]
+        rw [hpre, hstate]
+      have hstep : ctsHistoryMeasure β v (n + 1) S
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β v)
+              n (n + 1) h S ∂(ctsHistoryMeasure β v n) := by
+        unfold ctsHistoryMeasure
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply hS (Kernel.aemeasurable _)]
+      rw [Measure.map_apply (measurable_shiftStepHistory (n + 1)) hS,
+        Kernel.partialTraj_succ_eq_comp (Nat.zero_le (n + 1)),
+        Kernel.comp_apply' _ _ _ ((measurable_shiftStepHistory (n + 1)) hS), hstep]
+      calc ∫⁻ x, Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u)
+              (n + 1) (n + 1 + 1) x (shiftStepHistory (n + 1) ⁻¹' S)
+            ∂(Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 (n + 1) y)
+          = ∫⁻ x, Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β v)
+                n (n + 1) (shiftStepHistory n x) S
+              ∂(Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+                (ctsDrivingKernel β u) 0 (n + 1) y) :=
+            lintegral_congr_ae (hae.mono fun x hx => hpt x hx)
+        _ = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β v)
+                n (n + 1) h S
+              ∂((Kernel.partialTraj (X := fun _ : ℕ => Step N M)
+                (ctsDrivingKernel β u) 0 (n + 1) y).map (shiftStepHistory n)) :=
+            (lintegral_map (Kernel.measurable_coe _ hS) (measurable_shiftStepHistory n)).symm
+        _ = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β v)
+                n (n + 1) h S ∂(ctsHistoryMeasure β v n) := by rw [ih]
+
+omit [NeZero N] [NeZero M] in
+/-- The matrix the first expression of a history reaches. -/
+theorem state_one_ofStepHistory (u : Pressure N M) {n : ℕ}
+    (h : (i : Finset.Iic n) → Step N M) :
+    (Trajectory.ofStepHistory h).state u 1
+      = express (h ⟨0, Finset.mem_Iic.2 (Nat.zero_le n)⟩).1.1
+          (h ⟨0, Finset.mem_Iic.2 (Nat.zero_le n)⟩).1.2 u := by
+  rw [Trajectory.state_succ, Trajectory.state_zero]
+  show express ((Trajectory.ofHistory fun i => (h i).1).actor 0)
+      ((Trajectory.ofHistory fun i => (h i).1).opinion 0) u = _
+  rw [Trajectory.ofHistory_actor _ (Nat.zero_le n),
+    Trajectory.ofHistory_opinion _ (Nat.zero_le n)]
+
+/-- **The restart at the first jump, on realisations.**  From a fixed first step, the rest of
+the realisation is a realisation of the process started at the matrix that step reaches. -/
+theorem map_ctsTraj_shiftStepPath (β : ℝ) (u : Pressure N M)
+    (y : (i : Finset.Iic 0) → Step N M) :
+    (Kernel.traj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 y).map shiftStepPath
+      = ctsPathMeasure β ((Trajectory.ofStepHistory y).state u 1) := by
+  have hprob : IsProbabilityMeasure
+      ((Kernel.traj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 y).map
+        shiftStepPath) :=
+    Measure.isProbabilityMeasure_map measurable_shiftStepPath.aemeasurable
+  refine MeasureTheory.ext_of_generate_finite
+    {s : Set (ℕ → Step N M) | ∃ (b : ℕ) (T : Set ((i : Finset.Iic b) → Step N M)),
+      MeasurableSet T ∧ s = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) b ⁻¹' T}
+    ?_ ?_ ?_ ?_
+  · refine le_antisymm (iSup_le fun i => ?_) (MeasurableSpace.generateFrom_le ?_)
+    · rintro s ⟨T, hT, rfl⟩
+      exact MeasurableSpace.measurableSet_generateFrom
+        ⟨i, (fun h : (j : Finset.Iic i) → Step N M => h ⟨i, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' T,
+          (measurable_pi_apply _) hT, rfl⟩
+    · rintro s ⟨b, T, hT, rfl⟩
+      exact Preorder.measurable_frestrictLe b hT
+  · rintro s ⟨b, T, hT, rfl⟩ t ⟨b', T', hT', rfl⟩ -
+    rcases le_total b b' with hbb | hbb
+    · exact ⟨b', (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) hbb ⁻¹' T) ∩ T',
+        ((Preorder.measurable_frestrictLe₂ hbb) hT).inter hT',
+        by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+    · exact ⟨b, T ∩ (Preorder.frestrictLe₂ (π := fun _ : ℕ => Step N M) hbb ⁻¹' T'),
+        hT.inter ((Preorder.measurable_frestrictLe₂ hbb) hT'),
+        by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+  · rintro s ⟨b, T, hT, rfl⟩
+    have hpre : shiftStepPath ⁻¹' (Preorder.frestrictLe (π := fun _ : ℕ => Step N M) b ⁻¹' T)
+        = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) (b + 1) ⁻¹'
+          (shiftStepHistory b ⁻¹' T) := rfl
+    rw [Measure.map_apply measurable_shiftStepPath (Preorder.measurable_frestrictLe b hT),
+      hpre, ← Measure.map_apply (Preorder.measurable_frestrictLe (b + 1))
+        ((measurable_shiftStepHistory b) hT),
+      Kernel.traj_map_frestrictLe_apply, ← Measure.map_apply (measurable_shiftStepHistory b) hT,
+      map_ctsPartialTraj_shiftStepHistory,
+      ← Measure.map_apply (Preorder.measurable_frestrictLe b) hT, ctsPathMeasure_map_frestrictLe]
+  · rw [measure_univ, measure_univ]
+
+/-- **The restart at the first jump.**  The first step is drawn from `stepLaw β u`, and given
+it the rest of the realisation is a realisation of the process started at the matrix it
+reaches.
+
+**No counterpart among the numbered statements of the paper**, which uses it without comment
+in the proof of Corollary 11 and in equation (19). -/
+theorem ctsPathMeasure_restart (β : ℝ) (u : Pressure N M) {B : Set (Step N M)}
+    (hB : MeasurableSet B) {E : Set (ℕ → Step N M)} (hE : MeasurableSet E) :
+    ctsPathMeasure β u ({ω | ω 0 ∈ B} ∩ shiftStepPath ⁻¹' E)
+      = ∫⁻ z in B, ctsPathMeasure β (express z.1.1 z.1.2 u) E ∂(stepLaw β u) := by
+  have hS : MeasurableSet ({ω : ℕ → Step N M | ω 0 ∈ B} ∩ shiftStepPath ⁻¹' E) :=
+    ((measurable_pi_apply 0) hB).inter (measurable_shiftStepPath hE)
+  have hzero : ∀ z : Step N M,
+      Kernel.traj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0 (toStepHistoryZero z)
+          ({ω : ℕ → Step N M | ω 0 ∈ B} ∩ shiftStepPath ⁻¹' E)
+        = Set.indicator B (fun w : Step N M => ctsPathMeasure β (express w.1.1 w.1.2 u) E) z := by
+    intro z
+    have hmeasc : MeasurableSet ({h : (i : Finset.Iic 0) → Step N M |
+        h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ) := by
+      have hset : {h : (i : Finset.Iic 0) → Step N M | h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ
+          = (fun h : (i : Finset.Iic 0) → Step N M => h ⟨0, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' {z}ᶜ :=
+        rfl
+      rw [hset]
+      exact (measurable_pi_apply _) (measurableSet_singleton z).compl
+    have hcoord : Kernel.traj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0
+        (toStepHistoryZero z) ({ω : ℕ → Step N M | ω 0 = z}ᶜ) = 0 := by
+      have h1 : ({ω : ℕ → Step N M | ω 0 = z}ᶜ)
+          = Preorder.frestrictLe (π := fun _ : ℕ => Step N M) 0 ⁻¹'
+            ({h : (i : Finset.Iic 0) → Step N M | h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ) := rfl
+      rw [h1, ← Measure.map_apply (Preorder.measurable_frestrictLe 0) hmeasc,
+        Kernel.traj_map_frestrictLe_apply, Kernel.partialTraj_self, Kernel.id_apply,
+        Measure.dirac_apply' _ hmeasc,
+        Set.indicator_of_notMem (by simp [toStepHistoryZero])]
+    have hshift : Kernel.traj (X := fun _ : ℕ => Step N M) (ctsDrivingKernel β u) 0
+        (toStepHistoryZero z) (shiftStepPath ⁻¹' E)
+        = ctsPathMeasure β (express z.1.1 z.1.2 u) E := by
+      rw [← Measure.map_apply measurable_shiftStepPath hE, map_ctsTraj_shiftStepPath,
+        state_one_ofStepHistory]
+      rfl
+    by_cases hzB : z ∈ B
+    · rw [Set.indicator_of_mem hzB, ← hshift]
+      refine le_antisymm (measure_mono Set.inter_subset_right) ?_
+      refine le_measure_of_inter hcoord (le_refl _) ?_
+      rintro ω ⟨h1, h2⟩
+      refine ⟨?_, h2⟩
+      show ω 0 ∈ B
+      rw [show ω 0 = z from h1]
+      exact hzB
+    · rw [Set.indicator_of_notMem hzB]
+      refine le_antisymm ?_ (by simp)
+      rw [← hcoord]
+      refine measure_mono ?_
+      rintro ω ⟨h1, -⟩ hcon
+      apply hzB
+      rw [← show ω 0 = z from hcon]
+      exact h1
+  rw [ctsPathMeasure, Measure.bind_apply hS (Kernel.aemeasurable _),
+    lintegral_map (Kernel.measurable_coe _ hS) measurable_toStepHistoryZero,
+    lintegral_congr hzero, lintegral_indicator hB]
+
+/-! ### The hitting time after the first jump -/
+
+omit [NeZero N] [NeZero M] in
+theorem holdingTime_shiftStepPath (n : ℕ) (ω : ℕ → Step N M) :
+    holdingTime n (shiftStepPath ω) = holdingTime (n + 1) ω := by
+  show (ω (1 + n)).2 = (ω (n + 1)).2
+  rw [Nat.add_comm]
+
+omit [NeZero N] [NeZero M] in
+theorem jumpTime_succ_shiftStepPath (n : ℕ) (ω : ℕ → Step N M) :
+    jumpTime (n + 1) ω = holdingTime 0 ω + jumpTime n (shiftStepPath ω) := by
+  have h1 : jumpTime (n + 1) ω
+      = (∑ i ∈ Finset.range n, holdingTime (i + 1) ω) + holdingTime 0 ω :=
+    Finset.sum_range_succ' _ n
+  have h2 : jumpTime n (shiftStepPath ω) = ∑ i ∈ Finset.range n, holdingTime (i + 1) ω :=
+    Finset.sum_congr rfl fun k _ => holdingTime_shiftStepPath k ω
+  rw [h1, h2, add_comm]
+
+omit [NeZero N] [NeZero M] in
+theorem jumpTime_pos {ω : ℕ → Step N M} (hpos : ∀ n, 0 < holdingTime n ω) {n : ℕ}
+    (hn : 0 < n) : 0 < jumpTime n ω :=
+  Finset.sum_pos (fun i _ => hpos i) ⟨0, Finset.mem_range.2 hn⟩
+
+omit [NeZero N] [NeZero M] in
+/-- **The process restarts at the first jump.**  With every holding time positive, every matrix
+the shifted realisation shows at time `s` is one the realisation itself shows at some time no
+later than `T₁ + s`.
+
+The two cases are the two ways the jump counter can behave: below the explosion time it is
+`1 + ` the counter of the shifted realisation, and on the explosion event --- where the counter
+is junk on both sides --- the matrix in question is the one the first expression reaches, shown
+at `T₁` itself.
+
+**No counterpart in the paper**, which restarts the process at `τ` without comment. -/
+theorem exists_process_eq_shift (u : Pressure N M) {ω : ℕ → Step N M}
+    (hpos : ∀ n, 0 < holdingTime n ω) {s : ℝ} (hs : 0 ≤ s) :
+    ∃ t : ℝ, 0 ≤ t ∧ t ≤ holdingTime 0 ω + s ∧
+      process u t ω
+        = process ((Trajectory.ofStepPath ω).state u 1) s (shiftStepPath ω) := by
+  have hpos' : ∀ n, 0 < holdingTime n (shiftStepPath ω) := by
+    intro n; rw [holdingTime_shiftStepPath]; exact hpos (n + 1)
+  have hT : 0 < holdingTime 0 ω := hpos 0
+  by_cases hbdd : BddAbove {m : ℕ | jumpTime m (shiftStepPath ω) ≤ s}
+  · have hne : {m : ℕ | jumpTime m (shiftStepPath ω) ≤ s}.Nonempty :=
+      ⟨0, by simpa using hs⟩
+    have hmem := Nat.sSup_mem hne hbdd
+    set m := sSup {m : ℕ | jumpTime m (shiftStepPath ω) ≤ s} with hm
+    have hcount' : jumpCount (shiftStepPath ω) s = m := hm.symm
+    refine ⟨holdingTime 0 ω + s, by linarith, le_rfl, ?_⟩
+    have hcount : jumpCount ω (holdingTime 0 ω + s) = m + 1 := by
+      refine (jumpCount_eq_iff _ ω (Nat.succ_ne_zero m)).2 ⟨?_, ?_⟩
+      · rw [jumpTime_succ_shiftStepPath]
+        have : jumpTime m (shiftStepPath ω) ≤ s := hmem
+        linarith
+      · intro k hk
+        cases k with
+        | zero => omega
+        | succ j =>
+            rw [jumpTime_succ_shiftStepPath] at hk
+            have hj : jumpTime j (shiftStepPath ω) ≤ s := by linarith
+            have := le_csSup hbdd hj
+            omega
+    show (Trajectory.ofStepPath ω).state u (jumpCount ω (holdingTime 0 ω + s))
+      = (Trajectory.ofStepPath (shiftStepPath ω)).state
+          ((Trajectory.ofStepPath ω).state u 1) (jumpCount (shiftStepPath ω) s)
+    rw [hcount, hcount', ofStepPath_shiftStepPath, ← Trajectory.state_add,
+      show 1 + m = m + 1 from by omega]
+  · have hcount' : jumpCount (shiftStepPath ω) s = 0 := Nat.sSup_of_not_bddAbove hbdd
+    refine ⟨holdingTime 0 ω, hT.le, by linarith, ?_⟩
+    have hcount : jumpCount ω (holdingTime 0 ω) = 1 := by
+      refine (jumpCount_eq_iff _ ω one_ne_zero).2 ⟨?_, ?_⟩
+      · rw [show (1 : ℕ) = 0 + 1 from rfl, jumpTime_succ_shiftStepPath]
+        simp [jumpTime]
+      · intro k hk
+        rcases Nat.lt_or_ge k 2 with h | h
+        · omega
+        · exfalso
+          obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+          rw [jumpTime_succ_shiftStepPath] at hk
+          have hj : 0 < j := by omega
+          linarith [jumpTime_pos hpos' hj]
+    show (Trajectory.ofStepPath ω).state u (jumpCount ω (holdingTime 0 ω))
+      = (Trajectory.ofStepPath (shiftStepPath ω)).state
+          ((Trajectory.ofStepPath ω).state u 1) (jumpCount (shiftStepPath ω) s)
+    rw [hcount, hcount', Trajectory.state_zero]
+
+omit [NeZero N] [NeZero M] in
+/-- **The hitting time after the first jump.**  With every holding time positive, the hitting
+time from `u` is at most the first holding time plus the hitting time of the shifted
+realisation, started at the matrix the first expression reaches. -/
+theorem hittingTimeCts_le_shift (u : Pressure N M) (θ : Set (Pressure N M))
+    {ω : ℕ → Step N M} (hpos : ∀ n, 0 < holdingTime n ω) :
+    hittingTimeCts u θ ω
+      ≤ ENNReal.ofReal (holdingTime 0 ω)
+        + hittingTimeCts ((Trajectory.ofStepPath ω).state u 1) θ (shiftStepPath ω) := by
+  unfold hittingTimeCts
+  rw [ENNReal.add_sInf]
+  refine le_iInf₂ fun b hb => ?_
+  obtain ⟨s, ⟨hs0, hsθ⟩, rfl⟩ := hb
+  obtain ⟨t, ht0, htle, hteq⟩ := exists_process_eq_shift u hpos hs0
+  refine le_trans (sInf_le ⟨t, ⟨ht0, by rw [hteq]; exact hsθ⟩, rfl⟩) ?_
+  rw [← ENNReal.ofReal_add (hpos 0).le hs0]
+  exact ENNReal.ofReal_le_ofReal htle
+
+omit [NeZero N] [NeZero M] in
+theorem state_one_ofStepPath (u : Pressure N M) (ω : ℕ → Step N M) :
+    (Trajectory.ofStepPath ω).state u 1 = express (ω 0).1.1 (ω 0).1.2 u := rfl
+
+/-! ### The restart bound -/
+
+/-- **The restart bound.**  If, whatever the first expressed pair `p`, the process started at
+the matrix `p` reaches gives the event `E p` probability at most `c`, then the event that the
+first holding time lands in `A` and the rest of the realisation lies in `E` of the pair
+expressed has probability at most `c`. -/
+theorem ctsPathMeasure_restart_le (β : ℝ) (u : Pressure N M) {A : Set ℝ} (hA : MeasurableSet A)
+    {E : Jump N M → Set (ℕ → Step N M)} (hE : ∀ p, MeasurableSet (E p)) {c : ℝ≥0∞}
+    (hc : ∀ p : Jump N M, ctsPathMeasure β (express p.1 p.2 u) (E p) ≤ c) :
+    ctsPathMeasure β u {ω | (ω 0).2 ∈ A ∧ shiftStepPath ω ∈ E (ω 0).1} ≤ c := by
+  classical
+  set B : Jump N M → Set (Step N M) := fun p =>
+    (Prod.fst ⁻¹' {p}) ∩ (Prod.snd ⁻¹' A) with hBdef
+  have hBmeas : ∀ p, MeasurableSet (B p) := fun p =>
+    (measurable_fst (measurableSet_singleton p)).inter (measurable_snd hA)
+  have hdisj : Set.PairwiseDisjoint (↑(Finset.univ : Finset (Jump N M))) B := by
+    intro p _ q _ hpq
+    show Disjoint (B p) (B q)
+    refine Set.disjoint_left.2 fun z hzp hzq => ?_
+    exact absurd ((hzp.1 : z.1 = p).symm.trans (hzq.1 : z.1 = q)) hpq
+  have hset : {ω : ℕ → Step N M | (ω 0).2 ∈ A ∧ shiftStepPath ω ∈ E (ω 0).1}
+      = ⋃ p ∈ (Finset.univ : Finset (Jump N M)),
+          ({ω : ℕ → Step N M | ω 0 ∈ B p} ∩ shiftStepPath ⁻¹' E p) := by
+    ext ω
+    constructor
+    · rintro ⟨h1, h2⟩
+      exact Set.mem_biUnion (Finset.mem_univ (ω 0).1) ⟨⟨rfl, h1⟩, h2⟩
+    · intro h
+      obtain ⟨p, -, ⟨hp1, hp2⟩, hp3⟩ := Set.mem_iUnion₂.1 h
+      refine ⟨hp2, ?_⟩
+      rw [show (ω 0).1 = p from hp1]
+      exact hp3
+  rw [hset]
+  refine le_trans (measure_biUnion_finset_le _ _) ?_
+  have hterm : ∀ p : Jump N M,
+      ctsPathMeasure β u ({ω : ℕ → Step N M | ω 0 ∈ B p} ∩ shiftStepPath ⁻¹' E p)
+        ≤ c * stepLaw β u (B p) := by
+    intro p
+    rw [ctsPathMeasure_restart β u (hBmeas p) (hE p)]
+    calc ∫⁻ z in B p, ctsPathMeasure β (express z.1.1 z.1.2 u) (E p) ∂(stepLaw β u)
+        ≤ ∫⁻ _ in B p, c ∂(stepLaw β u) := by
+          refine lintegral_mono_ae ((ae_restrict_iff' (hBmeas p)).2
+            (Filter.Eventually.of_forall fun z hz => ?_))
+          rw [show z.1 = p from hz.1]
+          exact hc p
+      _ = c * stepLaw β u (B p) := setLIntegral_const _ _
+  have hsum : ∑ p : Jump N M, stepLaw β u (B p) ≤ 1 := by
+    rw [← measure_biUnion_finset hdisj fun p _ => hBmeas p]
+    exact prob_le_one
+  calc ∑ p : Jump N M,
+        ctsPathMeasure β u ({ω : ℕ → Step N M | ω 0 ∈ B p} ∩ shiftStepPath ⁻¹' E p)
+      ≤ ∑ p : Jump N M, c * stepLaw β u (B p) := Finset.sum_le_sum fun p _ => hterm p
+    _ = c * ∑ p : Jump N M, stepLaw β u (B p) := (Finset.mul_sum _ _ _).symm
+    _ ≤ c * 1 := by gcongr
+    _ = c := mul_one c
+
+/-! ### Equation (19) and Corollary 11 -/
+
+omit [NeZero M] in
+theorem isState_zero : IsState (0 : Pressure N M) :=
+  ⟨fun _ => by simp [trust], ⟨Classical.arbitrary (Actor N), fun _ => rfl⟩⟩
+
+omit [NeZero M] in
+/-- After one expression from the zero matrix the process is in a state, and not at `0`: the
+row of the expresser is reset to `0`, but every other row loses `1` on every opinion other than
+the one expressed, and there is one of each. -/
+theorem express_zero_mem (hM : 2 ≤ M) (hN : 2 ≤ N) (p : Jump N M) :
+    express p.1 p.2 (0 : Pressure N M) ∈ (stateSet N M \ {0} : Set (Pressure N M)) := by
+  refine ⟨isState_zero.express p.1 p.2, ?_⟩
+  intro hzero
+  obtain ⟨b, hb⟩ := Fintype.exists_ne_of_one_lt_card
+    (show 1 < Fintype.card (Actor N) by simp only [Fintype.card_fin]; omega) p.1
+  obtain ⟨q, hq⟩ := Fintype.exists_ne_of_one_lt_card
+    (show 1 < Fintype.card (Opinion M) by simp only [Fintype.card_fin]; omega) p.2
+  have hval := congrFun (congrFun (hzero : express p.1 p.2 (0 : Pressure N M) = 0) b) q
+  rw [express, if_neg hb, if_neg hq] at hval
+  simp at hval
+
+/-- The null set on which some holding time fails to be positive. -/
+theorem ctsPathMeasure_exists_holdingTime_nonpos (β : ℝ) (u : Pressure N M) :
+    ctsPathMeasure β u {ω : ℕ → Step N M | ∃ n, holdingTime n ω ≤ 0} = 0 := by
+  rw [show {ω : ℕ → Step N M | ∃ n, holdingTime n ω ≤ 0}
+      = ⋃ n, {ω : ℕ → Step N M | holdingTime n ω ≤ 0} from by ext ω; simp]
+  exact measure_iUnion_null fun n => ctsPathMeasure_holdingTime_nonpos β u n
+
+end Restart
+
 /-! ### Theorem 2: concentration of the invariant measure on the ladder sets -/
 
 section Theorem2
@@ -1477,7 +2038,53 @@ theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : �
       (fun β : ℝ => probHittingGTAfterFirstJump β 0 (ladderSet N M)
         (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))))
       Filter.atTop (nhds 0) := by
-  sorry
+  classical
+  have key : ∀ β : ℝ, probHittingGTAfterFirstJump β 0 (ladderSet N M)
+        (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))
+      ≤ ⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+          probHittingGT β v (ladderSet N M)
+            (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))) := by
+    intro β
+    set t := Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)) with htdef
+    have htpos : 0 < t := Real.exp_pos _
+    set E : Jump N M → Set (ℕ → Step N M) := fun p =>
+      {ω | ENNReal.ofReal t < hittingTimeCts (express p.1 p.2 (0 : Pressure N M))
+        (ladderSet N M) ω} with hEdef
+    have hEmeas : ∀ p, MeasurableSet (E p) := fun p =>
+      (measurable_hittingTimeCts _ _) measurableSet_Ioi
+    have hc : ∀ p : Jump N M,
+        ctsPathMeasure β (express p.1 p.2 (0 : Pressure N M)) (E p)
+          ≤ ⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+              probHittingGT β v (ladderSet N M) (ENNReal.ofReal t) := fun p =>
+      le_iSup₂_of_le (express p.1 p.2 (0 : Pressure N M))
+        (express_zero_mem hM (by omega) p) le_rfl
+    have hsub : {ω : ℕ → Step N M |
+          ENNReal.ofReal (jumpTime 1 ω + t) < hittingTimeCts 0 (ladderSet N M) ω}
+        ⊆ {ω : ℕ → Step N M | ∃ n, holdingTime n ω ≤ 0}
+          ∪ {ω : ℕ → Step N M | (ω 0).2 ∈ (Set.univ : Set ℝ)
+              ∧ shiftStepPath ω ∈ E (ω 0).1} := by
+      intro ω hω
+      by_cases hz : ∃ n, holdingTime n ω ≤ 0
+      · exact Or.inl hz
+      refine Or.inr ⟨Set.mem_univ _, ?_⟩
+      have hpos : ∀ n, 0 < holdingTime n ω := fun n => not_le.1 fun h => hz ⟨n, h⟩
+      have hle := hittingTimeCts_le_shift (0 : Pressure N M) (ladderSet N M) hpos
+      rw [state_one_ofStepPath] at hle
+      have hT1 : jumpTime 1 ω = holdingTime 0 ω := by simp [jumpTime]
+      have h4 : ENNReal.ofReal (jumpTime 1 ω + t)
+          = ENNReal.ofReal (holdingTime 0 ω) + ENNReal.ofReal t := by
+        rw [hT1, ENNReal.ofReal_add (hpos 0).le htpos.le]
+      have hω' : ENNReal.ofReal (jumpTime 1 ω + t) < hittingTimeCts 0 (ladderSet N M) ω := hω
+      rw [h4] at hω'
+      exact (ENNReal.add_lt_add_iff_left ENNReal.ofReal_ne_top).1 (lt_of_lt_of_le hω' hle)
+    refine le_trans (measure_mono hsub) ?_
+    refine le_trans (measure_union_le _ _) ?_
+    rw [ctsPathMeasure_exists_holdingTime_nonpos, zero_add]
+    exact ctsPathMeasure_restart_le β 0 MeasurableSet.univ hEmeas hc
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds
+    (tendsto_hittingTime_ladderSet hM hN hδ)
+    (Filter.Eventually.of_forall fun _ => by simp)
+    (Filter.Eventually.of_forall key)
 
 /-- **Equation (19)**, the quantitative form of Corollary 11:
 
@@ -1503,7 +2110,62 @@ theorem probHittingGT_ladderSet_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ}
       ≤ ENNReal.ofReal (Real.exp (-β / ((M * N : ℕ) : ℝ)))
         + ⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
             probHittingGT β v (ladderSet N M) (ENNReal.ofReal β) := by
-  sorry
+  classical
+  have hMN1 : 1 ≤ M * N := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
+  have hMNone : (1 : ℝ) ≤ ((M * N : ℕ) : ℝ) := by exact_mod_cast hMN1
+  have hMNpos : (0 : ℝ) < ((M * N : ℕ) : ℝ) := by linarith
+  set E : Jump N M → Set (ℕ → Step N M) := fun p =>
+    {ω | ENNReal.ofReal β < hittingTimeCts (express p.1 p.2 (0 : Pressure N M))
+      (ladderSet N M) ω} with hEdef
+  have hEmeas : ∀ p, MeasurableSet (E p) := fun p =>
+    (measurable_hittingTimeCts _ _) measurableSet_Ioi
+  have hc : ∀ p : Jump N M,
+      ctsPathMeasure β (express p.1 p.2 (0 : Pressure N M)) (E p)
+        ≤ ⨆ v ∈ (stateSet N M \ {0} : Set (Pressure N M)),
+            probHittingGT β v (ladderSet N M) (ENNReal.ofReal β) := fun p =>
+    le_iSup₂_of_le (express p.1 p.2 (0 : Pressure N M))
+      (express_zero_mem hM (by omega) p) le_rfl
+  have hW : ctsPathMeasure β 0 {ω : ℕ → Step N M | holdingTime 0 ω ∈ Set.Ioi β}
+      = ENNReal.ofReal (Real.exp (-(((M * N : ℕ) : ℝ) * β))) := by
+    rw [ctsPathMeasure_holdingTime_zero β 0 measurableSet_Ioi, totalRate_zero,
+      expMeasure_Ioi_of_nonneg hMNpos hβ]
+  have hsub : {ω : ℕ → Step N M | ENNReal.ofReal (2 * β) < hittingTimeCts 0 (ladderSet N M) ω}
+      ⊆ {ω : ℕ → Step N M | ∃ n, holdingTime n ω ≤ 0}
+        ∪ ({ω : ℕ → Step N M | holdingTime 0 ω ∈ Set.Ioi β}
+          ∪ {ω : ℕ → Step N M | (ω 0).2 ∈ Set.Iic β ∧ shiftStepPath ω ∈ E (ω 0).1}) := by
+    intro ω hω
+    by_cases hz : ∃ n, holdingTime n ω ≤ 0
+    · exact Or.inl hz
+    refine Or.inr ?_
+    have hpos : ∀ n, 0 < holdingTime n ω := fun n => not_le.1 fun h => hz ⟨n, h⟩
+    by_cases hw : β < holdingTime 0 ω
+    · exact Or.inl hw
+    refine Or.inr ⟨not_lt.1 hw, ?_⟩
+    have hle := hittingTimeCts_le_shift (0 : Pressure N M) (ladderSet N M) hpos
+    rw [state_one_ofStepPath] at hle
+    have h1 := lt_of_lt_of_le hω hle
+    have h2 : ENNReal.ofReal (holdingTime 0 ω) ≤ ENNReal.ofReal β :=
+      ENNReal.ofReal_le_ofReal (not_lt.1 hw)
+    have h4 : ENNReal.ofReal β + ENNReal.ofReal β = ENNReal.ofReal (2 * β) := by
+      rw [← ENNReal.ofReal_add hβ hβ]; ring_nf
+    have h3 : ENNReal.ofReal β + ENNReal.ofReal β
+        < ENNReal.ofReal β
+          + hittingTimeCts (express (ω 0).1.1 (ω 0).1.2 0) (ladderSet N M)
+              (shiftStepPath ω) := by
+      rw [h4]
+      exact lt_of_lt_of_le h1 (add_le_add h2 (le_refl _))
+    exact (ENNReal.add_lt_add_iff_left ENNReal.ofReal_ne_top).1 h3
+  refine le_trans (measure_mono hsub) ?_
+  refine le_trans (measure_union_le _ _) ?_
+  rw [ctsPathMeasure_exists_holdingTime_nonpos, zero_add]
+  refine le_trans (measure_union_le _ _) ?_
+  rw [hW]
+  refine add_le_add ?_ (ctsPathMeasure_restart_le β 0 measurableSet_Iic hEmeas hc)
+  refine ENNReal.ofReal_le_ofReal (Real.exp_le_exp.2 ?_)
+  rw [neg_div, neg_le_neg_iff]
+  have h1 : β / ((M * N : ℕ) : ℝ) ≤ β := div_le_self hβ hMNone
+  have h2 : β ≤ ((M * N : ℕ) : ℝ) * β := le_mul_of_one_le_left hβ hMNone
+  linarith
 
 omit [NeZero N] [NeZero M] in
 /-- The arithmetic of the last line of the proof of Lemma 13: the three bounds the paper

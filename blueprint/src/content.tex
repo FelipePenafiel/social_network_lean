@@ -588,7 +588,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
   which is to say behind \ref{lem19} and~\ref{lem20}.  Writing this proof is
   what showed the split was not only bookkeeping: nothing but
-  \ref{aux-hitting-rate} was in the way.
+  \ref{aux-hitting-rate} was in the way.  \ref{eq19} has since left that queue
+  too, and outright: it goes through \ref{aux-restart} and the clock rather
+  than through this node, and carries no \texttt{sorryAx} at all.
 \end{proof}
 
 \paper{Theorem 3}
@@ -1319,6 +1321,63 @@ process pointwise.
   \ref{lem19} and~\ref{lem20}.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[Restarting the process at the first jump]
+  \label{aux-restart}
+  \lean{SocialNetwork.shiftStepPath, SocialNetwork.ctsPartialTraj_succ_apply, SocialNetwork.map_ctsPartialTraj_shiftStepHistory, SocialNetwork.map_ctsTraj_shiftStepPath, SocialNetwork.ctsPathMeasure_restart, SocialNetwork.ctsPathMeasure_restart_le, SocialNetwork.exists_process_eq_shift, SocialNetwork.hittingTimeCts_le_shift}
+  \leanok
+  \uses{def3, aux-construction}
+  Write $\sigma$ for the map that drops the first step of a realisation, and
+  $\mathcal{L}_\beta(u)$ for the law of one step at $u$: the Gibbs law of
+  \ref{def3} for the expressed pair, and an exponential of rate
+  $\jumprate(u)$ for the holding time, independently of it.
+  \begin{enumerate}
+    \item \emph{The Markov property at the first jump.}  For measurable
+      $B \subseteq \actors \times \opinions \times \mathbb{R}$ and measurable
+      $E$,
+      \[
+        \mathbb{P}^{\beta,u}\bigl(\omega_0 \in B,\ \sigma\omega \in E\bigr)
+          = \int_B \mathbb{P}^{\beta,\, \express{a}{o} u}(E)\;
+            \mathcal{L}_\beta(u)\bigl(\mathrm{d}(a,o,s)\bigr).
+      \]
+    \item \emph{The hitting time after the first jump.}  If every holding time
+      of $\omega$ is positive, then
+      \[
+        \Rhit{u}(\theta)(\omega) \;\le\; T_1(\omega)
+          + \Rhit{v}(\theta)(\sigma\omega),
+        \qquad v = \express{a_1}{o_1} u ,
+      \]
+      $v$ being the matrix the first expression reaches.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{aux-construction, aux-holding-times}
+  Part~1 is Ionescu--Tulcea read backwards.  One step of the driving kernel
+  keeps the history it started from and appends a step drawn from
+  $\mathcal{L}_\beta$ at the matrix that history reaches; dropping the first
+  entry of a history shifts that reading by one, so the shifted family of
+  kernels is exactly the family that drives the process started at $v$.  An
+  induction on the length of the history gives the identity for the
+  finite-dimensional laws; the two laws on whole realisations are then equal
+  because they agree on the cylinders, which form a $\pi$-system generating the
+  product $\sigma$-algebra.  Integrating over the first step gives the display.
+
+  Part~2 is pointwise, and splits on the jump counter.  Below the explosion
+  time the counter of $\omega$ at $T_1 + s$ is one more than the counter of
+  $\sigma\omega$ at $s$, and the two processes agree there.  On the explosion
+  event both counters return the junk value of an unbounded supremum; the
+  matrix at stake is then $v$ itself, which $\omega$ shows at $T_1$, and
+  positivity of the holding times is what forces the counter of $\omega$ at
+  $T_1$ to be exactly $1$.  \ref{thm1-1} would remove the second case
+  altogether, and is not available; the hypothesis of positivity is discharged,
+  where this lemma is used, by part~3 of \ref{aux-holding-times}.
+
+  \textbf{No counterpart in the paper}, which restarts the process at $\tau$
+  without comment.  It is the one thing \ref{cor11} and \ref{eq19} were waiting
+  on.
+\end{proof}
+
 \paper{Corollary 11}
 \begin{corollary}[Hitting a ladder from the zero matrix]
   \label{cor11}
@@ -1331,11 +1390,17 @@ process pointwise.
   independent of the process that follows it.
 \end{corollary}
 \begin{proof}
-  \uses{thm2-2}
+  \leanok
+  \uses{thm2-2, aux-restart, aux-holding-times}
   Condition on the first expression: it comes after an exponential time $\tau$
   of mean $1/(MN)$, since every rate at $0$ equals $1$, and lands on a state
-  that is not $0$, to which \ref{thm2-2} applies. \textbf{Not formalised}, and
-  --- since \ref{thm2-2} does not --- no longer waiting on Doeblin.
+  that is not $0$, to which \ref{thm2-2} applies.  In Lean the conditioning is
+  part~1 of \ref{aux-restart} and the comparison of the two hitting times is
+  part~2, whose hypothesis --- every holding time positive --- is part~3 of
+  \ref{aux-holding-times}.  \emph{Formalised, but not sorry-free}: the proof is
+  complete in Lean and inherits \texttt{sorryAx} from \ref{thm2-2}, and so from
+  \ref{prop7}, \ref{lem19} and~\ref{lem20}, and from nothing else.  It never
+  waited on Doeblin, since \ref{thm2-2} does not.
 
   \textbf{Which $\tau$.}  It is the process's own first jump time $T_1$, and
   nothing else will do.  The paper says ``exponential of mean $1/(MN)$,
@@ -1361,11 +1426,8 @@ process pointwise.
   $\mathbb{P}(\Rhit{0}(\ladder) > T_1 + e^{-\frac{\beta}{M-1}(1-\delta)})$,
   which is the corollary, with $T_1$ exponential of mean $1/(MN)$ by
   \ref{aux-construction}.  \textbf{A formalisation-side error, not an error of
-  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.11.
-
-  What it still waits on is a restart of the continuous-time process at $T_1$,
-  which this library does not have: \texttt{Trajectory.shift} restarts the
-  skeleton, and nothing yet restarts $\Uproc{u}$.
+  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.11.  It is under this reading, and
+  only under it, that the corollary is now proved.
 \end{proof}
 
 \paper{Remark 6}
@@ -1451,7 +1513,7 @@ process pointwise.
 \aux{Lemma}
 \begin{lemma}[The clock of a greedy run]
   \label{aux-holding-times}
-  \lean{SocialNetwork.exp_le_totalRate, SocialNetwork.state_ne_zero_of_greedy, SocialNetwork.zeta_pow_le_ctsPathMeasure_greedyEvents, SocialNetwork.ctsPathMeasure_greedy_holdingTime_gt, SocialNetwork.ctsPathMeasure_holdingTime_nonpos, SocialNetwork.hittingTimeCts_le_jumpTime, SocialNetwork.expMeasure_Ioi_of_nonneg}
+  \lean{SocialNetwork.exp_le_totalRate, SocialNetwork.state_ne_zero_of_greedy, SocialNetwork.zeta_pow_le_ctsPathMeasure_greedyEvents, SocialNetwork.ctsPathMeasure_greedy_holdingTime_gt, SocialNetwork.ctsPathMeasure_holdingTime_nonpos, SocialNetwork.ctsPathMeasure_exists_holdingTime_nonpos, SocialNetwork.hittingTimeCts_le_jumpTime, SocialNetwork.expMeasure_Ioi_of_nonneg}
   \leanok
   \uses{def3, aux-construction, prop8, aux-greedy}
   Let $u \in \Sspace$, $u \ne 0$.  Along the greedy event:
@@ -1544,13 +1606,26 @@ process pointwise.
   $e^{-\beta/(MN)}$.
 \end{lemma}
 \begin{proof}
-  \uses{cor11}
-  \textbf{Not formalised, and not a numbered statement of the paper}: it is
-  displayed as equation~(19) inside the proof of \ref{lem13} and attributed
-  there to \ref{cor11}, which is itself stated as a limit.  What it actually
-  decomposes is \ref{cor11}'s own proof --- the waiting time at $0$, then
-  \ref{thm2-2} --- which is how Corollary~13 of [GL24] reads at $M = 2$.  Note
-  that $\tau$ is
+  \leanok
+  \uses{aux-restart, aux-holding-times, aux-construction}
+  \textbf{Not a numbered statement of the paper}: it is displayed as
+  equation~(19) inside the proof of \ref{lem13} and attributed there to
+  \ref{cor11}, which is itself stated as a limit.  What it actually decomposes
+  is \ref{cor11}'s own proof --- the waiting time at $0$, then \ref{thm2-2} ---
+  which is how Corollary~13 of [GL24] reads at $M = 2$.
+
+  The proof follows that decomposition, in three cases.  Either some holding
+  time of the realisation fails to be positive, which is null by part~3 of
+  \ref{aux-holding-times}; or the first one exceeds $\beta$, which costs
+  $e^{-MN\beta}$, the total rate at $0$ being $MN$ by \ref{aux-construction};
+  or it does not, and then part~2 of \ref{aux-restart} turns
+  $\Rhit{0}(\ladder) > 2\beta$ into $\Rhit{v}(\ladder) > \beta$ for the state
+  $v \ne 0$ that the first expression reaches, whose probability part~1 of
+  \ref{aux-restart} averages against the law of that expression.
+
+  \emph{Proved outright.}  Unlike \ref{cor11}, this inequality does not go
+  through \ref{thm2-2} --- only through the restart and the clock --- so it
+  carries neither a \texttt{sorry} nor \texttt{sorryAx}.  Note that $\tau$ is
   declared exponential of mean $1/(MN)$, for which $\mathbb{P}(\tau > \beta) =
   e^{-MN\beta}$ and not $e^{-\beta/(MN)}$; since $e^{-MN\beta} \le
   e^{-\beta/(MN)}$ for $\beta \ge 0$, the form written here is the weaker of
@@ -2372,12 +2447,13 @@ a route that does not need the step the written proof asserts --- the one
 departure of that kind in this repository, and the reason is written at its
 node.
 
-\ref{aux-hitting-rate} and~\ref{thm2-2} joined this queue as soon as their
-proofs were written, and \ref{cor11}, \ref{eq19} and~\ref{rem6} will: none of
-them is blocked on anything today, and each rests on \ref{prop7} once written,
-hence on \ref{lem19} and~\ref{lem20}.  They are listed as not done rather than
-as blocked because that is what they are: the obstruction is recorded once, at
-\ref{lem19} and~\ref{lem20}, and not copied down the graph.
+\ref{aux-hitting-rate}, \ref{thm2-2} and~\ref{cor11} joined this queue as soon
+as their proofs were written, and \ref{rem6} will: it is blocked on nothing
+today, and rests on \ref{prop7} once written, hence on \ref{lem19}
+and~\ref{lem20}.  \ref{eq19} did not join it: written out, its proof turned out
+not to pass through \ref{thm2-2} at all, and it is proved.  A node is listed as
+not done rather than as blocked because that is what it is: the obstruction is
+recorded once, at \ref{lem19} and~\ref{lem20}, and not copied down the graph.
 
 \subsection*{Cited from outside the paper}
 
@@ -2462,8 +2538,8 @@ Nothing is left on this list, and the one item that outlived it,
 \ref{aux-measurable-hitting}, is now proved as well; the subsection after next
 records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or simply not done ---
-and the last of those groups now has \ref{cor11} and~\ref{eq19} in it beside
-\ref{rem6}.
+and the last of those groups is now \ref{rem6} alone, \ref{cor11}
+and~\ref{eq19} having been written.
 
 \subsection*{Was here, and is now closed}
 
@@ -2490,9 +2566,11 @@ not attributed to anything outside the paper; they are steps of the paper's
 \emph{own} proofs, left as displays instead of being numbered, and [GL24]
 writes both of them out --- the first as its equations (16)--(18), the second
 as its Corollary~13, both at p.~19.  Nothing in them is out of reach of this
-library, so they moved to the last group, work not done --- and the first of
-them is now \emph{proved}, from \ref{aux-holding-times} and \ref{prop7}, which
-is the best evidence that the reclassification was right.  What survives as a
+library, so they moved to the last group, work not done --- and both are now
+written, the first from \ref{aux-holding-times} and \ref{prop7} and the second
+from \ref{aux-restart}, which is the best evidence that the reclassification
+was right.  \ref{eq19} is in fact \emph{proved}, sorry-free: nothing it uses is
+blocked on anything.  What survives as a
 question for the authors is only whether either should be numbered, and that
 question is asked in \texttt{FOR-THE-AUTHORS.md} rather than recorded as an
 obstruction here.  The lesson is again the one above: a citation is not an
@@ -2523,15 +2601,22 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Thirty-eight proofs
+\ref{note-green}: does it follow what the paper wrote?  Forty-eight proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts thirty-nine entries.
+own, so it counts forty-nine entries.  Every one of them is named, and
+\texttt{scripts/status.py} now checks that: a proof that carries
+\texttt{\textbackslash leanok} and appears in none of the three groups below is
+an unaudited proof, and it fails the build.  The check was added because the
+list had drifted --- nine proofs were written without a line here before anyone
+noticed.
 
-\medskip \noindent\textbf{Follow the paper's proof} (nineteen). \ref{prop5},
-\ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{prop21}, \ref{prop17}, \ref{prop24}
-and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of \ref{aux-gap}, the
-bound of \ref{prop8}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
+\medskip \noindent\textbf{Follow the paper's proof} (twenty-four). \ref{prop5},
+\ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
+\ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
+\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
+\ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
+\ref{eq19} inside its own, \ref{lem13}, \ref{cor15} and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -2601,26 +2686,49 @@ for the skeleton a deterministic time, and the measurability of the failure
 events --- are written out at the node.  Only part~1 is formalised; part~2 is
 \ref{thm25}, \ref{thm27} and~\ref{thm31}, and Theorem~4 rests on them.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (ten).
+The four around part~2 of Theorem~2 are the paper's own arguments: an
+exponential race among the holding times of a greedy run for \ref{thm2-2}, and
+conditioning on the first expression for \ref{cor11}.  The two displays inside
+those proofs are formalised as statements of their own because \ref{lem13} needs
+the rates that the limits throw away, and [GL24] writes both out at its p.~19 ---
+\ref{aux-hitting-rate} as its equations~(16)--(18), \ref{eq19} as its
+Corollary~13.  Three steps are supplied across them, and each is recorded at its
+node: the union bound over the $(M+1)N$ holding times, which the paper
+compresses; the restart of the process at its first jump, \ref{aux-restart},
+which the paper performs without comment; and the almost-sure positivity of the
+holding times, without which the jump counter is not the number of expressions.
+\ref{cor10} is the paper's proof with one supplied step, the enumeration of the
+predecessors of $0$, which is \ref{aux-zero-predecessors}.
+
+\medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
-and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, and the bound $\tau(u) \le
+and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
+and~\ref{aux-zero-predecessors}, and the bound $\tau(u) \le
 N+1$ of \ref{def5-repeat}.  Each corresponds to a sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All ten are true and none is deep; what they are not is checks of
+N+1\}$''.  All twelve are true and none is deep; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
-\ref{prop9} without deriving it.
+\ref{prop9} without deriving it.  \ref{aux-greedy-avoids} is the one that took
+an outside source to settle: the paper reads ``without visiting $u$'' off
+\ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
 
-\medskip \noindent\textbf{No counterpart in the paper} (ten). \ref{aux-trust},
-\ref{aux-ladder-consensus}, \ref{aux-state-along}, \ref{aux-consensus-ladder},
-\ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
-\ref{aux-biased-ladder-consensus}, \ref{aux-shift}
-and~\ref{aux-measurable-hitting} and \ref{aux-biased-ladder-steep}, together
+\medskip \noindent\textbf{No counterpart in the paper} (twelve).
+\ref{aux-trust}, \ref{aux-ladder-consensus}, \ref{aux-state-along},
+\ref{aux-consensus-ladder}, \ref{aux-ladder-nonempty},
+\ref{aux-biased-ladder-nonempty}, \ref{aux-biased-ladder-consensus},
+\ref{aux-shift} and~\ref{aux-measurable-hitting}, \ref{aux-biased-ladder-steep},
+and the two that carry the clock of the continuous-time process,
+\ref{aux-holding-times} and~\ref{aux-restart}, together
 with the rest of the plumbing of the sample space, which is not made of
 numbered statements and so appears here only inside definitions and remarks.
+The last two are the substantial ones, and neither is a check of anything the
+paper wrote: \ref{aux-holding-times} says what the jump times of a greedy run
+are, and \ref{aux-restart} is the Markov property at the first jump for the
+jump--hold representation.  The paper uses both without stating either.
 
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the
@@ -2632,7 +2740,8 @@ argument the authors have not seen.  Where the route closes but leaves the
 numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
 are transcribed as statements of their own, \ref{aux-hitting-rate}
-and~\ref{eq19}, and carry their own \texttt{sorry}.  And where the route needs
+and~\ref{eq19}; the first inherits \texttt{sorryAx} from \ref{lem19}
+and~\ref{lem20}, and the second is proved.  And where the route needs
 a step the paper does not have but a shorter route through the same lemmas does
 not --- \ref{prop7} --- the shorter route is taken and the difference is
 written down, rather than the missing step being assumed.
@@ -2670,23 +2779,22 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{What is left around part~2 of Theorem~2}.  \ref{thm2-2} and
-    \ref{aux-hitting-rate} are written, and with them \ref{aux-holding-times},
-    which is proved outright.  \ref{cor11} and \ref{eq19} are what remains, and
-    they want one lemma between them: a restart of $\Uproc{u}$ at the first
-    jump.  \texttt{Trajectory.shift} restarts the skeleton and nothing yet
-    restarts the continuous-time process; the pieces are there, since
-    \ref{aux-holding-times} already reads the law of one step off the kernels.
-    \ref{rem6} can be stated at any time.
+  \item \textbf{What is left around part~2 of Theorem~2}.  \ref{rem6}, and
+    nothing else.  It can be stated at any time: its route is \ref{thm2-2},
+    ``by the same steps as part~2'', and the work is transcribing $\ladder^o$
+    and $C^{-o}$ into the shape \ref{lem14} wants.  It will not be
+    \emph{proved} before item~2, since it rests on \ref{prop7}; but a written
+    proof turns green with no edit the moment its ancestors do, which is why
+    writing it is worth doing first.
 
     This is what is left that is nobody's fault, now that
     \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9},
-    \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate}
-    and~\ref{thm2-2} are closed.  Nothing outside this repository is needed:
-    the process, its holding times and its hitting times are all built.
-    Neither will be \emph{proved} before item~2, since both rest on
-    \ref{prop7}; but a written proof turns green with no edit the moment its
-    ancestors do, which is why writing them is worth doing first.
+    \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate},
+    \ref{thm2-2}, \ref{aux-restart}, \ref{cor11} and~\ref{eq19} are closed.
+    The lemma \ref{cor11} and \ref{eq19} were waiting on --- a restart of
+    $\Uproc{u}$ at the first jump, which \texttt{Trajectory.shift} does not
+    give, since it restarts the skeleton and the skeleton carries no clock ---
+    is \ref{aux-restart}, and it is proved outright.
   \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
     and~\ref{note-lem20}.  Worth settling with the authors first, since the
     repairs change the written proofs. \ref{prop7} then follows by assembling
