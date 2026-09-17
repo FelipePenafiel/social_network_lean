@@ -117,7 +117,10 @@ REASONS: dict[str, tuple[str, str]] = {
     # -- Mathlib ------------------------------------------------------------
     "thm1-2-skeleton": (
         BLOCKED_ON_MATHLIB,
-        "Doeblin's minorisation criterion.  The keystone: five results below wait on it",
+        "the existence half: the criterion itself is now proved "
+        "(`eq_of_invariant_of_iterate_minorisation`), and what is left is an invariant "
+        "measure to apply it to, plus this chain's minorisation.  The keystone: five "
+        "results below wait on it",
     ),
     "thm1-2": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
     "thm25": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
@@ -133,22 +136,6 @@ REASONS: dict[str, tuple[str, str]] = {
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
-    "cor11": (
-        NOT_YET,
-        "part 2 again, after the exponential waiting time that is why the zero matrix had "
-        "to be excluded from it; what is missing is a restart of the continuous-time "
-        "process at the first jump, which this library does not have",
-    ),
-    "rem6": (
-        NOT_YET,
-        "the one numbered statement of the paper with no Lean counterpart; nothing "
-        "downstream uses it, and its route is part 2, not Corollary 11",
-    ),
-    "eq19": (
-        NOT_YET,
-        "equation (19), displayed inside the proof of Lemma 13: the decomposition "
-        "Corollary 11's own proof makes at the first expression from the zero matrix",
-    ),
 }
 
 
@@ -317,6 +304,25 @@ STRUCTURE = re.compile(
 FIELD = re.compile(r"^\s+([a-z_][A-Za-z0-9_']*)\s*:[^=]")
 AXIOM = re.compile(r"^\s*axiom\s+([A-Za-z_][A-Za-z0-9_.'!?]*)")
 SORRY = re.compile(r"^\s*sorry\s*$")
+
+
+AUDIT_OPEN = "\\textbf{Follow the paper's proof}"
+AUDIT_CLOSE = "\\textbf{No proof departs from the paper"
+
+
+def audit_groups() -> str:
+    """The three groups of the blueprint's audit of the formalised proofs.
+
+    Every proof carrying ``\\leanok`` has to be classified in one of them.  Nothing else
+    checks that, and it drifts silently: a proof written without a line in the audit is
+    an unaudited proof, and the section claims there are none.
+    """
+    text = CONTENT.read_text(encoding="utf-8")
+    start = text.find(AUDIT_OPEN)
+    end = text.find(AUDIT_CLOSE, start + 1)
+    if start == -1 or end == -1:
+        raise ValueError("the blueprint's audit section no longer has its three groups")
+    return text[start:end]
 
 
 def declarations() -> tuple[set[str], set[str], set[str]]:
@@ -520,9 +526,15 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     # --- what resists ------------------------------------------------------
     w("## 1. What resists formalisation")
     w("")
-    w(f"{len(resisting)} statements. They are unproved for four different reasons, and")
-    w("the reasons are not comparable: one of these groups will never close here, one")
-    w("needs mathematics only the authors can supply, and one is only work.")
+    kinds = [c for c in ORDER if any(REASONS[n.label][0] == c for n in resisting)]
+    words = {1: "one", 2: "two", 3: "three", 4: "four"}
+    w(f"{len(resisting)} statements. They are unproved for {words[len(kinds)]} different "
+      f"reasons, and")
+    w("the reasons are not comparable: one of these groups will never close here, and one")
+    w("needs mathematics only the authors can supply.")
+    if NOT_YET not in kinds:
+        w("The group that was only work is empty: every numbered statement of the paper is")
+        w("stated in Lean, and nothing unproved here is unproved for want of doing it.")
     w("[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item")
     w("asks for.")
     w("")
@@ -569,9 +581,12 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
       f"statement of")
     w(f"the paper. Counted as the paper numbers them, {len(statements)} statements and "
       f"displayed equations")
-    w(f"are covered, of which {len(statements) - len(unstated)} are stated in Lean. The "
-      f"only one that is not is "
-      + ", ".join(sorted(unstated)) + ".")
+    if unstated:
+        w(f"are covered, of which {len(statements) - len(unstated)} are stated in Lean. The "
+          f"only one that is not is "
+          + ", ".join(sorted(unstated)) + ".")
+    else:
+        w(f"are covered, and all {len(statements)} of them are stated in Lean.")
     w("")
 
     w("### The statements of the paper")
@@ -774,6 +789,11 @@ def main() -> int:
     cited_names = {n for node in nodes for n in node.lean}
     for orphan in sorted(sorries - cited_names):
         problems.append(f"{orphan} carries a sorry and no blueprint node cites it")
+    audit = audit_groups()
+    for node in nodes:
+        if node.proof_ok and f"\\ref{{{node.label}}}" not in audit:
+            problems.append(f"{node.label}: its proof is formalised, and the audit of "
+                            f"Section \"What the formalised proofs check\" does not name it")
 
     status = resolve(nodes, axioms, sorries)
     if args.axioms:

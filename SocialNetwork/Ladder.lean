@@ -410,6 +410,29 @@ theorem mem_consensusSet_or_other {p : Opinion M} (hu : IsConsensus p u) (o : Op
   · exact Or.inl (hp ▸ hu)
   · exact Or.inr ⟨p, hp, hu⟩
 
+/-- No state is in consensus for two different opinions, so `C^o` and `C^{-o}` are disjoint.
+Were `u` in both, the two sign conditions would squeeze every entry of every row between `0`
+and `0` --- the column of each of the two opinions is forced to vanish, the rest is
+non-positive, and the row sums to zero --- leaving `u = 0`, which `C^o` excludes.
+
+**No counterpart in the paper**, which uses the disjointness without remarking on it.
+Remark 6 is where it is needed: it is what says that a greedy run out of `C^o` has not
+reached `C^{-o}`. -/
+theorem IsConsensus.notMem_consensusSetOther {o : Opinion M} {v : Pressure N M}
+    (hv : IsConsensus o v) : v ∉ consensusSetOther N o := by
+  rintro ⟨p, hpo, hp⟩
+  refine hv.ne_zero (funext fun a => funext fun q => ?_)
+  have hvo : v a o = 0 := le_antisymm (hp.nonpos a o (Ne.symm hpo)) (hv.nonneg a)
+  have hnonpos : ∀ q, v a q ≤ 0 := by
+    intro q
+    by_cases hq : q = o
+    · rw [hq, hvo]
+    · exact hv.nonpos a q hq
+  have hsum : ∑ q, v a q = 0 := hv.isState.trust_eq_zero a
+  have hzero : ∀ q ∈ (Finset.univ : Finset (Opinion M)), v a q = 0 :=
+    (Finset.sum_eq_zero_iff_of_nonpos fun q _ => hnonpos q).1 hsum
+  exact hzero q (Finset.mem_univ q)
+
 end Sets
 
 end SocialNetwork

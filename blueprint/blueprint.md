@@ -118,6 +118,28 @@ cylinder (`pathMeasure_cylinder`) by uniqueness of measures on the π-system of 
 exact law is the same induction that gives the one-step bound of Propositions 17 and 24, with
 the one-step kernel evaluated at a singleton instead of bounded below.
 
+Corollary 11 and equation (19) need the same statement for the **continuous-time** process,
+and the skeleton's proof does not transpose: `SocialNetwork.ctsPathMeasure` is driven by
+kernels on `Jump N M × ℝ`, whose sample space is uncountable, so the induction cannot be run
+on singletons and the holding time cannot be conditioned on pointwise.
+`SocialNetwork.ctsPathMeasure_restart` is proved instead from an explicit description of one
+step of the kernel, `SocialNetwork.ctsPartialTraj_succ_apply` — the history is kept and one
+more step is drawn from `stepLaw` at the matrix it reaches.  That is
+`Kernel.partialTraj_succ_self` (`…/IonescuTulcea/PartialTraj.lean:173`) unfolded through
+`Measure.dirac_prod`, and it turns the shift into a statement about `stepLaw` alone.  From
+there it is an induction on the length of the history and one appeal to uniqueness on the
+π-system of cylinders, as in the discrete case.
+
+**What is missing from Mathlib here is the shift itself.**  `Kernel.traj` has no lemma
+relating `traj κ a` to the trajectory kernel of a shifted family, and nothing in
+`Mathlib/Probability/Kernel/IonescuTulcea/` mentions a shift on `Π n, X n`.  The general
+statement is available and is not hard: under `traj κ a x₀`, conditionally on the first `b+1`
+coordinates being `x`, the law of `(x_{b+1}, x_{b+2}, …)` is `traj κ^x b` for the family
+`κ^x m h = κ (b+1+m) (x ⌢ h)`.  Every project that drives a chain through Ionescu–Tulcea wants
+it, and the proof here is that proof with the dependence on the prefix collapsed to a state.
+It is the clearest candidate for an upstream contribution this file's list has turned up, and
+the only one inside probability.
+
 ## Resolved without Mathlib: Kac's lemma, and the skeleton's Markov property
 
 **Mathlib has no Kac lemma.**  Every `Kac` in the library is a Kac–Moody algebra.  Proposition
@@ -159,11 +181,19 @@ the skeleton of the biased lemmas of the section above, proved the same way.
 
 ## Still missing, in DISCRETE time
 
-These block Theorem 1.2 and everything downstream of it.  Items 1–3 are one gap seen from
-three sides.
+These block Theorem 1.2 and everything downstream of it.  Items 1–3 were one gap seen from
+three sides; item 1 has since been halved, and what is left of it is items 4 and 5.
 
-1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing.  `grep` over the whole tree
-   returns zero hits for `Doeblin`, `minorisation`, `minorization`.
+1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing in Mathlib: `grep` over the
+   whole tree still returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
+   *uniqueness* half is now supplied here instead, in `SocialNetwork/Doeblin.lean`
+   (`SocialNetwork.eq_of_invariant_of_iterate_minorisation`): if some iterate of a Markov
+   kernel on a countable space is bounded below at one point by `c > 0`, uniformly over a set
+   carrying the measures, then at most one invariant probability measure is carried by that
+   set.  It is forty lines, it consumes nothing but `Kernel.Invariant`, and it belongs
+   upstream as much as the shift lemma above does.  What is still missing is the *existence*
+   half — from positive recurrence, the construction of an invariant measure out of one
+   excursion — and that is items 4 and 5 below rather than this one.
 2. **The theory around `Kernel.Invariant`.**  The definition exists
    (`Mathlib/Probability/Kernel/Invariance.lean`) — `μ.bind κ = μ` — together with
    `Invariant.comp`, `IsReversible` and `IsReversible.invariant`.  That is the entire file, and
@@ -210,7 +240,8 @@ mentions the invariant measure: it bounds the hitting time of `L` from a fixed s
 matrix, and its proof is Proposition 7 together with an exponential race among the holding
 times, which `SocialNetwork.ctsPathMeasure` already supplies.  Nothing on the list above is
 missing for it, nor for Corollary 11 and the two displays below it; the blueprint node
-`thm2-2` says so at length.
+`thm2-2` says so at length.  All four are now written, and equation (19) is proved outright:
+what they wanted beyond the clock was the restart above, not anything from this list.
 
 The shortest path to Theorem 2.1 is therefore item 1 alone.  Proposition 9 no longer waits on
 Mathlib at all: it is proved from Proposition 7, Remark 5, the bound of Proposition 8
