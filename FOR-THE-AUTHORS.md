@@ -52,7 +52,7 @@ repository has already taken the only route available, and says so at the declar
 | [§2.6](#2-statements-that-had-to-be-changed), [§3.3](#3-the-two-axioms) | **Theorem 31** | its route needs a biased Proposition 12, which the paper does not state.  Declared as a second axiom; Theorem 31 is **proved** from it |
 | [§2.8](#2-statements-that-had-to-be-changed) | **Proof of Lemma 13** | `τ` is exponential of mean `1/(MN)`, so `P(τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`.  Harmless — the written form is the weaker one |
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
-| [§5](#5-not-the-papers-fault) | **Remark 6** | the one numbered statement with no Lean counterpart.  Nothing downstream uses it |
+| [§5](#5-not-the-papers-fault) | **Remark 6** | was the one numbered statement with no Lean counterpart.  Now stated and **proved**, outright: its route needs only the last stage of Proposition 7, not Lemmas 19 and 20 |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
@@ -395,21 +395,27 @@ continuous-time analysis of Appendix B (Lemma 14, Lemma 29).  `blueprint/bluepri
 audit of what Mathlib does and does not provide, checked against the pinned
 revision.
 
-One statement is unproved for neither reason — nobody's fault, and no
-obstruction known: **Remark 6**, which has no Lean counterpart at all and which
-nothing downstream uses.  Stating it costs nothing, and proving it goes through
-part 2 of Theorem 2, not — as this file used to say — through Corollary 11 and
-Doeblin.
+Nothing is unproved for neither reason any more.  **Every numbered statement of
+the paper is now stated in Lean**, and what is unproved is blocked on Mathlib,
+blocked on the paper, or cited from outside it.
 
-There were three.  **Corollary 11** was filed under Doeblin and **equation (19)**
-as a citation; reading part 2 apart from part 1 moved both, and part 2 and the
-first display of §2.7 with them.  All four are now written.  Part 2 says nothing
-about the invariant measure, so nothing it needed was missing from this
-repository: what it wanted was the clock, and the clock is the construction's own
+There were three in this group.  **Corollary 11** was filed under Doeblin and
+**equation (19)** as a citation; reading part 2 apart from part 1 moved both, and
+part 2 and the first display of §2.7 with them.  Part 2 says nothing about the
+invariant measure, so nothing it needed was missing from this repository: what it
+wanted was the clock, and the clock is the construction's own
 (`aux-holding-times` in the blueprint).  What Corollary 11 and equation (19)
 wanted beyond that was one lemma, the restart of the process at its first jump
-(§4), and **equation (19) is proved outright** — it turns out not to pass through
-part 2 at all.
+(§4).  The third was **Remark 6**, the one numbered statement with no Lean
+counterpart at all.
+
+Two of the three turned out to be provable **outright**, and in both cases
+because the route this repository had assumed was not the route: equation (19)
+does not pass through part 2 of Theorem 2 (the supremum it bounds by is on its
+own right-hand side), and Remark 6 needs only the *last* stage of Proposition 7
+— consensus to a ladder, which is proved — because it starts inside `C^o`, and
+getting to `C^o` is exactly what Lemmas 19 and 20 are for.  Corollary 11 does use
+part 2 and inherits its `sorry`.
 
 None of what is proved there is proved *outright*: part 2 and the display rest
 on Proposition 7, hence on Lemmas 19 and 20, and turn green with no edit the
@@ -504,14 +510,24 @@ written admits a reading under which the corollary fails, and a formalisation is
 the kind of reader that takes it.  Under the right reading the corollary is now
 proved, and so is equation (19).
 
-**Remark 6** is the one numbered statement of the paper with no Lean counterpart.
-It is a node of the blueprint carrying no `\leanok`, so `STATUS.md` counts it,
-and it is listed here rather than quietly omitted: the repository claims to state
-every numbered result, and this is the exception.  Nothing downstream uses it —
-it strengthens Corollary 11 in the direction Lemma 14 needs.  Its route is part 2
-of Theorem 2, which is what you write and what Remark 14 of [GL24] repeats for
-`M = 2`; the blueprint used to draw it from Corollary 11, and that edge was a
-neighbour mistaken for a dependency.
+**Remark 6** was the one numbered statement of the paper with no Lean
+counterpart, and it now has one: `tendsto_probHittingLadderFirst`, proved
+outright.  Two notes on it, neither asking anything of you.
+
+The horizon is `N`, not `(M+1)N`.  "By following the same steps of the proof of
+part 2 of Theorem 2" is exactly right, but the steps have to be run from `C^o`
+and stopped at `N`: continuing a greedy run past a ladder expresses the same
+opinion again and leaves `L^o`, so part 2's bound — which concludes `L`, not
+`L^o` — cannot be quoted as it stands.  What Remark 6 uses is the last stage of
+Proposition 7 on its own.
+
+And that is why it is proved outright while part 2 is not.  This repository had
+filed Remark 6 behind Lemmas 19 and 20, on the grounds that its route is part 2
+and part 2 rests on them.  It does not: starting inside `C^o` skips them, since
+getting to `C^o` is their whole job.  Nothing downstream uses Remark 6 — it
+strengthens Corollary 11 in the direction Lemma 14 needs — but it is the only
+statement of Section 5.2 that this repository can offer you sorry-free: part 1 of
+Theorem 2 waits on Doeblin, and part 2 and Corollary 11 on Lemmas 19 and 20.
 
 **Theorem 4** part 1 is now **proved**, and with it the negative-bias half of the phase
 transition: almost surely all but one actor eventually stop expressing. Proposition 18
@@ -542,8 +558,8 @@ sequence of expressed pairs, and non-explosion is what makes the continuous-time
 defined. And your part 1 indexes from 1, the formalisation from 0, so where you write
 `⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean reads `∀ m ≥ N, A_m = A_N`.
 
-With this closed, and with **Corollary 11** and **equation (19)** since written,
-**Remark 6** is what is left in the repository that is nobody's fault.
+With this closed, and with **Corollary 11**, **equation (19)** and **Remark 6**
+since written, nothing is left in the repository that is nobody's fault.
 
 ---
 

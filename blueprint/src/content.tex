@@ -588,9 +588,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
   which is to say behind \ref{lem19} and~\ref{lem20}.  Writing this proof is
   what showed the split was not only bookkeeping: nothing but
-  \ref{aux-hitting-rate} was in the way.  \ref{eq19} has since left that queue
-  too, and outright: it goes through \ref{aux-restart} and the clock rather
-  than through this node, and carries no \texttt{sorryAx} at all.
+  \ref{aux-hitting-rate} was in the way.  \ref{eq19} and~\ref{rem6} have since left that queue
+  too, and outright: neither goes through this node in the end --- \ref{eq19}
+  through \ref{aux-restart} and the clock, \ref{rem6} through the last stage of
+  \ref{prop7} alone --- and neither carries \texttt{sorryAx}.
 \end{proof}
 
 \paper{Theorem 3}
@@ -1433,7 +1434,9 @@ process pointwise.
 \paper{Remark 6}
 \begin{remark}[Reaching $\ladder^o$ before leaving $C^o$]
   \label{rem6}
-  \uses{thm2-2}
+  \lean{SocialNetwork.probHittingLadderFirst, SocialNetwork.tendsto_probHittingLadderFirst, SocialNetwork.le_probHittingLadderFirst, SocialNetwork.IsConsensus.notMem_consensusSetOther, SocialNetwork.jumpTime_lt_hittingTimeCts, SocialNetwork.expMeasure_Ici_of_nonneg, SocialNetwork.expMeasure_singleton, SocialNetwork.ctsPathMeasure_greedy_holdingTime_ge}
+  \leanok
+  \uses{def1, def2}
   The paper's own note that the first term on the right of equation~(14) may be
   replaced by $\mathbb{P}(\Rhit{u}(\ladder) > t, \Rhit{u}(\ladder^o) <
   \Rhit{u}(C^{-o}))$, whence, by the same steps as \ref{thm2-2}, for
@@ -1444,18 +1447,41 @@ process pointwise.
         \Rhit{u}(C^{-o})\bigr\}\Bigr) \to 1,
     \qquad \beta \to +\infty .
   \]
+\end{remark}
+\begin{proof}
+  \leanok
+  \uses{aux-consensus-ladder, aux-holding-times, prop8, rem4}
+  ``By following the same steps of the proof of part~2 of Theorem~2'', as the
+  paper says and as Remark~14 of [GL24] says for $M = 2$: the same two
+  estimates, at the horizon $N$ instead of $(M+1)N$.  Along
+  $\bigcap_{j=1}^{N} \xi_j^u$ from $u \in C^o$, \ref{aux-consensus-ladder} puts
+  $\Uskel{u}_N$ in $\ladder^o$, so $\Rhit{u}(\ladder^o) \le T_N$; and every
+  state passed through is in $C^o$, which is disjoint from $C^{-o}$, so
+  $\Rhit{u}(C^{-o}) \ge T_{N+1} > T_N$.  The run therefore fails only if
+  $T_N$ reaches $t$, and the two bounds of \ref{aux-holding-times} ---
+  \ref{prop8} for the greedy event, the exponential race for the clock ---
+  apply verbatim.  Taking $t = e^{-\frac{\beta}{M-1}(1-\delta)}$ and
+  \ref{rem4} for the first term gives the limit.
 
-  \textbf{Not stated in Lean.} It is the one numbered statement of the paper
-  with no counterpart here, and it is recorded so that the count is honest.
+  \textbf{The horizon has to be $N$}, not $(M+1)N$.  Continuing a greedy run
+  past a ladder expresses the same opinion again and leaves $\ladder^o$, so the
+  bound of part~2 --- which only claims $\ladder$ --- cannot be quoted as it
+  stands.  What Remark~6 needs is the \emph{last} stage of \ref{prop7} on its
+  own.
+
+  \textbf{Proved outright}, and this node claimed the opposite until it was
+  written.  The claim was that Remark~6 would rest on \ref{prop7}, hence on
+  \ref{lem19} and~\ref{lem20}, because its route is \ref{thm2-2} and
+  \ref{thm2-2} rests on them.  It does not: the route passes through the last
+  stage of \ref{prop7} only, and that stage --- \ref{aux-consensus-ladder} ---
+  is proved outright.  Starting inside $C^o$ is exactly what skips
+  \ref{lem19} and~\ref{lem20}, whose work is to \emph{get} to $C^o$.  The edge
+  to \ref{thm2-2} was a second neighbour mistaken for a dependency, after the
+  edge to \ref{cor11} this node used to carry.
+
   Nothing downstream uses it: it strengthens \ref{cor11} in the direction
   \ref{lem14} needs.
-
-  Its route is \ref{thm2-2} --- ``by the same steps as part~2 of Theorem~2'',
-  as the paper says and as Remark~14 of [GL24] says for $M = 2$ --- and not
-  \ref{cor11}, which this node used to be drawn from.  That edge was a
-  neighbour mistaken for a dependency, and it is what filed Remark~6 behind
-  Doeblin.
-\end{remark}
+\end{proof}
 
 \section{Metastability}
 
@@ -2394,6 +2420,10 @@ is simply not done yet.  \texttt{STATUS.md} at the root of the repository is
 the generated index of all four, statement by statement; the paragraphs below
 are the argument behind it.
 
+The fourth group is now \emph{empty}.  Every numbered statement of the paper is
+stated in Lean, and nothing here is unproved for want of doing the work; the
+subsection that held that group is kept below as the record of what it cost.
+
 \subsection*{Blocked on Mathlib}
 
 \ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
@@ -2448,12 +2478,11 @@ departure of that kind in this repository, and the reason is written at its
 node.
 
 \ref{aux-hitting-rate}, \ref{thm2-2} and~\ref{cor11} joined this queue as soon
-as their proofs were written, and \ref{rem6} will: it is blocked on nothing
-today, and rests on \ref{prop7} once written, hence on \ref{lem19}
-and~\ref{lem20}.  \ref{eq19} did not join it: written out, its proof turned out
-not to pass through \ref{thm2-2} at all, and it is proved.  A node is listed as
-not done rather than as blocked because that is what it is: the obstruction is
-recorded once, at \ref{lem19} and~\ref{lem20}, and not copied down the graph.
+as their proofs were written.  \ref{eq19} and~\ref{rem6} were expected to and did
+not: written out, neither proof passes through \ref{thm2-2}, and both are
+proved.  The obstruction is recorded once, at \ref{lem19} and~\ref{lem20}, and
+not copied down the graph --- which is the only reason the mistake was cheap:
+nothing else had been filed behind it.
 
 \subsection*{Cited from outside the paper}
 
@@ -2538,8 +2567,9 @@ Nothing is left on this list, and the one item that outlived it,
 \ref{aux-measurable-hitting}, is now proved as well; the subsection after next
 records what its diagnosis got wrong.  What is unproved here is blocked on
 Mathlib, blocked on the paper, cited from outside it, or simply not done ---
-and the last of those groups is now \ref{rem6} alone, \ref{cor11}
-and~\ref{eq19} having been written.
+and the last of those groups is now \emph{empty}: \ref{cor11}, \ref{eq19}
+and~\ref{rem6} have all been written, and every numbered statement of the paper
+is stated in Lean.
 
 \subsection*{Was here, and is now closed}
 
@@ -2570,7 +2600,8 @@ library, so they moved to the last group, work not done --- and both are now
 written, the first from \ref{aux-holding-times} and \ref{prop7} and the second
 from \ref{aux-restart}, which is the best evidence that the reclassification
 was right.  \ref{eq19} is in fact \emph{proved}, sorry-free: nothing it uses is
-blocked on anything.  What survives as a
+blocked on anything.  So is \ref{rem6}, for the same kind of reason --- see its
+node.  What survives as a
 question for the authors is only whether either should be numbered, and that
 question is asked in \texttt{FOR-THE-AUTHORS.md} rather than recorded as an
 obstruction here.  The lesson is again the one above: a citation is not an
@@ -2601,22 +2632,22 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Forty-eight proofs
+\ref{note-green}: does it follow what the paper wrote?  Forty-nine proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts forty-nine entries.  Every one of them is named, and
+own, so it counts fifty entries.  Every one of them is named, and
 \texttt{scripts/status.py} now checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.  The check was added because the
 list had drifted --- nine proofs were written without a line here before anyone
 noticed.
 
-\medskip \noindent\textbf{Follow the paper's proof} (twenty-four). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (twenty-five). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
-\ref{eq19} inside its own, \ref{lem13}, \ref{cor15} and~\ref{cor30},
+\ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -2698,7 +2729,10 @@ compresses; the restart of the process at its first jump, \ref{aux-restart},
 which the paper performs without comment; and the almost-sure positivity of the
 holding times, without which the jump counter is not the number of expressions.
 \ref{cor10} is the paper's proof with one supplied step, the enumeration of the
-predecessors of $0$, which is \ref{aux-zero-predecessors}.
+predecessors of $0$, which is \ref{aux-zero-predecessors}. \ref{rem6} is
+``the same steps'' the paper prescribes, at the horizon $N$ rather than
+$(M+1)N$, with one supplied step of its own: that $C^o$ and $C^{-o}$ are
+disjoint, which the paper uses without remarking on it.
 
 \medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
@@ -2779,22 +2813,14 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{What is left around part~2 of Theorem~2}.  \ref{rem6}, and
-    nothing else.  It can be stated at any time: its route is \ref{thm2-2},
-    ``by the same steps as part~2'', and the work is transcribing $\ladder^o$
-    and $C^{-o}$ into the shape \ref{lem14} wants.  It will not be
-    \emph{proved} before item~2, since it rests on \ref{prop7}; but a written
-    proof turns green with no edit the moment its ancestors do, which is why
-    writing it is worth doing first.
-
-    This is what is left that is nobody's fault, now that
-    \ref{aux-measurable-hitting}, \ref{prop18}, \ref{thm4} part~1, \ref{prop9},
-    \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate},
-    \ref{thm2-2}, \ref{aux-restart}, \ref{cor11} and~\ref{eq19} are closed.
-    The lemma \ref{cor11} and \ref{eq19} were waiting on --- a restart of
-    $\Uproc{u}$ at the first jump, which \texttt{Trajectory.shift} does not
-    give, since it restarts the skeleton and the skeleton carries no clock ---
-    is \ref{aux-restart}, and it is proved outright.
+  \item \textbf{Nothing is left that is nobody's fault.}  This item held
+    \ref{aux-measurable-hitting}, then \ref{prop18}, \ref{thm4} part~1,
+    \ref{prop9}, \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate},
+    \ref{thm2-2}, \ref{aux-restart}, \ref{cor11}, \ref{eq19} and last
+    \ref{rem6}; all of them are closed, and every numbered statement of the
+    paper is stated in Lean.  What remains unproved is blocked on Mathlib,
+    blocked on the paper, or cited from outside it, and the next two items are
+    those.
   \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
     and~\ref{note-lem20}.  Worth settling with the authors first, since the
     repairs change the written proofs. \ref{prop7} then follows by assembling

@@ -16,9 +16,11 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-19 statements. They are unproved for four different reasons, and
-the reasons are not comparable: one of these groups will never close here, one
-needs mathematics only the authors can supply, and one is only work.
+18 statements. They are unproved for three different reasons, and
+the reasons are not comparable: one of these groups will never close here, and one
+needs mathematics only the authors can supply.
+The group that was only work is empty: every numbered statement of the paper is
+stated in Lean, and nothing unproved here is unproved for want of doing it.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
@@ -64,30 +66,20 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
-### Not formalised yet (1)
-
-No obstruction known.
-Nothing here stands in the way; the work is simply not done.
-
-| Statement | Lean | Why |
-|---|---|---|
-| Remark 6 | — | the one numbered statement of the paper with no Lean counterpart; nothing downstream uses it, and its route is part 2, not Corollary 11 |
-
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 17 | 17 | 34 |
+| Proved | 18 | 17 | 35 |
 | Proof written, resting on an unproved statement | 11 | 2 | 13 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 16 | 0 | 16 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| Not stated in Lean | 1 | 0 | 1 |
 | **Total** | **62** | **23** | **85** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
-are covered, of which 55 are stated in Lean. The only one that is not is Remark 6.
+are covered, and all 56 of them are stated in Lean.
 
 ### The statements of the paper
 
@@ -128,7 +120,7 @@ are covered, of which 55 are stated in Lean. The only one that is not is Remark 
 | Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 19, Lemma 20 |
 | Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 19, Lemma 20 |
 | Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | proof written, rests on Lemma 19, Lemma 20 |
-| Remark 6 | — | not stated — not formalised yet |
+| Remark 6 | `probHittingLadderFirst` +7 | proved |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 19, Lemma 20 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | unproved — blocked on Mathlib |

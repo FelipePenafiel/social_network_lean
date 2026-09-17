@@ -629,6 +629,24 @@ noncomputable def probHittingGTAfterFirstJump (β : ℝ) (u : Pressure N M)
     (θ : Set (Pressure N M)) (t : ℝ) : ℝ≥0∞ :=
   ctsPathMeasure β u {ω | ENNReal.ofReal (jumpTime 1 ω + t) < hittingTimeCts u θ ω}
 
+/-- `P (R^{β,u} (L^o) < min {t, R^{β,u} (C^{-o})})`: a ladder supporting `o` is reached before
+time `t`, and before the process reaches a consensus for any other opinion.
+
+This is the quantity of Remark 6.  It is not `SocialNetwork.probHittingGT` of anything: the
+event compares two hitting times of the same realisation. -/
+noncomputable def probHittingLadderFirst (β : ℝ) (o : Opinion M) (u : Pressure N M)
+    (t : ℝ≥0∞) : ℝ≥0∞ :=
+  ctsPathMeasure β u {ω | hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+    < min t (hittingTimeCts u (consensusSetOther N o) ω)}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_hittingLadderFirst (o : Opinion M) (u : Pressure N M) (t : ℝ≥0∞) :
+    MeasurableSet {ω : ℕ → Step N M |
+      hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+        < min t (hittingTimeCts u (consensusSetOther N o) ω)} :=
+  measurableSet_lt (measurable_hittingTimeCts _ _)
+    (measurable_const.min (measurable_hittingTimeCts _ _))
+
 /-- The expectation `E (R^{β,u} (θ))` appearing in Theorem 3. -/
 noncomputable def expHittingTimeCts (β : ℝ) (u : Pressure N M) (θ : Set (Pressure N M)) :
     ℝ≥0∞ :=
@@ -749,6 +767,23 @@ theorem expMeasure_Ioi_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x)
 theorem expMeasure_Iic_zero {r : ℝ} (hr : 0 < r) : expMeasure r (Set.Iic 0) = 0 := by
   rw [expMeasure_Iic_of_nonneg hr le_rfl]
   simp
+
+/-- The exponential law has no atom: it is `volume.withDensity` of a density, hence absolutely
+continuous. -/
+theorem expMeasure_singleton (r : ℝ) (x : ℝ) : expMeasure r {x} = 0 := by
+  have hac : expMeasure r ≪ MeasureTheory.volume := by
+    unfold expMeasure gammaMeasure
+    exact withDensity_absolutelyContinuous _ _
+  exact hac (measure_singleton x)
+
+/-- The closed tail carries the same mass as the open one.  Remark 6 needs the closed one: the
+run there fails when the `N`-th jump time *reaches* `t`, not only when it passes it. -/
+theorem expMeasure_Ici_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
+    expMeasure r (Set.Ici x) = ENNReal.ofReal (Real.exp (-(r * x))) := by
+  have hsplit : Set.Ici x = {x} ∪ Set.Ioi x := by
+    ext y; simp [Set.mem_Ici, le_iff_lt_or_eq, or_comm]
+  rw [hsplit, measure_union (by simp) measurableSet_Ioi, expMeasure_singleton, zero_add,
+    expMeasure_Ioi_of_nonneg hr hx]
 
 /-! ### The law of one holding time -/
 
@@ -1175,6 +1210,33 @@ theorem ctsPathMeasure_greedy_holdingTime_gt (hM : 2 ≤ M) (hN : 2 ≤ N) {β :
       refine expMeasure_Ioi_le hM hβ ((Trajectory.ofStepHistory h).isState_state hu (m + 1)) ?_ hs
       exact state_ne_zero_of_greedy hM hN hu hu0 fun k hk => hh k (by omega)
 
+/-- The closed form of the tail bound. -/
+theorem expMeasure_Ici_le (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {v : Pressure N M}
+    (hv : IsState v) (hv0 : v ≠ 0) {s : ℝ} (hs : 0 ≤ s) :
+    expMeasure (totalRate β v) (Set.Ici s)
+      ≤ ENNReal.ofReal (Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * s))) := by
+  rw [expMeasure_Ici_of_nonneg (totalRate_pos β v) hs]
+  refine ENNReal.ofReal_le_ofReal (Real.exp_le_exp.2 ?_)
+  have := exp_le_totalRate hM hβ hv hv0
+  nlinarith [Real.exp_pos (β / ((M : ℝ) - 1))]
+
+/-- The closed form of the greedy holding-time bound, which is what Remark 6 uses. -/
+theorem ctsPathMeasure_greedy_holdingTime_ge (hM : 2 ≤ M) (hN : 2 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {u : Pressure N M} (hu : IsState u) (hu0 : u ≠ 0) (n : ℕ) {s : ℝ} (hs : 0 ≤ s) :
+    ctsPathMeasure β u (ctsGreedyEvents u n ∩ {ω | s ≤ holdingTime n ω})
+      ≤ ENNReal.ofReal (Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * s))) := by
+  cases n with
+  | zero =>
+      refine le_trans (measure_mono Set.inter_subset_right) ?_
+      have hset : {ω : ℕ → Step N M | s ≤ holdingTime 0 ω}
+          = {ω : ℕ → Step N M | holdingTime 0 ω ∈ Set.Ici s} := rfl
+      rw [hset, ctsPathMeasure_holdingTime_zero β u measurableSet_Ici]
+      exact expMeasure_Ici_le hM hβ hu hu0 hs
+  | succ m =>
+      refine ctsPathMeasure_greedy_holdingTime_le β u m measurableSet_Ici fun h hh => ?_
+      refine expMeasure_Ici_le hM hβ ((Trajectory.ofStepHistory h).isState_state hu (m + 1)) ?_ hs
+      exact state_ne_zero_of_greedy hM hN hu hu0 fun k hk => hh k (by omega)
+
 /-! ### The holding times are almost surely positive -/
 
 theorem ctsPathMeasure_holdingTime_nonpos (β : ℝ) (u : Pressure N M) (n : ℕ) :
@@ -1230,6 +1292,41 @@ theorem hittingTimeCts_le_jumpTime {u : Pressure N M} {θ : Set (Pressure N M)}
   · exact Finset.sum_nonneg fun n _ => (hpos n).le
   · rw [process, jumpCount_jumpTime ω hpos hk]
     exact hmem
+
+omit [NeZero N] [NeZero M] in
+/-- The mirror: if none of the first `k + 1` matrices of a realisation lies in `θ`, the hitting
+time of `θ` is strictly beyond the `k`-th jump time.  Before `T_{k+1}` the process shows those
+matrices and no others, so `θ` is not met there.
+
+This is what says, in Remark 6, that the greedy run has not reached `C^{-o}` by the time it
+reaches `L^o`. -/
+theorem jumpTime_lt_hittingTimeCts {u : Pressure N M} {θ : Set (Pressure N M)}
+    {ω : ℕ → Step N M} (hpos : ∀ n, 0 < holdingTime n ω) {k : ℕ}
+    (hmem : ∀ n ≤ k, (Trajectory.ofStepPath ω).state u n ∉ θ) :
+    ENNReal.ofReal (jumpTime k ω) < hittingTimeCts u θ ω := by
+  have hmono : StrictMono fun n => jumpTime n ω := by
+    refine strictMono_nat_of_lt_succ fun n => ?_
+    rw [jumpTime_succ]
+    linarith [hpos n]
+  have hnn : 0 ≤ jumpTime k ω := Finset.sum_nonneg fun n _ => (hpos n).le
+  have hstep : ENNReal.ofReal (jumpTime k ω) < ENNReal.ofReal (jumpTime (k + 1) ω) :=
+    (ENNReal.ofReal_lt_ofReal_iff_of_nonneg hnn).2 (hmono (Nat.lt_succ_self k))
+  refine lt_of_lt_of_le hstep (le_sInf ?_)
+  rintro x ⟨t, ⟨ht0, htθ⟩, rfl⟩
+  refine ENNReal.ofReal_le_ofReal ?_
+  by_contra hcon
+  have hlt : t < jumpTime (k + 1) ω := not_le.1 hcon
+  have hub : ∀ n ∈ {n : ℕ | jumpTime n ω ≤ t}, n ≤ k := by
+    intro n hn
+    by_contra hnk
+    have hle : jumpTime (k + 1) ω ≤ jumpTime n ω := hmono.monotone (by omega)
+    have : jumpTime n ω ≤ t := hn
+    linarith
+  have hcount : jumpCount ω t ≤ k := by
+    rcases Set.eq_empty_or_nonempty {n : ℕ | jumpTime n ω ≤ t} with he | hne
+    · rw [jumpCount, he]; simp
+    · exact csSup_le hne hub
+  exact hmem (jumpCount ω t) hcount htθ
 
 end HoldingTimes
 
@@ -2085,6 +2182,204 @@ theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : �
     (tendsto_hittingTime_ladderSet hM hN hδ)
     (Filter.Eventually.of_forall fun _ => by simp)
     (Filter.Eventually.of_forall key)
+
+/-- **The display behind Remark 6**, and the same estimate as the one behind part 2 of
+Theorem 2, with `L` replaced by `L^o` and the horizon `(M+1)N` by `N`.
+
+From a consensus state for `o`, `N` greedy expressions land on a ladder supporting `o` and
+none of the states passed through leaves `C^o`.  So on the greedy event, and as soon as the
+holding times are positive, `R^{β,u} (L^o) ≤ T_N < R^{β,u} (C^{-o})`, and the only way to fail
+is for `T_N` to reach `t`.  Proposition 8 bounds the first escape, the exponential race of the
+holding times the second. -/
+theorem le_probHittingLadderFirst (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
+    {o : Opinion M} {u : Pressure N M} (hu : IsConsensus o u) {t : ℝ} (ht : 0 < t) :
+    ENNReal.ofReal (zeta N M β ^ N
+        - (N : ℝ) * Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) * t) / (N : ℝ)))
+      ≤ probHittingLadderFirst β o u (ENNReal.ofReal t) := by
+  have hN2 : 2 ≤ N := by omega
+  have hNr : (0 : ℝ) < (N : ℝ) := by exact_mod_cast (by omega : 0 < N)
+  set r : ℝ := Real.exp (β / ((M : ℝ) - 1)) with hrdef
+  have hrpos : 0 < r := Real.exp_pos _
+  set Z : Set (ℕ → Step N M) := {ω | ∃ n, holdingTime n ω ≤ 0} with hZdef
+  have hZnull : ctsPathMeasure β u Z = 0 := ctsPathMeasure_exists_holdingTime_nonpos β u
+  have hsub : {ω : ℕ → Step N M | hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+        < min (ENNReal.ofReal t) (hittingTimeCts u (consensusSetOther N o) ω)}ᶜ
+      ⊆ ((ctsGreedyEvents u N)ᶜ ∪ Z)
+        ∪ (ctsGreedyEvents u N ∩ {ω | t ≤ jumpTime N ω}) := by
+    intro ω hω
+    by_cases hg : ω ∈ ctsGreedyEvents u N
+    · by_cases hz : ω ∈ Z
+      · exact Or.inl (Or.inr hz)
+      · refine Or.inr ⟨hg, ?_⟩
+        have hpos : ∀ n, 0 < holdingTime n ω := fun n => by
+          by_contra hcon
+          exact hz ⟨n, not_lt.1 hcon⟩
+        have hmemL : (Trajectory.ofStepPath ω).state u N ∈ {v : Pressure N M | IsLadder o v} :=
+          isLadder_state (Trajectory.ofStepPath ω) hM hN2 hu fun k hk => hg k hk
+        have hR1 : hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+            ≤ ENNReal.ofReal (jumpTime N ω) :=
+          hittingTimeCts_le_jumpTime hpos (by omega) hmemL
+        have hR2 : ENNReal.ofReal (jumpTime N ω)
+            < hittingTimeCts u (consensusSetOther N o) ω :=
+          jumpTime_lt_hittingTimeCts hpos fun n hn =>
+            (isConsensus_state (Trajectory.ofStepPath ω) hM hN2 hu
+              (fun k hk => hg k hk) n hn).notMem_consensusSetOther
+        by_contra hcon
+        exact hω (lt_min (lt_of_le_of_lt hR1
+          ((ENNReal.ofReal_lt_ofReal_iff ht).2 (not_le.1 hcon)))
+          (lt_of_le_of_lt hR1 hR2))
+    · exact Or.inl (Or.inl hg)
+  have h1 : ctsPathMeasure β u ((ctsGreedyEvents u N)ᶜ ∪ Z)
+      ≤ ENNReal.ofReal (1 - zeta N M β ^ N) := by
+    refine le_trans (measure_union_le _ _) ?_
+    rw [hZnull, add_zero, prob_compl_eq_one_sub (measurableSet_ctsGreedyEvents u N)]
+    have hge : ENNReal.ofReal (zeta N M β ^ N) ≤ ctsPathMeasure β u (ctsGreedyEvents u N) := by
+      rw [ENNReal.ofReal_pow (zeta_pos N M β).le]
+      exact zeta_pow_le_ctsPathMeasure_greedyEvents hM hβ N
+    rw [ENNReal.ofReal_sub _ (pow_nonneg (zeta_pos N M β).le N), ENNReal.ofReal_one]
+    exact tsub_le_tsub_left hge 1
+  have h2 : ctsPathMeasure β u (ctsGreedyEvents u N ∩ {ω | t ≤ jumpTime N ω})
+      ≤ ENNReal.ofReal ((N : ℝ) * Real.exp (-(r * t) / (N : ℝ))) := by
+    have hcover : ctsGreedyEvents u N ∩ {ω : ℕ → Step N M | t ≤ jumpTime N ω}
+        ⊆ ⋃ n ∈ Finset.range N,
+            (ctsGreedyEvents u n ∩ {ω : ℕ → Step N M | t / (N : ℝ) ≤ holdingTime n ω}) := by
+      rintro ω ⟨hg, hj⟩
+      have hsum : ∑ _n ∈ Finset.range N, t / (N : ℝ)
+          ≤ ∑ n ∈ Finset.range N, holdingTime n ω := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_div_cancel₀ _ hNr.ne']
+        exact hj
+      obtain ⟨n, hn, hle⟩ :=
+        Finset.exists_le_of_sum_le (Finset.nonempty_range_iff.2 (by omega)) hsum
+      exact Set.mem_biUnion hn
+        ⟨fun k hk => hg k (lt_trans hk (Finset.mem_range.1 hn)), hle⟩
+    refine le_trans (measure_mono hcover) ?_
+    refine le_trans (measure_biUnion_finset_le _ _) ?_
+    have hbound : ∀ n ∈ Finset.range N,
+        ctsPathMeasure β u
+            (ctsGreedyEvents u n ∩ {ω : ℕ → Step N M | t / (N : ℝ) ≤ holdingTime n ω})
+          ≤ ENNReal.ofReal (Real.exp (-(r * (t / (N : ℝ))))) := fun n _ =>
+      ctsPathMeasure_greedy_holdingTime_ge hM hN2 hβ hu.isState hu.ne_zero n (by positivity)
+    refine le_trans (Finset.sum_le_sum hbound) ?_
+    rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, ← ENNReal.ofReal_natCast,
+      ← ENNReal.ofReal_mul (by positivity)]
+    refine ENNReal.ofReal_le_ofReal ?_
+    have hdiv : -(r * (t / (N : ℝ))) = -(r * t) / (N : ℝ) := by field_simp
+    rw [hdiv]
+  have hzle : zeta N M β ^ N ≤ 1 := pow_le_one₀ (zeta_pos N M β).le (zeta_le_one N M β)
+  have hbad : ctsPathMeasure β u {ω : ℕ → Step N M |
+        hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+          < min (ENNReal.ofReal t) (hittingTimeCts u (consensusSetOther N o) ω)}ᶜ
+      ≤ ENNReal.ofReal (1 - zeta N M β ^ N
+          + (N : ℝ) * Real.exp (-(r * t) / (N : ℝ))) := by
+    refine le_trans (le_trans (measure_mono hsub) (measure_union_le _ _)) ?_
+    refine le_trans (add_le_add h1 h2) ?_
+    rw [← ENNReal.ofReal_add (by linarith) (by positivity)]
+  have hcompl : probHittingLadderFirst β o u (ENNReal.ofReal t)
+      = 1 - ctsPathMeasure β u {ω : ℕ → Step N M |
+        hittingTimeCts u {v : Pressure N M | IsLadder o v} ω
+          < min (ENNReal.ofReal t) (hittingTimeCts u (consensusSetOther N o) ω)}ᶜ := by
+    have h := prob_compl_eq_one_sub (μ := ctsPathMeasure β u)
+      (measurableSet_hittingLadderFirst o u (ENNReal.ofReal t)).compl
+    rwa [compl_compl] at h
+  have hrw : zeta N M β ^ N - (N : ℝ) * Real.exp (-(r * t) / (N : ℝ))
+      = 1 - (1 - zeta N M β ^ N + (N : ℝ) * Real.exp (-(r * t) / (N : ℝ))) := by ring
+  rw [hcompl, hrw, ENNReal.ofReal_sub _ (by positivity), ENNReal.ofReal_one]
+  exact tsub_le_tsub_left hbad 1
+
+/-- **Remark 6.** For every fixed `o` and `δ > 0`,
+
+```
+inf_{u ∈ C^o} P (R^{β,u} (L^o) < min {e^{-β(1-δ)/(M-1)}, R^{β,u} (C^{-o})})  →  1
+```
+
+as `β → +∞`: from anywhere in the consensus set for `o`, the process reaches a ladder
+supporting `o` --- not merely some ladder --- before `e^{-β(1-δ)/(M-1)}` and before it can
+agree on any other opinion.
+
+The paper states it as a consequence of its note that the first term on the right of
+equation (14) may be replaced by `P (R^{β,u}(L) > t, R^{β,u}(L^o) < R^{β,u}(C^{-o}))`, "by
+following the same steps of the proof of part 2 of Theorem 2".  It is those steps, at the
+horizon `N` rather than `(M+1)N`, which is the whole difference: from a consensus state the
+greedy run needs only the *last* stage of Proposition 7, and that stage lands on `L^o` and
+passes through `C^o` alone.  Continuing to `(M+1)N` would leave `L^o` again, so the horizon
+has to be `N` here. -/
+theorem tendsto_probHittingLadderFirst (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ)
+    (o : Opinion M) :
+    Filter.Tendsto
+      (fun β : ℝ => ⨅ u ∈ consensusSet N o, probHittingLadderFirst β o u
+        (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))))
+      Filter.atTop (nhds 1) := by
+  have hN2 : 2 ≤ N := by omega
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hN3 : (3 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hNr : (0 : ℝ) < (N : ℝ) := by linarith
+  set b : ℝ → ℝ := fun β =>
+    1 - zeta N M β ^ N
+      + (N : ℝ) * Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) *
+          Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))) / (N : ℝ)) with hbdef
+  have key : ∀ β : ℝ, 0 ≤ β →
+      ENNReal.ofReal (1 - b β)
+        ≤ ⨅ u ∈ consensusSet N o, probHittingLadderFirst β o u
+            (ENNReal.ofReal (Real.exp (-β / ((M : ℝ) - 1) * (1 - δ)))) := by
+    intro β hβ
+    refine le_iInf₂ fun u hu => ?_
+    have h := le_probHittingLadderFirst hM hN hβ hu
+      (Real.exp_pos (-β / ((M : ℝ) - 1) * (1 - δ)))
+    refine le_trans (le_of_eq (congrArg ENNReal.ofReal ?_)) h
+    rw [hbdef]
+    ring
+  have hb : Filter.Tendsto b Filter.atTop (nhds 0) := by
+    have h1 : Filter.Tendsto (fun β : ℝ => 1 - zeta N M β ^ N) Filter.atTop (nhds 0) := by
+      have hle : ∀ β : ℝ, 1 - zeta N M β ^ N
+          ≤ (N : ℝ) * ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))) := by
+        intro β
+        have := one_sub_le_zeta_pow N M β N
+        linarith
+      have hnn : ∀ β : ℝ, 0 ≤ 1 - zeta N M β ^ N := by
+        intro β
+        have h := pow_le_one₀ (zeta_pos N M β).le (zeta_le_one N M β) (n := N)
+        linarith
+      have hright : Filter.Tendsto
+          (fun β : ℝ => (N : ℝ) * ((M : ℝ) * (N : ℝ) * Real.exp (-(β / ((M : ℝ) - 1)))))
+          Filter.atTop (nhds 0) := by
+        have hdiv : Filter.Tendsto (fun β : ℝ => -(β / ((M : ℝ) - 1)))
+            Filter.atTop Filter.atBot :=
+          Filter.tendsto_neg_atTop_atBot.comp (Filter.tendsto_id.atTop_div_const hM1)
+        have := Real.tendsto_exp_atBot.comp hdiv
+        simpa [mul_assoc] using this.const_mul ((N : ℝ) * ((M : ℝ) * (N : ℝ)))
+      exact squeeze_zero hnn hle (by simpa [mul_assoc] using hright)
+    have h2 : Filter.Tendsto
+        (fun β : ℝ => (N : ℝ) * Real.exp (-(Real.exp (β / ((M : ℝ) - 1)) *
+          Real.exp (-β / ((M : ℝ) - 1) * (1 - δ))) / (N : ℝ)))
+        Filter.atTop (nhds 0) := by
+      have hin : ∀ β : ℝ, Real.exp (β / ((M : ℝ) - 1)) *
+          Real.exp (-(β / ((M : ℝ) - 1) * (1 - δ))) = Real.exp (β / ((M : ℝ) - 1) * δ) := by
+        intro β
+        rw [← Real.exp_add]
+        congr 1
+        field_simp
+        ring
+      have hgrow : Filter.Tendsto (fun β : ℝ => Real.exp (β / ((M : ℝ) - 1) * δ))
+          Filter.atTop Filter.atTop :=
+        Real.tendsto_exp_atTop.comp
+          ((Filter.tendsto_id.atTop_div_const hM1).atTop_mul_const hδ)
+      have hneg : Filter.Tendsto
+          (fun β : ℝ => -Real.exp (β / ((M : ℝ) - 1) * δ) / (N : ℝ))
+          Filter.atTop Filter.atBot :=
+        (Filter.tendsto_neg_atTop_atBot.comp hgrow).atBot_div_const hNr
+      have := (Real.tendsto_exp_atBot.comp hneg).const_mul (N : ℝ)
+      simp only [Function.comp_def, mul_zero] at this
+      simpa [hin, neg_div] using this
+    simpa [hbdef] using h1.add h2
+  have hbE : Filter.Tendsto (fun β : ℝ => ENNReal.ofReal (1 - b β)) Filter.atTop (nhds 1) := by
+    have h1 : Filter.Tendsto (fun β : ℝ => 1 - b β) Filter.atTop (nhds 1) := by
+      simpa using tendsto_const_nhds.sub hb
+    simpa [Function.comp_def] using (ENNReal.continuous_ofReal.tendsto 1).comp h1
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hbE tendsto_const_nhds ?_
+    (Filter.Eventually.of_forall fun β => ?_)
+  · filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with β hβ using key β hβ
+  · exact iInf₂_le_of_le (ladderOf N o) ((isLadder_ladderOf o).isConsensus hM hN2) prob_le_one
 
 /-- **Equation (19)**, the quantitative form of Corollary 11:
 
