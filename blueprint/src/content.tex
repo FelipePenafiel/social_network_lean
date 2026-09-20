@@ -45,6 +45,14 @@ not proved --- which of four kinds of obstruction it has met.
   ``by definition'', and everything measure-theoretic --- which has to be
   supplied, and is then marked as supplied.
 
+  The rule bites hardest where the paper's proof does \emph{not} close.  There
+  the statement is left resting on the step that fails, even when a different
+  argument would establish it: closing it another way would record a theorem and
+  lose the finding, which is the one thing this development produces that a
+  reader of the paper does not already have.  \ref{thm25} is the case to look
+  at --- a route that closes it is written out at
+  \ref{aux-biased-minorisation} and deliberately not taken.
+
   So each proof environment below opens by saying which it is: it follows the
   paper's proof of such and such, it supplies a step the paper asserts, or it
   has no counterpart in the paper.
@@ -1937,12 +1945,13 @@ process pointwise.
   maximum at the repeat time is the expressing actor's own entry, with no slack
   of $1/(2\gamma)$ to absorb.
 
-  \textbf{The Lean hypothesis is weaker than the statement above}: $\gamma > 0$
-  rather than $\alpha < 0$.  Nothing in either half uses the regime --- it
-  entered only through $0 < \gamma$ --- and the weaker form is what
-  \ref{aux-biased-minorisation} needs, Appendix~C's regime being the opposite
-  one.  Stating it as the paper does would have left \ref{thm25} looking blocked
-  when it is not.
+  \textbf{Nothing in either half uses the regime}: it enters only through
+  $0 < \gamma$, so the argument proves the statement for every $\gamma > 0$.
+  The Lean statement nonetheless carries the paper's $\alpha < 0$, since what is
+  being checked here is the paper's proposition.  The observation is not idle ---
+  see \ref{aux-biased-minorisation}, where the weaker form would remove the only
+  obstruction left on \ref{thm25} --- and it is put to the authors rather than
+  acted on.
 
   The probability is the one-step bound: with $\beta \ge 0$ the maximising
   pairs carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
@@ -2222,7 +2231,7 @@ process pointwise.
 \aux{Lemma}
 \begin{lemma}[The minorisation of the biased skeleton]
   \label{aux-biased-minorisation}
-  \lean{SocialNetwork.Bias.biasedDescendState, SocialNetwork.Bias.stateAfter_descendJump, SocialNetwork.Bias.stateAfter_descendJump_eq, SocialNetwork.Bias.biasedStepFloor, SocialNetwork.Bias.biasedStepFloor_pos, SocialNetwork.Bias.biasedStepFloor_le_biasedJumpPMF, SocialNetwork.Bias.abs_pressure_express_le, SocialNetwork.Bias.abs_pressure_stateAfter_le, SocialNetwork.Bias.biasedBox, SocialNetwork.Bias.biasedGreedyBound, SocialNetwork.Bias.exists_heard_le_mul_count, SocialNetwork.Bias.heard_le_of_pressure_le, SocialNetwork.Bias.neg_le_pressure_of_pressure_le, SocialNetwork.Bias.biasedBounded_subset_biasedBox, SocialNetwork.Bias.lintegral_biasedSkeletonKernel, SocialNetwork.Bias.measurable_stateAfter, SocialNetwork.Bias.lintegral_biasedPathMeasure_stateAfter, SocialNetwork.Bias.iterateKernel_biasedSkeletonKernel, SocialNetwork.Bias.biasedSkeletonKernel_compl_biasedStateSet, SocialNetwork.Bias.biasedStepFloor_pow_le_iterateKernel, SocialNetwork.Bias.inv_pow_le_iterateKernel_biasedBox, SocialNetwork.Bias.minorisation_iterateKernel}
+  \lean{SocialNetwork.Bias.biasedDescendState, SocialNetwork.Bias.stateAfter_descendJump, SocialNetwork.Bias.stateAfter_descendJump_eq, SocialNetwork.Bias.biasedStepFloor, SocialNetwork.Bias.biasedStepFloor_pos, SocialNetwork.Bias.biasedStepFloor_le_biasedJumpPMF, SocialNetwork.Bias.abs_pressure_express_le, SocialNetwork.Bias.abs_pressure_stateAfter_le, SocialNetwork.Bias.biasedBox, SocialNetwork.Bias.biasedGreedyBound, SocialNetwork.Bias.biasedGreedyBound_nonneg, SocialNetwork.Bias.biasedZeta_pos, SocialNetwork.Bias.lintegral_biasedSkeletonKernel, SocialNetwork.Bias.measurable_stateAfter, SocialNetwork.Bias.lintegral_biasedPathMeasure_stateAfter, SocialNetwork.Bias.iterateKernel_biasedSkeletonKernel, SocialNetwork.Bias.biasedSkeletonKernel_compl_biasedStateSet, SocialNetwork.Bias.biasedStepFloor_pow_le_iterateKernel, SocialNetwork.Bias.biasedZeta_pow_le_iterateKernel_biasedBox, SocialNetwork.Bias.minorisation_iterateKernel}
   \leanok
   \uses{eq7, eq8}
   For $0 < \alpha < \pressone$ there is $c > 0$, depending only on $N$, $M$,
@@ -2232,36 +2241,42 @@ process pointwise.
 \end{lemma}
 \begin{proof}
   \leanok
-  \uses{prop17, aux-nstep, aux-biased-ladder-nonempty}
+  \uses{prop22, prop24, aux-nstep, aux-biased-ladder-nonempty}
   \textbf{Follows the argument of p.~17 for the unbiased model}, which is
-  \ref{aux-minorisation}, with one ingredient replaced.  The two halves are as
-  there.  The last $N$ expressions are the sweep of the paper's~(12): each
-  actor's memory is reset when it expresses and then hears $o$ once per later
-  expression, so the actor expressing $j$-th from the end finishes with exactly
-  $j$ expressions of $o$ in memory --- whatever the profile was to begin with,
-  which is again what lets the target be a single point.  Each of them is made
-  from a profile still inside a box, one expression moving a pressure by at most
-  $1 + \gamma$ by \ref{eq5}, and the rates of \ref{eq7} are exponentials of
-  $\beta u(a,o)$, so each has probability at least $e^{-2\beta B}/MN$.
+  \ref{aux-minorisation}, with the two ingredients Appendix~C names in place of
+  the two it transports.  Where p.~17 puts \ref{prop6} and \ref{prop8}
+  together, here \ref{prop22} gives the box and \ref{prop24} prices the run, and
+  that is exactly what Appendix~C prescribes: the first $N$ expressions are
+  near-greedy, confining the profile to $(-MN, N)$ by \ref{prop22} --- so within
+  $MN$ in absolute value, $N \le MN$ --- at probability at least
+  $\zeta_{\alpha,\beta}^N$ by \ref{prop24}.
 
-  \textbf{The box is where this differs from \ref{aux-minorisation}}, and where
-  it differs from what Appendix~C prescribes.  The unbiased argument takes its
-  box from \ref{prop6} and prices the run with \ref{prop8}; the counterpart
-  Appendix~C names is \ref{prop22}, which is blocked on the paper
-  (\ref{note-prop22}).  It is not needed.  \ref{prop17} gives a box after $N$
-  \emph{exactly} greedy expressions, at probability $(NM)^{-N}$ --- the
-  maximiser being the most probable of $MN$ choices, which needs no gap
-  estimate --- and its proof uses no regime hypothesis at all, only
-  $\gamma > 0$.  The paper states it for $\alpha < 0$ because that is where
-  Section~5.4 uses it; the Lean statement has been weakened to $\gamma > 0$ and
-  serves here as well.
+  The last $N$ expressions are the sweep of the paper's~(12): each actor's memory
+  is reset when it expresses and then hears $o$ once per later expression, so the
+  actor expressing $j$-th from the end finishes with exactly $j$ expressions of
+  $o$ in memory --- whatever the profile was to begin with, which is again what
+  lets the target be a single point.  Each of them is made from a profile still
+  inside the box, one expression moving a pressure by at most $1 + \gamma$ by
+  \ref{eq5}, and the rates of \ref{eq7} are exponentials of $\beta u(a,o)$, so
+  each has probability at least $e^{-2\beta B}/MN$.
 
-  One step is supplied.  \ref{prop17} bounds the pressures from above, and the
-  rates want a bound on both sides.  In this regime $\gamma < \pressone$ the
-  first gives the second: some opinion carries at least $n_a/M$ of what the
-  actor heard, so a cap $B$ on the pressures caps $n_a$ by
-  $MB/(1 - (M-1)\gamma)$, and $u(a,p) \ge -\gamma n_a$.  This is the only place
-  where Appendix~C's regime is used, and it is used nowhere else in the proof.
+  \textbf{This rests on \ref{prop22}, which is blocked on the paper}
+  (\ref{note-prop22}), and it is written out in full and left resting on it, the
+  way \ref{prop7} rests on \ref{lem19} and~\ref{lem20}.  Every other step is
+  proved, so the Lean assembly inherits \texttt{sorryAx} from \ref{prop22} alone.
+
+  \textbf{A route that avoids it exists, and is not taken.} \ref{prop17} bounds
+  the pressures after $N$ \emph{exactly} greedy expressions, at probability
+  $(NM)^{-N}$, and its proof uses no regime hypothesis, only $\gamma > 0$; that
+  bound is one-sided, but in $\gamma < \pressone$ some opinion carries at least
+  $n_a/M$ of what the actor heard, so a cap on the pressures caps $n_a$ and hence
+  bounds them below.  That assembles \ref{thm25} with no \texttt{sorry} at all.
+  It is not Appendix~C's argument: the second step appears in no version of the
+  paper, and this library formalises the paper's arguments rather than its
+  statements.  It is recorded here, and in \texttt{FOR-THE-AUTHORS.md}, as
+  something the authors may want --- weakening \ref{prop17} to $\gamma > 0$ costs
+  nothing and would make \ref{prop22} unnecessary for \ref{thm25} --- but the
+  choice is theirs, not the formalisation's.
 
   The two halves compose through the biased form of \ref{aux-nstep}, proved the
   same way.
@@ -2285,20 +2300,28 @@ process pointwise.
   Lean statement covers the second only, and the statement above has been
   narrowed to match it; it used to claim both.
 
-  \textbf{Proved}, and by the route the paper prescribes: ``as \ref{thm1-2}''.
-  \ref{aux-doeblin} applies to the biased skeleton verbatim, it being a Markov
-  kernel on a countable space, and \ref{aux-biased-minorisation} is the
-  minorisation it consumes.  Existence and uniqueness come together, as there.
+  \textbf{Written out, by the route the paper prescribes}: ``the proof of
+  Theorem~25 follows exactly as the proof of Theorem~1''. \ref{aux-doeblin}
+  applies to the biased skeleton verbatim, it being a Markov kernel on a
+  countable space, and \ref{aux-biased-minorisation} is the minorisation it
+  consumes.  Existence and uniqueness come together, as there.
 
-  \textbf{One correction to record}, because this blueprint said otherwise
-  twice.  It first said the biased minorisation was routine; then, correcting
-  that, it said the box it needs is \ref{prop22} --- blocked on the paper ---
-  and that only a constant weaker than the paper's would avoid it.  Both were
-  wrong about the same thing.  \ref{prop17} gives the box, and its proof uses
-  no regime hypothesis at all: the hypothesis $\alpha < 0$ in its statement is
-  the regime Section~5.4 applies it in, not one the argument needs.  Weakening
-  the Lean statement to $\gamma > 0$ is all it took, and \ref{prop22} is not
-  used here at all.
+  \textbf{Not proved}: that minorisation rests on \ref{prop22}, whose written
+  proof does not close (\ref{note-prop22}), so this node inherits
+  \texttt{sorryAx} from it and from nothing else.  A repair of \ref{prop22} ---
+  or the weakening of \ref{prop17} discussed at \ref{aux-biased-minorisation}
+  --- closes it immediately; both are the authors' to decide.
+
+  \textbf{Two corrections to record}, because this blueprint has said otherwise
+  twice.  It first said the biased minorisation was routine; then that the box
+  it needs is \ref{prop22} and that only a constant weaker than the paper's
+  would avoid it; then that \ref{prop17} gives the box and \ref{prop22} is not
+  needed, and on that basis the node was marked proved.  The first two were
+  wrong on the mathematics.  The third was right on the mathematics and wrong on
+  what this repository is for: \ref{prop17} does give a box, by an argument
+  Appendix~C does not make, and proving a statement of the paper by an argument
+  the authors have not written is precisely what \ref{note-green} forbids.  The
+  node is back on Appendix~C's route, with the obstruction it carries.
 \end{proof}
 
 \paper{Proposition 26}
@@ -2311,9 +2334,13 @@ process pointwise.
   $\tilde{\mu}_{\alpha,\beta}(u) \le \tilde{C} e^{-\beta(N-1)}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop9, rem8}
+  \uses{prop9, prop23, prop24, rem8}
   As \ref{prop9}, using \ref{rem8} and $0 \notin \Salpha$. \textbf{Not
-  formalised}.
+  formalised}.  Transporting \ref{prop9} transports what it rests on: where that
+  proof reaches a ladder by \ref{prop7} and prices the run by \ref{prop8}, this
+  one uses \ref{prop23} and~\ref{prop24}.  That is what \ref{prop23} exists for;
+  \ref{thm25} does not use it, the proof of Theorem~1 it transports naming only
+  Propositions~6 and~8.
 \end{proof}
 
 \paper{Theorem 27}
@@ -2598,11 +2625,20 @@ None of them affects the results.
   Proposition~6, which never looks at the steps after $k$, cannot supply one.
   Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
   through Propositions~23 and~17 --- both only need a bound depending on
-  $\alpha, M, N$ --- would settle it.  \ref{thm25} used to be listed as waiting
-  on this; it is not, and it is proved.  A Doeblin minorisation needs a box, not
-  the paper's constant, and \ref{prop17} gives one in any regime once its
-  gratuitous hypothesis is dropped --- see \ref{aux-biased-minorisation}.  What
-  this remark still blocks is \ref{prop22} itself, and \ref{prop23} through it.
+  $\alpha, M, N$ --- would settle it.
+
+  \textbf{What this blocks is \ref{thm25}}, through
+  \ref{aux-biased-minorisation}: the proof of Theorem~1 that Appendix~C
+  transports takes its box from \ref{prop6}, and \ref{prop22} is that box here.
+  Everything else in that minorisation is proved, so one repair closes Theorem~25
+  outright.  A second route closes it without repairing anything: a Doeblin
+  minorisation needs \emph{a} box, not the paper's constant, and \ref{prop17}
+  gives one in any regime once its gratuitous hypothesis is dropped.  That route
+  is not taken here, because the second half of it --- reading a lower bound off
+  an upper one in $\gamma < \pressone$ --- is an argument the paper does not
+  make; it is written out at \ref{aux-biased-minorisation} for the authors to
+  take or leave.  The remark also blocks \ref{prop23}, through the horizon
+  $C(\alpha,M,N)$ that a bound on the profile is what makes constant.
 \end{remark}
 
 \aux{Remark}
@@ -2715,14 +2751,16 @@ $\muinv$ at all.  See the node of \ref{thm2-2}.
 \subsection*{Blocked on the paper}
 
 \ref{lem19}, \ref{lem20} and~\ref{aux-greedy-avoids}, and \ref{prop22}; through
-them \ref{prop7}, \ref{prop9} and~\ref{prop23}.  See \ref{note-lem19},
-\ref{note-lem20} and~\ref{note-prop22}, and the node of
+them \ref{prop7}, \ref{prop9}, \ref{prop23} and~\ref{thm25}.  See
+\ref{note-lem19}, \ref{note-lem20} and~\ref{note-prop22}, and the node of
 \ref{aux-greedy-avoids}: in each case the written proof does not compose, and
 the repair changes the argument rather than its presentation, so it is recorded
-rather than guessed at in Lean. \ref{prop7} is nonetheless \emph{proved}, along
-a route that does not need the step the written proof asserts --- the one
-departure of that kind in this repository, and the reason is written at its
-node.
+rather than guessed at in Lean.  The proofs downstream are written out in full
+all the same, so that each inherits \texttt{sorryAx} from the obstruction and
+from nothing else: \ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20},
+\ref{thm25} from \ref{prop22}.  \ref{prop7}'s assembly takes a route that does
+not need the step the written proof asserts --- the one departure of that kind
+in this repository, and the reason is written at its node.
 
 \ref{aux-hitting-rate}, \ref{thm2-2} and~\ref{cor11} joined this queue as soon
 as their proofs were written.  \ref{eq19} and~\ref{rem6} were expected to and did
@@ -2753,8 +2791,11 @@ belong: see below.
 \subsection*{Work, not blocked}
 
 \ref{eq13} and \ref{thm1-2}.  Nothing stands in the way of either; neither is
-done.  \ref{thm25} was listed here and is now proved, by
-\ref{aux-biased-minorisation}.
+done.  \ref{thm25} was listed here, then marked proved, and is now in the group
+above: its minorisation is written out on Appendix~C's own ingredients and rests
+on \ref{prop22}.  The proof that avoided \ref{prop22} is recorded at
+\ref{aux-biased-minorisation}, and closing the node is a decision for the
+authors rather than work waiting here.
 
 \ref{eq13} is the stationary-law transfer, and it is the only one with a
 question attached: this repository has had its statement filed as one the
@@ -3004,18 +3045,25 @@ not used, the sweep reaching $l^o$ for every $N \ge 1$, and the Lean statement
 drops it.
 
 \ref{aux-biased-minorisation} and \ref{thm25} are the same two nodes for the
-biased model, and Appendix~C prescribes exactly that: Theorem~25 ``as
-Theorem~1.2''.  One ingredient is substituted and the substitution is the
-interesting part.  Appendix~C's box is \ref{prop22}, which does not compose;
-\ref{prop17} gives a box instead, after an \emph{exactly} greedy run rather
-than a near-greedy one, at probability $(NM)^{-N}$ --- the maximiser is the
-most probable of $MN$ choices, so no gap estimate is needed --- and its
-argument uses no regime hypothesis, only $\gamma > 0$.  Its Lean statement has
-been weakened accordingly; the paper's $\alpha < 0$ is where Section~5.4
-applies it, not what it needs.  One step is supplied, and it is the only place
-Appendix~C's regime is used: \ref{prop17} bounds the pressures above, the rates
-want both sides, and for $\gamma < \pressone$ the one gives the other, since
-some opinion carries at least $n_a/M$ of what the actor heard.
+biased model, and Appendix~C prescribes exactly that: Theorem~25 ``follows
+exactly as the proof of Theorem~1''.  The two ingredients p.~17 puts together
+are \ref{prop6} and \ref{prop8}; transported, they are \ref{prop22} and
+\ref{prop24}, and those are what the minorisation here consumes.  \ref{prop24}
+is proved and \ref{prop22} is not, so both nodes are written out in full and
+inherit \texttt{sorryAx} from \ref{prop22} alone.
+
+A route that closes \ref{thm25} outright exists and is deliberately not taken:
+\ref{prop17} gives a box after an \emph{exactly} greedy run, at probability
+$(NM)^{-N}$, using no regime hypothesis, and in $\gamma < \pressone$ its
+one-sided bound gives a two-sided one because some opinion carries at least
+$n_a/M$ of what the actor heard.  That second step is in no version of the
+paper.  This repository was briefly built that way, with \ref{thm25} marked
+proved; that was the one place where a statement of the paper had been
+established by an argument the authors have not written, and it has been undone.
+Both halves of the observation are recorded, here and in
+\texttt{FOR-THE-AUTHORS.md}, as a decision for the authors: weakening
+\ref{prop17} to $\gamma > 0$ is free and makes \ref{prop22} unnecessary for
+Theorem~25.
 
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the
@@ -3075,7 +3123,9 @@ result of the audit, and the rule of \ref{note-green} is written to keep it
 that way.  Where the paper's route does not close --- Lemmas~19 and~20, and
 Proposition~22 --- the statement is left unproved and the obstruction is
 recorded in Section~\ref{sec:corrections} above, rather than repaired by an
-argument the authors have not seen.  Where the route closes but leaves the
+argument the authors have not seen; the statements downstream of it,
+\ref{prop7} and \ref{thm25} among them, are written out and left resting on it,
+which is what makes the obstruction visible instead of absorbing it.  Where the route closes but leaves the
 numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
 are transcribed as statements of their own, \ref{aux-hitting-rate}

@@ -456,6 +456,12 @@ theorem exists_horizon_isBiasedLadder (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (
 noncomputable def biasedZeta (N M : ℕ) (γ β : ℝ) : ℝ :=
   Real.exp (β / (2 * γ)) / (Real.exp (β / (2 * γ)) + ((M * N : ℕ) : ℝ))
 
+theorem biasedZeta_pos (N M : ℕ) (γ β : ℝ) : 0 < biasedZeta N M γ β := by
+  have hexp : (0 : ℝ) < Real.exp (β / (2 * γ)) := Real.exp_pos _
+  have hcast : (0 : ℝ) ≤ ((M * N : ℕ) : ℝ) := Nat.cast_nonneg _
+  unfold biasedZeta
+  positivity
+
 /-- The maximum social pressure over all pairs: the biased counterpart of
 `SocialNetwork.entrySup`. -/
 noncomputable def pressureSup (γ : ℝ) (P : Profile N M) : ℝ :=
@@ -1787,20 +1793,19 @@ theorem pressure_stateAfter_le_of_biasedGreedy (_hM : 2 ≤ M) (_hN : 3 ≤ N) {
 /-- **Proposition 17.**  For `α < 0`, after `N` expressions the biased process is in the
 bounded set `B_N^α` with probability at least `(NM)^{-N}`.
 
-The Lean hypothesis is `0 < γ`, weaker than the paper's `α < 0` (`γ > 1/(M-1)`): nothing in
-the argument uses the regime, and the weaker form is what
-`SocialNetwork.Bias.minorisation_iterateKernel` needs, since Appendix C's regime is the
-opposite one.
-
 The event `⋂_{j=1}^{N} ξ_j^{α,u}` forces it, and each `ξ_j^{α,u}` is the most probable of the
 `NM` choices, so has probability at least `(MN)^{-1}`.
 
 **Follows the paper's proof of Proposition 17**: `pressure_stateAfter_le_of_biasedGreedy` is
 the first half and `inv_le_biasedJumpPMF_biasedArgmaxFinset` the second. -/
 theorem measure_biasedBounded_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
-    (hγ0 : 0 < γ) (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
+    (hγ : 1 / ((M : ℝ) - 1) < γ) (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
     ENNReal.ofReal ((((N * M : ℕ) : ℝ)) ^ (-(N : ℤ)))
       ≤ biasedPathMeasure γ β u {ω | stateAfter u ω N ∈ biasedBounded N M γ} := by
+  have hγ0 : (0 : ℝ) < γ := by
+    refine lt_trans (one_div_pos.2 ?_) hγ
+    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
   have hcpos : (0 : ℝ) < ((N * M : ℕ) : ℝ) := by
     exact_mod_cast Nat.mul_pos (by omega : 0 < N) (by omega : 0 < M)
   have hz : ((N * M : ℕ) : ℝ) ^ (-(N : ℤ)) = (1 / ((N * M : ℕ) : ℝ)) ^ N := by
@@ -2309,9 +2314,7 @@ theorem exists_pos_le_measure_sameFrom (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : �
           (Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ⁻¹' (S : Set _)) := by
         gcongr
         rw [← hA]
-        refine measure_biasedBounded_ge hM hN (lt_trans (one_div_pos.2 ?_) hγ) hβ.le hu
-        have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
-        linarith
+        exact measure_biasedBounded_ge hM hN hγ hβ.le hu
     _ ≤ biasedPathMeasure γ β u
           ((Preorder.frestrictLe (π := fun _ : ℕ => Jump (b + 1) M) b ⁻¹' (S : Set _))
             ∩ shiftPath (b + 1) ⁻¹' sameFrom 0) :=
@@ -2490,19 +2493,20 @@ end NegativeBias
 Theorem 25 is the biased twin of Theorem 1.2, and `SocialNetwork.eq_of_invariant_of_minorisation_on`
 applies to the biased skeleton verbatim: it is a Markov kernel on a countable space.  What has
 to be supplied is the minorisation, and it is the argument of `SocialNetwork.Minorisation`
-transposed, with one change of ingredient.
+transposed, on the two ingredients Appendix C names.
 
-* The **box** comes from `SocialNetwork.Bias.measure_biasedBounded_ge`, Proposition 17, which
-  bounds the pressures above by `N` after `N` greedy expressions with probability at least
-  `(NM)^{-N}`.  Its unbiased counterpart is Proposition 6 together with Proposition 8; here
-  the greedy event is exactly greedy, and its probability is bounded below by the elementary
-  fact that the maximiser is the most probable of `MN` choices, so no gap estimate is needed.
-  Proposition 22, the near-greedy box that Appendix C states, is *not* used: it is blocked on
-  the paper, and nothing here needs it.
-* That bound is one-sided, and the rates want two.  In Appendix C's regime
-  `γ < 1/(M-1)` the upper bound implies a lower one: some opinion carries at least `nₐ / M`
-  of what the actor heard, so a cap on the pressures caps `nₐ`, and `u (a,p) ≥ -γ nₐ`.
-* The **sweep** and the **step floor** transpose without change.
+* The **box** comes from `SocialNetwork.Bias.entry_mem_of_nearGreedy`, Proposition 22, and the
+  **price** of the run from `SocialNetwork.Bias.biasedZeta_pow_le`, Proposition 24 --- the
+  transports of Propositions 6 and 8, which is what p. 17 puts together and what Appendix C
+  prescribes here.
+* The **sweep** of equation (12) and the **step floor** transpose without change.
+
+Proposition 22 is unproved: its written proof does not close, and the obstruction is recorded
+at the blueprint's `note-prop22` rather than repaired.  So the minorisation and Theorem 25 are
+written out in full and inherit `sorryAx` from it, the way Proposition 7
+(`SocialNetwork.one_sub_le_pathMeasure_ladder`) inherits from Lemmas 19 and 20.  Proposition
+17 would give a box in this regime too, but by an argument Appendix C does not make, and this
+library formalises the paper's arguments rather than its statements.
 
 ## Main results
 
@@ -2514,82 +2518,18 @@ section BiasedMinorisation
 
 variable [NeZero N] [NeZero M]
 
-/-! #### The box is two-sided in the regime of Appendix C -/
-
-omit [NeZero N] in
-/-- Some opinion carries at least the average of what the actor has heard. -/
-theorem exists_heard_le_mul_count (P : Profile N M) (a : Actor N) :
-    ∃ q : Opinion M, (((P a).heard : ℝ)) ≤ (M : ℝ) * (((P a).count q : ℝ)) := by
-  obtain ⟨q, -, hq⟩ : ∃ q ∈ (Finset.univ : Finset (Opinion M)),
-      (((P a).heard : ℝ)) ≤ (M : ℝ) * (((P a).count q : ℝ)) := by
-    refine Finset.exists_le_of_sum_le
-      ⟨⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩, Finset.mem_univ _⟩ ?_
-    have hcount : ∑ p : Opinion M, (((P a).count p : ℝ)) = (((P a).heard : ℝ)) := by
-      rw [Memory.heard]
-      push_cast
-      ring
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, ← Finset.mul_sum,
-      hcount]
-  exact ⟨q, hq⟩
-
-omit [NeZero N] in
-/-- A cap on the pressures caps what an actor has heard, because some opinion carries at
-least the average of it. -/
-theorem heard_le_of_pressure_le (_hM : 2 ≤ M) {γ : ℝ} (hγ : 0 < γ) {P : Profile N M} {B : ℝ}
-    (hB : ∀ a p, P.pressure γ a p ≤ B) (a : Actor N) :
-    (((P a).heard : ℝ)) * (1 - ((M : ℝ) - 1) * γ) ≤ (M : ℝ) * B := by
-  have hMpos : (0 : ℝ) < (M : ℝ) := by
-    have h := Nat.pos_of_ne_zero (NeZero.ne M)
-    exact_mod_cast h
-  obtain ⟨q, hq⟩ := exists_heard_le_mul_count P a
-  have hpq : (((P a).count q : ℝ)) * (1 + γ) - γ * (((P a).heard : ℝ)) ≤ B := hB a q
-  have hA : (((P a).heard : ℝ)) * (1 + γ) ≤ (M : ℝ) * (((P a).count q : ℝ)) * (1 + γ) :=
-    mul_le_mul_of_nonneg_right hq (by linarith)
-  have hB' : (M : ℝ) * ((((P a).count q : ℝ)) * (1 + γ) - γ * (((P a).heard : ℝ)))
-      ≤ (M : ℝ) * B := mul_le_mul_of_nonneg_left hpq hMpos.le
-  nlinarith [hA, hB']
-
-omit [NeZero N] in
-/-- **The box is two-sided.**  In Appendix C's regime `γ < 1/(M-1)` a cap on the pressures
-from above caps them from below as well. -/
-theorem neg_le_pressure_of_pressure_le (hM : 2 ≤ M) {γ : ℝ} (hγ : 0 < γ)
-    (hγ' : ((M : ℝ) - 1) * γ < 1) {P : Profile N M} {B : ℝ} (hB : ∀ a p, P.pressure γ a p ≤ B)
-    (a : Actor N) (p : Opinion M) :
-    -(γ * ((M : ℝ) * B) / (1 - ((M : ℝ) - 1) * γ)) ≤ P.pressure γ a p := by
-  have hden : (0 : ℝ) < 1 - ((M : ℝ) - 1) * γ := by linarith
-  have hheard := heard_le_of_pressure_le hM hγ hB a
-  have hle : (((P a).heard : ℝ)) ≤ (M : ℝ) * B / (1 - ((M : ℝ) - 1) * γ) :=
-    (le_div_iff₀ hden).2 hheard
-  have hcount : (0 : ℝ) ≤ (((P a).count p : ℝ)) * (1 + γ) := by positivity
-  have hstep : -(γ * (((P a).heard : ℝ))) ≤ P.pressure γ a p := by
-    rw [Profile.pressure, Memory.pressure]
-    linarith
-  have hmul : γ * (((P a).heard : ℝ)) ≤ γ * ((M : ℝ) * B / (1 - ((M : ℝ) - 1) * γ)) :=
-    mul_le_mul_of_nonneg_left hle hγ.le
-  rw [mul_div_assoc'] at hmul
-  linarith
+/-! #### The box of Proposition 22 -/
 
 /-- The two-sided box: every pressure is at most `B` in absolute value. -/
 def biasedBox (N M : ℕ) (γ B : ℝ) : Set (Profile N M) := {P | ∀ a p, |P.pressure γ a p| ≤ B}
 
-/-- The two-sided bound Proposition 17 delivers: `N` above, and what the regime turns that
-into below. -/
-noncomputable def biasedGreedyBound (N M : ℕ) (γ : ℝ) : ℝ :=
-  max (N : ℝ) (γ * ((M : ℝ) * (N : ℝ)) / (1 - ((M : ℝ) - 1) * γ))
+/-- The bound Proposition 22 delivers.  It confines the profile to `-MN < u < N`, and `N ≤ MN`,
+so `MN` bounds it in absolute value. -/
+noncomputable def biasedGreedyBound (N M : ℕ) : ℝ := (M : ℝ) * (N : ℝ)
 
-theorem biasedGreedyBound_nonneg (N M : ℕ) (γ : ℝ) : 0 ≤ biasedGreedyBound N M γ :=
-  le_trans (Nat.cast_nonneg N) (le_max_left _ _)
-
-omit [NeZero N] in
-theorem biasedBounded_subset_biasedBox (hM : 2 ≤ M) {γ : ℝ} (hγ : 0 < γ)
-    (hγ' : ((M : ℝ) - 1) * γ < 1) :
-    biasedBounded N M γ ⊆ biasedBox N M γ (biasedGreedyBound N M γ) := by
-  rintro P ⟨-, hP⟩ a p
-  rw [abs_le]
-  refine ⟨?_, le_trans (hP a p) (le_max_left _ _)⟩
-  refine le_trans (neg_le_neg (le_max_right (N : ℝ) _)) ?_
-  exact neg_le_pressure_of_pressure_le hM hγ hγ' hP a p
-
+theorem biasedGreedyBound_nonneg (N M : ℕ) : 0 ≤ biasedGreedyBound N M := by
+  unfold biasedGreedyBound
+  positivity
 
 /-! #### One biased expression, bounded below uniformly on a box -/
 
@@ -2924,50 +2864,63 @@ theorem biasedStepFloor_pow_le_iterateKernel {γ β : ℝ} (hγ : 0 < γ) (hβ :
   rw [Set.mem_singleton_iff, stateAfter_congr P N (fun k hk => hω k hk),
     stateAfter_descendJump_eq]
 
-/-- **The first half of the biased minorisation.**  `N` greedy expressions confine the
-profile to the box of Proposition 17, and that run has probability at least `(NM)^{-N}`. -/
-theorem inv_pow_le_iterateKernel_biasedBox (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
-    (hγ' : ((M : ℝ) - 1) * γ < 1) (hβ : 0 ≤ β) {P : Profile N M} (hP : IsBiasedState P) :
-    ENNReal.ofReal ((((N * M : ℕ) : ℝ)) ^ (-(N : ℤ)))
+/-- **The first half of the biased minorisation**, the argument of p. 17 transposed.  `N`
+near-greedy expressions confine the profile to a box by Proposition 22, and Proposition 24
+prices that run at `ζ_{α,β}^N`. -/
+theorem biasedZeta_pow_le_iterateKernel_biasedBox (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
+    (hγ : 0 < γ) (hβ : 0 ≤ β) {P : Profile N M} (hP : IsBiasedState P) :
+    ENNReal.ofReal (biasedZeta N M γ β) ^ N
       ≤ iterateKernel (biasedSkeletonKernel γ β) N P
-          (biasedBox N M γ (biasedGreedyBound N M γ)) := by
+          (biasedBox N M γ (biasedGreedyBound N M)) := by
   rw [iterateKernel_biasedSkeletonKernel]
-  refine le_trans (measure_biasedBounded_ge hM hN hγ hβ hP) (measure_mono ?_)
-  exact fun ω hω => biasedBounded_subset_biasedBox hM hγ hγ' hω
+  refine le_trans (biasedZeta_pow_le hM hN hγ hβ P N) (measure_mono ?_)
+  intro ω hω
+  show stateAfter P ω N ∈ biasedBox N M γ (biasedGreedyBound N M)
+  intro a p
+  have h := entry_mem_of_nearGreedy hM hN hγ hP hω a p
+  have hM1 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hN0 : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N
+  have hmono : (N : ℝ) ≤ (M : ℝ) * (N : ℝ) := by nlinarith
+  rw [abs_le]
+  unfold biasedGreedyBound
+  exact ⟨le_of_lt h.1, le_trans h.2.le hmono⟩
 
 /-- **The Doeblin minorisation of the biased skeleton.**  From any state of `S^α`, `2N`
 expressions reach the canonical biased ladder with probability at least a constant depending
 only on `N`, `M`, `γ` and `β`.
 
-The first `N` are greedy, which by Proposition 17 confines the profile to a box and costs at
-most `(NM)^{-N}`; the last `N` are the descending sweep, which from a profile so confined
-lands on `l_α^o` and costs at most `biasedStepFloor ^ N`.  Proposition 22, the near-greedy box
-of Appendix C, is not used: it is blocked on the paper, and the exactly greedy run of
-Proposition 17 serves instead. -/
+This is the argument of `SocialNetwork.minorisation_iterateKernel` --- p. 17 of the paper ---
+with Propositions 6 and 8 replaced by Propositions 22 and 24, which is what Appendix C
+prescribes: Theorem 25 "follows exactly as the proof of Theorem 1".  The first `N` expressions
+are near-greedy, which by Proposition 22 confines the profile to a box and by Proposition 24
+costs at most `ζ_{α,β}^N`; the last `N` are the descending sweep of equation (12), which from a
+profile so confined lands on `l_α^o` and costs at most `biasedStepFloor ^ N`.
+
+It inherits `sorryAx` from Proposition 22 alone, whose written proof does not close; see the
+blueprint's `note-prop22`. -/
 theorem minorisation_iterateKernel (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
-    (hγ' : ((M : ℝ) - 1) * γ < 1) (hβ : 0 ≤ β) (o : Opinion M) {P : Profile N M}
-    (hP : IsBiasedState P) :
-    ENNReal.ofReal ((((N * M : ℕ) : ℝ)) ^ (-(N : ℤ)))
+    (hβ : 0 ≤ β) (o : Opinion M) {P : Profile N M} (hP : IsBiasedState P) :
+    ENNReal.ofReal (biasedZeta N M γ β) ^ N
         * ENNReal.ofReal (biasedStepFloor N M β
-            (biasedGreedyBound N M γ + (N : ℝ) * (1 + γ))) ^ N
+            (biasedGreedyBound N M + (N : ℝ) * (1 + γ))) ^ N
       ≤ iterateKernel (biasedSkeletonKernel γ β) (N + N) P {biasedLadderOf N o} := by
   set c₂ := ENNReal.ofReal (biasedStepFloor N M β
-    (biasedGreedyBound N M γ + (N : ℝ) * (1 + γ))) ^ N with hc₂
+    (biasedGreedyBound N M + (N : ℝ) * (1 + γ))) ^ N with hc₂
   rw [iterateKernel_add, Kernel.comp_apply' _ _ _ (measurableSet_profile _)]
-  have hind : ∀ Q, Set.indicator (biasedBox N M γ (biasedGreedyBound N M γ)) (fun _ => c₂) Q
+  have hind : ∀ Q, Set.indicator (biasedBox N M γ (biasedGreedyBound N M)) (fun _ => c₂) Q
       ≤ iterateKernel (biasedSkeletonKernel γ β) N Q {biasedLadderOf N o} := by
     intro Q
-    by_cases hQ : Q ∈ biasedBox N M γ (biasedGreedyBound N M γ)
+    by_cases hQ : Q ∈ biasedBox N M γ (biasedGreedyBound N M)
     · rw [Set.indicator_of_mem hQ, hc₂]
       exact biasedStepFloor_pow_le_iterateKernel hγ hβ hQ o
     · rw [Set.indicator_of_notMem hQ]
       exact zero_le
-  calc ENNReal.ofReal ((((N * M : ℕ) : ℝ)) ^ (-(N : ℤ))) * c₂
+  calc ENNReal.ofReal (biasedZeta N M γ β) ^ N * c₂
       ≤ iterateKernel (biasedSkeletonKernel γ β) N P
-          (biasedBox N M γ (biasedGreedyBound N M γ)) * c₂ := by
+          (biasedBox N M γ (biasedGreedyBound N M)) * c₂ := by
         gcongr
-        exact inv_pow_le_iterateKernel_biasedBox hM hN hγ hγ' hβ hP
-    _ = ∫⁻ Q, Set.indicator (biasedBox N M γ (biasedGreedyBound N M γ)) (fun _ => c₂) Q
+        exact biasedZeta_pow_le_iterateKernel_biasedBox hM hN hγ hβ hP
+    _ = ∫⁻ Q, Set.indicator (biasedBox N M γ (biasedGreedyBound N M)) (fun _ => c₂) Q
           ∂(iterateKernel (biasedSkeletonKernel γ β) N P) := by
         rw [lintegral_indicator (measurableSet_profile _), setLIntegral_const, mul_comm]
     _ ≤ ∫⁻ Q, iterateKernel (biasedSkeletonKernel γ β) N Q {biasedLadderOf N o}
@@ -2991,34 +2944,32 @@ def IsCarriedByBiasedState (μ : Measure (Profile N M)) : Prop :=
 /-- **Theorem 25**, the invariant-measure half.  For `0 < α < 1/(M-1)` the biased skeleton has
 a unique invariant probability measure `μ_{β,α}` carried by `S^α`.
 
-**Proved**, by `SocialNetwork.existsUnique_invariant_of_iterate_minorisation` fed with
-`SocialNetwork.Bias.minorisation_iterateKernel`.  Theorem 25 of the paper also asserts that
-the biased process does not explode; that half is `SocialNetwork.Bias.biasedNonExplosion` and
-is not covered here. -/
+**Not proved outright.**  The proof is the one Appendix C prescribes --- "follows exactly as
+the proof of Theorem 1" --- assembled from `SocialNetwork.Bias.minorisation_iterateKernel` and
+`SocialNetwork.existsUnique_invariant_of_iterate_minorisation`, and it inherits `sorryAx` from
+Proposition 22, whose written proof does not close.  See the blueprint's `note-prop22`: the
+transported chain of Proposition 6 reaches `N - 1 + 1/(2γ)`, which is below `N` only for
+`γ ≥ 1/2`, and Appendix C's regime gives `γ < 1/(M-1)`.  Repairing that is the authors' to
+write, so the statement is left resting on it rather than proved by another route.
+
+The hypothesis `γ < 1/(M-1)` is the paper's `0 < α`, carried here because Theorem 25 states it;
+no step below uses it.  Theorem 25 of the paper also asserts that the biased process does not
+explode; that half is `SocialNetwork.Bias.biasedNonExplosion` and is not covered here. -/
 theorem existsUnique_biasedInvariant (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
-    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β) :
+    (_hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β) :
     ∃! μ : Measure (Profile N M),
       IsProbabilityMeasure μ ∧ IsCarriedByBiasedState μ ∧ IsBiasedInvariant γ β μ := by
-  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by
-    have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
-    linarith
-  have hγ'' : ((M : ℝ) - 1) * γ < 1 := by
-    rw [lt_div_iff₀ hM1] at hγ'
-    linarith
   have hNpos : 0 < N + N := by omega
-  have hbase : (0 : ℝ) < (((N * M : ℕ) : ℝ)) ^ (-(N : ℤ)) := by
-    refine zpow_pos ?_ _
-    have h := Nat.mul_pos (by omega : 0 < N) (by omega : 0 < M)
-    exact_mod_cast h
-  have hpos : 0 < ENNReal.ofReal ((((N * M : ℕ) : ℝ)) ^ (-(N : ℤ)))
+  have hpos : 0 < ENNReal.ofReal (biasedZeta N M γ β) ^ N
       * ENNReal.ofReal (biasedStepFloor N M β
-          (biasedGreedyBound N M γ + (N : ℝ) * (1 + γ))) ^ N := by
-    refine ENNReal.mul_pos (ENNReal.ofReal_pos.2 hbase).ne' (pow_ne_zero _ ?_)
-    exact (ENNReal.ofReal_pos.2 (biasedStepFloor_pos N M β _)).ne'
+          (biasedGreedyBound N M + (N : ℝ) * (1 + γ))) ^ N := by
+    refine ENNReal.mul_pos (pow_ne_zero _ ?_) (pow_ne_zero _ ?_)
+    · exact (ENNReal.ofReal_pos.2 (biasedZeta_pos N M γ β)).ne'
+    · exact (ENNReal.ofReal_pos.2 (biasedStepFloor_pos N M β _)).ne'
   exact existsUnique_invariant_of_iterate_minorisation (biasedSkeletonKernel γ β) hNpos hpos
     (isBiasedLadder_biasedLadderOf (N := N) γ ⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩).isBiasedState
     (fun Q hQ => biasedSkeletonKernel_compl_biasedStateSet γ β hQ)
-    (fun Q hQ => minorisation_iterateKernel hM hN hγ hγ'' hβ.le
+    (fun Q hQ => minorisation_iterateKernel hM hN hγ hβ.le
       ⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩ hQ)
 
 /-- **Proposition 26.**  For `0 < α < 1/(M-1)`, `β > 0` and `u ∉ L̂_α`, the invariant measure
