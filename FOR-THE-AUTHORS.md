@@ -55,6 +55,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Remark 6** | was the one numbered statement with no Lean counterpart.  Now stated and **proved**, outright: its route needs only the last stage of Proposition 7, not Lemmas 19 and 20 |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
+| [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Weakened in Lean, and that is what makes **Theorem 25** provable without Proposition 22 |
 | [§5](#5-not-the-papers-fault) | **Theorem 1.2** | was the keystone, listed as blocked on Mathlib.  Now **proved**, both halves: the criterion, your page-17 minorisation, and the excursion measure.  The existence half needed no Markov-chain theory at all — on a countable space it is a sum, not a limit.  Your `ε*` becomes an explicit constant, and (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass.  The Lean statement also drops your `N ≥ 3` |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
 | [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses, and **proved** under it |
@@ -427,15 +428,29 @@ no hypothesis on where they start.  That is what lets the minorising measure be
 a single Dirac mass, which is what the criterion consumes; it is worth stating
 that way if you revise.
 
-Three statements are now unproved for **neither** reason — nothing stands in
-the way and the work is simply not done: equation (13), Theorem 1.2 in
-continuous time, and Theorem 25. They were listed as blocked on Mathlib only
-because they waited on `μ̃^β` to exist. Equation (13) is the stationary-law
-transfer; this repository has had it flagged as a statement you may want to
-revisit before it is formalised, and nothing is asked of you unless you agree.
-Theorem 1.2 in continuous time follows from it. Theorem 25 needs the biased
-analogue of the page-17 minorisation, which Appendix C asserts by analogy rather
-than writing out; the criterion itself applies to the biased chain verbatim.
+Two statements are now unproved for **neither** reason — nothing stands in the
+way and the work is simply not done: equation (13) and Theorem 1.2 in continuous
+time. They were listed as blocked on Mathlib only because they waited on `μ̃^β`
+to exist. Equation (13) is the stationary-law transfer; this repository has had
+it flagged as a statement you may want to revisit before it is formalised, and
+nothing is asked of you unless you agree. Theorem 1.2 in continuous time follows
+from it.
+
+**Theorem 25 is proved**, by the route Appendix C prescribes — "as Theorem 1.2"
+— and one thing about it is worth your attention. Appendix C's box for the
+positive-bias regime is Proposition 22, which is §1.3 above and does not
+compose. It is not needed. **Proposition 17 gives a box in any regime**: its
+proof uses no hypothesis on `α` at all, only `γ > 0`. The `α < 0` in its
+statement is the regime Section 5.4 applies it in, not one the argument needs,
+and the Lean statement has been weakened accordingly. If you revise, stating
+Proposition 17 for `γ > 0` costs nothing and makes Theorem 25 follow from it
+directly, with no appeal to Proposition 22.
+
+One step of Theorem 25 is supplied rather than read off the paper, and it is the
+only place Appendix C's regime is used: Proposition 17 bounds the pressures from
+above, the rates need both sides, and for `γ < 1/(M-1)` the one gives the other
+— some opinion carries at least `nₐ/M` of what the actor heard, so a cap on the
+pressures caps `nₐ`.
 
 Earlier, three others sat in that group.  **Corollary 11** was filed under Doeblin and
 **equation (19)** as a citation; reading part 2 apart from part 1 moved both, and

@@ -63,8 +63,8 @@ HEADNOTE = {
         "Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is "
         "the audit of exactly what is absent, checked against the pinned revision.",
     NOT_YET:
-        "No obstruction known.  Nothing here stands in the way; the work is simply not "
-        "done.",
+        "Nothing here waits on Mathlib or on the authors.  Whatever stands in the way "
+        "can be removed from this repository, and the work is simply not done.",
 }
 
 # Why a node is not proved, keyed by blueprint label.  ``--check`` fails if a node
@@ -110,10 +110,7 @@ REASONS: dict[str, tuple[str, str]] = {
         "and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits "
         "on Mathlib",
     ),
-    "thm27": (
-        BLOCKED_ON_PAPER,
-        "Proposition 26, and the biased analogue of Theorem 1.2 below it",
-    ),
+    "thm27": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,
@@ -138,11 +135,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "is the one item in this group with a question attached",
     ),
     "thm1-2": (NOT_YET, "equation (13), and nothing else: `μ̃^β` exists and is unique"),
-    "thm25": (
-        NOT_YET,
-        "the biased analogue of the minorisation, which Appendix C asserts by analogy.  "
-        "Doeblin's criterion itself is proved and applies verbatim",
-    ),
 }
 
 
