@@ -182,7 +182,8 @@ the skeleton of the biased lemmas of the section above, proved the same way.
 ## Still missing, in DISCRETE time
 
 These block Theorem 1.2 and everything downstream of it.  Items 1–3 were one gap seen from
-three sides; item 1 has since been halved, and what is left of it is items 4 and 5.
+three sides; item 1 no longer blocks anything here, and what is left of Theorem 1.2 is items
+4 and 5 — the existence half — and nothing else.
 
 1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing in Mathlib: `grep` over the
    whole tree still returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
@@ -191,9 +192,19 @@ three sides; item 1 has since been halved, and what is left of it is items 4 and
    kernel on a countable space is bounded below at one point by `c > 0`, uniformly over a set
    carrying the measures, then at most one invariant probability measure is carried by that
    set.  It is forty lines, it consumes nothing but `Kernel.Invariant`, and it belongs
-   upstream as much as the shift lemma above does.  What is still missing is the *existence*
-   half — from positive recurrence, the construction of an invariant measure out of one
-   excursion — and that is items 4 and 5 below rather than this one.
+   upstream as much as the shift lemma above does.
+
+   The *minorisation* this chain satisfies — which was never a Mathlib gap, only work — is
+   proved in `SocialNetwork/Minorisation.lean` (`SocialNetwork.minorisation_iterateKernel`),
+   so uniqueness of `μ̃^β` is now unconditional here.  What is still missing is the
+   *existence* half — from positive recurrence, the construction of an invariant measure out
+   of one excursion — and that is items 4 and 5 below rather than this one.
+
+   Applying the criterion needs the same bridge as Kac's inequality did, one level up: the
+   `n`-step kernel has to be identified with the law of the skeleton at time `n`, since
+   Propositions 6 and 8 are statements about realisations.  That is
+   `SocialNetwork.iterateKernel_skeletonKernel`, one more application of
+   `SocialNetwork.pathMeasure_restart`.
 2. **The theory around `Kernel.Invariant`.**  The definition exists
    (`Mathlib/Probability/Kernel/Invariance.lean`) — `μ.bind κ = μ` — together with
    `Invariant.comp`, `IsReversible` and `IsReversible.invariant`.  That is the entire file, and

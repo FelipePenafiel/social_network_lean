@@ -323,7 +323,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
   $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
-  processes. \textbf{Not formalised}: Mathlib has no Doeblin criterion.
+  processes.  \textbf{Not formalised}, and what is left of it is narrower than
+  it was: the minorisation is \ref{aux-minorisation} and the criterion is
+  \ref{aux-doeblin}, both proved, so what remains is the existence half of
+  \ref{thm1-2-skeleton} and the transfer \ref{eq13}.
 \end{proof}
 
 \aux{Lemma}
@@ -360,42 +363,104 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   not all of $\mathbb{Z}^{\actors \times \opinions}$.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The $n$-step kernel is the law of the skeleton]
+  \label{aux-nstep}
+  \lean{SocialNetwork.lintegral_pathMeasure_skeleton, SocialNetwork.iterateKernel_skeletonKernel, SocialNetwork.iterateKernel_succ', SocialNetwork.iterateKernel_add}
+  \leanok
+  \uses{def3}
+  Writing $\kappa$ for the transition kernel of \ref{def3},
+  $\kappa^n(v, A) = \mathbb{P}(\Uskel{v}_n \in A)$ for every $n$, every $v$ and
+  every $A$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{No counterpart in the paper}, which does not distinguish the two.
+  Here the distinction has to be bridged: \ref{prop6} and \ref{prop8} are
+  statements about realisations, and \ref{aux-doeblin} is stated for iterates
+  of a kernel.  The induction peels off the first expression, whose law is
+  given by \ref{def3}, and applies the Markov property at time~1 to what
+  follows; summing over that first pair is exactly the composition of kernels.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The minorisation of the skeleton chain]
+  \label{aux-minorisation}
+  \lean{SocialNetwork.descendActor, SocialNetwork.descendJump, SocialNetwork.descendState, SocialNetwork.skeleton_descendJump, SocialNetwork.skeleton_descendJump_eq_ladderOf, SocialNetwork.stepFloor, SocialNetwork.stepFloor_pos, SocialNetwork.stepFloor_le_jumpPMF, SocialNetwork.abs_express_le, SocialNetwork.abs_skeleton_le, SocialNetwork.boundedSet, SocialNetwork.greedyBound, SocialNetwork.stepFloor_pow_le_pathMeasure_descend, SocialNetwork.stepFloor_pow_le_iterateKernel, SocialNetwork.zeta_pow_le_iterateKernel_boundedSet, SocialNetwork.minorisation_iterateKernel, SocialNetwork.eq_of_invariant_skeletonKernel}
+  \leanok
+  \uses{def1, def3}
+  There is $c > 0$, depending only on $N$, $M$ and $\beta$, with
+  \[
+    \kappa^{2N}\bigl(v, \{l^o\}\bigr) \;\ge\; c
+    \qquad \text{for every } v \in \Sspace \text{ and every } o \in \opinions,
+  \]
+  where $l^o$ is the canonical ladder of \ref{def1}; one may take
+  $c = \zeta_\beta^N \bigl(e^{-2\beta R/(M-1)}/MN\bigr)^N$ with
+  $R = MN(M-1) + N(M-1)$.  Consequently, by \ref{aux-doeblin}, the skeleton has
+  \emph{at most one} invariant probability measure carried by $\Sspace$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{prop6, prop8, aux-nstep, aux-doeblin}
+  \textbf{Follows the paper's argument at p.~17}, in its two halves.
+
+  The first $N$ expressions are greedy.  \ref{prop6} then confines the matrix
+  to $(-MN(M-1), N(M-1))$ entrywise, and \ref{prop8} gives that run
+  probability at least $\zeta_\beta^N$, uniformly in the starting matrix.  This
+  is the only half that uses $v \in \Sspace$.
+
+  The last $N$ are the paper's~(12): the actors $N-1, N-2, \dots, 0$ express
+  $o$ in that order.  Each row is reset when its actor expresses and then rises
+  by $M-1$ once per later expression, so the actor expressing $j$-th from the
+  end finishes at exactly the $j$-th rung --- \emph{whatever} the matrix was to
+  begin with.  That is what lets the target be a single point, and it is the
+  only place where the shape of $l^o$ is used.  Each of those $N$ expressions
+  is made from a matrix still within $R$ of zero, one expression moving an
+  entry by at most $M-1$, and the rates of \ref{eq3} are exponentials of
+  $\beta u(a,o)/(M-1)$, so each has probability at least
+  $e^{-2\beta R/(M-1)}/MN$ --- this is the step that needs the box, and it is
+  why the sweep is preceded by a greedy run rather than applied outright.
+
+  The two halves compose through \ref{aux-nstep}, which turns both into
+  statements about $\kappa^N$: the matrix reached in between is integrated out,
+  the second half being bounded below by the same constant everywhere on the
+  box.
+
+  Two remarks on what this does \emph{not} need.  The minorisation holds for
+  every $o$, so the chain has $M$ such points and not one distinguished
+  ladder; and nothing here is an irreducibility or aperiodicity statement ---
+  \ref{aux-doeblin} consumes the display above and nothing else.
+\end{proof}
+
 \paper{Theorem 1.2}
 \begin{theorem}[The invariant measure of the skeleton]
   \label{thm1-2-skeleton}
-  \lean{SocialNetwork.existsUnique_invariantSkeleton}
+  \lean{SocialNetwork.existsUnique_invariantSkeleton, SocialNetwork.exists_invariantSkeleton}
   \leanok
   \uses{def3}
   The skeleton process has a unique invariant probability measure $\muskel$
   carried by $\Sspace$.
 \end{theorem}
 \begin{proof}
-  \uses{aux-doeblin, prop6, prop8}
+  \uses{aux-doeblin, aux-minorisation}
   This is the Doeblin step, and it is the keystone: \ref{thm1-2},
   \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31} all rest
-  on it.  \textbf{Not formalised}, and what is missing is now precise rather
-  than wholesale.
+  on it.  \textbf{Uniqueness is formalised; existence is not}, and existence is
+  now all that is missing.
 
-  \emph{The criterion} is \ref{aux-doeblin}, and it is proved.  What it wants is
-  a minorisation, at one state, of some iterate of the skeleton kernel, uniform
-  over $\Sspace$.
-
-  \emph{The minorisation} is the argument at p.~17 of the paper, and it is
-  work in this repository rather than a gap in Mathlib.  Its three ingredients
-  are: that $N$ expressions of $o$, made by the actors in decreasing order, send
-  \emph{any} matrix to the canonical ladder $l^o$ of \ref{def1} --- each row is
-  reset when its actor expresses and then rises by $M-1$ once per later
-  expression --- which is the paper's~(12); that after $N$ greedy expressions
-  the matrix is entrywise between $-MN$ and $N$, which is \ref{prop6}, with
-  probability at least $\zeta_\beta^N$ by \ref{prop8}; and that from a matrix so
-  bounded the $N$ expressions above each have probability bounded below, the
-  rates of \ref{def3} being ratios of exponentials of bounded exponents.
+  \emph{Uniqueness} is done.  \ref{aux-doeblin} is the criterion and
+  \ref{aux-minorisation} is the minorisation this chain satisfies, so two
+  invariant probability measures carried by $\Sspace$ coincide.  No
+  irreducibility, no aperiodicity, no recurrence, and --- this is what makes
+  the split possible --- no existence theorem.
 
   \emph{Existence} is the half that does need Markov-chain theory.  [GL24] gets
   it from positive recurrence: the same minorisation bounds the return time to
   $l^o$ by $2N$ times a geometric variable, so its expectation is finite, and
   the invariant measure is then built from one excursion.  That construction is
-  what \texttt{blueprint/blueprint.md} records as absent.
+  what \texttt{blueprint/blueprint.md} records as absent; the one
+  \texttt{sorry} this node still carries is
+  \texttt{SocialNetwork.exists\_invariantSkeleton}.
 \end{proof}
 
 \paper{Equation (13)}
@@ -2483,13 +2548,16 @@ subsection that held that group is kept below as the record of what it cost.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{aux-doeblin} has changed what the first item below means.  Doeblin's
-\emph{criterion} is no longer missing: it is proved here, for a general Markov
-kernel on a countable space, and it is the half that gives uniqueness.  What is
-missing at \ref{thm1-2-skeleton} is the \emph{existence} half --- the
-construction of an invariant measure from one excursion of a positive recurrent
-chain --- and, separately, the minorisation this chain satisfies, which is work
-in this repository and not a gap in Mathlib.  Its node says which three pieces.
+\ref{aux-doeblin} and \ref{aux-minorisation} have changed what the first item
+below means.  Doeblin's \emph{criterion} is no longer missing: it is proved
+here, for a general Markov kernel on a countable space.  Nor is the
+minorisation this chain satisfies, which was work in this repository rather
+than a gap in Mathlib and is now done, at \ref{aux-minorisation}.  Together
+they give \ref{thm1-2-skeleton} outright in one direction: the skeleton has
+\emph{at most one} invariant probability measure carried by $\Sspace$.  What is
+left is the \emph{existence} half --- the construction of an invariant measure
+from one excursion of a positive recurrent chain --- and that is Markov-chain
+theory Mathlib does not have.
 
 \ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
 \ref{thm2-1}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
@@ -2500,7 +2568,9 @@ in this repository and not a gap in Mathlib.  Its node says which three pieces.
     nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
     and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
     is the Meyn--Tweedie definition, two trivial instances and one monotonicity
-    lemma.
+    lemma.  (This item no longer blocks anything here: \ref{aux-doeblin} proves
+    the implication, and it is the clearest thing in this repository to offer
+    upstream.)
   \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
     recurrence exists for a measure-preserving \emph{map}, which does not
     transport to a kernel. (Kac's lemma is likewise absent --- every
@@ -2519,7 +2589,8 @@ in this repository and not a gap in Mathlib.  Its node says which three pieces.
 \ref{thm2-1} and~\ref{thm3} live, in the paper's own architecture, on the
 skeleton; they are blocked by the discrete-time items, not by the
 continuous-time ones.  Only \ref{thm1-1} and~\ref{thm16} need Poisson point
-processes.  The shortest path is therefore Doeblin alone: \ref{prop9} is
+processes.  The shortest path is therefore the second item alone --- the
+existence of $\muskel$, everything else about it being proved: \ref{prop9} is
 already proved from \ref{prop7} and~\ref{prop8}, \ref{rem5-eta} and Kac's
 inequality, and \ref{thm2-1} follows from it by \ref{eq13} once $\muskel$
 exists.
@@ -2697,23 +2768,24 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Fifty proofs
+\ref{note-green}: does it follow what the paper wrote?  Fifty-two proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty-one entries.  Every one of them is named, and
+own, so it counts fifty-three entries.  Every one of them is named, and
 \texttt{scripts/status.py} now checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.  The check was added because the
 list had drifted --- nine proofs were written without a line here before anyone
 noticed.
 
-\medskip \noindent\textbf{Follow the paper's proof} (twenty-five). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (twenty-six). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
-\ref{thm3} and~\ref{thm31}, and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
+\ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17,
+and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
 places carry a note: the passage from the repeat time to the global bound in
@@ -2799,6 +2871,20 @@ predecessors of $0$, which is \ref{aux-zero-predecessors}. \ref{rem6} is
 $(M+1)N$, with one supplied step of its own: that $C^o$ and $C^{-o}$ are
 disjoint, which the paper uses without remarking on it.
 
+\ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
+matrix, then the sweep of~(12) to the canonical ladder, with the constants the
+paper does not print worked out.  Three steps are supplied, and each is at the
+node.  The paper says of~(12) only that it reaches a ladder; that it reaches
+$l^o$ \emph{from any matrix whatever} --- which is what allows a single point
+and hence Doeblin --- is proved here by an induction on the sweep.  The
+quantitative form of ``the rates are bounded'', which the paper leaves as an
+observation, is the explicit $e^{-2\beta R/(M-1)}/MN$ of
+\texttt{SocialNetwork.stepFloor}, and the box is shown to travel with the sweep
+rather than only to hold at its start.  And the composition of the two halves
+goes through \ref{aux-nstep} rather than through the paper's conditioning,
+Mathlib offering nothing of that shape --- the same departure as \ref{prop8},
+for the same reason.
+
 \medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
@@ -2815,21 +2901,25 @@ single line and argues neither, and uses the $m$-step bound in the sketch of
 an outside source to settle: the paper reads ``without visiting $u$'' off
 \ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
 
-\medskip \noindent\textbf{No counterpart in the paper} (thirteen).
+\medskip \noindent\textbf{No counterpart in the paper} (fourteen).
 \ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},
 \ref{aux-ladder-consensus}, \ref{aux-consensus-ladder},
 \ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
 \ref{aux-biased-ladder-consensus}, \ref{aux-biased-ladder-steep},
-\ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart}
-and~\ref{aux-doeblin}, together with the plumbing of the sample space, which is
-not made of numbered statements and so appears here only inside definitions and
-remarks.
+\ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart},
+\ref{aux-doeblin} and \ref{aux-nstep}, together with the plumbing of the
+sample space, which is not made of numbered statements, and so appears here
+only inside definitions and remarks.
 
-The last three are the substantial ones, and none of them checks anything the
+The last four are the substantial ones, and none of them checks anything the
 paper wrote.  \ref{aux-holding-times} says what the jump times of a greedy run
 are, and \ref{aux-restart} is the Markov property at the first jump; the paper
 uses both without stating either.  \ref{aux-doeblin} is Doeblin's criterion,
-which the paper cites.
+which the paper cites.  \ref{aux-nstep} identifies the $n$-step kernel with the
+law of the skeleton at time $n$: the paper works with one object where the
+formalisation has two, the realisations that \ref{prop6} and \ref{prop8} are
+stated on and the kernel iterates that \ref{aux-doeblin} consumes, and nothing
+is being checked here except that they agree.
 
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the

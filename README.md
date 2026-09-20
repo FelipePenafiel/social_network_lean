@@ -96,7 +96,9 @@ SocialNetwork/Frequencies.lean     i.i.d. uniform opinion words and the event E_
 SocialNetwork/Skeleton.lean   Definition 3: jump rates, skeleton kernel, law of a realisation
 SocialNetwork/Greedy.lean     Proposition 8 and Remark 4
 SocialNetwork/Kac.lean        Kac's lemma, in the half Proposition 9 uses and Mathlib lacks
+SocialNetwork/Doeblin.lean    Doeblin's criterion, the uniqueness half, for any countable chain
 SocialNetwork/Markov.lean     the law of a cylinder, and the Markov property of the skeleton
+SocialNetwork/Minorisation.lean    the minorisation of the skeleton chain (the paper's p. 17)
 SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8

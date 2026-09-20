@@ -3,6 +3,7 @@ Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Appendix
+import SocialNetwork.Minorisation
 import Mathlib.Probability.Distributions.Exponential
 import Mathlib.Probability.Kernel.Invariance
 import Mathlib.Analysis.Complex.ExponentialBounds
@@ -706,13 +707,34 @@ theorem existsUnique_invariantCts (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ 
       IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ IsInvariantCts β μ := by
   sorry
 
+/-- **The existence half of Definition 3.**  The skeleton chain has *some* invariant
+probability measure carried by the state space.
+
+This is what is left of Theorem 1.2 once the Doeblin step is done: the minorisation of
+`SocialNetwork.minorisation_iterateKernel` gives uniqueness outright, but says nothing about
+existence.  [GL24] gets existence from positive recurrence — the same minorisation bounds the
+return time to `l^o` by `2N` times a geometric variable, so its expectation is finite, and the
+invariant measure is built from one excursion — and that construction is the Markov-chain
+theory Mathlib does not have. -/
+theorem exists_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
+    ∃ μ : Measure (Pressure N M),
+      IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ := by
+  sorry
+
 /-- **Definition 3**, the invariant measure `μ̃^β` of the skeleton process.
 
-Uniqueness is what Theorem 1.2 rests on, and it is the Doeblin step that is missing. -/
+Uniqueness is the Doeblin step, and it is proved: it is
+`SocialNetwork.eq_of_invariant_skeletonKernel`, from the minorisation at p. 17 of the paper.
+Only existence is missing. -/
 theorem existsUnique_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
     ∃! μ : Measure (Pressure N M),
       IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ := by
-  sorry
+  obtain ⟨μ, hμp, hμS, hμinv⟩ := exists_invariantSkeleton hM hN hβ
+  refine ⟨μ, ⟨hμp, hμS, hμinv⟩, ?_⟩
+  rintro ν ⟨hνp, hνS, hνinv⟩
+  have := hμp
+  have := hνp
+  exact eq_of_invariant_skeletonKernel hM hβ hνS hμS hνinv hμinv
 
 /-- **Equation (13)**, the transfer from the skeleton to continuous time:
 

@@ -16,6 +16,7 @@ import SocialNetwork.Greedy
 import SocialNetwork.Kac
 import SocialNetwork.Ladder
 import SocialNetwork.Markov
+import SocialNetwork.Minorisation
 import SocialNetwork.Skeleton
 import SocialNetwork.Trajectory
 

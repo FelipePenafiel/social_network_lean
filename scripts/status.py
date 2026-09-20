@@ -117,20 +117,22 @@ REASONS: dict[str, tuple[str, str]] = {
     # -- Mathlib ------------------------------------------------------------
     "thm1-2-skeleton": (
         BLOCKED_ON_MATHLIB,
-        "the existence half: the criterion itself is now proved "
-        "(`eq_of_invariant_of_iterate_minorisation`), and what is left is an invariant "
-        "measure to apply it to, plus this chain's minorisation.  The keystone: five "
-        "results below wait on it",
+        "the existence half, and nothing else.  The criterion "
+        "(`eq_of_invariant_of_iterate_minorisation`) and this chain's minorisation "
+        "(`minorisation_iterateKernel`) are both proved, so uniqueness is proved "
+        "outright (`eq_of_invariant_skeletonKernel`); what is left is an invariant "
+        "measure to apply it to.  The keystone: five results below wait on it",
     ),
-    "thm1-2": (BLOCKED_ON_MATHLIB, "Doeblin, then the transfer of equation (13)"),
-    "thm25": (BLOCKED_ON_MATHLIB, "Doeblin, as Theorem 1.2"),
+    "thm1-2": (BLOCKED_ON_MATHLIB,
+               "the existence of `μ̃^β`, then the transfer of equation (13)"),
+    "thm25": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, as Theorem 1.2"),
     "eq13": (
         BLOCKED_ON_MATHLIB,
-        "the stationary-law transfer; needs Doeblin to be worth stating, and its own "
-        "statement is one the authors may want to change",
+        "the stationary-law transfer; needs `μ̃^β` to exist to be worth stating, and "
+        "its own statement is one the authors may want to change",
     ),
-    "thm2-1": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 9"),
-    "thm27": (BLOCKED_ON_MATHLIB, "Doeblin, then Proposition 26"),
+    "thm2-1": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, then Proposition 9"),
+    "thm27": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, then Proposition 26"),
     "thm1-1": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),

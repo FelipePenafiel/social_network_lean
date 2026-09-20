@@ -56,26 +56,26 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Statement | Lean | Why |
 |---|---|---|
 | Theorem 1.1 | `nonExplosion` | Poisson point processes |
-| Theorem 1.2 | `existsUnique_invariantCts` | Doeblin, then the transfer of equation (13) |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | the existence half: the criterion itself is now proved (`eq_of_invariant_of_iterate_minorisation`), and what is left is an invariant measure to apply it to, plus this chain's minorisation.  The keystone: five results below wait on it |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer; needs Doeblin to be worth stating, and its own statement is one the authors may want to change |
-| Theorem 2.1 | `measure_ladderSet_ge` | Doeblin, then Proposition 9 |
+| Theorem 1.2 | `existsUnique_invariantCts` | the existence of `μ̃^β`, then the transfer of equation (13) |
+| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +1 | the existence half, and nothing else.  The criterion (`eq_of_invariant_of_iterate_minorisation`) and this chain's minorisation (`minorisation_iterateKernel`) are both proved, so uniqueness is proved outright (`eq_of_invariant_skeletonKernel`); what is left is an invariant measure to apply it to.  The keystone: five results below wait on it |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer; needs `μ̃^β` to exist to be worth stating, and its own statement is one the authors may want to change |
+| Theorem 2.1 | `measure_ladderSet_ge` | the existence of `μ̃^β`, then Proposition 9 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
 | Theorem 16 | `Bias.biasedNonExplosion` | Poisson point processes |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` | Doeblin, as Theorem 1.2 |
-| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Doeblin, then Proposition 26 |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` | the existence of `μ̃^β`, as Theorem 1.2 |
+| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | the existence of `μ̃^β`, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 18 | 18 | 36 |
+| Proved | 18 | 20 | 38 |
 | Proof written, resting on an unproved statement | 11 | 2 | 13 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 16 | 0 | 16 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **24** | **86** |
+| **Total** | **62** | **26** | **88** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -92,7 +92,7 @@ are covered, and all 56 of them are stated in Lean.
 | Definition 3 | `skeletonKernel` +8 | stated |
 | Theorem 1.1 | `nonExplosion` | unproved — blocked on Mathlib |
 | Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` | unproved — blocked on Mathlib |
+| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +1 | unproved — blocked on Mathlib |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
 | Definition 1 | `IsLadder` +4 | stated |
 | Definition 2 | `IsConsensus` +2 | stated |
@@ -161,6 +161,8 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | Doeblin's criterion, the uniqueness half | `iterateKernel` +7 | proved |
+| The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
+| The minorisation of the skeleton chain | `descendActor` +16 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |
 | a biased ladder is a biased steep ladder | `Bias.IsBiasedLadder.isBiasedSteepLadder` +6 | proved |
