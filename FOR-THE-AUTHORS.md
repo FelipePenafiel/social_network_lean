@@ -55,7 +55,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Remark 6** | was the one numbered statement with no Lean counterpart.  Now stated and **proved**, outright: its route needs only the last stage of Proposition 7, not Lemmas 19 and 20 |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
-| [§5](#5-not-the-papers-fault) | **Doeblin, page 17** | the criterion and this chain's minorisation are both now **proved**, so `μ̃^β` is unique unconditionally and only *existence* is missing.  Your `ε*` becomes an explicit constant, and (12) is proved from *any* matrix — which is what lets the minorising measure be a single Dirac mass |
+| [§5](#5-not-the-papers-fault) | **Theorem 1.2** | was the keystone, listed as blocked on Mathlib.  Now **proved**, both halves: the criterion, your page-17 minorisation, and the excursion measure.  The existence half needed no Markov-chain theory at all — on a countable space it is a sum, not a limit.  Your `ε*` becomes an explicit constant, and (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass.  The Lean statement also drops your `N ≥ 3` |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
 | [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses, and **proved** under it |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
@@ -390,22 +390,31 @@ blueprint's audit section classifies every formalised proof this way.
 ## 5. Not the paper's fault
 
 Unproved because Mathlib has no theory of it, not because anything is wrong:
-the existence of the invariant measure `μ̃^β` (Theorem 1.2, part 1 of Theorem 2,
-Theorems 25 and 27), Poisson point processes (Theorem 1.1, Theorem 16), and the
-continuous-time analysis of Appendix B (Lemma 14, Lemma 29).  `blueprint/blueprint.md` is the engineering
-audit of what Mathlib does and does not provide, checked against the pinned
-revision.
+Poisson point processes (Theorem 1.1, Theorem 16) and the continuous-time
+analysis of Appendix B (Lemma 14, Lemma 29).  That is the whole list.
+`blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
+not provide, checked against the pinned revision.
 
-The first of those is now down to one half.  The **criterion** is proved here
-(`SocialNetwork/Doeblin.lean`), for a general Markov kernel on a countable
-space: if some iterate is bounded below at one state by `c > 0`, uniformly over
-a set carrying the measures, there is at most one invariant probability measure
-carried by that set.  This chain's **minorisation** — your page 17 — is proved
-here as well (`SocialNetwork/Minorisation.lean`), so **the skeleton has at most
-one invariant probability measure carried by `S`, unconditionally**
-(`eq_of_invariant_skeletonKernel`).  What is left at Theorem 1.2 is
-**existence**, and that alone: the construction of an invariant measure from one
-excursion of a positive recurrent chain, which is theory Mathlib lacks.
+**Theorem 1.2 has left this list, and it was the keystone.** `μ̃^β` exists and
+is unique, proved outright (`SocialNetwork.existsUnique_invariantSkeleton`), and
+nothing above it waits on Mathlib any more. Two pieces did it. Doeblin's
+**criterion** is proved here (`SocialNetwork/Doeblin.lean`) for a general Markov
+kernel on a countable space, *both halves*: a minorisation of some iterate at
+one state, uniform over an absorbing set, gives exactly one invariant
+probability measure carried by that set. And this chain's **minorisation** —
+your page 17 — is proved here too (`SocialNetwork/Minorisation.lean`).
+
+This repository had recorded that the existence half would need Markov-chain
+theory Mathlib lacks, namely the construction of an invariant measure from one
+excursion of a positive recurrent chain. The premise was right and **the
+conclusion was wrong**, and it is worth saying why, because it may matter to how
+you write it. On a *countable* state space that construction needs no theory at
+all. The excursion measure `ν(y) = ∑ₘ P_l(Ũₘ = y, R_l > m)` is a sum in
+`[0,∞]`; your minorisation makes it summable directly, with no recurrence
+theorem in between, since it gives `P_l(R_l > m) ≤ (1-c)^m` at once; and
+invariance is the last-exit decomposition, which in coordinates is two lines.
+No positive recurrence, no Kac identity, no compactness, no limit of Cesàro
+averages.
 
 Two remarks on the minorisation, neither of them a request.  Your `ε*` is a
 minimum over the finite set of bounded matrices of a probability you do not
@@ -418,11 +427,17 @@ no hypothesis on where they start.  That is what lets the minorising measure be
 a single Dirac mass, which is what the criterion consumes; it is worth stating
 that way if you revise.
 
-Nothing is unproved for neither reason any more.  **Every numbered statement of
-the paper is now stated in Lean**, and what is unproved is blocked on Mathlib,
-blocked on the paper, or cited from outside it.
+Three statements are now unproved for **neither** reason — nothing stands in
+the way and the work is simply not done: equation (13), Theorem 1.2 in
+continuous time, and Theorem 25. They were listed as blocked on Mathlib only
+because they waited on `μ̃^β` to exist. Equation (13) is the stationary-law
+transfer; this repository has had it flagged as a statement you may want to
+revisit before it is formalised, and nothing is asked of you unless you agree.
+Theorem 1.2 in continuous time follows from it. Theorem 25 needs the biased
+analogue of the page-17 minorisation, which Appendix C asserts by analogy rather
+than writing out; the criterion itself applies to the biased chain verbatim.
 
-There were three in this group.  **Corollary 11** was filed under Doeblin and
+Earlier, three others sat in that group.  **Corollary 11** was filed under Doeblin and
 **equation (19)** as a citation; reading part 2 apart from part 1 moved both, and
 part 2 and the first display of §2.7 with them.  Part 2 says nothing about the
 invariant measure, so nothing it needed was missing from this repository: what it
@@ -549,9 +564,9 @@ filed Remark 6 behind Lemmas 19 and 20, on the grounds that its route is part 2
 and part 2 rests on them.  It does not: starting inside `C^o` skips them, since
 getting to `C^o` is their whole job.  Nothing downstream uses Remark 6 — it
 strengthens Corollary 11 in the direction Lemma 14 needs — but it is the only
-statement of Section 5.2 that this repository can offer you sorry-free: part 1 of
-Theorem 2 waits on `μ̃^β` existing, and part 2 and Corollary 11 on Lemmas 19
-and 20.
+statement of Section 5.2 that this repository can offer you sorry-free: part 1
+of Theorem 2 waits on equation (13) and on Proposition 9, and part 2 and
+Corollary 11 on Lemmas 19 and 20.
 
 **Theorem 4** part 1 is now **proved**, and with it the negative-bias half of the phase
 transition: almost surely all but one actor eventually stop expressing. Proposition 18

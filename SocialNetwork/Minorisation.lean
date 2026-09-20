@@ -535,11 +535,37 @@ theorem minorisation_iterateKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (o
     _ ≤ ∫⁻ w, iterateKernel (skeletonKernel β) N w {ladderOf N o}
           ∂(iterateKernel (skeletonKernel β) N v) := lintegral_mono hind
 
-/-- **Theorem 1.2, the uniqueness half.**  The skeleton chain has at most one invariant
-probability measure carried by the state space `S`.
+/-- The state space `S` of equation (2) is absorbing for the skeleton kernel: this is
+`SocialNetwork.isState_skeletonKernel` read as a null set. -/
+theorem skeletonKernel_compl_stateSet (β : ℝ) {v : Pressure N M} (hv : IsState v) :
+    skeletonKernel β v (stateSet N M)ᶜ = 0 :=
+  (prob_compl_eq_zero_iff (measurableSet_pressure _)).2 (isState_skeletonKernel β hv)
 
-This is `SocialNetwork.eq_of_invariant_of_iterate_minorisation` fed with
-`SocialNetwork.minorisation_iterateKernel`.  Existence is the half that is not here. -/
+/-- **Theorem 1.2 for the skeleton, both halves.**  The skeleton chain has exactly one
+invariant probability measure carried by the state space `S`.
+
+Uniqueness is `SocialNetwork.eq_of_invariant_of_minorisation_on` and existence is the
+excursion measure of `SocialNetwork.excursionFun`; both are fed with
+`SocialNetwork.minorisation_iterateKernel`.  Nothing here needs irreducibility, aperiodicity
+or a recurrence theory. -/
+theorem existsUnique_invariant_skeletonKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) :
+    ∃! μ : Measure (Pressure N M),
+      IsProbabilityMeasure μ ∧ μ (stateSet N M)ᶜ = 0
+        ∧ Kernel.Invariant (skeletonKernel β) μ := by
+  have hNpos : 0 < N + N := by
+    have := Nat.pos_of_ne_zero (NeZero.ne N)
+    omega
+  have hpos : 0 < ENNReal.ofReal (zeta N M β) ^ N
+      * ENNReal.ofReal (stepFloor N M β (greedyBound N M + (N : ℤ) * ((M : ℤ) - 1))) ^ N := by
+    refine ENNReal.mul_pos (pow_ne_zero _ ?_) (pow_ne_zero _ ?_)
+    · exact (ENNReal.ofReal_pos.2 (zeta_pos N M β)).ne'
+    · exact (ENNReal.ofReal_pos.2 (stepFloor_pos N M β _)).ne'
+  exact existsUnique_invariant_of_iterate_minorisation (skeletonKernel β) hNpos hpos
+    (isLadder_ladderOf (N := N) ⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩).isState
+    (fun v hv => skeletonKernel_compl_stateSet β hv)
+    (fun v hv => minorisation_iterateKernel hM hβ ⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩ hv)
+
+/-- **Theorem 1.2, the uniqueness half**, in the form the continuous-time file consumes. -/
 theorem eq_of_invariant_skeletonKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β)
     {μ ν : Measure (Pressure N M)} [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
     (hμS : μ (stateSet N M)ᶜ = 0) (hνS : ν (stateSet N M)ᶜ = 0)
