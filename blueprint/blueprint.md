@@ -181,9 +181,10 @@ the skeleton of the biased lemmas of the section above, proved the same way.
 
 ## Still missing, in DISCRETE time
 
-These block Theorem 1.2 and everything downstream of it.  Items 1–3 were one gap seen from
-three sides; item 1 no longer blocks anything here, and what is left of Theorem 1.2 is items
-4 and 5 — the existence half — and nothing else.
+These were recorded as blocking Theorem 1.2 and everything downstream of it.  **None of them
+does any more**: Theorem 1.2 for the skeleton is proved outright, and items 1–5 are still
+absent from Mathlib but no longer needed here.  They are kept because the audit is of what
+Mathlib provides, not of what this repository happens to want this week.
 
 1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing in Mathlib: `grep` over the
    whole tree still returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
@@ -194,11 +195,20 @@ three sides; item 1 no longer blocks anything here, and what is left of Theorem 
    set.  It is forty lines, it consumes nothing but `Kernel.Invariant`, and it belongs
    upstream as much as the shift lemma above does.
 
+   The *existence* half is supplied here too, in the same file
+   (`SocialNetwork.exists_invariant_of_iterate_minorisation`), and this is where the audit
+   had been wrong.  It read that existence would need the classical construction of an
+   invariant measure from one excursion of a positive recurrent chain, and hence items 4
+   and 5 below.  It does not.  On a **countable** state space the excursion measure
+   `ν(y) = ∑ₘ P_l(Ũₘ = y, R_l > m)` is a sum in `[0,∞]`; the minorisation bounds
+   `P_l(R_l > m) ≤ (1-c)^m` directly, with no recurrence theorem in between; and invariance
+   is the last-exit decomposition written in coordinates, which is `νκ ≤ ν` with equal
+   finite total mass.  No positive recurrence, no Kac identity, no compactness.  About sixty
+   lines.
+
    The *minorisation* this chain satisfies — which was never a Mathlib gap, only work — is
-   proved in `SocialNetwork/Minorisation.lean` (`SocialNetwork.minorisation_iterateKernel`),
-   so uniqueness of `μ̃^β` is now unconditional here.  What is still missing is the
-   *existence* half — from positive recurrence, the construction of an invariant measure out
-   of one excursion — and that is items 4 and 5 below rather than this one.
+   proved in `SocialNetwork/Minorisation.lean` (`SocialNetwork.minorisation_iterateKernel`).
+   Together the two give `SocialNetwork.existsUnique_invariantSkeleton` outright.
 
    Applying the criterion needs the same bridge as Kac's inequality did, one level up: the
    `n`-step kernel has to be identified with the law of the skeleton at time `n`, since

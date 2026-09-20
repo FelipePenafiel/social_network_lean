@@ -16,26 +16,26 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-18 statements. They are unproved for three different reasons, and
+17 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
-The group that was only work is empty: every numbered statement of the paper is
-stated in Lean, and nothing unproved here is unproved for want of doing it.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (6)
+### Blocked on the paper (8)
 
-The written proof does not compose.
+The written proof does not compose, or its route passes through one that does not.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
 
 | Statement | Lean | Why |
 |---|---|---|
+| Theorem 2.1 | `measure_ladderSet_ge` | its own proof is not written, and the route is Proposition 9 — hence Lemmas 19 and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits on Mathlib |
 | Lemma 19 | `isFavouring_state_firstRepeat` | the sequence of `⌊m⌋ + 1` distinct actors is asserted ("by (25)"), never constructed, and the degenerate case is ruled out through `τ(u) = 2` rather than through `m = 0` |
 | Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | does not follow from Proposition 6 as Appendix C asserts: under near-greedy expression the chain gives `N - 1 + 1/(2γ)`, which reaches `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | the biased twin of Proposition 9: the proof would transpose that one, and rests on the biased Proposition 7 |
+| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Proposition 26, and the biased analogue of Theorem 1.2 below it |
 | Lemma 28 | `Bias.biasedProbHitting_le` | the biased twin of Lemma 13, and its ingredients — the biased forms of the two displays below — are not in the paper either |
 
 ### Cited from outside the paper (2)
@@ -48,7 +48,7 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Blocked on Mathlib (10)
+### Blocked on Mathlib (4)
 
 The paper's proof is fine; Mathlib has no theory of the object it uses.
 Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the audit of exactly what is absent, checked against the pinned revision.
@@ -56,24 +56,29 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Statement | Lean | Why |
 |---|---|---|
 | Theorem 1.1 | `nonExplosion` | Poisson point processes |
-| Theorem 1.2 | `existsUnique_invariantCts` | the existence of `μ̃^β`, then the transfer of equation (13) |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +1 | the existence half, and nothing else.  The criterion (`eq_of_invariant_of_iterate_minorisation`) and this chain's minorisation (`minorisation_iterateKernel`) are both proved, so uniqueness is proved outright (`eq_of_invariant_skeletonKernel`); what is left is an invariant measure to apply it to.  The keystone: five results below wait on it |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer; needs `μ̃^β` to exist to be worth stating, and its own statement is one the authors may want to change |
-| Theorem 2.1 | `measure_ladderSet_ge` | the existence of `μ̃^β`, then Proposition 9 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
 | Theorem 16 | `Bias.biasedNonExplosion` | Poisson point processes |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` | the existence of `μ̃^β`, as Theorem 1.2 |
-| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | the existence of `μ̃^β`, then Proposition 26 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
+
+### Not formalised yet (3)
+
+No obstruction known.
+Nothing here stands in the way; the work is simply not done.
+
+| Statement | Lean | Why |
+|---|---|---|
+| Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and nothing else: `μ̃^β` exists and is unique |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Work here rather than a gap, now that `μ̃^β` exists — but its statement is one the authors may want to change first, so it is the one item in this group with a question attached |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` | the biased analogue of the minorisation, which Appendix C asserts by analogy.  Doeblin's criterion itself is proved and applies verbatim |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 18 | 20 | 38 |
+| Proved | 19 | 20 | 39 |
 | Proof written, resting on an unproved statement | 11 | 2 | 13 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 16 | 0 | 16 |
+| Stated in Lean, unproved | 15 | 0 | 15 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | **Total** | **62** | **26** | **88** |
 
@@ -91,9 +96,9 @@ are covered, and all 56 of them are stated in Lean.
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
 | Theorem 1.1 | `nonExplosion` | unproved — blocked on Mathlib |
-| Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
-| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +1 | unproved — blocked on Mathlib |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
+| Theorem 1.2 | `existsUnique_invariantCts` | unproved — not formalised yet |
+| Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — not formalised yet |
 | Definition 1 | `IsLadder` +4 | stated |
 | Definition 2 | `IsConsensus` +2 | stated |
 | Definition 4 | `IsSteepLadder` +2 | stated |
@@ -101,7 +106,7 @@ are covered, and all 56 of them are stated in Lean.
 | Remark 5 — Steep ladders are stable | `IsSteepLadder.express_of_pos` +3 | proved |
 | Remark 5 — the bound η | `eta` +9 | proved |
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
-| Theorem 2.1 | `measure_ladderSet_ge` | unproved — blocked on Mathlib |
+| Theorem 2.1 | `measure_ladderSet_ge` | unproved — blocked on the paper |
 | Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on Lemma 19, Lemma 20 |
 | Theorem 3 | `metastability` | proof written, rests on Proposition 12, Lemma 14, Lemma 19, Lemma 20 |
 | equation (5) | `Bias.Profile.express` +4 | stated |
@@ -139,9 +144,9 @@ are covered, and all 56 of them are stated in Lean.
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | unproved — blocked on the paper |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | unproved — blocked on the paper |
 | Proposition 24 | `Bias.biasedZeta` +1 | proved |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` | unproved — blocked on Mathlib |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` | unproved — not formalised yet |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | unproved — blocked on the paper |
-| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on Mathlib |
+| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on the paper |
 | Lemma 28 | `Bias.biasedProbHitting_le` | unproved — blocked on the paper |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | unproved — blocked on Mathlib |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proof written, rests on Proposition 12, Lemma 14, Lemma 29 |
@@ -160,7 +165,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
-| Doeblin's criterion, the uniqueness half | `iterateKernel` +7 | proved |
+| Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |

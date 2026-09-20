@@ -52,9 +52,9 @@ ORDER = [BLOCKED_ON_PAPER, CITED, BLOCKED_ON_MATHLIB, NOT_YET]
 
 HEADNOTE = {
     BLOCKED_ON_PAPER:
-        "The written proof does not compose.  A repair is new mathematics and is the "
-        "authors' to write, not the formalisation's to guess: each of these is left "
-        "carrying a `sorry` on purpose.",
+        "The written proof does not compose, or its route passes through one that does "
+        "not.  A repair is new mathematics and is the authors' to write, not the "
+        "formalisation's to guess: each of these is left carrying a `sorry` on purpose.",
     CITED:
         "Not results of arXiv:2607.19651 at all.  Nothing in this library can discharge "
         "them, so no amount of work here will close them.",
@@ -104,6 +104,16 @@ REASONS: dict[str, tuple[str, str]] = {
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "
         "on the biased Proposition 7",
     ),
+    "thm2-1": (
+        BLOCKED_ON_PAPER,
+        "its own proof is not written, and the route is Proposition 9 — hence Lemmas 19 "
+        "and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits "
+        "on Mathlib",
+    ),
+    "thm27": (
+        BLOCKED_ON_PAPER,
+        "Proposition 26, and the biased analogue of Theorem 1.2 below it",
+    ),
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,
@@ -115,29 +125,24 @@ REASONS: dict[str, tuple[str, str]] = {
         "statement is inconsistent",
     ),
     # -- Mathlib ------------------------------------------------------------
-    "thm1-2-skeleton": (
-        BLOCKED_ON_MATHLIB,
-        "the existence half, and nothing else.  The criterion "
-        "(`eq_of_invariant_of_iterate_minorisation`) and this chain's minorisation "
-        "(`minorisation_iterateKernel`) are both proved, so uniqueness is proved "
-        "outright (`eq_of_invariant_skeletonKernel`); what is left is an invariant "
-        "measure to apply it to.  The keystone: five results below wait on it",
-    ),
-    "thm1-2": (BLOCKED_ON_MATHLIB,
-               "the existence of `μ̃^β`, then the transfer of equation (13)"),
-    "thm25": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, as Theorem 1.2"),
-    "eq13": (
-        BLOCKED_ON_MATHLIB,
-        "the stationary-law transfer; needs `μ̃^β` to exist to be worth stating, and "
-        "its own statement is one the authors may want to change",
-    ),
-    "thm2-1": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, then Proposition 9"),
-    "thm27": (BLOCKED_ON_MATHLIB, "the existence of `μ̃^β`, then Proposition 26"),
+
     "thm1-1": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     # -- simply not done ----------------------------------------------------
+    "eq13": (
+        NOT_YET,
+        "the stationary-law transfer.  Work here rather than a gap, now that `μ̃^β` "
+        "exists — but its statement is one the authors may want to change first, so it "
+        "is the one item in this group with a question attached",
+    ),
+    "thm1-2": (NOT_YET, "equation (13), and nothing else: `μ̃^β` exists and is unique"),
+    "thm25": (
+        NOT_YET,
+        "the biased analogue of the minorisation, which Appendix C asserts by analogy.  "
+        "Doeblin's criterion itself is proved and applies verbatim",
+    ),
 }
 
 

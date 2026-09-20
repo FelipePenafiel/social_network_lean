@@ -707,34 +707,20 @@ theorem existsUnique_invariantCts (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ 
       IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ IsInvariantCts β μ := by
   sorry
 
-/-- **The existence half of Definition 3.**  The skeleton chain has *some* invariant
-probability measure carried by the state space.
-
-This is what is left of Theorem 1.2 once the Doeblin step is done: the minorisation of
-`SocialNetwork.minorisation_iterateKernel` gives uniqueness outright, but says nothing about
-existence.  [GL24] gets existence from positive recurrence — the same minorisation bounds the
-return time to `l^o` by `2N` times a geometric variable, so its expectation is finite, and the
-invariant measure is built from one excursion — and that construction is the Markov-chain
-theory Mathlib does not have. -/
-theorem exists_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
-    ∃ μ : Measure (Pressure N M),
-      IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ := by
-  sorry
-
 /-- **Definition 3**, the invariant measure `μ̃^β` of the skeleton process.
 
-Uniqueness is the Doeblin step, and it is proved: it is
-`SocialNetwork.eq_of_invariant_skeletonKernel`, from the minorisation at p. 17 of the paper.
-Only existence is missing. -/
-theorem existsUnique_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
+**Proved**, and it is the Doeblin step: `SocialNetwork.minorisation_iterateKernel` is the
+minorisation at p. 17 of the paper, and
+`SocialNetwork.existsUnique_invariant_of_iterate_minorisation` turns it into existence *and*
+uniqueness.  Neither half needs irreducibility, aperiodicity, or a recurrence theory; the
+existence half is the excursion measure, which the minorisation makes summable.
+
+The paper's `N ≥ 3` is not used: a non-empty network is enough, since the descending sweep
+behind the minorisation reaches the canonical ladder for every `N ≥ 1`. -/
+theorem existsUnique_invariantSkeleton (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) :
     ∃! μ : Measure (Pressure N M),
-      IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ := by
-  obtain ⟨μ, hμp, hμS, hμinv⟩ := exists_invariantSkeleton hM hN hβ
-  refine ⟨μ, ⟨hμp, hμS, hμinv⟩, ?_⟩
-  rintro ν ⟨hνp, hνS, hνinv⟩
-  have := hμp
-  have := hνp
-  exact eq_of_invariant_skeletonKernel hM hβ hνS hμS hνinv hμinv
+      IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ :=
+  existsUnique_invariant_skeletonKernel hM hβ
 
 /-- **Equation (13)**, the transfer from the skeleton to continuous time:
 

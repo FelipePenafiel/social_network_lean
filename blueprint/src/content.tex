@@ -323,29 +323,29 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
   $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
-  processes.  \textbf{Not formalised}, and what is left of it is narrower than
-  it was: the minorisation is \ref{aux-minorisation} and the criterion is
-  \ref{aux-doeblin}, both proved, so what remains is the existence half of
-  \ref{thm1-2-skeleton} and the transfer \ref{eq13}.
+  processes.  \textbf{Not formalised}, and \ref{eq13} is now the whole of what
+  is missing: \ref{thm1-2-skeleton} is proved, so $\muskel$ exists and is
+  unique, and the transfer is the only step between it and $\muinv$.
 \end{proof}
 
 \aux{Lemma}
-\begin{lemma}[Doeblin's criterion, the uniqueness half]
+\begin{lemma}[Doeblin's criterion]
   \label{aux-doeblin}
-  \lean{SocialNetwork.iterateKernel, SocialNetwork.invariant_iterateKernel, SocialNetwork.eq_of_invariant_of_minorisation_on, SocialNetwork.eq_of_invariant_of_minorisation, SocialNetwork.eq_of_invariant_of_iterate_minorisation, SocialNetwork.tsum_measure_singleton, SocialNetwork.measure_singleton_of_invariant, SocialNetwork.tsum_tsub}
+  \lean{SocialNetwork.iterateKernel, SocialNetwork.invariant_iterateKernel, SocialNetwork.eq_of_invariant_of_minorisation_on, SocialNetwork.eq_of_invariant_of_minorisation, SocialNetwork.eq_of_invariant_of_iterate_minorisation, SocialNetwork.tsum_measure_singleton, SocialNetwork.measure_singleton_of_invariant, SocialNetwork.tsum_tsub, SocialNetwork.bind_apply_singleton, SocialNetwork.escape, SocialNetwork.hit_add_escape, SocialNetwork.excursion, SocialNetwork.excursionMass, SocialNetwork.excursionReturn, SocialNetwork.excursionMass_eq_add, SocialNetwork.tsum_excursionReturn_le, SocialNetwork.excursion_eq_zero_of_notMem, SocialNetwork.excursionMass_succ_le, SocialNetwork.excursionMass_le_pow, SocialNetwork.excursionFun, SocialNetwork.excursionFun_self, SocialNetwork.tsum_excursionFun_ne_top, SocialNetwork.tsum_excursionFun_mul, SocialNetwork.exists_invariant_of_weight, SocialNetwork.exists_invariant_of_minorisation, SocialNetwork.iterateKernel_absorbing, SocialNetwork.avgFun, SocialNetwork.tsum_avgFun, SocialNetwork.tsum_avgFun_mul, SocialNetwork.exists_invariant_of_invariant_iterateKernel, SocialNetwork.exists_invariant_of_iterate_minorisation, SocialNetwork.existsUnique_invariant_of_iterate_minorisation}
   \leanok
-  Let $\kappa$ be a Markov kernel on a countable space, $S$ a set, $l$ a point
-  and $c > 0$ with $\kappa^n(x, \{l\}) \ge c$ for every $x \in S$.  Then
-  $\kappa$ has \emph{at most one} invariant probability measure carried by $S$.
+  Let $\kappa$ be a Markov kernel on a countable space, $S$ an absorbing set,
+  $l \in S$ and $c > 0$ with $\kappa^n(x, \{l\}) \ge c$ for every $x \in S$.
+  Then $\kappa$ has \emph{exactly one} invariant probability measure carried by
+  $S$.
 \end{lemma}
 \begin{proof}
   \leanok
-  Write $m(x) = \min\{\mu(x), \nu(x)\}$ for two such measures and
-  $T = \sum_x m(x)$, so that $\mu = \nu$ exactly when $T = 1$.  Invariance
-  carries $m$ forward --- $m(y) \ge \sum_x \kappa^n(x,\{y\})\, m(x)$, since each
-  of $\mu(y)$ and $\nu(y)$ is that sum against its own measure and $m$ is below
-  both --- and summing over $y$ gives $T \ge T$, which says nothing.  The
-  minorisation is what turns it into something: at $l$,
+  \emph{Uniqueness.}  Write $m(x) = \min\{\mu(x), \nu(x)\}$ for two such
+  measures and $T = \sum_x m(x)$, so that $\mu = \nu$ exactly when $T = 1$.
+  Invariance carries $m$ forward --- $m(y) \ge \sum_x \kappa^n(x,\{y\})\, m(x)$,
+  since each of $\mu(y)$ and $\nu(y)$ is that sum against its own measure and
+  $m$ is below both --- and summing over $y$ gives $T \ge T$, which says
+  nothing.  The minorisation is what turns it into something: at $l$,
   \[
     \mu(l) = \sum_x \kappa^n(x,\{l\})\, m(x)
       + \sum_x \kappa^n(x,\{l\})\, (\mu(x) - m(x))
@@ -354,13 +354,36 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   and the same for $\nu$, so the term at $l$ carries a surplus of $c(1-T)$.
   Summing over $y$ now gives $T \ge T + c(1-T)$, whence $T = 1$.
 
+  \emph{Existence} is the excursion measure.  Write
+  $Q^m(y) = \mathbb{P}_l(\Uskel{}_m = y,\ \Uskel{}_j \ne l \text{ for }
+  1 \le j \le m)$ for the mass the chain started at $l$ still carries at time
+  $m$ without having come back, and $\nu = \sum_m Q^m$.  Three facts finish it.
+  First $\nu(l) = 1$, only $m = 0$ contributing there.  Second
+  $\sum_y \nu(y) = \sum_m \mathbb{P}_l(R_l > m) < \infty$, because each step
+  costs a factor $1 - c$: the minorisation says the chain returns with
+  probability at least $c$ wherever it is, so $\mathbb{P}_l(R_l > m) \le
+  (1-c)^m$.  Third $\nu \kappa \le \nu$, with equality off $l$ --- there the
+  recursion defining $Q^{m+1}$ \emph{is} one step of $\kappa$ --- and $\le$ at
+  $l$, where what comes back is the total of the returns, which telescopes
+  against the masses and is therefore at most one.  A measure with $\nu\kappa
+  \le \nu$, the same finite total mass on both sides, is invariant, which is
+  the step that ends the uniqueness proof as well.  Normalising gives the
+  measure, and it is carried by $S$ because the excursion starts in $S$ and $S$
+  is absorbing.
+
+  One reduction makes this work at one step rather than $n$: an invariant
+  measure of $\kappa^n$ averages into one of $\kappa$, since
+  $\sum_{i<n} \mu\kappa^{i}$ telescopes and its two ends agree.  So the
+  excursion is run for $\kappa^n$, where the minorisation is a one-step bound.
+
   \textbf{No counterpart in the paper}, which cites Doeblin's criterion.  The
   argument is written for a general Markov kernel on a countable space because
   it is exactly as easy there, and it consumes nothing but
-  \texttt{Kernel.Invariant}: no irreducibility, no aperiodicity, no recurrence,
-  and --- this is the point --- no existence theorem.  The set $S$ is there
-  because the chain of the paper lives on the state space of \ref{eq2}, which is
-  not all of $\mathbb{Z}^{\actors \times \opinions}$.
+  \texttt{Kernel.Invariant}: no irreducibility, no aperiodicity, no recurrence
+  theory and no compactness --- on a countable space the excursion measure is a
+  sum in $[0,\infty]$ and nothing has to converge in a topology.  The set $S$ is
+  there because the chain of the paper lives on the state space of \ref{eq2},
+  which is not all of $\mathbb{Z}^{\actors \times \opinions}$.
 \end{proof}
 
 \aux{Lemma}
@@ -435,32 +458,33 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \paper{Theorem 1.2}
 \begin{theorem}[The invariant measure of the skeleton]
   \label{thm1-2-skeleton}
-  \lean{SocialNetwork.existsUnique_invariantSkeleton, SocialNetwork.exists_invariantSkeleton}
+  \lean{SocialNetwork.existsUnique_invariantSkeleton, SocialNetwork.skeletonKernel_compl_stateSet, SocialNetwork.existsUnique_invariant_skeletonKernel}
   \leanok
   \uses{def3}
   The skeleton process has a unique invariant probability measure $\muskel$
   carried by $\Sspace$.
 \end{theorem}
 \begin{proof}
+  \leanok
   \uses{aux-doeblin, aux-minorisation}
-  This is the Doeblin step, and it is the keystone: \ref{thm1-2},
+  This is the Doeblin step, and it was the keystone: \ref{thm1-2},
   \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31} all rest
-  on it.  \textbf{Uniqueness is formalised; existence is not}, and existence is
-  now all that is missing.
+  on it.  \textbf{It is now proved, both halves.}
 
-  \emph{Uniqueness} is done.  \ref{aux-doeblin} is the criterion and
-  \ref{aux-minorisation} is the minorisation this chain satisfies, so two
-  invariant probability measures carried by $\Sspace$ coincide.  No
-  irreducibility, no aperiodicity, no recurrence, and --- this is what makes
-  the split possible --- no existence theorem.
+  \ref{aux-minorisation} is the minorisation this chain satisfies and
+  \ref{aux-doeblin} is the criterion, which delivers existence and uniqueness
+  together: $2N$ expressions reach the canonical ladder $l^o$ with probability
+  at least $c$ from every state, and that single bound is everything the
+  criterion consumes.
 
-  \emph{Existence} is the half that does need Markov-chain theory.  [GL24] gets
-  it from positive recurrence: the same minorisation bounds the return time to
-  $l^o$ by $2N$ times a geometric variable, so its expectation is finite, and
-  the invariant measure is then built from one excursion.  That construction is
-  what \texttt{blueprint/blueprint.md} records as absent; the one
-  \texttt{sorry} this node still carries is
-  \texttt{SocialNetwork.exists\_invariantSkeleton}.
+  Two things are worth recording about what this did \emph{not} need.  It needs
+  no Markov-chain theory beyond \texttt{Kernel.Invariant} --- the existence
+  half is an excursion measure, which on a countable state space is a sum in
+  $[0,\infty]$ rather than a limit --- so the entry that stood here, ``the
+  classical construction of an invariant measure from one excursion is exactly
+  the theory Mathlib does not have'', was wrong about what it would cost.  And
+  it does not need the paper's $N \ge 3$: the descending sweep reaches $l^o$
+  for every $N \ge 1$, so the Lean statement drops that hypothesis.
 \end{proof}
 
 \paper{Equation (13)}
@@ -2542,25 +2566,30 @@ is simply not done yet.  \texttt{STATUS.md} at the root of the repository is
 the generated index of all four, statement by statement; the paragraphs below
 are the argument behind it.
 
-The fourth group is now \emph{empty}.  Every numbered statement of the paper is
-stated in Lean, and nothing here is unproved for want of doing the work; the
-subsection that held that group is kept below as the record of what it cost.
+The fourth group had been emptied; \ref{thm1-2-skeleton} has re-opened it, and
+that is progress rather than regress.  Three statements were listed as blocked
+on Mathlib only because they waited on $\muskel$ to exist.  It does now, so what
+they wait on is work in this repository and nothing else, and they have moved
+into the fourth group.  The wall that cannot be climbed from here is smaller by
+the same three.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{aux-doeblin} and \ref{aux-minorisation} have changed what the first item
-below means.  Doeblin's \emph{criterion} is no longer missing: it is proved
-here, for a general Markov kernel on a countable space.  Nor is the
-minorisation this chain satisfies, which was work in this repository rather
-than a gap in Mathlib and is now done, at \ref{aux-minorisation}.  Together
-they give \ref{thm1-2-skeleton} outright in one direction: the skeleton has
-\emph{at most one} invariant probability measure carried by $\Sspace$.  What is
-left is the \emph{existence} half --- the construction of an invariant measure
-from one excursion of a positive recurrent chain --- and that is Markov-chain
-theory Mathlib does not have.
+\textbf{The keystone has left this list.}  \ref{thm1-2-skeleton} is proved, and
+both of the things it needed are supplied here: \ref{aux-minorisation}, the
+minorisation of p.~17, which was always work in this repository rather than a
+gap in Mathlib, and \ref{aux-doeblin}, Doeblin's criterion, which is.  The
+entry that stood here was wrong about the second half.  It read that ``the
+classical construction of an invariant measure from one excursion is exactly
+the theory Mathlib does not have'' --- the premise is right and the conclusion
+was not, because on a \emph{countable} state space that construction needs no
+theory at all: the excursion measure is a sum in $[0,\infty]$, the minorisation
+makes it summable, and invariance is the last-exit decomposition written in
+coordinates.  Items~1 and~2 below are still absent from Mathlib; they no longer
+block anything here.
 
-\ref{thm1-1}, \ref{thm1-2} and its skeleton half \ref{thm1-2-skeleton},
-\ref{thm2-1}, \ref{thm3}, \ref{thm4} and their auxiliaries.  Verified against the pinned revision
+\ref{thm1-1}, \ref{thm1-2}, \ref{thm2-1}, \ref{thm3}, \ref{thm4} and their
+auxiliaries.  Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
@@ -2569,15 +2598,18 @@ theory Mathlib does not have.
     and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
     is the Meyn--Tweedie definition, two trivial instances and one monotonicity
     lemma.  (This item no longer blocks anything here: \ref{aux-doeblin} proves
-    the implication, and it is the clearest thing in this repository to offer
-    upstream.)
+    the implication --- existence \emph{and} uniqueness --- and it is the
+    clearest thing in this repository to offer upstream.)
   \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
     recurrence exists for a measure-preserving \emph{map}, which does not
     transport to a kernel. (Kac's lemma is likewise absent --- every
     \texttt{Kac} in Mathlib is a Kac--Moody algebra --- but it turned out not
     to be needed: the inequality $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$,
     which is all \ref{prop9} uses, holds for every invariant probability
-    measure and is proved outright at \texttt{SocialNetwork.kac\_tsum\_le}.)
+    measure and is proved outright at \texttt{SocialNetwork.kac\_tsum\_le}.
+    Nor was positive recurrence needed for \ref{thm1-2-skeleton}: the
+    minorisation gives the geometric tail directly, and the excursion measure
+    is built from it without any recurrence theorem.)
   \item \textbf{Total-variation distance between measures}: nothing usable.
   \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
@@ -2589,11 +2621,11 @@ theory Mathlib does not have.
 \ref{thm2-1} and~\ref{thm3} live, in the paper's own architecture, on the
 skeleton; they are blocked by the discrete-time items, not by the
 continuous-time ones.  Only \ref{thm1-1} and~\ref{thm16} need Poisson point
-processes.  The shortest path is therefore the second item alone --- the
-existence of $\muskel$, everything else about it being proved: \ref{prop9} is
-already proved from \ref{prop7} and~\ref{prop8}, \ref{rem5-eta} and Kac's
-inequality, and \ref{thm2-1} follows from it by \ref{eq13} once $\muskel$
-exists.
+processes.  With $\muskel$ now in hand, none of the discrete-time items blocks
+anything: \ref{thm2-1} waits on \ref{prop9}, which waits on \ref{prop7} and so
+on \ref{lem19} and~\ref{lem20}, and those are blocked on the paper rather than
+on Mathlib.  What is left on this list in discrete time is therefore
+\ref{eq13}, whose statement the authors may want to change, and nothing else.
 
 What is \emph{not} on this list, and was until \ref{thm2-1} and~\ref{thm2-2}
 were split apart, is part~2 of Theorem~2 --- together with \ref{cor11}, which
@@ -2638,6 +2670,23 @@ processes.  They are the same citation applied twice, not two assumptions.
 
 \ref{aux-hitting-rate} and~\ref{eq19} stood here as two more, and they do not
 belong: see below.
+
+\subsection*{Work, not blocked}
+
+\ref{eq13}, \ref{thm1-2} and~\ref{thm25}.  Nothing stands in the way of any of
+the three; none is done.
+
+\ref{eq13} is the stationary-law transfer, and it is the only one with a
+question attached: this repository has had its statement filed as one the
+authors may want to revisit.  Its Lean statement takes both measures as
+hypotheses, so it never needed $\muskel$ to exist in the first place; what it
+needs is the work, and a look from the authors first.
+\ref{thm1-2} is then immediate from it and \ref{thm1-2-skeleton}.
+\ref{thm25} is the biased twin of \ref{thm1-2-skeleton}: \ref{aux-doeblin}
+applies to the biased chain verbatim, and what is missing is the biased
+analogue of \ref{aux-minorisation}, which Appendix~C asserts by analogy with
+the unbiased argument rather than writing out.  That analogy is plausible and
+has not been checked here.
 
 \subsection*{Routine, and now done}
 
@@ -2768,24 +2817,25 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Fifty-two proofs
+\ref{note-green}: does it follow what the paper wrote?  Fifty-three proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty-three entries.  Every one of them is named, and
+own, so it counts fifty-four entries.  Every one of them is named, and
 \texttt{scripts/status.py} now checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.  The check was added because the
 list had drifted --- nine proofs were written without a line here before anyone
 noticed.
 
-\medskip \noindent\textbf{Follow the paper's proof} (twenty-six). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (twenty-seven). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
-\ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17,
-and \ref{rem1}, \ref{rem4} and~\ref{rem8}.  These
+\ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17
+and the theorem it settles, \ref{thm1-2-skeleton}, and \ref{rem1}, \ref{rem4}
+and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
 places carry a note: the passage from the repeat time to the global bound in
@@ -2871,6 +2921,12 @@ predecessors of $0$, which is \ref{aux-zero-predecessors}. \ref{rem6} is
 $(M+1)N$, with one supplied step of its own: that $C^o$ and $C^{-o}$ are
 disjoint, which the paper uses without remarking on it.
 
+\ref{thm1-2-skeleton} is the paper's own route --- a uniform minorisation, then
+Doeblin --- with both steps supplied rather than cited: \ref{aux-minorisation}
+for the first and \ref{aux-doeblin} for the second.  The paper's $N \ge 3$ is
+not used, the sweep reaching $l^o$ for every $N \ge 1$, and the Lean statement
+drops it.
+
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the
 paper does not print worked out.  Three steps are supplied, and each is at the
@@ -2915,7 +2971,9 @@ The last four are the substantial ones, and none of them checks anything the
 paper wrote.  \ref{aux-holding-times} says what the jump times of a greedy run
 are, and \ref{aux-restart} is the Markov property at the first jump; the paper
 uses both without stating either.  \ref{aux-doeblin} is Doeblin's criterion,
-which the paper cites.  \ref{aux-nstep} identifies the $n$-step kernel with the
+which the paper cites; both halves of it are proved here, the uniqueness half
+by a coupling in coordinates and the existence half by the excursion measure,
+and neither is in Mathlib.  \ref{aux-nstep} identifies the $n$-step kernel with the
 law of the skeleton at time $n$: the paper works with one object where the
 formalisation has two, the realisations that \ref{prop6} and \ref{prop8} are
 stated on and the kernel iterates that \ref{aux-doeblin} consumes, and nothing
