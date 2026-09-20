@@ -97,6 +97,13 @@ noncomputable def iterateKernel (κ : Kernel α α) : ℕ → Kernel α α
   | 0 => Kernel.id
   | n + 1 => κ ∘ₖ iterateKernel κ n
 
+omit [Countable α] [MeasurableSingletonClass α] in
+@[simp] theorem iterateKernel_zero (κ : Kernel α α) : iterateKernel κ 0 = Kernel.id := rfl
+
+omit [Countable α] [MeasurableSingletonClass α] in
+@[simp] theorem iterateKernel_succ (κ : Kernel α α) (n : ℕ) :
+    iterateKernel κ (n + 1) = κ ∘ₖ iterateKernel κ n := rfl
+
 instance isMarkovKernel_iterateKernel (κ : Kernel α α) [IsMarkovKernel κ] :
     ∀ n, IsMarkovKernel (iterateKernel κ n)
   | 0 => by rw [iterateKernel]; infer_instance
@@ -114,6 +121,32 @@ theorem invariant_iterateKernel (κ : Kernel α α) {μ : Measure α}
   | n + 1 => by
       rw [iterateKernel]
       exact hμ.comp (invariant_iterateKernel κ hμ n)
+
+omit [Countable α] [MeasurableSingletonClass α] in
+/-- The `n + 1`-step kernel, with the extra step taken **first** rather than last.  The two
+recursions agree because composition of kernels is associative, and this one is the one that
+matches a first-step decomposition on a path space. -/
+theorem iterateKernel_succ' (κ : Kernel α α) [IsSFiniteKernel κ] : ∀ n : ℕ,
+    iterateKernel κ (n + 1) = iterateKernel κ n ∘ₖ κ
+  | 0 => by rw [iterateKernel_succ, iterateKernel_zero, Kernel.comp_id, Kernel.id_comp]
+  | n + 1 => by
+      conv_lhs => rw [iterateKernel_succ, iterateKernel_succ' κ n]
+      rw [← Kernel.comp_assoc, ← iterateKernel_succ]
+
+omit [Countable α] [MeasurableSingletonClass α] in
+theorem iterateKernel_succ_apply' (κ : Kernel α α) [IsSFiniteKernel κ] (n : ℕ) (x : α)
+    {A : Set α} (hA : MeasurableSet A) :
+    iterateKernel κ (n + 1) x A = ∫⁻ y, iterateKernel κ n y A ∂(κ x) := by
+  rw [iterateKernel_succ', Kernel.comp_apply' _ _ _ hA]
+
+omit [Countable α] [MeasurableSingletonClass α] in
+/-- `κ^{m+n} = κ^m ∘ κ^n`: the steps of an iterate can be split anywhere. -/
+theorem iterateKernel_add (κ : Kernel α α) [IsSFiniteKernel κ] (m : ℕ) : ∀ n : ℕ,
+    iterateKernel κ (m + n) = iterateKernel κ m ∘ₖ iterateKernel κ n
+  | 0 => by rw [Nat.add_zero, iterateKernel_zero, Kernel.comp_id]
+  | n + 1 => by
+      rw [← Nat.add_assoc, iterateKernel_succ', iterateKernel_add κ m n, Kernel.comp_assoc,
+        ← iterateKernel_succ']
 
 /-! ### The criterion -/
 
