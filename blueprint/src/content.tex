@@ -2213,17 +2213,46 @@ process pointwise.
 \end{proof}
 
 \paper{Theorem 25}
-\begin{theorem}[Existence and uniqueness of $\mu_{\beta,\alpha}$]
+\begin{theorem}[The invariant measure of the biased skeleton]
   \label{thm25}
-  \lean{SocialNetwork.Bias.existsUnique_biasedInvariant}
+  \lean{SocialNetwork.Bias.existsUnique_biasedInvariant, SocialNetwork.Bias.IsBiasedInvariant, SocialNetwork.Bias.IsCarriedByBiasedState}
   \leanok
   \uses{eq7}
-  For $\beta > 0$ and $0 < \alpha < \pressone$, the biased process does not
-  explode and has a unique invariant probability measure $\mu_{\beta,\alpha}$.
+  For $\beta > 0$ and $0 < \alpha < \pressone$, the biased skeleton has a unique
+  invariant probability measure $\mu_{\beta,\alpha}$ carried by $\Salpha$.
 \end{theorem}
 \begin{proof}
-  \uses{thm1-2}
-  As \ref{thm1-2}.  \textbf{Not formalised}.
+  \uses{aux-doeblin, aux-minorisation, prop24}
+  Theorem~25 of the paper bundles two claims: that the biased process does not
+  explode, which is \ref{thm16} and is blocked on Mathlib, and that the biased
+  skeleton has a unique invariant probability measure, which is this node.  The
+  Lean statement covers the second only, and the statement above has been
+  narrowed to match it; it used to claim both.
+
+  \textbf{Not formalised}, and what is missing is narrower --- and other ---
+  than this blueprint said.  \ref{aux-doeblin} applies to the biased skeleton
+  verbatim, it being a Markov kernel on a countable space, so all that is wanted
+  is a minorisation of one of its iterates at a single profile, uniform over
+  $\Salpha$.  Two of the three ingredients of \ref{aux-minorisation} transpose
+  without trouble: a descending sweep to a canonical biased ladder, and a lower
+  bound on one expression from a \emph{bounded} profile, the rates of \ref{eq7}
+  being exponentials of bounded exponents just as those of \ref{eq3} are.
+
+  \textbf{The bounded profile is the difficulty.}  The unbiased argument takes
+  its box from \ref{prop6}; the counterpart here is \ref{prop22}, and
+  \ref{prop22} is blocked on the paper (\ref{note-prop22}).  \ref{prop17} does
+  give a box and is proved, but it is stated for $\gamma > \pressone$, the
+  \emph{negative} bias regime, and Appendix~C's regime is $\gamma < \pressone$,
+  so it does not apply.
+
+  What rescues it is that a minorisation does not need the paper's constant $N$.
+  Any bound depending on $\alpha, M, N$ alone will do --- exactly as
+  \ref{note-prop22} records for Propositions~23 and~17 --- and the chain of
+  \ref{prop6}, transported, does give one: $N - 1 + 1/(2\gamma)$.  Proving that
+  weaker bound is an auxiliary lemma rather than a proof of \ref{prop22}, so
+  this node is work in this repository and not a question for the authors.
+  \ref{prop24} then supplies the probability of the greedy run, as \ref{prop8}
+  does in the unbiased model.
 \end{proof}
 
 \paper{Proposition 26}
@@ -2523,7 +2552,9 @@ None of them affects the results.
   Proposition~6, which never looks at the steps after $k$, cannot supply one.
   Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
   through Propositions~23 and~17 --- both only need a bound depending on
-  $\alpha, M, N$ --- would settle it.
+  $\alpha, M, N$ --- would settle it.  A Doeblin minorisation for the biased
+  skeleton needs no more than that either, which is why \ref{thm25} is work in
+  this repository rather than a question for the authors: see its node.
 \end{remark}
 
 \aux{Remark}
@@ -2684,9 +2715,10 @@ needs is the work, and a look from the authors first.
 \ref{thm1-2} is then immediate from it and \ref{thm1-2-skeleton}.
 \ref{thm25} is the biased twin of \ref{thm1-2-skeleton}: \ref{aux-doeblin}
 applies to the biased chain verbatim, and what is missing is the biased
-analogue of \ref{aux-minorisation}, which Appendix~C asserts by analogy with
-the unbiased argument rather than writing out.  That analogy is plausible and
-has not been checked here.
+analogue of \ref{aux-minorisation}.  It is the one of the three that is not
+routine, because the box it needs is \ref{prop22}, which does not compose, and
+\ref{prop17}, which does, is stated for the other bias regime.  A bound weaker
+than the paper's settles it and is work here; the node says which.
 
 \subsection*{Routine, and now done}
 

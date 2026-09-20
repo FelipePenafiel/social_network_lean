@@ -63,8 +63,8 @@ HEADNOTE = {
         "Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is "
         "the audit of exactly what is absent, checked against the pinned revision.",
     NOT_YET:
-        "No obstruction known.  Nothing here stands in the way; the work is simply not "
-        "done.",
+        "Nothing here waits on Mathlib or on the authors.  Whatever stands in the way "
+        "can be removed from this repository, and the work is simply not done.",
 }
 
 # Why a node is not proved, keyed by blueprint label.  ``--check`` fails if a node
@@ -140,8 +140,12 @@ REASONS: dict[str, tuple[str, str]] = {
     "thm1-2": (NOT_YET, "equation (13), and nothing else: `μ̃^β` exists and is unique"),
     "thm25": (
         NOT_YET,
-        "the biased analogue of the minorisation, which Appendix C asserts by analogy.  "
-        "Doeblin's criterion itself is proved and applies verbatim",
+        "the biased minorisation.  Doeblin's criterion applies to the biased skeleton "
+        "verbatim, so that is all that is missing — but the box it wants is "
+        "Proposition 22, which is blocked on the paper, and Proposition 17, which is "
+        "proved, is stated for the negative-bias regime and does not apply here.  A "
+        "weaker constant avoids both, and proving it is work here rather than a "
+        "question for the authors",
     ),
 }
 

@@ -62,14 +62,14 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 ### Not formalised yet (3)
 
-No obstruction known.
-Nothing here stands in the way; the work is simply not done.
+Nothing here waits on Mathlib or on the authors.
+Whatever stands in the way can be removed from this repository, and the work is simply not done.
 
 | Statement | Lean | Why |
 |---|---|---|
 | Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and nothing else: `μ̃^β` exists and is unique |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Work here rather than a gap, now that `μ̃^β` exists — but its statement is one the authors may want to change first, so it is the one item in this group with a question attached |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` | the biased analogue of the minorisation, which Appendix C asserts by analogy.  Doeblin's criterion itself is proved and applies verbatim |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | the biased minorisation.  Doeblin's criterion applies to the biased skeleton verbatim, so that is all that is missing — but the box it wants is Proposition 22, which is blocked on the paper, and Proposition 17, which is proved, is stated for the negative-bias regime and does not apply here.  A weaker constant avoids both, and proving it is work here rather than a question for the authors |
 
 ## 2. How far the formalisation has got
 
@@ -144,7 +144,7 @@ are covered, and all 56 of them are stated in Lean.
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | unproved — blocked on the paper |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | unproved — blocked on the paper |
 | Proposition 24 | `Bias.biasedZeta` +1 | proved |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` | unproved — not formalised yet |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | unproved — not formalised yet |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | unproved — blocked on the paper |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on the paper |
 | Lemma 28 | `Bias.biasedProbHitting_le` | unproved — blocked on the paper |

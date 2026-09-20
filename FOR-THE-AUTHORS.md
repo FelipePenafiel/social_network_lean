@@ -434,8 +434,19 @@ because they waited on `μ̃^β` to exist. Equation (13) is the stationary-law
 transfer; this repository has had it flagged as a statement you may want to
 revisit before it is formalised, and nothing is asked of you unless you agree.
 Theorem 1.2 in continuous time follows from it. Theorem 25 needs the biased
-analogue of the page-17 minorisation, which Appendix C asserts by analogy rather
-than writing out; the criterion itself applies to the biased chain verbatim.
+analogue of the page-17 minorisation; the criterion itself applies to the biased
+chain verbatim.
+
+On Theorem 25 this repository said, one commit ago, that the biased minorisation
+was routine. It is not, and the correction is worth having. The box it needs is
+Proposition 22, which is §1.3 above and does not compose; Proposition 17, which
+does give a box and is proved here, is stated for `α < 0` and Appendix C's
+regime is `0 < α < 1/(M-1)`, so it does not apply. What saves it is that a
+minorisation does not need your constant `N` — any bound depending on
+`α, M, N` alone will do, which is the same escape §1.3 already records for
+Propositions 23 and 17, and the transported chain does give one:
+`N - 1 + 1/(2γ)`. Proving that weaker bound is an auxiliary lemma, not a proof
+of Proposition 22, so nothing here is asked of you.
 
 Earlier, three others sat in that group.  **Corollary 11** was filed under Doeblin and
 **equation (19)** as a citation; reading part 2 apart from part 1 moved both, and
