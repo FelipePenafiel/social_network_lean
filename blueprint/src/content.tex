@@ -1937,6 +1937,13 @@ process pointwise.
   maximum at the repeat time is the expressing actor's own entry, with no slack
   of $1/(2\gamma)$ to absorb.
 
+  \textbf{The Lean hypothesis is weaker than the statement above}: $\gamma > 0$
+  rather than $\alpha < 0$.  Nothing in either half uses the regime --- it
+  entered only through $0 < \gamma$ --- and the weaker form is what
+  \ref{aux-biased-minorisation} needs, Appendix~C's regime being the opposite
+  one.  Stating it as the paper does would have left \ref{thm25} looking blocked
+  when it is not.
+
   The probability is the one-step bound: with $\beta \ge 0$ the maximising
   pairs carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
   weight, and the iteration is the one of \ref{prop8}.  That iteration is run
@@ -2212,6 +2219,54 @@ process pointwise.
   conditioning of~(10).
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The minorisation of the biased skeleton]
+  \label{aux-biased-minorisation}
+  \lean{SocialNetwork.Bias.biasedDescendState, SocialNetwork.Bias.stateAfter_descendJump, SocialNetwork.Bias.stateAfter_descendJump_eq, SocialNetwork.Bias.biasedStepFloor, SocialNetwork.Bias.biasedStepFloor_pos, SocialNetwork.Bias.biasedStepFloor_le_biasedJumpPMF, SocialNetwork.Bias.abs_pressure_express_le, SocialNetwork.Bias.abs_pressure_stateAfter_le, SocialNetwork.Bias.biasedBox, SocialNetwork.Bias.biasedGreedyBound, SocialNetwork.Bias.exists_heard_le_mul_count, SocialNetwork.Bias.heard_le_of_pressure_le, SocialNetwork.Bias.neg_le_pressure_of_pressure_le, SocialNetwork.Bias.biasedBounded_subset_biasedBox, SocialNetwork.Bias.lintegral_biasedSkeletonKernel, SocialNetwork.Bias.measurable_stateAfter, SocialNetwork.Bias.lintegral_biasedPathMeasure_stateAfter, SocialNetwork.Bias.iterateKernel_biasedSkeletonKernel, SocialNetwork.Bias.biasedSkeletonKernel_compl_biasedStateSet, SocialNetwork.Bias.biasedStepFloor_pow_le_iterateKernel, SocialNetwork.Bias.inv_pow_le_iterateKernel_biasedBox, SocialNetwork.Bias.minorisation_iterateKernel}
+  \leanok
+  \uses{eq7, eq8}
+  For $0 < \alpha < \pressone$ there is $c > 0$, depending only on $N$, $M$,
+  $\alpha$ and $\beta$, with $\kappa_\alpha^{2N}(u, \{l_\alpha^o\}) \ge c$ for
+  every $u \in \Salpha$ and every $o$, where $l_\alpha^o$ is the staircase
+  profile of \ref{aux-biased-ladder-nonempty}.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{prop17, aux-nstep, aux-biased-ladder-nonempty}
+  \textbf{Follows the argument of p.~17 for the unbiased model}, which is
+  \ref{aux-minorisation}, with one ingredient replaced.  The two halves are as
+  there.  The last $N$ expressions are the sweep of the paper's~(12): each
+  actor's memory is reset when it expresses and then hears $o$ once per later
+  expression, so the actor expressing $j$-th from the end finishes with exactly
+  $j$ expressions of $o$ in memory --- whatever the profile was to begin with,
+  which is again what lets the target be a single point.  Each of them is made
+  from a profile still inside a box, one expression moving a pressure by at most
+  $1 + \gamma$ by \ref{eq5}, and the rates of \ref{eq7} are exponentials of
+  $\beta u(a,o)$, so each has probability at least $e^{-2\beta B}/MN$.
+
+  \textbf{The box is where this differs from \ref{aux-minorisation}}, and where
+  it differs from what Appendix~C prescribes.  The unbiased argument takes its
+  box from \ref{prop6} and prices the run with \ref{prop8}; the counterpart
+  Appendix~C names is \ref{prop22}, which is blocked on the paper
+  (\ref{note-prop22}).  It is not needed.  \ref{prop17} gives a box after $N$
+  \emph{exactly} greedy expressions, at probability $(NM)^{-N}$ --- the
+  maximiser being the most probable of $MN$ choices, which needs no gap
+  estimate --- and its proof uses no regime hypothesis at all, only
+  $\gamma > 0$.  The paper states it for $\alpha < 0$ because that is where
+  Section~5.4 uses it; the Lean statement has been weakened to $\gamma > 0$ and
+  serves here as well.
+
+  One step is supplied.  \ref{prop17} bounds the pressures from above, and the
+  rates want a bound on both sides.  In this regime $\gamma < \pressone$ the
+  first gives the second: some opinion carries at least $n_a/M$ of what the
+  actor heard, so a cap $B$ on the pressures caps $n_a$ by
+  $MB/(1 - (M-1)\gamma)$, and $u(a,p) \ge -\gamma n_a$.  This is the only place
+  where Appendix~C's regime is used, and it is used nowhere else in the proof.
+
+  The two halves compose through the biased form of \ref{aux-nstep}, proved the
+  same way.
+\end{proof}
+
 \paper{Theorem 25}
 \begin{theorem}[The invariant measure of the biased skeleton]
   \label{thm25}
@@ -2222,37 +2277,28 @@ process pointwise.
   invariant probability measure $\mu_{\beta,\alpha}$ carried by $\Salpha$.
 \end{theorem}
 \begin{proof}
-  \uses{aux-doeblin, aux-minorisation, prop24}
+  \leanok
+  \uses{aux-doeblin, aux-biased-minorisation}
   Theorem~25 of the paper bundles two claims: that the biased process does not
   explode, which is \ref{thm16} and is blocked on Mathlib, and that the biased
   skeleton has a unique invariant probability measure, which is this node.  The
   Lean statement covers the second only, and the statement above has been
   narrowed to match it; it used to claim both.
 
-  \textbf{Not formalised}, and what is missing is narrower --- and other ---
-  than this blueprint said.  \ref{aux-doeblin} applies to the biased skeleton
-  verbatim, it being a Markov kernel on a countable space, so all that is wanted
-  is a minorisation of one of its iterates at a single profile, uniform over
-  $\Salpha$.  Two of the three ingredients of \ref{aux-minorisation} transpose
-  without trouble: a descending sweep to a canonical biased ladder, and a lower
-  bound on one expression from a \emph{bounded} profile, the rates of \ref{eq7}
-  being exponentials of bounded exponents just as those of \ref{eq3} are.
+  \textbf{Proved}, and by the route the paper prescribes: ``as \ref{thm1-2}''.
+  \ref{aux-doeblin} applies to the biased skeleton verbatim, it being a Markov
+  kernel on a countable space, and \ref{aux-biased-minorisation} is the
+  minorisation it consumes.  Existence and uniqueness come together, as there.
 
-  \textbf{The bounded profile is the difficulty.}  The unbiased argument takes
-  its box from \ref{prop6}; the counterpart here is \ref{prop22}, and
-  \ref{prop22} is blocked on the paper (\ref{note-prop22}).  \ref{prop17} does
-  give a box and is proved, but it is stated for $\gamma > \pressone$, the
-  \emph{negative} bias regime, and Appendix~C's regime is $\gamma < \pressone$,
-  so it does not apply.
-
-  What rescues it is that a minorisation does not need the paper's constant $N$.
-  Any bound depending on $\alpha, M, N$ alone will do --- exactly as
-  \ref{note-prop22} records for Propositions~23 and~17 --- and the chain of
-  \ref{prop6}, transported, does give one: $N - 1 + 1/(2\gamma)$.  Proving that
-  weaker bound is an auxiliary lemma rather than a proof of \ref{prop22}, so
-  this node is work in this repository and not a question for the authors.
-  \ref{prop24} then supplies the probability of the greedy run, as \ref{prop8}
-  does in the unbiased model.
+  \textbf{One correction to record}, because this blueprint said otherwise
+  twice.  It first said the biased minorisation was routine; then, correcting
+  that, it said the box it needs is \ref{prop22} --- blocked on the paper ---
+  and that only a constant weaker than the paper's would avoid it.  Both were
+  wrong about the same thing.  \ref{prop17} gives the box, and its proof uses
+  no regime hypothesis at all: the hypothesis $\alpha < 0$ in its statement is
+  the regime Section~5.4 applies it in, not one the argument needs.  Weakening
+  the Lean statement to $\gamma > 0$ is all it took, and \ref{prop22} is not
+  used here at all.
 \end{proof}
 
 \paper{Proposition 26}
@@ -2552,9 +2598,11 @@ None of them affects the results.
   Proposition~6, which never looks at the steps after $k$, cannot supply one.
   Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
   through Propositions~23 and~17 --- both only need a bound depending on
-  $\alpha, M, N$ --- would settle it.  A Doeblin minorisation for the biased
-  skeleton needs no more than that either, which is why \ref{thm25} is work in
-  this repository rather than a question for the authors: see its node.
+  $\alpha, M, N$ --- would settle it.  \ref{thm25} used to be listed as waiting
+  on this; it is not, and it is proved.  A Doeblin minorisation needs a box, not
+  the paper's constant, and \ref{prop17} gives one in any regime once its
+  gratuitous hypothesis is dropped --- see \ref{aux-biased-minorisation}.  What
+  this remark still blocks is \ref{prop22} itself, and \ref{prop23} through it.
 \end{remark}
 
 \aux{Remark}
@@ -2704,8 +2752,9 @@ belong: see below.
 
 \subsection*{Work, not blocked}
 
-\ref{eq13}, \ref{thm1-2} and~\ref{thm25}.  Nothing stands in the way of any of
-the three; none is done.
+\ref{eq13} and \ref{thm1-2}.  Nothing stands in the way of either; neither is
+done.  \ref{thm25} was listed here and is now proved, by
+\ref{aux-biased-minorisation}.
 
 \ref{eq13} is the stationary-law transfer, and it is the only one with a
 question attached: this repository has had its statement filed as one the
@@ -2713,12 +2762,6 @@ authors may want to revisit.  Its Lean statement takes both measures as
 hypotheses, so it never needed $\muskel$ to exist in the first place; what it
 needs is the work, and a look from the authors first.
 \ref{thm1-2} is then immediate from it and \ref{thm1-2-skeleton}.
-\ref{thm25} is the biased twin of \ref{thm1-2-skeleton}: \ref{aux-doeblin}
-applies to the biased chain verbatim, and what is missing is the biased
-analogue of \ref{aux-minorisation}.  It is the one of the three that is not
-routine, because the box it needs is \ref{prop22}, which does not compose, and
-\ref{prop17}, which does, is stated for the other bias regime.  A bound weaker
-than the paper's settles it and is work here; the node says which.
 
 \subsection*{Routine, and now done}
 
@@ -2849,24 +2892,25 @@ a retraction of.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Fifty-three proofs
+\ref{note-green}: does it follow what the paper wrote?  Fifty-five proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty-four entries.  Every one of them is named, and
+own, so it counts fifty-six entries.  Every one of them is named, and
 \texttt{scripts/status.py} now checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.  The check was added because the
 list had drifted --- nine proofs were written without a line here before anyone
 noticed.
 
-\medskip \noindent\textbf{Follow the paper's proof} (twenty-seven). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (twenty-nine). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17
-and the theorem it settles, \ref{thm1-2-skeleton}, and \ref{rem1}, \ref{rem4}
+and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
+\ref{aux-biased-minorisation} and~\ref{thm25}, and \ref{rem1}, \ref{rem4}
 and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -2958,6 +3002,20 @@ Doeblin --- with both steps supplied rather than cited: \ref{aux-minorisation}
 for the first and \ref{aux-doeblin} for the second.  The paper's $N \ge 3$ is
 not used, the sweep reaching $l^o$ for every $N \ge 1$, and the Lean statement
 drops it.
+
+\ref{aux-biased-minorisation} and \ref{thm25} are the same two nodes for the
+biased model, and Appendix~C prescribes exactly that: Theorem~25 ``as
+Theorem~1.2''.  One ingredient is substituted and the substitution is the
+interesting part.  Appendix~C's box is \ref{prop22}, which does not compose;
+\ref{prop17} gives a box instead, after an \emph{exactly} greedy run rather
+than a near-greedy one, at probability $(NM)^{-N}$ --- the maximiser is the
+most probable of $MN$ choices, so no gap estimate is needed --- and its
+argument uses no regime hypothesis, only $\gamma > 0$.  Its Lean statement has
+been weakened accordingly; the paper's $\alpha < 0$ is where Section~5.4
+applies it, not what it needs.  One step is supplied, and it is the only place
+Appendix~C's regime is used: \ref{prop17} bounds the pressures above, the rates
+want both sides, and for $\gamma < \pressone$ the one gives the other, since
+some opinion carries at least $n_a/M$ of what the actor heard.
 
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the

@@ -110,10 +110,7 @@ REASONS: dict[str, tuple[str, str]] = {
         "and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits "
         "on Mathlib",
     ),
-    "thm27": (
-        BLOCKED_ON_PAPER,
-        "Proposition 26, and the biased analogue of Theorem 1.2 below it",
-    ),
+    "thm27": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,
@@ -138,15 +135,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "is the one item in this group with a question attached",
     ),
     "thm1-2": (NOT_YET, "equation (13), and nothing else: `μ̃^β` exists and is unique"),
-    "thm25": (
-        NOT_YET,
-        "the biased minorisation.  Doeblin's criterion applies to the biased skeleton "
-        "verbatim, so that is all that is missing — but the box it wants is "
-        "Proposition 22, which is blocked on the paper, and Proposition 17, which is "
-        "proved, is stated for the negative-bias regime and does not apply here.  A "
-        "weaker constant avoids both, and proving it is work here rather than a "
-        "question for the authors",
-    ),
 }
 
 
