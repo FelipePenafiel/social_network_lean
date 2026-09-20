@@ -33,7 +33,7 @@ the requests below [GL24] has already answered.
 |---|---|---|---|
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
-| [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 |
+| [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)`.  **Theorem 25** rests on it, and on nothing else unproved | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 — or weaken Proposition 17 and drop it from Theorem 25's route entirely |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
@@ -55,7 +55,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Remark 6** | was the one numbered statement with no Lean counterpart.  Now stated and **proved**, outright: its route needs only the last stage of Proposition 7, not Lemmas 19 and 20 |
 | [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
-| [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Weakened in Lean, and that is what makes **Theorem 25** provable without Proposition 22 |
+| [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Stated in Lean as you state it, but weakening it would make **Theorem 25** provable without Proposition 22 |
 | [§5](#5-not-the-papers-fault) | **Theorem 1.2** | was the keystone, listed as blocked on Mathlib.  Now **proved**, both halves: the criterion, your page-17 minorisation, and the excursion measure.  The existence half needed no Markov-chain theory at all — on a countable space it is a sum, not a limit.  Your `ε*` becomes an explicit constant, and (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass.  The Lean statement also drops your `N ≥ 3` |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
 | [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses, and **proved** under it |
@@ -436,21 +436,31 @@ it flagged as a statement you may want to revisit before it is formalised, and
 nothing is asked of you unless you agree. Theorem 1.2 in continuous time follows
 from it.
 
-**Theorem 25 is proved**, by the route Appendix C prescribes — "as Theorem 1.2"
-— and one thing about it is worth your attention. Appendix C's box for the
-positive-bias regime is Proposition 22, which is §1.3 above and does not
-compose. It is not needed. **Proposition 17 gives a box in any regime**: its
-proof uses no hypothesis on `α` at all, only `γ > 0`. The `α < 0` in its
-statement is the regime Section 5.4 applies it in, not one the argument needs,
-and the Lean statement has been weakened accordingly. If you revise, stating
-Proposition 17 for `γ > 0` costs nothing and makes Theorem 25 follow from it
-directly, with no appeal to Proposition 22.
+**Theorem 25 is written out on Appendix C's own route and rests on Proposition
+22**, and the one thing worth your attention is that it need not. Your Appendix C
+says the proof "follows exactly as the proof of Theorem 1", and the proof of
+Theorem 1 part 2 puts together Propositions 6 and 8; transported, those are
+Propositions 22 and 24. Proposition 24 is proved here. Proposition 22 is §1.3
+above and does not compose, so the minorisation and Theorem 25 carry a `sorry`
+through it — every other step in them is proved, so **one repair of Proposition
+22 closes Theorem 25 outright**.
 
-One step of Theorem 25 is supplied rather than read off the paper, and it is the
-only place Appendix C's regime is used: Proposition 17 bounds the pressures from
-above, the rates need both sides, and for `γ < 1/(M-1)` the one gives the other
-— some opinion carries at least `nₐ/M` of what the actor heard, so a cap on the
-pressures caps `nₐ`.
+**There is a second way out, and it is cheaper.** A Doeblin minorisation needs
+*a* box, not your constant, and **Proposition 17 gives one in any regime**: its
+proof uses no hypothesis on `α` at all, only `γ > 0`. The `α < 0` in its
+statement is the regime Section 5.4 applies it in, not one the argument needs.
+Stating Proposition 17 for `γ > 0` costs you nothing and makes Theorem 25 follow
+from it with no appeal to Proposition 22 at all.
+
+That route needs one step that appears in no version of your paper, which is why
+it is described here rather than formalised: Proposition 17 bounds the pressures
+from above and the rates need both sides, and for `γ < 1/(M-1)` the one gives the
+other — some opinion carries at least `nₐ/M` of what the actor heard, so a cap on
+the pressures caps `nₐ`, and `u(a,p) ≥ -γ nₐ`. This repository was briefly built
+that way, with Theorem 25 marked proved. That was a mistake about what the
+repository is for — Lean is checking your arguments here, not only your
+statements — and it has been undone. The mathematics is offered; the decision is
+yours.
 
 Earlier, three others sat in that group.  **Corollary 11** was filed under Doeblin and
 **equation (19)** as a citation; reading part 2 apart from part 1 moved both, and

@@ -16,13 +16,13 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-16 statements. They are unproved for four different reasons, and
+17 statements. They are unproved for four different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (8)
+### Blocked on the paper (9)
 
 The written proof does not compose, or its route passes through one that does not.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
@@ -34,6 +34,7 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 | Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | does not follow from Proposition 6 as Appendix C asserts: under near-greedy expression the chain gives `N - 1 + 1/(2γ)`, which reaches `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)` |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | its minorisation is the argument of p. 17 transported, and the box that argument takes from Proposition 6 is Proposition 22 here.  Everything else in it is proved, so one repair closes this outright; Proposition 17 also gives a box, by a step the paper does not make, and that route is recorded rather than taken |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | the biased twin of Proposition 9: the proof would transpose that one, and rests on the biased Proposition 7 |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Proposition 26, and its own proof is not written |
 | Lemma 28 | `Bias.biasedProbHitting_le` | the biased twin of Lemma 13, and its ingredients — the biased forms of the two displays below — are not in the paper either |
@@ -74,8 +75,8 @@ Whatever stands in the way can be removed from this repository, and the work is 
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 20 | 21 | 41 |
-| Proof written, resting on an unproved statement | 11 | 2 | 13 |
+| Proved | 19 | 20 | 39 |
+| Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 14 | 0 | 14 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
@@ -115,7 +116,7 @@ are covered, and all 56 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 14, Lemma 19, Lemma 20, Theorem 27, Lemma 28, Lemma 29, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 14, Lemma 19, Lemma 20, Proposition 22, Theorem 27, Lemma 28, Lemma 29, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
@@ -143,7 +144,7 @@ are covered, and all 56 of them are stated in Lean.
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | unproved — blocked on the paper |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | unproved — blocked on the paper |
 | Proposition 24 | `Bias.biasedZeta` +1 | proved |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | proved |
+| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | proof written, rests on Proposition 22 |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | unproved — blocked on the paper |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on the paper |
 | Lemma 28 | `Bias.biasedProbHitting_le` | unproved — blocked on the paper |
@@ -184,6 +185,6 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | proof written, rests on Lemma 19, Lemma 20 |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | proved |
 | the ladder set is inhabited | `ladderOf` +3 | proved |
-| The minorisation of the biased skeleton | `Bias.biasedDescendState` +21 | proved |
+| The minorisation of the biased skeleton | `Bias.biasedDescendState` +19 | proof written, rests on Proposition 22 |
 | the biased ladder set is inhabited | `Bias.biasedLadderOf` +4 | proved |
 
