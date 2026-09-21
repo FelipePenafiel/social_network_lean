@@ -3,6 +3,7 @@ Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Appendix
+import SocialNetwork.Clocks
 import SocialNetwork.Minorisation
 import Mathlib.Probability.Distributions.Exponential
 import Mathlib.Probability.Kernel.Invariance
@@ -207,6 +208,48 @@ instance isProbabilityMeasure_stepLaw (β : ℝ) (v : Pressure N M) :
   have : IsProbabilityMeasure (expMeasure (totalRate β v)) :=
     isProbabilityMeasure_expMeasure (totalRate_pos β v)
   exact Measure.prod.instIsProbabilityMeasure _ _
+
+/-! #### One step, read off the clocks
+
+`stepLaw` is the *jump-hold* form of one step.  The proof of Theorem 1.1 at p. 16 needs the
+*clock* form — one exponential clock per pair, at the rate of that pair, the first to ring
+winning — because its equation (11) is a statement about the clocks of a sub-family: the
+expressions coming from actors carrying pressure below `N` have total rate at most `NMe^{βN}`
+whatever the rest of the matrix does, and that is what sandwiches them between two Poisson
+processes.  The two forms are the same law, which is `SocialNetwork.Clocks`. -/
+
+/-- **A winner can be chosen measurably.**  Ties are null but not impossible, so the choice
+has to be made; the order used to break them is an implementation detail, and
+`SocialNetwork.pi_expMeasure_race_Ioi` holds for every measurable choice. -/
+theorem exists_isWinner_jump :
+    ∃ w : (Jump N M → ℝ) → Jump N M, IsWinner w := by
+  let _ : LinearOrder (Jump N M) :=
+    LinearOrder.lift' (toLex : Jump N M → Actor N ×ₗ Opinion M) fun _ _ h => h
+  exact ⟨firstClock, isWinner_firstClock⟩
+
+/-- **One step is the race between the clocks.**  On the rectangles that determine the law —
+the pair is `p`, and it is expressed after time `t` — the jump-hold form of `stepLaw` and the
+clock form agree. -/
+theorem stepLaw_prod_Ioi (β : ℝ) (v : Pressure N M) {w : (Jump N M → ℝ) → Jump N M}
+    (hw : IsWinner w) (p : Jump N M) {t : ℝ} (ht : 0 ≤ t) :
+    stepLaw β v (({p} : Set (Jump N M)) ×ˢ Set.Ioi t)
+      = Measure.pi (fun q : Jump N M => expMeasure (jumpRate β v q.1 q.2))
+          {c | w c = p ∧ c (w c) ∈ Set.Ioi t} := by
+  have hrate : ∀ q : Jump N M, 0 < jumpRate β v q.1 q.2 := fun q => jumpRate_pos β v q.1 q.2
+  have hpos : 0 < totalRate β v := totalRate_pos β v
+  have : IsProbabilityMeasure (expMeasure (totalRate β v)) :=
+    isProbabilityMeasure_expMeasure hpos
+  rw [pi_expMeasure_race_Ioi hrate hw p ht]
+  have htot : ∑ q : Jump N M, jumpRate β v q.1 q.2 = totalRate β v := rfl
+  rw [htot, stepLaw, Measure.prod_prod,
+    PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton p)]
+  congr 1
+  -- the Gibbs law of equation (3) is the normalised rate
+  have hsum : ∑' q : Jump N M, jumpWeight β v q = ENNReal.ofReal (totalRate β v) := by
+    rw [tsum_fintype, totalRate]
+    exact (ENNReal.ofReal_sum_of_nonneg fun q _ => (hrate q).le).symm
+  rw [jumpPMF_apply, hsum, jumpWeight, ← div_eq_mul_inv,
+    ← ENNReal.ofReal_div_of_pos hpos]
 
 /-- The kernel driving the continuous-time process: from the first `n + 1` steps, replay the
 expressed pairs to find the current matrix, and read off the law of the next step.
@@ -755,43 +798,9 @@ Ionescu-Tulcea construction, carried out here for `SocialNetwork.ctsDrivingKerne
 
 section HoldingTimes
 
-/-! ### The tail of an exponential holding time -/
+/-! ### The tail of an exponential holding time
 
-theorem expMeasure_Iic_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
-    expMeasure r (Set.Iic x) = ENNReal.ofReal (1 - Real.exp (-(r * x))) := by
-  have : IsProbabilityMeasure (expMeasure r) := isProbabilityMeasure_expMeasure hr
-  rw [← ofReal_cdf, cdf_expMeasure_eq hr, if_pos hx]
-
-theorem expMeasure_Ioi_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
-    expMeasure r (Set.Ioi x) = ENNReal.ofReal (Real.exp (-(r * x))) := by
-  have hp : IsProbabilityMeasure (expMeasure r) := isProbabilityMeasure_expMeasure hr
-  have hcompl : Set.Ioi x = (Set.Iic x)ᶜ := by ext y; simp
-  rw [hcompl, prob_compl_eq_one_sub measurableSet_Iic, expMeasure_Iic_of_nonneg hr hx]
-  have h1 : Real.exp (-(r * x)) ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith)
-  rw [show (1 : ℝ≥0∞) = ENNReal.ofReal 1 by simp, ← ENNReal.ofReal_sub _ (by linarith)]
-  congr 1
-  ring
-
-theorem expMeasure_Iic_zero {r : ℝ} (hr : 0 < r) : expMeasure r (Set.Iic 0) = 0 := by
-  rw [expMeasure_Iic_of_nonneg hr le_rfl]
-  simp
-
-/-- The exponential law has no atom: it is `volume.withDensity` of a density, hence absolutely
-continuous. -/
-theorem expMeasure_singleton (r : ℝ) (x : ℝ) : expMeasure r {x} = 0 := by
-  have hac : expMeasure r ≪ MeasureTheory.volume := by
-    unfold expMeasure gammaMeasure
-    exact withDensity_absolutelyContinuous _ _
-  exact hac (measure_singleton x)
-
-/-- The closed tail carries the same mass as the open one.  Remark 6 needs the closed one: the
-run there fails when the `N`-th jump time *reaches* `t`, not only when it passes it. -/
-theorem expMeasure_Ici_of_nonneg {r : ℝ} (hr : 0 < r) {x : ℝ} (hx : 0 ≤ x) :
-    expMeasure r (Set.Ici x) = ENNReal.ofReal (Real.exp (-(r * x))) := by
-  have hsplit : Set.Ici x = {x} ∪ Set.Ioi x := by
-    ext y; simp [Set.mem_Ici, le_iff_lt_or_eq, or_comm]
-  rw [hsplit, measure_union (by simp) measurableSet_Ioi, expMeasure_singleton, zero_add,
-    expMeasure_Ioi_of_nonneg hr hx]
+These live in `SocialNetwork.Clocks`, where the race between the clocks needs them too. -/
 
 /-! ### The law of one holding time -/
 

@@ -58,23 +58,23 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 1.1 | `nonExplosion` | Poisson point processes |
+| Theorem 1.1 | `nonExplosion` | the sandwich (11), which the paper asserts — *can be constructed in such a way that* — rather than constructs.  Not the Poisson theory: on this sample space a homogeneous process is the partial sums of i.i.d. exponentials, and that those diverge is the strong law.  Half of the sandwich is now supplied, the clock form of one step; what is left is carrying the domination across the jumps |
 | Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and so Theorem 1.1 through it |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Its proof opens *For a non-explosive process* and then *Non-explosivity holds by Part 1*, which is Theorem 1.1 — Poisson point processes.  The equivalence it invokes, that `μ` is invariant for the process iff `q·μ` is invariant for the skeleton, is cited rather than proved there |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
-| Theorem 16 | `Bias.biasedNonExplosion` | Poisson point processes |
+| Theorem 16 | `Bias.biasedNonExplosion` | the sandwich (11), as Theorem 1.1 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 19 | 20 | 39 |
+| Proved | 19 | 21 | 40 |
 | Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 14 | 0 | 14 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **27** | **89** |
+| **Total** | **62** | **28** | **90** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -159,6 +159,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
+| The race between the clocks | `clockSplit` +24 | proved |
 | Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |

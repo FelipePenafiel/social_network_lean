@@ -4,6 +4,7 @@ Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Appendix
 import SocialNetwork.Bias
+import SocialNetwork.Clocks
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedResults
 import SocialNetwork.Consensus
