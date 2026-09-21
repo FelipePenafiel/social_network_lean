@@ -269,11 +269,6 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \textbf{No counterpart in the paper}, which does not address measurability
   anywhere.
 
-  An earlier version of this blueprint said the statement needed an
-  almost-sure formulation, or a proof handling the null set on which the path
-  misbehaves.  \emph{That was wrong}, and it is worth recording why: the error
-  was to take one route to the reduction for the only one.
-
   The infimum runs over the uncountable family $\{t \ge 0\}$.  The obvious way
   to make it countable is right-continuity of $t \mapsto \Uproc{u}_t(\omega)$,
   and right-continuity does fail --- on realisations whose holding times are
@@ -299,6 +294,47 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   is stated for an arbitrary such map.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The race between the clocks]
+  \label{aux-clocks}
+  \lean{SocialNetwork.clockSplit, SocialNetwork.measurable_clockSplit, SocialNetwork.clockSplit_preimage_pi, SocialNetwork.measurePreserving_clockSplit, SocialNetwork.pi_expMeasure_pi_Ioi, SocialNetwork.lintegral_exp_neg_expMeasure_Ioi, SocialNetwork.winsAfter, SocialNetwork.measurableSet_winsAfter, SocialNetwork.clockSplit_preimage_winsAfter, SocialNetwork.sum_subtype_ne, SocialNetwork.pi_expMeasure_winsAfter, SocialNetwork.pi_expMeasure_coord, SocialNetwork.pi_expMeasure_coord_singleton, SocialNetwork.pi_expMeasure_coord_nonpos, SocialNetwork.pi_expMeasure_ties, SocialNetwork.IsWinner, SocialNetwork.pi_expMeasure_winner_eq, SocialNetwork.pi_expMeasure_race_Ioi, SocialNetwork.firstClock, SocialNetwork.firstClock_le, SocialNetwork.firstClock_eq_iff, SocialNetwork.measurable_firstClock, SocialNetwork.isWinner_firstClock, SocialNetwork.exists_isWinner_jump, SocialNetwork.stepLaw_prod_Ioi}
+  \leanok
+  \uses{eq3}
+  Give each pair $(a,o)$ an independent clock ringing at an exponential time of
+  rate $e^{\beta u(a,o)}$.  Then for every pair $p$ and every $t \ge 0$,
+  \[
+    \mathbb{P}\bigl( p \text{ rings first, and after } t \bigr)
+      = \frac{e^{\beta u(p)}}{\jumprate(u)} \, e^{-\jumprate(u) t} ,
+  \]
+  so the winner and the winning time are independent, the winner follows the
+  Gibbs law of \ref{eq3} and the time is exponential of the total rate.  That is
+  one step of the process, so $\mathcal{L}_\beta$ and the clocks are the same
+  law.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{No counterpart in the paper}, which uses the clock form at p.~16
+  without stating it: its~(11) is a statement about the clocks of a
+  \emph{sub-family}, and $\mathcal{L}_\beta$ as built here is the jump-hold
+  form, where no sub-family has a clock of its own.
+
+  The computation is one integral.  Splitting the product measure at the
+  coordinate $p$ --- which Mathlib does along a sum of index types and along
+  $\mathrm{Fin}(n+1)$, but not along one point of an arbitrary index, so it is
+  done here --- the event becomes $\{(x,g) : t < x < g_j \ \forall j\}$, whose
+  measure is $\int_t^\infty e^{-(\jumprate(u) - e^{\beta u(p)})x}\,
+  \mathrm{d}\mathrm{Exp}(e^{\beta u(p)})(x)$, and that is
+  $\frac{e^{\beta u(p)}}{\jumprate(u)} e^{-\jumprate(u)t}$.
+
+  Two clocks ring together with probability zero, so \emph{a} winner may be
+  chosen measurably without the choice mattering; the witness breaks ties by an
+  order on the pairs, and the statement is proved for every measurable choice.
+  Nothing here is a Poisson point process: on this sample space a homogeneous
+  process of rate $\lambda$ is the sequence of partial sums of independent
+  $\mathrm{Exp}(\lambda)$ variables, and what \ref{thm1-1} needs of it is that
+  those sums diverge.
+\end{proof}
+
 \paper{Theorem 1.1}
 \begin{theorem}[Existence]
   \label{thm1-1}
@@ -309,12 +345,23 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\mathbb{P}(\sup\{T_m : m \ge 1\} = \infty) = 1$.
 \end{theorem}
 \begin{proof}
-  \uses{prop5}
+  \uses{prop5, aux-clocks}
   The jump times are sandwiched between two Poisson processes, splitting the
-  expressions into those coming from actors with pressure below $N$ — which
-  \ref{prop5} says happen at least once every $N$ steps — and the others.
-  \textbf{Not formalised}: Mathlib has no Poisson point process, only the
-  Poisson distribution on $\mathbb{N}$.
+  expressions into those coming from actors with pressure below $N$ --- which
+  \ref{prop5} says happen at least once every $N$ steps --- and the others.
+  \textbf{Not formalised.}
+
+  What is missing is not the Poisson theory.  On this sample space a
+  homogeneous Poisson process of rate $\lambda$ is the partial sums of
+  independent $\mathrm{Exp}(\lambda)$ variables, and that those diverge is the
+  strong law, which Mathlib has and \ref{prop18} already uses.  What is missing
+  is the sandwich itself, which the paper asserts --- ``can be constructed in
+  such a way that'' --- and does not construct.  \ref{aux-clocks} is its first
+  half, and the half that is new mathematics here: the clocks of the
+  low-pressure pairs carry total rate at most $NMe^{\beta N}$ whatever the rest
+  of the matrix does, which is what the upper bound of~(11) says, and that is
+  a statement the jump-hold form cannot even express.  What remains is to carry
+  the domination across the jumps, where the state and so the rates change.
 \end{proof}
 
 \paper{Theorem 1.2}
@@ -2967,18 +3014,20 @@ single line and argues neither, and uses the $m$-step bound in the sketch of
 an outside source to settle: the paper reads ``without visiting $u$'' off
 \ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
 
-\medskip \noindent\textbf{No counterpart in the paper} (fourteen).
+\medskip \noindent\textbf{No counterpart in the paper} (fifteen).
 \ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},
 \ref{aux-ladder-consensus}, \ref{aux-consensus-ladder},
 \ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
 \ref{aux-biased-ladder-consensus}, \ref{aux-biased-ladder-steep},
 \ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart},
-\ref{aux-doeblin} and \ref{aux-nstep}, together with the plumbing of the
-sample space, which is not made of numbered statements, and so appears here
-only inside definitions and remarks.
+\ref{aux-doeblin}, \ref{aux-nstep} and \ref{aux-clocks}, together with the
+plumbing of the sample space, which is not made of numbered statements, and so
+appears here only inside definitions and remarks.
 
-The last four are the substantial ones, and none of them checks anything the
-paper wrote.  \ref{aux-holding-times} says what the jump times of a greedy run
+The last five are the substantial ones, and none of them checks anything the
+paper wrote.  \ref{aux-clocks} identifies one step of the process with a race
+between exponential clocks, which is the form p.~16 argues in and not the form
+\ref{eq3} is built in; the paper uses the identification without stating it.  \ref{aux-holding-times} says what the jump times of a greedy run
 are, and \ref{aux-restart} is the Markov property at the first jump; the paper
 uses both without stating either.  \ref{aux-doeblin} is Doeblin's criterion,
 which the paper cites; both halves of it are proved here, the uniqueness half

@@ -86,6 +86,7 @@ SocialNetwork/Bias.lean       §3, via the variable-length memory (nₐ, cₚ) o
 SocialNetwork/Frequencies.lean     i.i.d. uniform opinion words and the event E_ε^k of Prop 18
 SocialNetwork/Skeleton.lean   Definition 3: jump rates, skeleton kernel, law of a realisation
 SocialNetwork/Greedy.lean     Proposition 8 and Remark 4
+SocialNetwork/Clocks.lean     the race between independent exponential clocks (Mathlib lacks it)
 SocialNetwork/Kac.lean        Kac's lemma, in the half Proposition 9 uses and Mathlib lacks
 SocialNetwork/Doeblin.lean    Doeblin's criterion, both halves, for any countable chain
 SocialNetwork/Markov.lean     the law of a cylinder, and the Markov property of the skeleton

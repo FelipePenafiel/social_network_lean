@@ -236,6 +236,18 @@ Mathlib provides, not of what this repository happens to want.
    Poisson processes.  **Mathlib has no Poisson point process**; what it has is the Poisson
    *distribution* on `ℕ` (`ProbabilityTheory.poissonMeasure`,
    `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.
+
+   That absence is *not* what blocks Theorem 1.1.  The process here is built jump-hold, so a
+   homogeneous Poisson process of rate `λ` is the partial sums of i.i.d. `Exp (λ)` variables
+   and nothing more; that those diverge is `ProbabilityTheory.strong_law_ae_real`, which
+   `SocialNetwork/Frequencies.lean` already uses.  What blocks it is the sandwich itself,
+   which the paper asserts rather than constructs.  Its first half is
+   `SocialNetwork/Clocks.lean`: one step of the process is the race between one exponential
+   clock per pair, which is the form (11) is stated in and which the jump-hold form cannot
+   express.  Mathlib has neither half of that — nothing on the minimum of independent
+   exponentials, nothing on which of several is smallest — nor, for the rest,
+   **stochastic domination**, **couplings** or **compensators**: `stochasticallyDominates`,
+   a coupling structure and `compensator` all return zero hits.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
    the jump chain and of the process.  Nothing.  This is a live blocker rather than a dormant
    one: equation (13) is what carries `μ̃^β` to `μ^β`, and its written proof opens *for a

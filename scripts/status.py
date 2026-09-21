@@ -130,8 +130,15 @@ REASONS: dict[str, tuple[str, str]] = {
     ),
     # -- Mathlib ------------------------------------------------------------
 
-    "thm1-1": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
-    "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
+    "thm1-1": (
+        BLOCKED_ON_MATHLIB,
+        "the sandwich (11), which the paper asserts — *can be constructed in such a way "
+        "that* — rather than constructs.  Not the Poisson theory: on this sample space a "
+        "homogeneous process is the partial sums of i.i.d. exponentials, and that those "
+        "diverge is the strong law.  Half of the sandwich is now supplied, the clock form "
+        "of one step; what is left is carrying the domination across the jumps",
+    ),
+    "thm16": (BLOCKED_ON_MATHLIB, "the sandwich (11), as Theorem 1.1"),
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
     "eq13": (
