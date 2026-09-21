@@ -16,9 +16,11 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-17 statements. They are unproved for four different reasons, and
+17 statements. They are unproved for three different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
+The group that was only work is empty: every numbered statement of the paper is
+stated in Lean, and nothing unproved here is unproved for want of doing it.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
@@ -49,7 +51,7 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Blocked on Mathlib (4)
+### Blocked on Mathlib (6)
 
 The paper's proof is fine; Mathlib has no theory of the object it uses.
 Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the audit of exactly what is absent, checked against the pinned revision.
@@ -57,19 +59,11 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 | Statement | Lean | Why |
 |---|---|---|
 | Theorem 1.1 | `nonExplosion` | Poisson point processes |
+| Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and so Theorem 1.1 through it |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Its proof opens *For a non-explosive process* and then *Non-explosivity holds by Part 1*, which is Theorem 1.1 — Poisson point processes.  The equivalence it invokes, that `μ` is invariant for the process iff `q·μ` is invariant for the skeleton, is cited rather than proved there |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
 | Theorem 16 | `Bias.biasedNonExplosion` | Poisson point processes |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
-
-### Not formalised yet (2)
-
-Nothing here waits on Mathlib or on the authors.
-Whatever stands in the way can be removed from this repository, and the work is simply not done.
-
-| Statement | Lean | Why |
-|---|---|---|
-| Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and nothing else: `μ̃^β` exists and is unique |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Work here rather than a gap, now that `μ̃^β` exists — but its statement is one the authors may want to change first, so it is the one item in this group with a question attached |
 
 ## 2. How far the formalisation has got
 
@@ -96,9 +90,9 @@ are covered, and all 56 of them are stated in Lean.
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
 | Theorem 1.1 | `nonExplosion` | unproved — blocked on Mathlib |
-| Theorem 1.2 | `existsUnique_invariantCts` | unproved — not formalised yet |
+| Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
 | Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — not formalised yet |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
 | Definition 1 | `IsLadder` +4 | stated |
 | Definition 2 | `IsConsensus` +2 | stated |
 | Definition 4 | `IsSteepLadder` +2 | stated |

@@ -142,9 +142,8 @@ the only one inside probability.
 
 ## Resolved without Mathlib: Kac's lemma, and the skeleton's Markov property
 
-**Mathlib has no Kac lemma.**  Every `Kac` in the library is a Kac–Moody algebra.  Proposition
-9 was recorded here as waiting on one; it was not, and the entry was wrong in the same way the
-`measurable_hittingTimeCts` entry below was wrong.
+**Mathlib has no Kac lemma.**  Every `Kac` in the library is a Kac–Moody algebra.  Nothing here
+waits on one, because what Proposition 9 uses is the inequality rather than the identity.
 
 The paper opens the proof of Proposition 9 with the *identity*
 `1/μ̃(u) = E[R̃^u(u)]`, and the identity does need irreducibility: with two absorbing states and
@@ -181,10 +180,9 @@ the skeleton of the biased lemmas of the section above, proved the same way.
 
 ## Still missing, in DISCRETE time
 
-These were recorded as blocking Theorem 1.2 and everything downstream of it.  **None of them
-does any more**: Theorem 1.2 for the skeleton is proved outright, and items 1–5 are still
-absent from Mathlib but no longer needed here.  They are kept because the audit is of what
-Mathlib provides, not of what this repository happens to want this week.
+**None of these blocks anything here**: Theorem 1.2 for the skeleton is proved outright, and
+items 1–5 are absent from Mathlib but not needed.  They are kept because the audit is of what
+Mathlib provides, not of what this repository happens to want.
 
 1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing in Mathlib: `grep` over the
    whole tree still returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
@@ -225,10 +223,9 @@ Mathlib provides, not of what this repository happens to want this week.
    instances and one monotonicity lemma.  Nothing is derived from it.
 4. **Recurrence for chains, and return times.**  Nothing (`returnTime`, "return time": zero
    hits).  `Mathlib/Dynamics/Ergodic/Conservative.lean` has Poincaré recurrence, but for a
-   measure-preserving *map*, which does not transport to a kernel.  Nothing in this repository
-   waits on this any more: it was here for Kac's lemma, and Kac's inequality turned out to need
-   neither recurrence nor a return time as an object — only the avoidance probabilities, which
-   are a recursion on the kernel.
+   measure-preserving *map*, which does not transport to a kernel.  Nothing here waits on it:
+   Kac's inequality needs neither recurrence nor a return time as an object — only the
+   avoidance probabilities, which are a recursion on the kernel.
 5. **Total-variation distance between measures.**  Nothing usable: `totalVariation` exists only
    for signed and vector measures (Jordan decomposition), not as the distance that uniform
    ergodicity is stated in.
@@ -238,10 +235,12 @@ Mathlib provides, not of what this repository happens to want this week.
 6. **Non-explosion criteria.**  Theorem 1.1 is proved by sandwiching the jump times between two
    Poisson processes.  **Mathlib has no Poisson point process**; what it has is the Poisson
    *distribution* on `ℕ` (`ProbabilityTheory.poissonMeasure`,
-   `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.  An
-   earlier draft of this blueprint asserted the opposite; that was wrong.
+   `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing, and it needs 1–5 above to be worth stating.
+   the jump chain and of the process.  Nothing.  This is a live blocker rather than a dormant
+   one: equation (13) is what carries `μ̃^β` to `μ^β`, and its written proof opens *for a
+   non-explosive process* and then appeals to Theorem 1.1, so it needs item 6 as well.  The
+   paper cites the equivalence rather than proving it.
 8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
@@ -261,15 +260,15 @@ mentions the invariant measure: it bounds the hitting time of `L` from a fixed s
 matrix, and its proof is Proposition 7 together with an exponential race among the holding
 times, which `SocialNetwork.ctsPathMeasure` already supplies.  Nothing on the list above is
 missing for it, nor for Corollary 11 and the two displays below it; the blueprint node
-`thm2-2` says so at length.  All four are now written, and equation (19) is proved outright:
-what they wanted beyond the clock was the restart above, not anything from this list.
+`thm2-2` says so at length.  All four are written, and equation (19) is proved outright: what
+they want beyond the clock is the restart above, not anything from this list.
 
-The shortest path to Theorem 2.1 is therefore item 1 alone.  Proposition 9 no longer waits on
-Mathlib at all: it is proved from Proposition 7, Remark 5, the bound of Proposition 8
-(`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, modulo the one
-step its own proof asserts, which is now proved as well
-(`SocialNetwork.skeleton_ne_of_greedy`).  Theorem 2.1 follows from it by (13) once `μ̃`
-exists, which is item 1.
+Nothing on this list stands between Theorem 2.1 and a proof.  Proposition 9 is written from
+Proposition 7, Remark 5, the bound of Proposition 8
+(`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, with the one step
+its own proof asserts supplied (`SocialNetwork.skeleton_ne_of_greedy`); what it waits on is
+Lemmas 19 and 20, which are blocked on the paper.  Equation (13) is the one place where a
+theorem of Section 5 meets this list, through items 6 and 7.
 
 ## A smaller gap, outside probability — closed, but still a gap
 
@@ -288,37 +287,6 @@ and `#s` to the bound, and `a ≥ #s` because `s ⊆ range a`.
 
 The Mathlib gap itself is unchanged: this belongs upstream, in `Mathlib/Data/Finset/Card.lean`
 or beside `Finset.sum_range_id_mul_two`, not in a paper formalisation.
-
-## `measurable_hittingTimeCts`: filed as routine, refiled as blocked, and neither
-
-This entry is kept as a record of two wrong calls in a row, because both were made
-here and both were about what Mathlib supplies.
-
-An early draft listed `SocialNetwork.measurable_hittingTimeCts` alongside
-`SocialNetwork.measurable_process`, on the grounds that both only see `jumpCount`.  That
-was wrong: `process` is evaluated at one `t`, the hitting time is an infimum over the
-uncountable family `{t ≥ 0}`.
-
-The correction was wrong too.  It said the reduction to a countable infimum needs the path
-`t ↦ U_t (ω)` to be right-continuous; that right-continuity fails on realisations with a
-negative holding time, or whose jump times accumulate from the right; and that the statement
-therefore wanted an almost-sure formulation or an argument through the null set.  Every
-clause of that is true except the first, and the first is the one that mattered.
-Right-continuity is *a* route to the reduction, not the only one.
-
-Both lemmas are now proved, statements unchanged, for every `ω`.  What the proof uses is the
-shape of the level sets of `jumpCount ω ·`: below the explosion time the infimum of a level
-set is attained, at `max (Tₖ, 0)`, and on the explosion event the junk value of `sSup`
-persists to the right, so the rationals above a time serve in its place.  The countable
-family `{max (Tₖ, 0)} ∪ (ℚ ∩ [0, ∞))` meets the infimum outright.  See
-`SocialNetwork.sInf_image_eq_hittingCandidates`, which is stated for an arbitrary map from
-jump counts to states and is therefore shared by both models.
-
-**Nothing was missing from Mathlib here.**  The lesson for the rest of this file: an
-obstruction recorded as "the library does not provide it" is a claim about a route, and a
-route is easier to be wrong about than a name that is absent.  The entries below are of the
-second kind — a `grep` that returns nothing, or a file whose whole contents are enumerated —
-which is why they are cheap to falsify and this one was not.
 
 ## How to re-check this file
 

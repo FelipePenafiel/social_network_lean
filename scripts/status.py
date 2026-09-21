@@ -134,14 +134,14 @@ REASONS: dict[str, tuple[str, str]] = {
     "thm16": (BLOCKED_ON_MATHLIB, "Poisson point processes"),
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
-    # -- simply not done ----------------------------------------------------
     "eq13": (
-        NOT_YET,
-        "the stationary-law transfer.  Work here rather than a gap, now that `μ̃^β` "
-        "exists — but its statement is one the authors may want to change first, so it "
-        "is the one item in this group with a question attached",
+        BLOCKED_ON_MATHLIB,
+        "the stationary-law transfer.  Its proof opens *For a non-explosive process* and "
+        "then *Non-explosivity holds by Part 1*, which is Theorem 1.1 — Poisson point "
+        "processes.  The equivalence it invokes, that `μ` is invariant for the process iff "
+        "`q·μ` is invariant for the skeleton, is cited rather than proved there",
     ),
-    "thm1-2": (NOT_YET, "equation (13), and nothing else: `μ̃^β` exists and is unique"),
+    "thm1-2": (BLOCKED_ON_MATHLIB, "equation (13), and so Theorem 1.1 through it"),
 }
 
 

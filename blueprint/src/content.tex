@@ -331,9 +331,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
   $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
-  processes.  \textbf{Not formalised}, and \ref{eq13} is now the whole of what
-  is missing: \ref{thm1-2-skeleton} is proved, so $\muskel$ exists and is
-  unique, and the transfer is the only step between it and $\muinv$.
+  processes.  \textbf{Not formalised.} \ref{thm1-2-skeleton} is proved, so
+  $\muskel$ exists and is unique and the transfer is the only step left; but
+  that transfer runs through \ref{thm1-1}, so this theorem is blocked on
+  Mathlib after all.
 \end{proof}
 
 \aux{Lemma}
@@ -475,9 +476,8 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \begin{proof}
   \leanok
   \uses{aux-doeblin, aux-minorisation}
-  This is the Doeblin step, and it was the keystone: \ref{thm1-2},
-  \ref{thm2-1}, \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31} all rest
-  on it.  \textbf{It is now proved, both halves.}
+  This is the Doeblin step, and \ref{thm1-2}, \ref{thm2-1}, \ref{thm3},
+  \ref{thm25}, \ref{thm27} and \ref{thm31} all rest on it.
 
   \ref{aux-minorisation} is the minorisation this chain satisfies and
   \ref{aux-doeblin} is the criterion, which delivers existence and uniqueness
@@ -485,14 +485,12 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   at least $c$ from every state, and that single bound is everything the
   criterion consumes.
 
-  Two things are worth recording about what this did \emph{not} need.  It needs
-  no Markov-chain theory beyond \texttt{Kernel.Invariant} --- the existence
-  half is an excursion measure, which on a countable state space is a sum in
-  $[0,\infty]$ rather than a limit --- so the entry that stood here, ``the
-  classical construction of an invariant measure from one excursion is exactly
-  the theory Mathlib does not have'', was wrong about what it would cost.  And
-  it does not need the paper's $N \ge 3$: the descending sweep reaches $l^o$
-  for every $N \ge 1$, so the Lean statement drops that hypothesis.
+  Two things it does \emph{not} need are worth recording.  The first is
+  Markov-chain theory: nothing beyond invariance itself enters, the existence
+  half being an excursion measure, which on a countable state space is a sum in
+  $[0,\infty]$ rather than a limit.  And not the paper's
+  $N \ge 3$: the descending sweep reaches $l^o$ for every $N \ge 1$, so the
+  Lean statement drops that hypothesis.
 \end{proof}
 
 \paper{Equation (13)}
@@ -508,7 +506,35 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{lemma}
 \begin{proof}
-  \textbf{Not formalised}; it needs \ref{thm1-2-skeleton} to be worth stating.
+  \uses{thm1-1, def3}
+  \textbf{Not formalised, and blocked on Mathlib} --- through \ref{thm1-1}, not
+  through \ref{thm1-2-skeleton}, which is proved.  The written argument at
+  p.~18 opens:
+
+  \begin{quote}
+    For a non-explosive process, a probability measure is invariant for
+    $(\Uproc{u}_t)_t$ if and only if its product with the jump rate is
+    invariant for the skeleton chain.  \emph{Non-explosivity holds by Part~1},
+    and since every $u \in \Sspace$ carries an actor with null social pressure,
+    the jump rate obeys $\jumprate(u) \ge M$ for all $u \in \Sspace$.
+  \end{quote}
+
+  ``Part~1'' is \ref{thm1-1}, which needs Poisson point processes.  The appeal
+  is not rhetorical: $P_t$ is the law of $U_t$, and $U_t$ is read off the
+  jump-hold representation through the jump counter, which returns a junk value
+  on the explosion event.  Until that event is known to be null the hypothesis
+  of invariance is not invariance for the semigroup the argument is about.
+
+  Two of the remaining steps are this repository's to do and neither is done:
+  $\jumprate(u) \ge M$ on $\Sspace$, which the null row of \ref{eq2} gives, and
+  the finiteness $\sum_u \muskel(u)/\jumprate(u) \le 1/M$ that makes the
+  right-hand side a probability measure.
+
+  The step that carries the content is neither: the equivalence quoted above is
+  \textbf{cited, not proved}, in the paper.  It is a standard fact about jump
+  processes, and Mathlib has no form of it.  Whether it should be a third
+  external citation, like \ref{prop12}, or an auxiliary node proved here, is a
+  question for the authors and is recorded in \texttt{FOR-THE-AUTHORS.md}.
 \end{proof}
 
 \section{Ladders, consensus, and the main estimates}
@@ -1581,8 +1607,8 @@ process pointwise.
   $\mathbb{P}(\Rhit{0}(\ladder) > T_1 + e^{-\frac{\beta}{M-1}(1-\delta)})$,
   which is the corollary, with $T_1$ exponential of mean $1/(MN)$ by
   \ref{aux-construction}.  \textbf{A formalisation-side error, not an error of
-  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.11.  It is under this reading, and
-  only under it, that the corollary is now proved.
+  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.11.  The corollary is proved under
+  this reading, and only under it.
 \end{proof}
 
 \paper{Remark 6}
@@ -1629,9 +1655,8 @@ process pointwise.
   \ref{thm2-2} rests on them.  It does not: the route passes through the last
   stage of \ref{prop7} only, and that stage --- \ref{aux-consensus-ladder} ---
   is proved outright.  Starting inside $C^o$ is exactly what skips
-  \ref{lem19} and~\ref{lem20}, whose work is to \emph{get} to $C^o$.  The edge
-  to \ref{thm2-2} was a second neighbour mistaken for a dependency, after the
-  edge to \ref{cor11} this node used to carry.
+  \ref{lem19} and~\ref{lem20}, whose work is to \emph{get} to $C^o$; neither
+  \ref{thm2-2} nor \ref{cor11} is a dependency, though both are neighbours.
 
   Nothing downstream uses it: it strengthens \ref{cor11} in the direction
   \ref{lem14} needs.
@@ -2297,8 +2322,8 @@ process pointwise.
   Theorem~25 of the paper bundles two claims: that the biased process does not
   explode, which is \ref{thm16} and is blocked on Mathlib, and that the biased
   skeleton has a unique invariant probability measure, which is this node.  The
-  Lean statement covers the second only, and the statement above has been
-  narrowed to match it; it used to claim both.
+  Lean statement covers the second only, and the statement above is narrowed
+  to match it.
 
   \textbf{Written out, by the route the paper prescribes}: ``the proof of
   Theorem~25 follows exactly as the proof of Theorem~1''. \ref{aux-doeblin}
@@ -2312,16 +2337,11 @@ process pointwise.
   or the weakening of \ref{prop17} discussed at \ref{aux-biased-minorisation}
   --- closes it immediately; both are the authors' to decide.
 
-  \textbf{Two corrections to record}, because this blueprint has said otherwise
-  twice.  It first said the biased minorisation was routine; then that the box
-  it needs is \ref{prop22} and that only a constant weaker than the paper's
-  would avoid it; then that \ref{prop17} gives the box and \ref{prop22} is not
-  needed, and on that basis the node was marked proved.  The first two were
-  wrong on the mathematics.  The third was right on the mathematics and wrong on
-  what this repository is for: \ref{prop17} does give a box, by an argument
-  Appendix~C does not make, and proving a statement of the paper by an argument
-  the authors have not written is precisely what \ref{note-green} forbids.  The
-  node is back on Appendix~C's route, with the obstruction it carries.
+  \textbf{A warning to anyone tempted to close it here}: \ref{prop17} does give
+  a box, and this node was once marked proved on that basis.  The mathematics
+  was sound; the filing was not.  Appendix~C does not make that argument, and
+  proving a statement of the paper by an argument the authors have not written
+  is what \ref{note-green} forbids.
 \end{proof}
 
 \paper{Proposition 26}
@@ -2376,15 +2396,13 @@ process pointwise.
 \end{lemma}
 \begin{proof}
   \uses{lem13}
-  \textbf{Not formalised.} \emph{Restated}: the Lean statement of this lemma
-  used to be about the skeleton path measure and the discrete steps $k \le
-  \lceil 2\beta \rceil$ rather than about the continuous-time hitting time
-  $R^{\alpha,\beta,u}$, and it bound $C$ after $\beta$ and $u$, so the constant
-  was free to depend on both.  Neither matches the display above, and neither
-  can serve as \eqref{eq:h16} for \ref{prop12-biased}, which is what this lemma
-  exists for.  It now has the shape of \ref{lem13} with $\pressone$ replaced by
-  $\tfrac{1}{2\gamma}$.  A formalisation-side correction, not a correction to
-  the paper.
+  \textbf{Not formalised.}  The Lean statement has the shape of \ref{lem13}
+  with $\pressone$ replaced by $\tfrac{1}{2\gamma}$, which is what this lemma
+  exists for: it has to serve as \eqref{eq:h16} for \ref{prop12-biased}.  That
+  fixes two things about it.  It is about the continuous-time hitting time
+  $R^{\alpha,\beta,u}$, not about the skeleton path measure and the discrete
+  steps $k \le \lceil 2\beta \rceil$; and $C$ is bound before $\beta$ and $u$,
+  so it may depend on neither.
 \end{proof}
 
 \paper{Lemma 29}
@@ -2673,261 +2691,119 @@ None of them affects the results.
 \section{What is missing, and why}
 \label{sec:missing}
 
-The unproved statements fall into four groups, and it is worth keeping them
-apart because they are unproved for four different reasons: the library Lean
-is built on has no theory of the object, the paper's own proof does not
-compose, the statement is a citation rather than a result of this paper, or it
-is simply not done yet.  \texttt{STATUS.md} at the root of the repository is
-the generated index of all four, statement by statement; the paragraphs below
-are the argument behind it.
+Every numbered statement of arXiv:2607.19651 is stated in Lean.  What is not
+proved is not proved for one of three reasons, and they are not
+interchangeable:
 
-The fourth group had been emptied; \ref{thm1-2-skeleton} has re-opened it, and
-that is progress rather than regress.  Three statements were listed as blocked
-on Mathlib only because they waited on $\muskel$ to exist.  It does now, so what
-they wait on is work in this repository and nothing else, and they have moved
-into the fourth group.  The wall that cannot be climbed from here is smaller by
-the same three.
+\begin{itemize}
+  \item \textbf{Blocked on Mathlib} --- the paper's proof is sound, and the
+    library has no theory of the object it uses;
+  \item \textbf{blocked on the paper} --- the written proof does not compose,
+    and the repair is new mathematics;
+  \item \textbf{cited from outside the paper} --- the statement is not a result
+    of this paper at all.
+\end{itemize}
+
+There is no fourth group: nothing here is unproved merely for want of doing it.
+\texttt{STATUS.md} is the generated index, statement by statement; what follows
+is the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-\textbf{The keystone has left this list.}  \ref{thm1-2-skeleton} is proved, and
-both of the things it needed are supplied here: \ref{aux-minorisation}, the
-minorisation of p.~17, which was always work in this repository rather than a
-gap in Mathlib, and \ref{aux-doeblin}, Doeblin's criterion, which is.  The
-entry that stood here was wrong about the second half.  It read that ``the
-classical construction of an invariant measure from one excursion is exactly
-the theory Mathlib does not have'' --- the premise is right and the conclusion
-was not, because on a \emph{countable} state space that construction needs no
-theory at all: the excursion measure is a sum in $[0,\infty]$, the minorisation
-makes it summable, and invariance is the last-exit decomposition written in
-coordinates.  Items~1 and~2 below are still absent from Mathlib; they no longer
-block anything here.
-
-\ref{thm1-1}, \ref{thm1-2}, \ref{thm2-1}, \ref{thm3}, \ref{thm4} and their
-auxiliaries.  Verified against the pinned revision
+\ref{thm1-1} and \ref{thm16}, \ref{lem14} and \ref{lem29}, \ref{eq13} and
+\ref{thm1-2} through it.  Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
-  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure}:
-    nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
-    and \emph{no other file in Mathlib uses it}.  \texttt{Kernel.IsIrreducible}
-    is the Meyn--Tweedie definition, two trivial instances and one monotonicity
-    lemma.  (This item no longer blocks anything here: \ref{aux-doeblin} proves
-    the implication --- existence \emph{and} uniqueness --- and it is the
-    clearest thing in this repository to offer upstream.)
-  \item \textbf{Recurrence for chains, and return times}: nothing.  Poincaré
-    recurrence exists for a measure-preserving \emph{map}, which does not
-    transport to a kernel. (Kac's lemma is likewise absent --- every
-    \texttt{Kac} in Mathlib is a Kac--Moody algebra --- but it turned out not
-    to be needed: the inequality $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$,
-    which is all \ref{prop9} uses, holds for every invariant probability
-    measure and is proved outright at \texttt{SocialNetwork.kac\_tsum\_le}.
-    Nor was positive recurrence needed for \ref{thm1-2-skeleton}: the
-    minorisation gives the geometric tail directly, and the excursion measure
-    is built from it without any recurrence theorem.)
-  \item \textbf{Total-variation distance between measures}: nothing usable.
   \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
-    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.
+    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.  This is
+    what \ref{thm1-1} and \ref{thm16} need, and it is the largest of these
+    items.
+  \item \textbf{The invariance correspondence for a jump process}: nothing.
+    That a probability measure is invariant for a non-explosive jump process
+    exactly when its product with the jump rate is invariant for the skeleton
+    chain is what \ref{eq13} cites, and the paper cites it too rather than
+    proving it.
   \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
     \texttt{TendstoInDistribution} makes the qualitative half expressible, but
-    the Kolmogorov-type bound is absent.
+    the Kolmogorov-type bound Appendix~B uses is absent.  With
+    \textbf{total-variation distance between measures}, of which there is
+    nothing usable, this is what \ref{lem14} and \ref{lem29} need.
+  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure}:
+    nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
+    and \emph{no other file in Mathlib uses it}.  Irreducibility is the
+    Meyn--Tweedie definition, two trivial instances and one monotonicity lemma,
+    and nothing is derived from it.  This blocks nothing here --- \ref{aux-doeblin} proves the
+    implication, existence \emph{and} uniqueness --- and it is the clearest
+    thing in this repository to offer upstream.
+  \item \textbf{Recurrence for chains, and return times}: nothing.  Poincar\'e
+    recurrence exists for a measure-preserving \emph{map}, which does not
+    transport to a kernel, and Kac's lemma is absent --- every \texttt{Kac} in
+    Mathlib is a Kac--Moody algebra.  This blocks nothing here either: what
+    \ref{prop9} uses is the inequality
+    $\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, which holds for every
+    invariant probability measure and is proved at
+    \texttt{SocialNetwork.kac\_tsum\_le}.  The \emph{identity} is what needs
+    irreducibility, and two absorbing states with $\muskel = (\tfrac12,
+    \tfrac12)$ refute it.
+  \item \textbf{$N$ distinct naturals sum to at least $0 + 1 + \dots + (N-1)$}:
+    no lemma, and none from which it follows in one step.
+    \texttt{StrictMono.le\_apply} is stated only for endomorphisms, so the
+    obvious route does not close; induction on the largest element does.
+    Proved here, by that induction, together with the monotone form that
+    \ref{rem5-eta} needs:
+    \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum} and
+    \texttt{SocialNetwork.sum\_range\_add\_le\_sum}.
 \end{itemize}
 
-\ref{thm2-1} and~\ref{thm3} live, in the paper's own architecture, on the
-skeleton; they are blocked by the discrete-time items, not by the
-continuous-time ones.  Only \ref{thm1-1} and~\ref{thm16} need Poisson point
-processes.  With $\muskel$ now in hand, none of the discrete-time items blocks
-anything: \ref{thm2-1} waits on \ref{prop9}, which waits on \ref{prop7} and so
-on \ref{lem19} and~\ref{lem20}, and those are blocked on the paper rather than
-on Mathlib.  What is left on this list in discrete time is therefore
-\ref{eq13}, whose statement the authors may want to change, and nothing else.
-
-What is \emph{not} on this list, and was until \ref{thm2-1} and~\ref{thm2-2}
-were split apart, is part~2 of Theorem~2 --- together with \ref{cor11}, which
-stood here as ``Doeblin, through Theorem~2''.  A statement blocked on Doeblin is
-one that needs $\muinv$ to exist before it can be proved; part~2 never mentions
-$\muinv$ at all.  See the node of \ref{thm2-2}.
+\ref{thm2-1} and~\ref{thm3} are \emph{not} on this list.  In the paper's own
+architecture they live on the skeleton, and $\muskel$ is in hand: what
+\ref{thm2-1} waits on is \ref{prop9}, hence \ref{prop7}, hence \ref{lem19}
+and~\ref{lem20}, which are blocked on the paper.  \ref{thm2-2} and
+\ref{cor11} are not on it either: a statement blocked on Doeblin is one that
+needs $\muinv$ to exist, and part~2 of Theorem~2 never mentions $\muinv$.
 
 \subsection*{Blocked on the paper}
 
-\ref{lem19}, \ref{lem20} and~\ref{aux-greedy-avoids}, and \ref{prop22}; through
-them \ref{prop7}, \ref{prop9}, \ref{prop23} and~\ref{thm25}.  See
-\ref{note-lem19}, \ref{note-lem20} and~\ref{note-prop22}, and the node of
-\ref{aux-greedy-avoids}: in each case the written proof does not compose, and
-the repair changes the argument rather than its presentation, so it is recorded
-rather than guessed at in Lean.  The proofs downstream are written out in full
-all the same, so that each inherits \texttt{sorryAx} from the obstruction and
-from nothing else: \ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20},
-\ref{thm25} from \ref{prop22}.  \ref{prop7}'s assembly takes a route that does
-not need the step the written proof asserts --- the one departure of that kind
-in this repository, and the reason is written at its node.
+\ref{lem19}, \ref{lem20}, \ref{aux-greedy-avoids} and \ref{prop22}; through
+them \ref{prop7}, \ref{prop9}, \ref{prop23}, \ref{thm25}, \ref{prop26},
+\ref{thm2-1}, \ref{thm27} and \ref{lem28}.  In each case the written proof does
+not compose, and the repair changes the argument rather than its presentation,
+so it is recorded --- at \ref{note-lem19}, \ref{note-lem20},
+\ref{note-prop22} and the node of \ref{aux-greedy-avoids} --- rather than
+guessed at in Lean.
 
-\ref{aux-hitting-rate}, \ref{thm2-2} and~\ref{cor11} joined this queue as soon
-as their proofs were written.  \ref{eq19} and~\ref{rem6} were expected to and did
-not: written out, neither proof passes through \ref{thm2-2}, and both are
-proved.  The obstruction is recorded once, at \ref{lem19} and~\ref{lem20}, and
-not copied down the graph --- which is the only reason the mistake was cheap:
-nothing else had been filed behind it.
+The proofs downstream are written out in full all the same, so that each
+inherits \texttt{sorryAx} from the obstruction and from nothing else:
+\ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20}, \ref{thm25} from
+\ref{prop22}.  That is what makes an obstruction visible instead of absorbed,
+and it is why \ref{thm25} is not proved by the route that would close it ---
+see \ref{note-green} and \ref{aux-biased-minorisation}.
+
+\ref{prop7}'s assembly takes a route that does not need the step the written
+proof asserts.  It is the one departure of that kind here, and the reason is at
+its node.
 
 \subsection*{Cited from outside the paper}
 
-Two statements are not results of arXiv:2607.19651 at all, and nothing in this
-library can discharge them.
-
 \ref{prop12} and its twin for the biased process, \ref{prop12-biased}, are
-Theorem~5.3 of [LM22].  They
-are declared as \texttt{axiom}s rather than left carrying a \texttt{sorry},
-because a \texttt{sorry} would put them in the inventory of work someone could
-pick up, and they are not that.  Two are needed rather than one: stated
-abstractly, over an arbitrary family of measures and an arbitrary hitting time,
-the statement is \emph{inconsistent} --- the zero measure with an empty ladder
-set satisfies the hypotheses vacuously and falsifies the conclusion at $t = 0$
---- so it has to be attached to a concrete process, and there are two
-processes.  They are the same citation applied twice, not two assumptions.
+Theorem~5.3 of [LM22].  They are declared as \texttt{axiom}s rather than left
+carrying a \texttt{sorry}, because a \texttt{sorry} would put them in the
+inventory of work someone could pick up, and they are not that.
 
-\ref{aux-hitting-rate} and~\ref{eq19} stood here as two more, and they do not
-belong: see below.
+Two are needed rather than one.  Stated abstractly, over an arbitrary family of
+measures and an arbitrary hitting time, the statement is \emph{inconsistent}:
+the zero measure with an empty ladder set satisfies the hypotheses vacuously
+and falsifies the conclusion at $t = 0$.  So it has to be attached to a
+concrete process, and there are two processes.  They are the same citation
+applied twice, not two assumptions.
 
-\subsection*{Work, not blocked}
-
-\ref{eq13} and \ref{thm1-2}.  Nothing stands in the way of either; neither is
-done.  \ref{thm25} was listed here, then marked proved, and is now in the group
-above: its minorisation is written out on Appendix~C's own ingredients and rests
-on \ref{prop22}.  The proof that avoided \ref{prop22} is recorded at
-\ref{aux-biased-minorisation}, and closing the node is a decision for the
-authors rather than work waiting here.
-
-\ref{eq13} is the stationary-law transfer, and it is the only one with a
-question attached: this repository has had its statement filed as one the
-authors may want to revisit.  Its Lean statement takes both measures as
-hypotheses, so it never needed $\muskel$ to exist in the first place; what it
-needs is the work, and a look from the authors first.
-\ref{thm1-2} is then immediate from it and \ref{thm1-2-skeleton}.
-
-\subsection*{Routine, and now done}
-
-Seven statements were listed here as neither deep nor blocked.  They are now
-proved, and the paragraph is kept as the record of what they cost.  The first
-four fall in the third case of \ref{note-green}: the paper proves none of them,
-so none of these is a check of anything it wrote.  The last three, added as the
-earlier ones were cleared, do not: \ref{rem8} is argued in the paper and the
-Lean proof follows it, and \ref{rem5-eta} and~\ref{rem5-eta-iter} supply
-arguments the paper asserts.
-
-\begin{itemize}
-  \item \texttt{SocialNetwork.Bias.sum\_ge\_of\_injective}, that $N$ distinct
-    naturals sum to at least $0 + 1 + \dots + (N-1)$.  This was a
-    \textbf{Mathlib gap in its own right}, and still is: Mathlib has no lemma to
-    this effect and none from which it follows in one step.  The route it
-    suggests --- enumerate with \texttt{Finset.orderEmbOfFin}, then use ``a
-    strictly monotone $\mathrm{Fin}\ N \to \mathbb{N}$ dominates the identity''
-    --- needs that last step redone by hand, \texttt{StrictMono.le\_apply} being
-    stated only for endomorphisms.  Induction on the largest element
-    (\texttt{Finset.induction\_on\_max}) sidesteps it: adjoining a new maximum
-    $a$ to $s$ adds $a$ to the sum and $\#s$ to the bound, and $a \ge \#s$
-    because $s$ is contained in \texttt{range a}.  The general form is
-    \texttt{SocialNetwork.Bias.sum\_range\_card\_le\_sum}.
-  \item The two measurability lemmas for the biased greedy events,
-    \texttt{measurableSet\_nearGreedyEvents} and
-    \texttt{measurableSet\_biasedGreedyEvents}.  Both are the cylinder argument
-    already used for the unbiased model, transported through
-    \texttt{SocialNetwork.Bias.ofHistoryPath}.
-  \item \texttt{SocialNetwork.measurable\_process}.  The characterisation is
-    \texttt{jumpCount\_eq\_iff}: for $k \ne 0$, \texttt{jumpCount w t} equals $k$
-    exactly when $T_k \le t$ and no later jump time is $\le t$.  The level set at
-    $0$ is then the complement of the others, and \texttt{jumpCount} is
-    measurable into $\mathbb{N}$; gluing it to
-    \texttt{measurable\_state\_ofStepPath} along that countable index gives the
-    result.
-  \item \ref{rem8}.  The pigeonhole step was already there; what
-    was left was the identity
-    $c_p(1+\gamma) - \gamma n_a = c_p (M-1)\alpha + \gamma (M c_p - n_a)$,
-    \texttt{SocialNetwork.Bias.pressure\_eq\_of\_bias}, after which both terms
-    are visibly non-negative.  Cheap, as advertised.
-  \item \ref{rem5-eta}, the bound $\eta$ of Remark~5.  Not cheap, and the
-    one item on this list that checks something the paper wrote down without
-    argument.  Two thirds of it is bookkeeping --- the positive entries of a
-    steep ladder are exactly the non-minimal entries of the supported column,
-    the rest are non-positive and there are at most $MN$ of them, and the
-    fraction $S/(S+T)$ is monotone in the right directions.  The remaining third
-    is the comparison itself, and it needs the monotone form of the same Mathlib
-    gap as \texttt{sum\_range\_card\_le\_sum}: $N-1$ distinct naturals $\ge 1$
-    dominate $1, 2, \dots, N-1$ term by term under any increasing $f$, which is
-    \texttt{SocialNetwork.sum\_range\_add\_le\_sum}, proved by the same induction
-    on the largest element.
-  \item \ref{rem5-eta-iter}, the iterate $\eta^m$.  As advertised: the
-    induction of \ref{prop8} along the Ionescu--Tulcea kernels, transcribed
-    against the one-step bound of \ref{rem5-eta}, with the event that every
-    expression so far was made from a positive entry in place of the greedy
-    one.  The one real difference is that $\eta$, unlike $\zeta_\beta$, is not
-    uniform in the matrix, so the finite-horizon step has to carry the
-    steepness of the state the history reaches.
-\end{itemize}
-
-Nothing is left on this list, and the one item that outlived it,
-\ref{aux-measurable-hitting}, is now proved as well; the subsection after next
-records what its diagnosis got wrong.  What is unproved here is blocked on
-Mathlib, blocked on the paper, cited from outside it, or simply not done ---
-and the last of those groups is now \emph{empty}: \ref{cor11}, \ref{eq19}
-and~\ref{rem6} have all been written, and every numbered statement of the paper
-is stated in Lean.
-
-\subsection*{Was here, and is now closed}
-
-\textbf{Kac's lemma} stood in the list above as the second gap in Mathlib, and
-\ref{prop9}, \ref{cor10} and three results below them were recorded as waiting
-on it.  They were not.  What the paper's proof uses is the inequality
-$\muskel(u)\,\mathbb{E}[\Rskel{u}(u)] \le 1$, not the identity, and the
-inequality holds for \emph{every} invariant probability measure --- the
-identity is what needs irreducibility, and the counterexample is two absorbing
-states with $\muskel = (\tfrac12, \tfrac12)$, where the return time is $1$ and
-not $2$.  The inequality is proved at \texttt{SocialNetwork.kac\_tsum\_le}, for
-a Markov kernel on a countable space, from \texttt{Kernel.Invariant} and
-nothing else, by decomposing the event of visiting $u$ before time $m$ over the
-last such visit.  The lesson is the same as the one below: a citation is not an
-obstruction until one has checked which half of it the proof needs.
-
-\textbf{The two displays inside proofs}, \ref{aux-hitting-rate}
-and~\ref{eq19}, stood in the subsection above as citations, on the ground that
-the numbered statements they are attributed to --- part~2 of Theorem~2 and
-\ref{cor11} --- are limits, and a limit has thrown the rate away.  The second
-half of that is right and is why they are stated here at all: \ref{lem13} uses
-the inequalities and cannot use the limits.  The first half is wrong.  They are
-not attributed to anything outside the paper; they are steps of the paper's
-\emph{own} proofs, left as displays instead of being numbered, and [GL24]
-writes both of them out --- the first as its equations (16)--(18), the second
-as its Corollary~13, both at p.~19.  Nothing in them is out of reach of this
-library, so they moved to the last group, work not done --- and both are now
-written, the first from \ref{aux-holding-times} and \ref{prop7} and the second
-from \ref{aux-restart}, which is the best evidence that the reclassification
-was right.  \ref{eq19} is in fact \emph{proved}, sorry-free: nothing it uses is
-blocked on anything.  So is \ref{rem6}, for the same kind of reason --- see its
-node.  What survives as a
-question for the authors is only whether either should be numbered, and that
-question is asked in \texttt{FOR-THE-AUTHORS.md} rather than recorded as an
-obstruction here.  The lesson is again the one above: a citation is not an
-obstruction until one has checked what is actually being cited.
-
-\ref{aux-measurable-hitting} stood in this chapter as a fourth kind of
-obstruction: not a gap in Mathlib, not a gap in the paper, not a citation, but
-a statement whose Lean formulation had still to be settled.  It is now
-\emph{proved}, and the diagnosis that put it here was wrong.
-
-What was written was that reducing the infimum over $\{t \ge 0\}$ to a
-countable one needs right-continuity of $t \mapsto \Uproc{u}_t(\omega)$, that
-right-continuity holds only almost surely, and that the statement therefore
-wanted an almost-sure formulation or an argument through the null set.  The
-first clause is the error: right-continuity is \emph{a} route to the reduction,
-not the only one, and the reduction holds pointwise.  The argument that works
-is at \ref{aux-measurable-hitting}; it reads the level sets of the jump count
-directly, and never mentions the holding times, so it costs nothing to
-transport to the biased process.
-
-The paragraph is kept because the mistake is instructive.  A property that
-fails on a null set is a reason to look for a different argument before it is a
-reason to weaken the statement, and an obstruction recorded in this chapter is
-a claim like any other --- one that the repository owes the reader a proof or
-a retraction of.
+Nothing else here is a citation.  \ref{aux-hitting-rate} and~\ref{eq19} look
+like two more and are not: they are displays inside the paper's own proofs,
+left unnumbered, and [GL24] writes both out at its p.~19 --- the first as its
+equations~(16)--(18), the second as its Corollary~13.  They are stated here as
+nodes of their own because \ref{lem13} needs the inequalities and cannot use
+the limits the numbered statements give.  \ref{eq19} is proved outright.
 
 \section{What the formalised proofs check}
 \label{sec:audit}
@@ -2937,11 +2813,9 @@ Every proof currently formalised, audited against the paper on the question of
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
 own, so it counts fifty-six entries.  Every one of them is named, and
-\texttt{scripts/status.py} now checks that: a proof that carries
+\texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
-an unaudited proof, and it fails the build.  The check was added because the
-list had drifted --- nine proofs were written without a line here before anyone
-noticed.
+an unaudited proof, and it fails the build.
 
 \medskip \noindent\textbf{Follow the paper's proof} (twenty-nine). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
@@ -3057,13 +2931,11 @@ A route that closes \ref{thm25} outright exists and is deliberately not taken:
 $(NM)^{-N}$, using no regime hypothesis, and in $\gamma < \pressone$ its
 one-sided bound gives a two-sided one because some opinion carries at least
 $n_a/M$ of what the actor heard.  That second step is in no version of the
-paper.  This repository was briefly built that way, with \ref{thm25} marked
-proved; that was the one place where a statement of the paper had been
-established by an argument the authors have not written, and it has been undone.
-Both halves of the observation are recorded, here and in
-\texttt{FOR-THE-AUTHORS.md}, as a decision for the authors: weakening
-\ref{prop17} to $\gamma > 0$ is free and makes \ref{prop22} unnecessary for
-Theorem~25.
+paper, so taking that route would establish a statement of the paper by an
+argument the authors have not written --- see \ref{note-green}.  Both halves of
+the observation are recorded, here and in \texttt{FOR-THE-AUTHORS.md}, as a
+decision for the authors: weakening \ref{prop17} to $\gamma > 0$ is free and
+makes \ref{prop22} unnecessary for Theorem~25.
 
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the
@@ -3168,32 +3040,29 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{Nothing is left that is nobody's fault.}  This item held
-    \ref{aux-measurable-hitting}, then \ref{prop18}, \ref{thm4} part~1,
-    \ref{prop9}, \ref{cor10}, \ref{aux-greedy-avoids}, \ref{aux-hitting-rate},
-    \ref{thm2-2}, \ref{aux-restart}, \ref{cor11}, \ref{eq19} and last
-    \ref{rem6}; all of them are closed, and every numbered statement of the
-    paper is stated in Lean.  What remains unproved is blocked on Mathlib,
-    blocked on the paper, or cited from outside it, and the next two items are
-    those.
-  \item \ref{lem19} and~\ref{lem20}, with the repairs of \ref{note-lem19}
-    and~\ref{note-lem20}.  Worth settling with the authors first, since the
-    repairs change the written proofs. \ref{prop7} then follows by assembling
-    them with \ref{aux-consensus-ladder}, and \ref{prop9}, \ref{cor10}
-    and~\ref{aux-greedy-avoids} --- all three of them already written --- are
-    proved outright.
-  \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure for
-    a countable-state Markov kernel.} The keystone: \ref{thm1-2} and its
-    skeleton half \ref{thm1-2-skeleton}, and through them \ref{thm2-1},
-    \ref{thm3}, \ref{thm25}, \ref{thm27} and \ref{thm31}, all wait on it.  It is
-    self-contained, of independent value, and depends on nothing else in this
-    list.
+  \item \textbf{\ref{prop22}}, with a repair or the weakening of \ref{prop17}
+    described at \ref{aux-biased-minorisation}.  Either closes \ref{thm25}
+    outright, and nothing else in it is unproved.  The smallest item on this
+    list, and the only one that is a single decision.
+  \item \textbf{\ref{lem19} and~\ref{lem20}}, with the repairs of
+    \ref{note-lem19} and~\ref{note-lem20}.  Worth settling with the authors
+    first, since the repairs change the written proofs.  \ref{prop7} then
+    follows by assembling them with \ref{aux-consensus-ladder}, and
+    \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
+    written --- are proved outright, and \ref{thm2-1} with them.
+  \item \textbf{The invariance correspondence for a jump process}, for
+    \ref{eq13} and \ref{thm1-2} through it: that a probability measure is
+    invariant for a non-explosive jump process exactly when its product with
+    the jump rate is invariant for the skeleton.  The paper cites it; Mathlib
+    does not have it.  It also needs \ref{thm1-1}, which is item~4.
   \item \textbf{Poisson point processes} and the superposition comparison, for
-    \ref{thm1-1} and~\ref{thm16}.  The largest item, and the one the fewest
-    results depend on.
+    \ref{thm1-1} and~\ref{thm16}, and \ref{eq13} through the first.  The
+    largest item by far.
 \end{enumerate}
 
-Items 3 and 4 are contributions to Mathlib rather than to this repository.
-The engineering companion to this blueprint, \texttt{blueprint/blueprint.md},
-records exactly what the library does and does not provide, with names, files
-and line numbers, checked against the pinned revision.
+Items 3 and 4 are contributions to Mathlib rather than to this repository, as
+is \ref{aux-doeblin}, which is proved here and is the clearest thing to offer
+upstream.  The engineering companion to this blueprint,
+\texttt{blueprint/blueprint.md}, records exactly what the library does and does
+not provide, with names, files and line numbers, checked against the pinned
+revision.

@@ -14,7 +14,7 @@ blueprint for the mathematics, and here for the decision.  Nothing in §1 has be
 
 Three files, three jobs.  [`STATUS.md`](STATUS.md) is the generated index: every
 statement of the paper, whether it is proved, and — for the ones that are not — which
-of five kinds of obstruction it has met.  It is rebuilt from the sources and checked by
+of three kinds of obstruction it has met.  It is rebuilt from the sources and checked by
 CI, so it cannot drift.  The blueprint (`blueprint/src/content.tex`, chapter *Notes on
 the formalisation*) holds the mathematics of each item.  **This file says what each one
 asks of you**, and nothing else.
@@ -34,7 +34,7 @@ the requests below [GL24] has already answered.
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)`.  **Theorem 25** rests on it, and on nothing else unproved | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 — or weaken Proposition 17 and drop it from Theorem 25's route entirely |
-| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence | whether to restate it as the converse, which is what the paper actually uses |
+| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence.  Separately, its proof invokes non-explosivity — Theorem 1.1 — and an equivalence it cites rather than proves, so it is blocked on Mathlib as well | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
@@ -42,8 +42,8 @@ repository has already taken the only route available, and says so at the declar
 
 | | Statement | What was found |
 |---|---|---|
-| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Proved** |
-| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7, and was the fourth item needing a decision.  It is Corollary 8 of [GL24], and the argument is now written out and machine-checked.  **Proved** modulo Lemmas 19 and 20 |
+| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemmas 19 and 20 |
+| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemmas 19 and 20 |
 | [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | the biased twin of Lemma 13, so it inherits Lemma 13's two missing displays in biased form |
 | [§2.1](#2-statements-that-had-to-be-changed) | **Proposition 12** | with `ε₁ ε₂ s₁ s₂` bound ahead of `β`, the hypotheses are unsatisfiable and Theorem 3 could never have followed.  Made functions of `β` |
 | [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
@@ -52,13 +52,12 @@ repository has already taken the only route available, and says so at the declar
 | [§2.6](#2-statements-that-had-to-be-changed), [§3.3](#3-the-two-axioms) | **Theorem 31** | its route needs a biased Proposition 12, which the paper does not state.  Declared as a second axiom; Theorem 31 is **proved** from it |
 | [§2.8](#2-statements-that-had-to-be-changed) | **Proof of Lemma 13** | `τ` is exponential of mean `1/(MN)`, so `P(τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`.  Harmless — the written form is the weaker one |
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
-| [§5](#5-not-the-papers-fault) | **Remark 6** | was the one numbered statement with no Lean counterpart.  Now stated and **proved**, outright: its route needs only the last stage of Proposition 7, not Lemmas 19 and 20 |
-| [§5](#5-not-the-papers-fault) | **Measurability of `R^{β,u}(θ)`** | was listed here as needing a decision from you.  It did not: the diagnosis was wrong and it is now **proved**, for every realisation |
+| [§5](#5-not-the-papers-fault) | **Remark 6** | its horizon is `N`, not `(M+1)N`: part 2 of Theorem 2 concludes `L`, not `L^o`, and cannot be quoted as it stands.  **Proved** outright, its route needing only the last stage of Proposition 7 |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
 | [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Stated in Lean as you state it, but weakening it would make **Theorem 25** provable without Proposition 22 |
-| [§5](#5-not-the-papers-fault) | **Theorem 1.2** | was the keystone, listed as blocked on Mathlib.  Now **proved**, both halves: the criterion, your page-17 minorisation, and the excursion measure.  The existence half needed no Markov-chain theory at all — on a countable space it is a sum, not a limit.  Your `ε*` becomes an explicit constant, and (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass.  The Lean statement also drops your `N ≥ 3` |
-| [§5](#5-not-the-papers-fault) | **Kac's lemma** | was listed as a gap in Mathlib blocking Proposition 9 and four results below it.  It was not: the proof needs only the *inequality*, which holds for every invariant measure and is now **proved** outright |
-| [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | our Lean statement of it was **false**: it rendered the independent `τ` as a supremum, whose `s = 0` term tends to one.  Restated with the process's own first jump time, which is the reading your equation (19) uses, and **proved** under it |
+| [§5](#5-not-the-papers-fault) | **Theorem 1.2, for the skeleton** | **Proved**, both halves, from the criterion and your page-17 minorisation.  The existence half needs no Markov-chain theory — on a countable space the excursion measure is a sum, not a limit.  Your `ε*` becomes an explicit constant, (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass, and the Lean statement drops your `N ≥ 3`.  Theorem 1.2 in continuous time is a separate matter: it waits on equation (13) |
+| [§5](#5-not-the-papers-fault) | **Kac's lemma in Proposition 9** | the proof opens with the *identity*, which needs irreducibility, and then uses only the *inequality*, which holds for every invariant probability measure.  Nothing there waits on Theorem 1.2; the inequality is **proved** outright here |
+| [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | the sentence "`τ` … independent from `(U_t^{β,u})_t`" admits a reading under which the corollary is **false**.  Under the reading your equation (19) uses — `τ` the process's own first jump time from `0` — it is true and **proved** here |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
 
 ---
@@ -390,32 +389,54 @@ blueprint's audit section classifies every formalised proof this way.
 
 ## 5. Not the paper's fault
 
-Unproved because Mathlib has no theory of it, not because anything is wrong:
-Poisson point processes (Theorem 1.1, Theorem 16) and the continuous-time
-analysis of Appendix B (Lemma 14, Lemma 29).  That is the whole list.
+Unproved because Mathlib has no theory of the object, not because anything in
+the paper is wrong:
+
+* **Poisson point processes** — Theorem 1.1 and Theorem 16.
+* **Appendix B's continuous-time analysis** — Lemma 14 and Lemma 29: a
+  Kolmogorov-type bound on the convergence to `Exp(1)`, and total-variation
+  distance.
+* **The invariance correspondence a jump process has with its skeleton** —
+  equation (13), and Theorem 1.2 in continuous time through it.  See below.
+
 `blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
 not provide, checked against the pinned revision.
 
-**Theorem 1.2 has left this list, and it was the keystone.** `μ̃^β` exists and
-is unique, proved outright (`SocialNetwork.existsUnique_invariantSkeleton`), and
-nothing above it waits on Mathlib any more. Two pieces did it. Doeblin's
-**criterion** is proved here (`SocialNetwork/Doeblin.lean`) for a general Markov
-kernel on a countable space, *both halves*: a minorisation of some iterate at
-one state, uniform over an absorbing set, gives exactly one invariant
-probability measure carried by that set. And this chain's **minorisation** —
-your page 17 — is proved here too (`SocialNetwork/Minorisation.lean`).
+### Equation (13) is blocked, and not on us
 
-This repository had recorded that the existence half would need Markov-chain
-theory Mathlib lacks, namely the construction of an invariant measure from one
-excursion of a positive recurrent chain. The premise was right and **the
-conclusion was wrong**, and it is worth saying why, because it may matter to how
-you write it. On a *countable* state space that construction needs no theory at
-all. The excursion measure `ν(y) = ∑ₘ P_l(Ũₘ = y, R_l > m)` is a sum in
-`[0,∞]`; your minorisation makes it summable directly, with no recurrence
-theorem in between, since it gives `P_l(R_l > m) ≤ (1-c)^m` at once; and
-invariance is the last-exit decomposition, which in coordinates is two lines.
-No positive recurrence, no Kac identity, no compactness, no limit of Cesàro
-averages.
+Its proof opens: *"For a non-explosive process, a probability measure is
+invariant for `(U_t^{β,u})_t` if and only if its product with the jump rate is
+invariant for the skeleton chain. **Non-explosivity holds by Part 1** …"*
+
+Part 1 is Theorem 1.1, which needs Poisson point processes.  The appeal is not
+rhetorical: `P_t` is the law of `U_t`, `U_t` is read off the jump-hold
+representation through the jump counter, and the counter returns junk on the
+explosion event.  Until that event is known to be null, "invariant for `P_t`" is
+not invariance for the semigroup the argument is about.
+
+The equivalence itself is the other half, and the paper cites it rather than
+proving it.  Mathlib has no form of it.  Whether it should be a third external
+citation here, like Proposition 12, or a lemma proved in this repository, is a
+question for you.
+
+The two remaining steps are ours to do and are not done: `q_β(u) ≥ M` on `S`,
+which the null row of (6) gives, and the finiteness `∑ μ̃^β(u)/q_β(u) ≤ 1/M`.
+
+### Theorem 1.2 for the skeleton, and two remarks on your page 17
+
+`μ̃^β` exists and is unique, proved outright
+(`SocialNetwork.existsUnique_invariantSkeleton`), from Doeblin's criterion —
+proved here for a general Markov kernel on a countable space, *both halves*,
+in `SocialNetwork/Doeblin.lean` — and your page-17 minorisation, in
+`SocialNetwork/Minorisation.lean`.
+
+One thing is worth saying because it may affect how you write it: on a
+*countable* state space the existence half needs no Markov-chain theory at all.
+The excursion measure `ν(y) = ∑ₘ P_l(Ũₘ = y, R_l > m)` is a sum in `[0,∞]`;
+your minorisation makes it summable directly, since it gives
+`P_l(R_l > m) ≤ (1-c)^m` at once; and invariance is the last-exit
+decomposition, which in coordinates is two lines.  No positive recurrence, no
+Kac identity, no compactness, no Cesàro limit.
 
 Two remarks on the minorisation, neither of them a request.  Your `ε*` is a
 minimum over the finite set of bounded matrices of a probability you do not
@@ -428,26 +449,18 @@ no hypothesis on where they start.  That is what lets the minorising measure be
 a single Dirac mass, which is what the criterion consumes; it is worth stating
 that way if you revise.
 
-Two statements are now unproved for **neither** reason — nothing stands in the
-way and the work is simply not done: equation (13) and Theorem 1.2 in continuous
-time. They were listed as blocked on Mathlib only because they waited on `μ̃^β`
-to exist. Equation (13) is the stationary-law transfer; this repository has had
-it flagged as a statement you may want to revisit before it is formalised, and
-nothing is asked of you unless you agree. Theorem 1.2 in continuous time follows
-from it.
+### Theorem 25 rests on Proposition 22, and need not
 
-**Theorem 25 is written out on Appendix C's own route and rests on Proposition
-22**, and the one thing worth your attention is that it need not. Your Appendix C
-says the proof "follows exactly as the proof of Theorem 1", and the proof of
-Theorem 1 part 2 puts together Propositions 6 and 8; transported, those are
-Propositions 22 and 24. Proposition 24 is proved here. Proposition 22 is §1.3
-above and does not compose, so the minorisation and Theorem 25 carry a `sorry`
-through it — every other step in them is proved, so **one repair of Proposition
-22 closes Theorem 25 outright**.
+Your Appendix C says the proof "follows exactly as the proof of Theorem 1", and
+the proof of Theorem 1 part 2 puts together Propositions 6 and 8; transported,
+those are Propositions 22 and 24.  Proposition 24 is proved here.  Proposition
+22 is §1.3 above and does not compose, so the minorisation and Theorem 25 carry
+a `sorry` through it — every other step in them is proved, so **one repair of
+Proposition 22 closes Theorem 25 outright**.
 
-**There is a second way out, and it is cheaper.** A Doeblin minorisation needs
+**There is a second way out, and it is cheaper.**  A Doeblin minorisation needs
 *a* box, not your constant, and **Proposition 17 gives one in any regime**: its
-proof uses no hypothesis on `α` at all, only `γ > 0`. The `α < 0` in its
+proof uses no hypothesis on `α` at all, only `γ > 0`.  The `α < 0` in its
 statement is the regime Section 5.4 applies it in, not one the argument needs.
 Stating Proposition 17 for `γ > 0` costs you nothing and makes Theorem 25 follow
 from it with no appeal to Proposition 22 at all.
@@ -456,51 +469,15 @@ That route needs one step that appears in no version of your paper, which is why
 it is described here rather than formalised: Proposition 17 bounds the pressures
 from above and the rates need both sides, and for `γ < 1/(M-1)` the one gives the
 other — some opinion carries at least `nₐ/M` of what the actor heard, so a cap on
-the pressures caps `nₐ`, and `u(a,p) ≥ -γ nₐ`. This repository was briefly built
-that way, with Theorem 25 marked proved. That was a mistake about what the
-repository is for — Lean is checking your arguments here, not only your
-statements — and it has been undone. The mathematics is offered; the decision is
+the pressures caps `nₐ`, and `u(a,p) ≥ -γ nₐ`.  Lean is checking your arguments
+here, not only your statements, so the mathematics is offered and the decision is
 yours.
 
-Earlier, three others sat in that group.  **Corollary 11** was filed under Doeblin and
-**equation (19)** as a citation; reading part 2 apart from part 1 moved both, and
-part 2 and the first display of §2.7 with them.  Part 2 says nothing about the
-invariant measure, so nothing it needed was missing from this repository: what it
-wanted was the clock, and the clock is the construction's own
-(`aux-holding-times` in the blueprint).  What Corollary 11 and equation (19)
-wanted beyond that was one lemma, the restart of the process at its first jump
-(§4).  The third was **Remark 6**, the one numbered statement with no Lean
-counterpart at all.
+### Proposition 9: the identity needs irreducibility, the inequality does not
 
-Two of the three turned out to be provable **outright**, and in both cases
-because the route this repository had assumed was not the route: equation (19)
-does not pass through part 2 of Theorem 2 (the supremum it bounds by is on its
-own right-hand side), and Remark 6 needs only the *last* stage of Proposition 7
-— consensus to a ladder, which is proved — because it starts inside `C^o`, and
-getting to `C^o` is exactly what Lemmas 19 and 20 are for.  Corollary 11 does use
-part 2 and inherits its `sorry`.
-
-None of what is proved there is proved *outright*: part 2 and the display rest
-on Proposition 7, hence on Lemmas 19 and 20, and turn green with no edit the
-moment those do.  What changed is what the rest is waiting for: work here,
-rather than a contribution to Mathlib or a decision from you.
-
-**Corollary 10**, which stood here until the description of the states from
-which the zero matrix can be entered was written out, is now proved modulo
-Proposition 9: the description is exhaustive because the invariant measure
-charges only matrices with a null row, and the extra exponent `1/(M-1)` is what
-the step into the zero matrix costs against the normalisation of the rates.
-
-### Kac's lemma: listed as a gap in Mathlib, and it was not one
-
-This section used to say that Proposition 9, Corollary 10 and Proposition 26
-were blocked because **Mathlib has no Kac lemma**.  The first half is true —
-every `Kac` in Mathlib is a Kac--Moody algebra — and the conclusion was wrong.
-
-The proof of Proposition 9 opens with the *identity*
-`1/μ̃^β(u) = E[R̃^{β,u}(u)]`, and the identity really does need the chain to be
-irreducible, so reading it as a citation of Theorem 1.2 was reasonable.  But the
-proof goes on to use only
+The proof opens with the *identity* `1/μ̃^β(u) = E[R̃^{β,u}(u)]`, which does need
+the chain to be irreducible — and so, read literally, needs Theorem 1.2.  But
+the proof goes on to use only
 
 ```
 μ̃^β(u) · E[R̃^{β,u}(u)] ≤ 1,
@@ -511,56 +488,26 @@ for every invariant probability measure**, with no irreducibility, no recurrence
 and no existence theorem: the events "the last visit to `u` before time `m` was
 at time `j`", `j < m`, are disjoint, and stationarity gives each of them
 probability `μ̃^β(u) · P_u(R > m-1-j)`.  Only the identity needs the union of
-those events to have full measure, which is where ergodicity comes in.  The
-counterexample to the identity without it is two absorbing states with
-`μ̃ = (½, ½)`, where the return time is `1` and `1/μ̃` is `2`.
+those events to have full measure.  The counterexample to the identity without
+irreducibility is two absorbing states with `μ̃ = (½, ½)`, where the return time
+is `1` and `1/μ̃` is `2`.
 
 `SocialNetwork/Kac.lean` proves the inequality outright, for a Markov kernel on
-a countable space, in about a hundred lines and using nothing from Mathlib
-beyond `Kernel.Invariant` and the Lebesgue integral.  So Proposition 9 waits on
-neither Mathlib nor Doeblin, and §1.6, the one thing it did wait on, is now
-proved as well.
+a countable space, in about a hundred lines, using nothing from Mathlib beyond
+`Kernel.Invariant` and the Lebesgue integral.  Nothing is asked of you; it is
+worth a line in a revision that the proof does not need what it opens with.
 
-The lesson is the one below, again: **a citation is not an obstruction until one
-has checked which half of it the proof needs.**
-
-### Measurability of the hitting times: a decision we asked for and did not need
-
-An earlier version of this file put `SocialNetwork.measurable_hittingTimeCts`, and
-its biased twin, in the table above: the hitting time is an infimum over an
-uncountable family of times, reducing it to a countable one appeared to need
-right-continuity of `t ↦ U_t (ω)`, and right-continuity holds only almost
-surely — so, we said, the statement wanted an almost-sure formulation, and the
-choice was yours.
-
-**Both are now proved, for every realisation, with the statement unchanged.**  The
-mistake was to take one route to the reduction for the only one.  Write
-`S (t) = {n : Tₙ ≤ t}`, so the jump count at `t` is `sup S (t)`.  Where `S (t)` is
-bounded, `k = sup S (t)` lies in `S (t)` and bounds it, so `max (T_k, 0) ≤ t` and
-the jump count there is again `k`: the infimum over that level set is *attained*,
-at a time named by `k` alone.  Where `S (t)` is unbounded — the explosion event —
-every larger time has `S` unbounded too, so every rational above `t` sits in the
-same level set.  The countable family `{max (T_k, 0)} ∪ (ℚ ∩ [0, ∞))` therefore
-meets the infimum outright.  Nothing in it mentions the holding times, which is
-why the biased twin costs one line.
-
-Nothing was asked of you and nothing is now.  It is recorded because this file
-had claimed otherwise, and a claim of ours that turned out to be wrong belongs
-here as visibly as one about the paper.
-
-### Corollary 11: our transcription was false, and one word of yours decides it
-
-Found while trying to prove it.  The Lean statement was ours and it was wrong;
-that is §2.11 and it is now repaired.  What is worth a line to you is *why* the
-repair had only one possible shape.
+### Corollary 11: one word of yours decides it
 
 Corollary 11 reads `P(R^{β,0}(L) > τ + e^{-β(1-δ)/(M-1)}) → 0`, "where `τ` is an
 exponentially distributed random variable with mean `1/(MN)` independent from
-`(U_t^{β,u})_t`".  Everything turns on that superscript `u`.  Read as you use it
-in equation (19) — `τ` is the process's own first jump time from `0`, and the
-independence asserted is from what happens *after* it, from the state `u` it
-lands on — the corollary is true and is exactly Theorem 2, part 2, applied at
-`u`.  That is the reading the Lean statement now carries.
+`(U_t^{β,u})_t`".  Everything turns on that superscript `u`.
+
+Read as you use it in equation (19) — `τ` is the process's own first jump time
+from `0`, and the independence asserted is from what happens *after* it, from
+the state `u` it lands on — the corollary is true and is exactly Theorem 2,
+part 2, applied at `u`.  That is the reading the Lean statement carries, and
+under it the corollary is proved, as is equation (19).
 
 Read as "`τ` independent of the process", full stop, the corollary is **false**.
 From `0` we have `0 ∉ L`, so `R^{β,0}(L) ≥ T₁`, and `R^{β,0}(L) = T₁ + O(ε_β)`;
@@ -570,67 +517,61 @@ exponential of rate `MN` — which is `1/2`.
 **Nothing is asked of you**, and nothing in the paper needs changing: your proof
 of Lemma 13 uses the right reading.  It is recorded because the sentence as
 written admits a reading under which the corollary fails, and a formalisation is
-the kind of reader that takes it.  Under the right reading the corollary is now
-proved, and so is equation (19).
+the kind of reader that takes it.
 
-**Remark 6** was the one numbered statement of the paper with no Lean
-counterpart, and it now has one: `tendsto_probHittingLadderFirst`, proved
-outright.  Two notes on it, neither asking anything of you.
+### Remark 6: the horizon is `N`, not `(M+1)N`
 
-The horizon is `N`, not `(M+1)N`.  "By following the same steps of the proof of
-part 2 of Theorem 2" is exactly right, but the steps have to be run from `C^o`
-and stopped at `N`: continuing a greedy run past a ladder expresses the same
-opinion again and leaves `L^o`, so part 2's bound — which concludes `L`, not
-`L^o` — cannot be quoted as it stands.  What Remark 6 uses is the last stage of
-Proposition 7 on its own.
+"By following the same steps of the proof of part 2 of Theorem 2" is exactly
+right, but the steps have to be run from `C^o` and stopped at `N`: continuing a
+greedy run past a ladder expresses the same opinion again and leaves `L^o`, so
+part 2's bound — which concludes `L`, not `L^o` — cannot be quoted as it stands.
+What Remark 6 uses is the last stage of Proposition 7 on its own, which is why
+it is proved outright while part 2 is not: starting inside `C^o` skips Lemmas 19
+and 20, since getting to `C^o` is their whole job.
 
-And that is why it is proved outright while part 2 is not.  This repository had
-filed Remark 6 behind Lemmas 19 and 20, on the grounds that its route is part 2
-and part 2 rests on them.  It does not: starting inside `C^o` skips them, since
-getting to `C^o` is their whole job.  Nothing downstream uses Remark 6 — it
-strengthens Corollary 11 in the direction Lemma 14 needs — but it is the only
-statement of Section 5.2 that this repository can offer you sorry-free: part 1
-of Theorem 2 waits on equation (13) and on Proposition 9, and part 2 and
-Corollary 11 on Lemmas 19 and 20.
+Nothing downstream uses Remark 6 — it strengthens Corollary 11 in the direction
+Lemma 14 needs — but it is the only statement of Section 5.2 this repository can
+offer you sorry-free.
 
-**Theorem 4** part 1 is now **proved**, and with it the negative-bias half of the phase
-transition: almost surely all but one actor eventually stop expressing. Proposition 18
-supplies the uniform chance of settling, Proposition 17 carries it from `B_N^α` to the whole
-of `S^α`, and the failure-time recursion closes it.
+### Theorem 4 part 1: two supplied steps and one reorganisation
 
-Two of its steps were supplied rather than read off the paper, and both are recorded at the
-node in the blueprint. The first is the Markov property. You write "the strong Markov
-property at time `T_N`", but part 1 is a statement about the sequence `(A_n)` — about the
-skeleton — and for the skeleton `T_N` is the *deterministic* index `N`; so what is used
-there is the simple Markov property. At the failure times a real stopping time does appear,
-and for a discrete-time chain the strong Markov property follows from the simple one by
-decomposing over its countably many values. Nothing was assumed that you did not use; it is
-only that the proof names a stronger tool than the argument needs, and Mathlib has no strong
-Markov property to hand it. The second supplied step is that `{η_n < ∞}` is measurable for
-the past at `η_n`, which here is the statement that each failure event is decided by the
-expressions that precede it.
+Part 1 is proved, and with it the negative-bias half of the phase transition:
+almost surely all but one actor eventually stop expressing.  Proposition 18
+supplies the uniform chance of settling, Proposition 17 carries it from `B_N^α`
+to the whole of `S^α`, and the failure-time recursion closes it.
 
-One reorganisation is worth flagging, since it is visible in the Lean. Your recursion gives
-`P(η_{n+1} < ∞) ≤ (1-c) P(η_n < ∞)` and concludes by letting `n → ∞`. That limit is exactly
-`q = sup_{v ∈ S^α} P_v(no actor is eventually alone)`, and the single inequality the
-recursion uses gives `q ≤ (1-c) q` in one step. The estimate, the time it is applied at and
-the constant are yours; only the bookkeeping of the recursion is replaced by the fixed point
-it converges to. Say the word if you would rather see the `η_n` written out.
+Two steps are supplied rather than read off the paper, and both are recorded at
+the node in the blueprint.  The first is the Markov property.  You write "the
+strong Markov property at time `T_N`", but part 1 is a statement about the
+sequence `(A_n)` — about the skeleton — and for the skeleton `T_N` is the
+*deterministic* index `N`; so what is used there is the simple Markov property.
+At the failure times a real stopping time does appear, and for a discrete-time
+chain the strong Markov property follows from the simple one by decomposing over
+its countably many values.  Nothing was assumed that you did not use; the proof
+names a stronger tool than the argument needs, and Mathlib has no strong Markov
+property to hand it.  The second supplied step is that `{η_n < ∞}` is measurable
+for the past at `η_n`, which here is the statement that each failure event is
+decided by the expressions that precede it.
 
-Two smaller notes. Theorem 16 is **not** needed for part 1: the statement is about the
-sequence of expressed pairs, and non-explosion is what makes the continuous-time process well
-defined. And your part 1 indexes from 1, the formalisation from 0, so where you write
-`⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean reads `∀ m ≥ N, A_m = A_N`.
+One reorganisation is worth flagging, since it is visible in the Lean.  Your
+recursion gives `P(η_{n+1} < ∞) ≤ (1-c) P(η_n < ∞)` and concludes by letting
+`n → ∞`.  That limit is exactly `q = sup_{v ∈ S^α} P_v(no actor is eventually
+alone)`, and the single inequality the recursion uses gives `q ≤ (1-c) q` in one
+step.  The estimate, the time it is applied at and the constant are yours; only
+the bookkeeping of the recursion is replaced by the fixed point it converges to.
+Say the word if you would rather see the `η_n` written out.
 
-With this closed, and with **Corollary 11**, **equation (19)** and **Remark 6**
-since written, nothing is left in the repository that is nobody's fault.
+Two smaller notes.  Theorem 16 is **not** needed for part 1: the statement is
+about the sequence of expressed pairs, and non-explosion is what makes the
+continuous-time process well defined.  And your part 1 indexes from 1, the
+formalisation from 0, so where you write `⋂_{m ≥ N+1} {A_m = A_{N+1}}` the Lean
+reads `∀ m ≥ N, A_m = A_N`.
 
 ---
 
 ## How this file stays honest
 
-Every claim above is checked by the build, and the checking is no longer done by
-hand.
+Every claim above is checked by the build, not by hand.
 
 [`STATUS.md`](STATUS.md) is generated from `blueprint/src/content.tex` and the
 Lean sources by `scripts/status.py`, and CI regenerates it and fails on any
