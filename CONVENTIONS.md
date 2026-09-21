@@ -44,6 +44,17 @@ and 20.
 There is exactly one such departure in the repository at present, Proposition 7, and it
 is written out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
 
+**Where the paper's proof does not close, the statement is left resting on the step that
+fails — even when a different argument would establish it.** This is the sharp end of
+rule 3, and the easiest place to go wrong: having found that a written proof does not
+compose, it is tempting to prove the statement some other way and mark the node green.
+That records a theorem and loses the finding, which is the one thing this development
+produces that a reader of the paper does not already have. So the proof is written out
+in full on the paper's own ingredients, it inherits `sorryAx` from the step that fails,
+and the alternative route is described in `FOR-THE-AUTHORS.md` for the authors to take
+or leave. Theorem 25 is the case to look at: Proposition 17 does give the box Appendix C
+takes from Proposition 22, and the node is deliberately not closed that way.
+
 **A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
 same estimates, applied at the same places and with the same constants, but arranges them
 differently — an induction run as the fixed point it converges to, an iteration run through

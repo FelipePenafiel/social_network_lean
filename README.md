@@ -29,58 +29,49 @@ contract between the paper and the repository, and holds the detail behind all f
 
 ## Where things stand
 
-The **deterministic layer** is proved: the state space, the expression operator and the
-conservation law behind it, the ladder/consensus geometry of Definitions 1, 2 and 4,
-Propositions 5 and 6, and the vocabulary of Appendix A. Proposition 7 is assembled from
-its three stages and waits only on Lemmas 19 and 20 — the two written proofs of
-Appendix A that do not compose. Proposition 9 waits on nothing else: the step its proof
-asserts, that the greedy run reaches `L` without visiting `u`, is Corollary 8 of [GL24]
-and is proved here ([`GL24.md`](GL24.md) §2.1).
+Every numbered statement of the paper — 56 statements and displayed equations — is
+stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is proved.
 
-The **discrete-time probabilistic layer** is built and proved: the jump rates of equation
-(3), the skeleton kernel of Definition 3 as a `Kernel (Pressure N M) (Pressure N M)`, the
-law of a realisation via Mathlib's Ionescu–Tulcea theorem, the greedy events `ξₙ^u` as
-measurable sets, Proposition 8 with Remark 4, and Remark 5 entire.
+**Proved outright**, depending on nothing but Lean's own axioms:
 
-The **continuous-time process** is built — the jump-hold representation is a discrete-time
-chain carrying one real coordinate, so `Kernel.traj` constructs it — and with it the jump
-times, the process `U_t`, the transition semigroup and the hitting times `R^{β,u}(θ)`.
+* the deterministic layer — the state space, the expression operator and its
+  conservation law, the ladder and consensus geometry of Definitions 1, 2 and 4, and
+  the vocabulary of Appendix A;
+* the discrete-time probabilistic layer — the jump rates of equation (3), the skeleton
+  kernel of Definition 3, the law of a realisation via Mathlib's Ionescu–Tulcea
+  theorem, Propositions 5, 6 and 8 with Remarks 4 and 5;
+* **Doeblin's criterion**, both halves, for an arbitrary Markov kernel on a countable
+  space (`SocialNetwork/Doeblin.lean`), and with it **Theorem 1.2 for the skeleton**:
+  `μ̃^β` exists and is unique;
+* **Kac's inequality**, which is the half of Kac's lemma Proposition 9 uses;
+* the biased model of Section 3, with Propositions 21, 17 and 24, and **Proposition 18
+  and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
+  surely all but one actor eventually stop expressing.
 
-The **biased model of Section 3** is assembled: memory profiles, the operator `π_α^{a,o}`,
-the state space `S^α`, the generator `G̃` of equation (7), the sets of equations (8) and
-(9), and the biased skeleton and process. Propositions 21, 17 and 24 are proved by the
-transports Appendix C and Section 5.4 assert, and Corollary 30 is Corollary 15 transposed.
+**Proved modulo one citation**, Theorem 5.3 of [LM22], which the paper invokes as
+Proposition 12 and nothing in this library can discharge: **both metastability theorems,
+3 and 31**. It is declared as an `axiom` rather than left as a `sorry`, so that it does
+not sit in the inventory of outstanding work pretending to be pickable. There have to be
+two, one per process; [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3 says why a single
+abstract axiom would be inconsistent.
 
-**Proposition 18 and part 1 of Theorem 4 are proved** — the phase transition's negative-bias
-half. Proposition 18 is the paper's own argument: the decomposition (21), the rate bound
-(22), the passage through `ln (1+x) ≥ x/(1+x)`, and the frequency event `E_ε^k`, with the
-strong law of large numbers taken from Mathlib as the paper takes it from the literature.
-Theorem 4 part 1 carries it to the whole of `S^α` and iterates: almost surely, all but one
-actor eventually stop expressing.
+**Written out and resting on an obstruction.** Proposition 7 is assembled from its three
+stages and waits on Lemmas 19 and 20, the two written proofs of Appendix A that do not
+compose; Proposition 9 and Theorem 2.1 wait behind it. Theorem 25 is written on Appendix
+C's own route and rests on Proposition 22. Each inherits `sorryAx` from its obstruction
+and from nothing else, so it turns green the moment that one does.
 
-The Markov property that iteration needs is not in Mathlib — nothing in the library states
-a strong Markov property — and it turns out not to be needed in that form: the paper applies
-it "at `T_N`", which for the skeleton is a *deterministic* index, and the genuine stopping
-times are handled by the usual discrete-time decomposition.
-[`blueprint/blueprint.md`](blueprint/blueprint.md) records the audit.
+What is unproved is unproved for three reasons, which [`STATUS.md`](STATUS.md) keeps
+apart because they are not comparable: Mathlib has no theory of the object, the paper's
+own proof does not compose, or the statement is a citation from outside the paper.
 
-**Both metastability theorems — 3 and 31 — are proved**, modulo one citation used twice:
-Theorem 5.3 of [LM22], which the paper invokes as Proposition 12 and which nothing inside
-this library can discharge. It is declared as an `axiom` rather than left as a `sorry`, so
-that it does not sit in the inventory of outstanding work pretending to be pickable. There
-have to be two, one per process; [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3 says why a
-single abstract axiom would be inconsistent.
-
-Every numbered statement of the paper is stated in Lean, with one exception recorded in
-[`STATUS.md`](STATUS.md). What is unproved is unproved for four distinct reasons, which
-that file keeps apart because they are not comparable: one group will never close here,
-one needs mathematics only the authors can supply, and one is only work.
-
-**No proof of a statement of the paper has been invented here.** Where the written
-argument does not close, the statement is left unproved and the obstruction is written
-down, rather than repaired by an argument the authors have not seen. That rule is what
-`FOR-THE-AUTHORS.md` exists to report on, and
-[`CONVENTIONS.md`](CONVENTIONS.md) states it in full.
+**Lean checks the paper's arguments, not only its statements.** A Lean proof here follows
+the paper's proof; where the written argument does not close, the statement is left
+unproved and the obstruction is written down, rather than repaired by an argument the
+authors have not seen. That holds even when another argument would close the statement —
+Theorem 25 is the case to look at. The rule is stated in full in
+[`CONVENTIONS.md`](CONVENTIONS.md), and [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) is
+what it reports to.
 
 ## Layout
 
