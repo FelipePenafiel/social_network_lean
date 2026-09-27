@@ -8,6 +8,7 @@ import SocialNetwork.Clocks
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedNonExplosion
 import SocialNetwork.BiasedResults
+import SocialNetwork.Collapse
 import SocialNetwork.Consensus
 import SocialNetwork.ContinuousTime
 import SocialNetwork.Defs
