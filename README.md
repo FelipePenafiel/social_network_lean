@@ -46,11 +46,10 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
 * **Kac's inequality**, which is the half of Kac's lemma Proposition 9 uses;
 * **Theorem 1.1 and its biased twin Theorem 16** — the process does not explode.  The
   paper asserts the sandwich (11) rather than constructing it; [GL24] pp. 12–14 does
-  construct it, and that construction is formalised (`SocialNetwork/Graphical.lean` and
-  `SocialNetwork/Collapse.lean`), down to the identification of the constructed process
-  with the one equation (3) defines.  Theorem 16 uses instead the one property of the
-  sandwich its argument needs, as a criterion for any jump-hold chain whose distinguished
-  pairs are slow and frequent (`SocialNetwork/JumpHold.lean`);
+  construct it, and that construction is formalised (`SocialNetwork/Band.lean` and
+  `SocialNetwork/BandCollapse.lean`), down to the identification of the constructed
+  process with the one equation (3) defines.  It is written for an arbitrary state space,
+  so both models instantiate it, which is what Appendix C prescribes;
 * the biased model of Section 3, with Propositions 21, 17 and 24, and **Proposition 18
   and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
   surely all but one actor eventually stop expressing.
@@ -102,8 +101,9 @@ SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remar
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
 SocialNetwork/JumpHold.lean   non-explosion for a jump-hold chain with a slow sub-family
 SocialNetwork/NonExplosion.lean    the bound λ of equation (11) on the low-pressure pairs
-SocialNetwork/Graphical.lean  the band of [GL24]'s Figure 2, and that its marks do not accumulate
-SocialNetwork/Collapse.lean   the band is the process; Theorem 1.1
+SocialNetwork/Band.lean       the band of [GL24]'s Figure 2, for an arbitrary state space
+SocialNetwork/BandCollapse.lean    the band is the process
+SocialNetwork/Graphical.lean  the band of equation (3)'s model, and Theorem 1.1
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
 SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, 31
 SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1

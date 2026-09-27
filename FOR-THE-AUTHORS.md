@@ -416,15 +416,13 @@ so `sup T^λ_n = ∞`" is proved by a supermartingale instead.  One step is in
 neither source — the identification itself, which [GL24] states in passing — and
 supplying it is what `SocialNetwork/Collapse.lean` mostly is.
 
-**Theorem 16 still departs.**  [GL24] treats the unbiased model, and the band as
-formalised is built over the matrices of (3) and their rates, so no written
-construction covers the biased one; Appendix C's "as Theorem 1.1" points at your
-p. 16, which asserts.  What is proved there is the one property of the sandwich
-the argument uses — low expressions cannot accumulate in bounded time — from your
-own two estimates, Proposition 21 and `q^< ≤ λ`.  The construction would carry
-over, using only the rates and a uniform bound on the low family; rebuilding the
-band over an arbitrary state space is the remaining work, and it needs nothing
-from Mathlib.  `GL24.md` §6 item 5 says what it would take.
+**Theorem 16 follows the same route**, which is what Appendix C prescribes.  The
+band is built over an arbitrary state space — a rate per pair per state, the
+state each pair leads to, a distinguished family, and a bound `λ` on the rate it
+carries — so the biased model instantiates the same theorem with the rates of (7)
+and Proposition 21 in place of Proposition 5.  Your biased low family, read off
+the pressures of (6), is the only line of the argument the two proofs do not
+share.  **Proposition 7 is now the only departure in the development.**
 
 ### Equation (13) is blocked, and not on us
 

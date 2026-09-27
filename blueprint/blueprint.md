@@ -243,8 +243,9 @@ Mathlib provides, not of what this repository happens to want.
    **This blocks no theorem here, and no proof.**  Theorem 1.1 and Theorem 16 are proved, and
    [GL24]'s written proof of the sandwich (pp. 12–14) is now verified, without a Poisson
    process anywhere.  The band of its Figure 2 is carried by the jump-hold form instead
-   (`SocialNetwork/Graphical.lean`): draw a mark of the band, then hold for an exponential
-   time of the band's height.  That is the same law, and the property the construction turns
+   (`SocialNetwork/Band.lean`, written for an arbitrary state space so that both models
+   instantiate it): draw a mark of the band, then hold for an exponential time of the band's
+   height.  That is the same law, and the property the construction turns
    on survives it — the strip `[0, λ)` has mass `λ/Λ` whatever the matrix is.  [GL24]'s
    "`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`" becomes
    `SocialNetwork.measure_holdBlowUp_eq_one`, a criterion for an arbitrary jump-hold chain,
@@ -252,7 +253,7 @@ Mathlib provides, not of what this repository happens to want.
    there are at most `NM` of them, each of rate at most `e^{βN}`.
 
    The identification of the constructed process with the jump-hold one
-   (`SocialNetwork/Collapse.lean`) needs the law of a geometric sum of `Exp (Λ)` variables,
+   (`SocialNetwork/BandCollapse.lean`) needs the law of a geometric sum of `Exp (Λ)` variables,
    which is `Exp (pΛ)`; Mathlib has neither that nor the Erlang law (`gammaMeasure` exists,
    with no additivity, and is used nowhere else in the library).  It is proved without them:
    the truncated event "one of the first `n` marks is accepted, by time `t`" satisfies a

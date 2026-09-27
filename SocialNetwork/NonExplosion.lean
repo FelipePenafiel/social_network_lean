@@ -17,9 +17,9 @@ through its consequence.  This file supplies it:
   whatever the rest of the matrix does.  This is the content of (11): there are at most `NM`
   such pairs, and the scaled coordinates turn `‖u (a, ·)‖_∞ < N` into a rate at most `e^{βN}`.
 
-`SocialNetwork.Graphical` builds [GL24]'s band out of `λ`, and `SocialNetwork.Collapse`
-identifies the process with what the band carries; Theorem 1.1 itself is
-`SocialNetwork.nonExplosion`, there.
+`SocialNetwork.Band` builds [GL24]'s band out of `λ`, and `SocialNetwork.BandCollapse`
+identifies the process with what the band carries; `SocialNetwork.Graphical` instantiates the
+two for the model of equation (3) and proves Theorem 1.1, `SocialNetwork.nonExplosion`.
 -/
 
 open MeasureTheory ProbabilityTheory Finset

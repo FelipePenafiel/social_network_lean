@@ -87,7 +87,7 @@ are covered, and all 56 of them are stated in Lean.
 | Remark 3 | `IsState.trust_eq_zero` +1 | stated |
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
-| Theorem 1.1 | `nonExplosion` +9 | proved |
+| Theorem 1.1 | `nonExplosion` +14 | proved |
 | Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
 | Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
@@ -122,7 +122,7 @@ are covered, and all 56 of them are stated in Lean.
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 19, Lemma 20 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | unproved — blocked on Mathlib |
 | Corollary 15 | `le_characteristicTime` | proof written, rests on Proposition 12, Lemma 14 |
-| Theorem 16 | `Bias.biasedNonExplosion` +12 | proved |
+| Theorem 16 | `Bias.biasedNonExplosion` +11 | proved |
 | Proposition 17 | `Bias.measure_biasedBounded_ge` +1 | proved |
 | Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` +14 | proved |
 | Definition 5 — Matrices favouring an opinion | `IsFavouring` +2 | stated |
@@ -159,7 +159,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | The race between the clocks | `clockSplit` +24 | proved |
 | A jump-hold chain with a slow sub-family does not explode | `jumpHoldMeasure` +28 | proved |
-| The graphical construction of GL24, and the process it carries | `highRate` +48 | proved |
+| The graphical construction of GL24, and the process it carries | `Band` +52 | proved |
 | Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |
