@@ -213,8 +213,8 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\Rskel{u}(\theta) := \inf\{ n \ge 1 : \Uskel{u}_n \in \theta \}$.
 \end{definition}
 
-\aux{Remark}
-\begin{remark}[How the process is built in Lean]
+\aux{Definition}
+\begin{definition}[How the process is built in Lean]
   \label{aux-construction}
   \lean{SocialNetwork.ctsPathMeasure, SocialNetwork.jumpTime, SocialNetwork.explosionTime, SocialNetwork.process, SocialNetwork.transitionKernel, SocialNetwork.hittingTimeCts, SocialNetwork.totalRate_zero, SocialNetwork.jumpCount_eq_iff, SocialNetwork.measurable_jumpCount, SocialNetwork.measurable_state_ofStepPath, SocialNetwork.measurable_process}
   \leanok
@@ -246,7 +246,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   rather than a formalisation of anything written there.  The one measurability
   obligation that is not a cylinder argument, \ref{aux-measurable-hitting}, has
   a node of its own.
-\end{remark}
+\end{definition}
 
 \aux{Lemma}
 \begin{lemma}[Measurability of the hitting times]
