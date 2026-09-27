@@ -849,4 +849,307 @@ theorem map_markPathMeasure_collapse (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) 
       compProd_collapseKernel_prod hM hβ v hS' hE']
   · rw [measure_univ, measure_univ]
 
+/-! ### The jump-hold process is a driven chain -/
+
+/-- One expression moves the matrix by `express`. -/
+def jumpNext (v : Pressure N M) (p : Jump N M) : Pressure N M := express p.1 p.2 v
+
+omit [NeZero N] [NeZero M] in
+theorem state_ofPath_eq (u : Pressure N M) (j : ℕ → Jump N M) (n : ℕ) :
+    (Trajectory.ofPath j).state u n = stateAfterJumps jumpNext u j n := by
+  induction n with
+  | zero => rfl
+  | succ n ih => rw [Trajectory.state_succ, ih]; rfl
+
+theorem ctsDrivingKernel_eq (β : ℝ) (u : Pressure N M) (n : ℕ) :
+    ctsDrivingKernel β u n = drivenKernel jumpNext (stepLaw β) u n := by
+  ext h : 1
+  rw [ctsDrivingKernel_apply, drivenKernel_apply]
+  congr 1
+  exact state_ofPath_eq u _ (n + 1)
+
+/-- The continuous-time path measure is the chain of `SocialNetwork.JumpHold` driven by
+`express`.  This is a matter of unfolding: both are the Ionescu-Tulcea measure of the same
+kernels. -/
+theorem ctsPathMeasure_eq_drivenMeasure (β : ℝ) (u : Pressure N M) :
+    ctsPathMeasure β u = drivenMeasure jumpNext (stepLaw β) u := by
+  have hker : ctsDrivingKernel β u = drivenKernel jumpNext (stepLaw β) u :=
+    funext (ctsDrivingKernel_eq β u)
+  rw [ctsPathMeasure]
+  simp only [hker]
+  rfl
+
+/-! ### Collapsing the whole band -/
+
+/-- The realisation of the process that [GL24]'s band carries: the `n`-th step is the first
+accepted mark of the band that is left after the first `n` expressions have been read off. -/
+noncomputable def collapse (ω : ℕ → Hold (MarkJump N M)) : ℕ → Step N M :=
+  fun n => collapseStep (restAfterAccept^[n] ω)
+
+theorem collapse_zero (ω : ℕ → Hold (MarkJump N M)) : collapse ω 0 = collapseStep ω := rfl
+
+theorem collapse_succ (ω : ℕ → Hold (MarkJump N M)) (n : ℕ) :
+    collapse ω (n + 1) = collapse (restAfterAccept ω) n := by
+  rw [collapse, collapse, Function.iterate_succ_apply]
+
+theorem measurable_collapse : Measurable (collapse (N := N) (M := M)) :=
+  measurable_pi_lambda _ fun n =>
+    measurable_collapseStep.comp (measurable_restAfterAccept.iterate n)
+
+theorem shiftHold_collapse (ω : ℕ → Hold (MarkJump N M)) :
+    shiftHold (collapse ω) = collapse (restAfterAccept ω) := by
+  funext n
+  show collapse ω (1 + n) = collapse (restAfterAccept ω) n
+  rw [Nat.add_comm, collapse_succ]
+
+omit [NeZero N] [NeZero M] in
+/-- The first `n` steps of a realisation. -/
+theorem measurable_takeStep (n : ℕ) :
+    Measurable fun ω : ℕ → Step N M => (fun i : Fin n => ω i) :=
+  measurable_pi_lambda _ fun _ => measurable_pi_apply _
+
+/-- Prefixing a step to the first `n` steps of a realisation. -/
+def consStep {n : ℕ} (z : Step N M) (h : Fin n → Step N M) : Fin (n + 1) → Step N M :=
+  fun i => if hi : (i : ℕ) = 0 then z else h ⟨(i : ℕ) - 1, by have := i.isLt; omega⟩
+
+omit [NeZero N] [NeZero M] in
+theorem measurable_consStep (n : ℕ) :
+    Measurable fun q : Step N M × (Fin n → Step N M) => consStep q.1 q.2 := by
+  refine measurable_pi_lambda _ fun i => ?_
+  by_cases hi : (i : ℕ) = 0
+  · simp only [consStep, dif_pos hi]
+    exact measurable_fst
+  · simp only [consStep, dif_neg hi]
+    exact (measurable_pi_apply _).comp measurable_snd
+
+omit [NeZero N] [NeZero M] in
+theorem takeStep_succ (n : ℕ) (ω : ℕ → Step N M) :
+    (fun i : Fin (n + 1) => ω i) = consStep (ω 0) (fun i : Fin n => shiftHold ω i) := by
+  funext i
+  by_cases hi : (i : ℕ) = 0
+  · simp only [consStep, dif_pos hi]
+    rw [hi]
+  · simp only [consStep, dif_neg hi]
+    show ω (i : ℕ) = ω (1 + ((i : ℕ) - 1))
+    congr 1
+    omega
+
+/-- **[GL24]'s construction is the process.**  The finite-dimensional laws of the realisation
+carried by the band are those of the jump-hold process: the induction peels off one expression
+at a time, using `SocialNetwork.map_markPathMeasure_collapse` on the band and the restart
+lemma on the process. -/
+theorem map_takeStep_collapse (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (n : ℕ) (v : Pressure N M) :
+    (markPathMeasure hM hβ v).map (fun ω => (fun i : Fin n => collapse ω i))
+      = (ctsPathMeasure β v).map (fun ω : ℕ → Step N M => (fun i : Fin n => ω i)) := by
+  induction n generalizing v with
+  | zero =>
+      have h1 : IsProbabilityMeasure ((markPathMeasure hM hβ v).map
+          (fun ω => (fun i : Fin 0 => collapse ω i))) :=
+        Measure.isProbabilityMeasure_map
+          ((measurable_takeStep 0).comp measurable_collapse).aemeasurable
+      have h2 : IsProbabilityMeasure ((ctsPathMeasure β v).map
+          (fun ω : ℕ → Step N M => (fun i : Fin 0 => ω i))) :=
+        Measure.isProbabilityMeasure_map (measurable_takeStep 0).aemeasurable
+      refine Measure.ext fun s _ => ?_
+      rcases Set.eq_empty_or_nonempty s with rfl | ⟨x, hx⟩
+      · simp
+      · rw [show s = Set.univ from Set.eq_univ_of_forall fun y => by
+          rwa [show y = x from Subsingleton.elim y x], measure_univ, measure_univ]
+  | succ n ih =>
+      have hmapL : Measurable fun ω : ℕ → Hold (MarkJump N M) =>
+          (fun i : Fin (n + 1) => collapse ω i) :=
+        (measurable_takeStep (n + 1)).comp measurable_collapse
+      have hpairL : Measurable fun ω : ℕ → Hold (MarkJump N M) =>
+          (collapseStep ω, restAfterAccept ω) :=
+        measurable_collapseStep.prodMk measurable_restAfterAccept
+      have hpairR : Measurable fun ω : ℕ → Step N M => (ω 0, shiftHold ω) :=
+        (measurable_pi_apply 0).prodMk measurable_shiftHold
+      refine Measure.ext fun T hT => ?_
+      have hconsL : Measurable fun q : Step N M × (ℕ → Hold (MarkJump N M)) =>
+          consStep q.1 (fun i : Fin n => collapse q.2 i) :=
+        (measurable_consStep n).comp
+          (measurable_fst.prodMk (((measurable_takeStep n).comp measurable_collapse).comp
+            measurable_snd))
+      have hconsR : Measurable fun q : Step N M × (ℕ → Step N M) =>
+          consStep q.1 (fun i : Fin n => q.2 i) :=
+        (measurable_consStep n).comp
+          (measurable_fst.prodMk ((measurable_takeStep n).comp measurable_snd))
+      have hL : (fun ω : ℕ → Hold (MarkJump N M) => (fun i : Fin (n + 1) => collapse ω i)) ⁻¹' T
+          = (fun ω => (collapseStep ω, restAfterAccept ω)) ⁻¹'
+              ((fun q : Step N M × (ℕ → Hold (MarkJump N M)) =>
+                consStep q.1 (fun i : Fin n => collapse q.2 i)) ⁻¹' T) := by
+        ext ω
+        simp only [Set.mem_preimage]
+        rw [takeStep_succ n (collapse ω), shiftHold_collapse]
+        rfl
+      have hR : (fun ω : ℕ → Step N M => (fun i : Fin (n + 1) => ω i)) ⁻¹' T
+          = (fun ω : ℕ → Step N M => (ω 0, shiftHold ω)) ⁻¹'
+              ((fun q : Step N M × (ℕ → Step N M) =>
+                consStep q.1 (fun i : Fin n => q.2 i)) ⁻¹' T) := by
+        ext ω
+        simp only [Set.mem_preimage]
+        rw [takeStep_succ n ω]
+      rw [Measure.map_apply hmapL hT, Measure.map_apply (measurable_takeStep (n + 1)) hT,
+        hL, hR, ← Measure.map_apply hpairL (hconsL hT),
+        ← Measure.map_apply hpairR (hconsR hT), map_markPathMeasure_collapse,
+        ctsPathMeasure_eq_drivenMeasure, map_drivenMeasure_firstRest,
+        Measure.compProd_apply (hconsL hT), Measure.compProd_apply (hconsR hT)]
+      refine lintegral_congr fun z => ?_
+      have hsec : MeasurableSet {h : Fin n → Step N M | consStep z h ∈ T} :=
+        (measurable_consStep n).comp (measurable_const.prodMk measurable_id) hT
+      have hpreL : Prod.mk z ⁻¹' ((fun q : Step N M × (ℕ → Hold (MarkJump N M)) =>
+            consStep q.1 (fun i : Fin n => collapse q.2 i)) ⁻¹' T)
+          = (fun ω : ℕ → Hold (MarkJump N M) => (fun i : Fin n => collapse ω i)) ⁻¹'
+              {h : Fin n → Step N M | consStep z h ∈ T} := rfl
+      have hpreR : Prod.mk z ⁻¹' ((fun q : Step N M × (ℕ → Step N M) =>
+            consStep q.1 (fun i : Fin n => q.2 i)) ⁻¹' T)
+          = (fun ω : ℕ → Step N M => (fun i : Fin n => ω i)) ⁻¹'
+              {h : Fin n → Step N M | consStep z h ∈ T} := rfl
+      have hmL : Measurable fun ω : ℕ → Hold (MarkJump N M) =>
+          (fun i : Fin n => collapse ω i) :=
+        (measurable_takeStep n).comp measurable_collapse
+      rw [hpreL, hpreR, collapseKernel_apply, restartKernel_apply,
+        ← Measure.map_apply hmL hsec,
+        ← Measure.map_apply (measurable_takeStep n) hsec,
+        ← ctsPathMeasure_eq_drivenMeasure]
+      exact congrFun (congrArg _ (ih (express z.1.1 z.1.2 v))) _
+
+/-- **[GL24]'s construction is the process, in law.**  The realisation carried by the band of
+Figure 2 has exactly the law of the jump-hold process of equation (3).
+
+This is the identification the paper and [GL24] both assert and neither proves: [GL24] writes
+"we will construct the process `(U_t)` with jump times `{T_n}` as the superposition …", and it
+is what makes the non-explosion proved on the band a statement about the process.  The
+argument itself is [GL24]'s, step for step; only the plumbing of the sample space is ours. -/
+theorem map_markPathMeasure_collapse_eq (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M) :
+    (markPathMeasure hM hβ v).map collapse = ctsPathMeasure β v := by
+  have hprob : IsProbabilityMeasure ((markPathMeasure hM hβ v).map collapse) :=
+    Measure.isProbabilityMeasure_map measurable_collapse.aemeasurable
+  refine ext_of_generate_finite _ generateFrom_measurableCylinders.symm
+    isPiSystem_measurableCylinders ?_ (by rw [measure_univ, measure_univ])
+  rintro t ht
+  obtain ⟨s, S, hS, rfl⟩ := (mem_measurableCylinders t).1 ht
+  have hlt : ∀ i ∈ s, i < s.sup id + 1 := fun i hi =>
+    Nat.lt_succ_of_le (Finset.le_sup (f := id) hi)
+  set n := s.sup id + 1 with hn
+  set φ : (Fin n → Step N M) → ((i : s) → Step N M) :=
+    fun g j => g ⟨(j : ℕ), hlt j j.2⟩ with hφ
+  have hφm : Measurable φ := measurable_pi_lambda _ fun j => measurable_pi_apply _
+  have hcyl : cylinder s S
+      = (fun ω : ℕ → Step N M => (fun i : Fin n => ω i)) ⁻¹' (φ ⁻¹' S) := rfl
+  have hmL : Measurable fun ω : ℕ → Hold (MarkJump N M) =>
+      (fun i : Fin n => collapse ω i) :=
+    (measurable_takeStep n).comp measurable_collapse
+  have hLHS : ((markPathMeasure hM hβ v).map collapse) (cylinder s S)
+      = ((markPathMeasure hM hβ v).map fun ω => (fun i : Fin n => collapse ω i))
+          (φ ⁻¹' S) := by
+    rw [hcyl, Measure.map_apply measurable_collapse ((measurable_takeStep n) (hφm hS)),
+      Measure.map_apply hmL (hφm hS)]
+    rfl
+  have hRHS : (ctsPathMeasure β v) (cylinder s S)
+      = ((ctsPathMeasure β v).map fun ω : ℕ → Step N M => (fun i : Fin n => ω i))
+          (φ ⁻¹' S) := by
+    rw [hcyl, Measure.map_apply (measurable_takeStep n) (hφm hS)]
+  rw [hLHS, hRHS, map_takeStep_collapse hM hβ n v]
+
+/-! ### Non-explosion, read off the band -/
+
+theorem holdSum_add {J : Type*} [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J]
+    [DecidableEq J] (k m : ℕ) (ω : ℕ → Hold J) :
+    holdSum (k + m) ω = holdSum k ω + holdSum m (shiftHold^[k] ω) := by
+  rw [holdSum, holdSum, holdSum, Finset.sum_range_add]
+  congr 1
+  refine Finset.sum_congr rfl fun i _ => ?_
+  show (ω (k + i)).2 = (shiftHold^[k] ω i).2
+  rw [shiftHold_iterate]
+
+theorem holdSum_mono_of_nonneg {J : Type*} [MeasurableSpace J] [DiscreteMeasurableSpace J]
+    [Countable J] [DecidableEq J] {ω : ℕ → Hold J} (h : ∀ n, 0 ≤ (ω n).2) {k m : ℕ}
+    (hkm : k ≤ m) : holdSum k ω ≤ holdSum m ω := by
+  obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hkm
+  rw [holdSum_add]
+  have hd : 0 ≤ holdSum d (shiftHold^[k] ω) := by
+    refine Finset.sum_nonneg fun i _ => ?_
+    show 0 ≤ (shiftHold^[k] ω i).2
+    rw [shiftHold_iterate]
+    exact h (k + i)
+  linarith
+
+/-- The `n`-th expression of the collapsed realisation is one of the marks of the band, and it
+is at least the `n`-th of them: reading `n` expressions consumes at least `n` marks. -/
+theorem exists_holdSum_collapse (n : ℕ) (ω : ℕ → Hold (MarkJump N M)) :
+    ∃ m, n ≤ m ∧ holdSum n (collapse ω) = holdSum m ω := by
+  induction n generalizing ω with
+  | zero => exact ⟨0, le_rfl, rfl⟩
+  | succ n ih =>
+      obtain ⟨m, hm, hEq⟩ := ih (restAfterAccept ω)
+      refine ⟨firstAccept ω + 1 + m, by omega, ?_⟩
+      rw [holdSum_succ_shiftHold n (collapse ω), shiftHold_collapse, hEq, holdSum_add]
+      rfl
+
+theorem holdBlowUp_collapse {ω : ℕ → Hold (MarkJump N M)} (hnn : ∀ n, 0 ≤ (ω n).2)
+    (h : holdBlowUp ω = ⊤) : holdBlowUp (collapse ω) = ⊤ := by
+  refine eq_top_iff.2 ?_
+  rw [← h]
+  refine iSup_le fun n => ?_
+  obtain ⟨m, hm, hEq⟩ := exists_holdSum_collapse n ω
+  calc ENNReal.ofReal (holdSum n ω)
+      ≤ ENNReal.ofReal (holdSum n (collapse ω)) := by
+        rw [hEq]
+        exact ENNReal.ofReal_le_ofReal (holdSum_mono_of_nonneg hnn hm)
+    _ ≤ holdBlowUp (collapse ω) :=
+        le_iSup (fun k => ENNReal.ofReal (holdSum k (collapse ω))) n
+
+theorem measurable_holdBlowUp {J : Type*} [MeasurableSpace J] [DiscreteMeasurableSpace J]
+    [Countable J] [DecidableEq J] : Measurable (holdBlowUp (J := J)) :=
+  Measurable.iSup fun n => ENNReal.measurable_ofReal.comp (measurable_holdSum n)
+
+/-- **Theorem 1.1, by [GL24]'s construction.**  For any `β ≥ 0` and any starting matrix
+`u ∈ S`, the jump times satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`: the process does not explode.
+
+The argument is [GL24]'s, pp. 12-14, step for step.  Lemma 10 gives one expression from an
+actor carrying pressure below `N` in every `N`, and those expressions carry total rate at most
+`λ = NMe^{βN}` whatever the rest of the matrix does; so they are a sub-family of the marks of
+a Poisson process of rate `λ`, which do not accumulate
+(`SocialNetwork.measure_markPathMeasure_blowUp`).  What this file adds is the identification
+[GL24] asserts: the realisation carried by the band *is* the process
+(`SocialNetwork.map_markPathMeasure_collapse_eq`).  The collapsed jump times are a subsequence
+of the band's, so they are at least as large, and they are unbounded with it. -/
+theorem nonExplosion_ofGraphical (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
+    (hu : IsState u) :
+    ctsPathMeasure β u {ω | explosionTime ω = ⊤} = 1 := by
+  set A : Set (ℕ → Hold (MarkJump N M)) := {ω | ∀ n, 0 ≤ (ω n).2} with hAdef
+  set B : Set (ℕ → Hold (MarkJump N M)) := {ω | holdBlowUp ω = ⊤} with hBdef
+  have hAnull : markPathMeasure hM hβ u Aᶜ = 0 := by
+    have hcover : Aᶜ ⊆ ⋃ n : ℕ, {ω : ℕ → Hold (MarkJump N M) | (ω n).2 < 0} := by
+      intro ω hω
+      simp only [hAdef, Set.mem_compl_iff, Set.mem_ofPred_eq, not_forall, not_le] at hω
+      obtain ⟨n, hn⟩ := hω
+      exact Set.mem_iUnion.2 ⟨n, hn⟩
+    refine le_antisymm ((measure_mono hcover).trans ?_) (zero_le)
+    exact le_of_eq (measure_iUnion_null fun n => markPathMeasure_holdTime_nonneg hM hβ u n)
+  have hBmeas : MeasurableSet B := measurable_holdBlowUp (measurableSet_singleton ⊤)
+  have hBnull : markPathMeasure hM hβ u Bᶜ = 0 := by
+    rw [prob_compl_eq_one_sub hBmeas, measure_markPathMeasure_blowUp hM hβ hu, tsub_self]
+  have hmass : (1 : ℝ≥0∞) ≤ markPathMeasure hM hβ u (A ∩ B) := by
+    have hle : markPathMeasure hM hβ u Set.univ
+        ≤ markPathMeasure hM hβ u (A ∩ B) + markPathMeasure hM hβ u (A ∩ B)ᶜ := by
+      rw [← Set.union_compl_self (A ∩ B)] at *
+      exact measure_union_le _ _
+    have hnull : markPathMeasure hM hβ u (A ∩ B)ᶜ = 0 := by
+      rw [Set.compl_inter]
+      refine le_antisymm ((measure_union_le _ _).trans ?_) (zero_le)
+      rw [hAnull, hBnull, add_zero]
+    rw [measure_univ, hnull, add_zero] at hle
+    exact hle
+  refine le_antisymm prob_le_one ?_
+  calc (1 : ℝ≥0∞) ≤ markPathMeasure hM hβ u (A ∩ B) := hmass
+    _ ≤ markPathMeasure hM hβ u (collapse ⁻¹' {ω : ℕ → Step N M | explosionTime ω = ⊤}) := by
+        refine measure_mono fun ω hω => ?_
+        exact holdBlowUp_collapse hω.1 hω.2
+    _ ≤ ((markPathMeasure hM hβ u).map collapse) {ω : ℕ → Step N M | explosionTime ω = ⊤} :=
+        Measure.le_map_apply measurable_collapse.aemeasurable _
+    _ = ctsPathMeasure β u {ω : ℕ → Step N M | explosionTime ω = ⊤} := by
+        rw [map_markPathMeasure_collapse_eq]
+
 end SocialNetwork
