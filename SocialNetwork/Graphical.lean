@@ -125,13 +125,15 @@ instance isProbabilityMeasure_markLaw (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β)
 
 /-! ### The chain the marks drive -/
 
-/-- The matrix after `n` marks: the discarded marks leave it alone, the others express. -/
-def markState (u : Pressure N M) (j : ℕ → MarkJump N M) : ℕ → Pressure N M
-  | 0 => u
-  | n + 1 =>
-    match j n with
-    | .discard => markState u j n
-    | .jump p => express p.1 p.2 (markState u j n)
+/-- The rule moving the matrix along a mark: a discarded mark leaves it alone, the others
+express. -/
+def markNext (v : Pressure N M) : MarkJump N M → Pressure N M
+  | .discard => v
+  | .jump p => express p.1 p.2 v
+
+/-- The matrix after `n` marks. -/
+def markState (u : Pressure N M) (j : ℕ → MarkJump N M) (n : ℕ) : Pressure N M :=
+  stateAfterJumps markNext u j n
 
 omit [NeZero N] [NeZero M] in
 @[simp]
@@ -139,16 +141,14 @@ theorem markState_zero (u : Pressure N M) (j : ℕ → MarkJump N M) : markState
 
 omit [NeZero N] [NeZero M] in
 theorem markState_succ (u : Pressure N M) (j : ℕ → MarkJump N M) (n : ℕ) :
-    markState u j (n + 1)
-      = match j n with
-        | .discard => markState u j n
-        | .jump p => express p.1 p.2 (markState u j n) := rfl
+    markState u j (n + 1) = markNext (markState u j n) (j n) := rfl
 
 omit [NeZero N] [NeZero M] in
 @[simp]
 theorem markState_succ_discard (u : Pressure N M) (j : ℕ → MarkJump N M) {n : ℕ}
     (h : j n = .discard) : markState u j (n + 1) = markState u j n := by
   rw [markState_succ, h]
+  rfl
 
 omit [NeZero N] [NeZero M] in
 @[simp]
@@ -156,17 +156,13 @@ theorem markState_succ_jump (u : Pressure N M) (j : ℕ → MarkJump N M) {n : �
     (h : j n = .jump p) :
     markState u j (n + 1) = express p.1 p.2 (markState u j n) := by
   rw [markState_succ, h]
+  rfl
 
 omit [NeZero N] [NeZero M] in
 /-- The matrix after `n` marks depends only on the first `n` of them. -/
-theorem markState_congr (u : Pressure N M) {j j' : ℕ → MarkJump N M} :
-    ∀ n : ℕ, (∀ k < n, j k = j' k) → markState u j n = markState u j' n := by
-  intro n
-  induction n with
-  | zero => intro _; rfl
-  | succ n ih =>
-      intro h
-      rw [markState_succ, markState_succ, ih fun k hk => h k (by omega), h n (by omega)]
+theorem markState_congr (u : Pressure N M) {j j' : ℕ → MarkJump N M} (n : ℕ)
+    (h : ∀ k < n, j k = j' k) : markState u j n = markState u j' n :=
+  stateAfterJumps_congr markNext u n h
 
 omit [NeZero N] [NeZero M] in
 /-- `S` is preserved along the mark chain: a discarded mark changes nothing, and an expression
@@ -182,35 +178,22 @@ theorem isState_markState {u : Pressure N M} (hu : IsState u) (j : ℕ → MarkJ
       | jump p => exact ih.express p.1 p.2
 
 omit [NeZero N] [NeZero M] in
-theorem measurable_markStateHistory (u : Pressure N M) (n k : ℕ) :
-    Measurable fun h : (i : Finset.Iic n) → Hold (MarkJump N M) =>
-      markState u (jumpExtend fun i => (h i).1) k :=
-  (Measurable.of_discrete (f := fun g : (i : Finset.Iic n) → MarkJump N M =>
-    markState u (jumpExtend g) k)).comp (measurable_holdHistoryJumps n)
-
 /-- The kernel driving the mark chain: replay the marks so far, and read the band at the
 matrix they reach. -/
-noncomputable def markDrivingKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (u : Pressure N M)
-    (n : ℕ) : Kernel ((i : Finset.Iic n) → Hold (MarkJump N M)) (Hold (MarkJump N M)) where
-  toFun h := markLaw hM hβ (markState u (jumpExtend fun i => (h i).1) (n + 1))
-  measurable' :=
-    (Measurable.of_discrete (f := fun v : Pressure N M => markLaw hM hβ v)).comp
-      (measurable_markStateHistory u n (n + 1))
+noncomputable abbrev markDrivingKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (u : Pressure N M) :
+    (n : ℕ) → Kernel ((i : Finset.Iic n) → Hold (MarkJump N M)) (Hold (MarkJump N M)) :=
+  drivenKernel markNext (markLaw hM hβ) u
 
 theorem markDrivingKernel_apply (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (u : Pressure N M) (n : ℕ)
     (h : (i : Finset.Iic n) → Hold (MarkJump N M)) :
     markDrivingKernel hM hβ u n h
       = markLaw hM hβ (markState u (jumpExtend fun i => (h i).1) (n + 1)) := rfl
 
-instance isMarkovKernel_markDrivingKernel (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (u : Pressure N M)
-    (n : ℕ) : IsMarkovKernel (markDrivingKernel hM hβ u n) :=
-  ⟨fun h => by rw [markDrivingKernel_apply]; infer_instance⟩
-
 /-- **The construction of [GL24]**: the sequence of marks of the band, read from the matrix
 they drive. -/
 noncomputable def markPathMeasure (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (u : Pressure N M) :
     Measure (ℕ → Hold (MarkJump N M)) :=
-  jumpHoldMeasure (markDrivingKernel hM hβ u) (markLaw hM hβ u)
+  drivenMeasure markNext (markLaw hM hβ) u
 
 instance isProbabilityMeasure_markPathMeasure (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β)
     (u : Pressure N M) : IsProbabilityMeasure (markPathMeasure hM hβ u) := by
@@ -404,7 +387,7 @@ whatever the matrix does. -/
 theorem measure_markPathMeasure_blowUp (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
     (hu : IsState u) :
     markPathMeasure hM hβ u {ω | holdBlowUp ω = ⊤} = 1 := by
-  rw [markPathMeasure]
+  rw [markPathMeasure, drivenMeasure]
   refine measure_holdBlowUp_eq_one (low := IsLambdaAt u) (D := ENNReal.ofReal
       ((clockBound N M β + 1) / clockBound N M β)) (θ := 1) _ _ (isLambdaAt_congr u)
     (fun n h => lambdaFinset (markState u (jumpExtend fun i => (h i).1) (n + 1)))
@@ -424,5 +407,332 @@ theorem measure_markPathMeasure_blowUp (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β
     rw [markDrivingKernel_apply]
     exact lintegral_markLaw_stepWeight_le_one hM hβ one_pos _
   · exact fun j q => le_lowCountOf_lambda hM hu j q
+
+/-! ### The law of the first expression
+
+The marks that land in the discarded region leave the matrix alone, so the chain waits there
+until a mark lands in an interval of a pair.  That wait is a geometric number of exponential
+times of rate `λ + q^>(v)`, each accepted with probability `q(v)/(λ + q^>(v))`; the law it adds
+up to is the exponential of rate `q(v)`, and the pair it stops at follows the Gibbs law of
+equation (3).  That is the step of `SocialNetwork.stepLaw`, and proving it is what identifies
+[GL24]'s construction with the jump-hold one. -/
+
+/-- Some mark among the first `n` expresses; the first that does carries a pair in `B`, and it
+happens by time `t`. -/
+def acceptedWithin (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    Set (ℕ → Hold (MarkJump N M)) :=
+  {ω | ∃ k < n, (∀ i < k, (ω i).1 = MarkJump.discard) ∧ (∃ p ∈ B, (ω k).1 = MarkJump.jump p)
+        ∧ holdSum (k + 1) ω ≤ t}
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_acceptedWithin (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    MeasurableSet (acceptedWithin B n t) := by
+  have hcoord : ∀ (i : ℕ) (s : Set (MarkJump N M)),
+      MeasurableSet {ω : ℕ → Hold (MarkJump N M) | (ω i).1 ∈ s} :=
+    fun i s => (measurable_fst.comp (measurable_pi_apply i)) MeasurableSet.of_discrete
+  have hset : acceptedWithin B n t
+      = ⋃ k ∈ Finset.range n,
+          ((⋂ i ∈ Finset.range k, {ω : ℕ → Hold (MarkJump N M) |
+              (ω i).1 ∈ ({MarkJump.discard} : Set (MarkJump N M))})
+            ∩ {ω : ℕ → Hold (MarkJump N M) |
+                (ω k).1 ∈ {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}}
+            ∩ {ω : ℕ → Hold (MarkJump N M) | holdSum (k + 1) ω ≤ t}) := by
+    ext ω
+    simp only [acceptedWithin, Set.mem_ofPred_eq, Set.mem_iUnion, Set.mem_inter_iff,
+      Set.mem_iInter, Finset.mem_range, Set.mem_singleton_iff, exists_prop]
+    constructor
+    · rintro ⟨k, hk, hdis, hjump, htime⟩
+      exact ⟨k, hk, ⟨⟨fun i hi => hdis i hi, hjump⟩, htime⟩⟩
+    · rintro ⟨k, hk, ⟨hdis, hjump⟩, htime⟩
+      exact ⟨k, hk, fun i hi => hdis i hi, hjump, htime⟩
+  rw [hset]
+  refine MeasurableSet.biUnion (Finset.range n).countable_toSet fun k _ => ?_
+  refine ((MeasurableSet.biInter (Finset.range k).countable_toSet fun i _ => hcoord i _).inter
+    (hcoord k _)).inter ?_
+  exact measurableSet_le (measurable_holdSum (k + 1)) measurable_const
+
+omit [NeZero N] [NeZero M] in
+/-- The first expression is either the first mark, or comes after a discarded one. -/
+theorem acceptedWithin_succ (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    acceptedWithin B (n + 1) t
+      = {ω | (∃ p ∈ B, (ω 0).1 = MarkJump.jump p) ∧ (ω 0).2 ≤ t}
+        ∪ {ω | (ω 0).1 = MarkJump.discard
+            ∧ shiftHold ω ∈ acceptedWithin B n (t - (ω 0).2)} := by
+  ext ω
+  constructor
+  · rintro ⟨k, hk, hdis, hjump, htime⟩
+    cases k with
+    | zero =>
+        refine Or.inl ⟨hjump, ?_⟩
+        have : holdSum 1 ω = (ω 0).2 := by
+          rw [holdSum, Finset.sum_range_one]
+          rfl
+        rwa [this] at htime
+    | succ k =>
+        refine Or.inr ⟨hdis 0 (by omega), ⟨k, by omega, ?_, ?_, ?_⟩⟩
+        · intro i hi
+          show (ω (1 + i)).1 = MarkJump.discard
+          exact hdis (1 + i) (by omega)
+        · show ∃ p ∈ B, (ω (1 + k)).1 = MarkJump.jump p
+          rw [show 1 + k = k + 1 by omega]
+          exact hjump
+        · have hsplit : holdSum (k + 1 + 1) ω = (ω 0).2 + holdSum (k + 1) (shiftHold ω) := by
+            have h1 : holdSum (k + 1 + 1) ω
+                = (∑ i ∈ Finset.range (k + 1), holdTime (i + 1) ω) + holdTime 0 ω :=
+              Finset.sum_range_succ' _ (k + 1)
+            have h2 : holdSum (k + 1) (shiftHold ω)
+                = ∑ i ∈ Finset.range (k + 1), holdTime (i + 1) ω :=
+              Finset.sum_congr rfl fun i _ => by
+                show (ω (1 + i)).2 = (ω (i + 1)).2
+                rw [Nat.add_comm]
+            rw [h1, h2, add_comm]
+            rfl
+          rw [hsplit] at htime
+          linarith
+  · rintro (⟨hjump, htime⟩ | ⟨hdis, k, hk, hdis', hjump, htime⟩)
+    · refine ⟨0, by omega, fun i hi => absurd hi (by omega), hjump, ?_⟩
+      have : holdSum 1 ω = (ω 0).2 := by
+        rw [holdSum, Finset.sum_range_one]
+        rfl
+      rwa [this]
+    · refine ⟨k + 1, by omega, ?_, ?_, ?_⟩
+      · intro i hi
+        cases i with
+        | zero => exact hdis
+        | succ i =>
+            have := hdis' i (by omega)
+            show (ω (i + 1)).1 = MarkJump.discard
+            rw [show i + 1 = 1 + i by omega]
+            exact this
+      · obtain ⟨p, hpB, hp⟩ := hjump
+        refine ⟨p, hpB, ?_⟩
+        show (ω (k + 1)).1 = MarkJump.jump p
+        rw [show k + 1 = 1 + k by omega]
+        exact hp
+      · have hsplit : holdSum (k + 1 + 1) ω = (ω 0).2 + holdSum (k + 1) (shiftHold ω) := by
+          have h1 : holdSum (k + 1 + 1) ω
+              = (∑ i ∈ Finset.range (k + 1), holdTime (i + 1) ω) + holdTime 0 ω :=
+            Finset.sum_range_succ' _ (k + 1)
+          have h2 : holdSum (k + 1) (shiftHold ω)
+              = ∑ i ∈ Finset.range (k + 1), holdTime (i + 1) ω :=
+            Finset.sum_congr rfl fun i _ => by
+              show (ω (1 + i)).2 = (ω (i + 1)).2
+              rw [Nat.add_comm]
+          rw [h1, h2, add_comm]
+          rfl
+        rw [hsplit]
+        linarith
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_acceptedWithin_prod (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    MeasurableSet {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+      q.2 ∈ acceptedWithin B n (t - q.1.2)} := by
+  have hcoord : ∀ (i : ℕ) (s : Set (MarkJump N M)),
+      MeasurableSet {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) | (q.2 i).1 ∈ s} :=
+    fun i s => (measurable_fst.comp ((measurable_pi_apply i).comp measurable_snd))
+      MeasurableSet.of_discrete
+  have hset : {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+        q.2 ∈ acceptedWithin B n (t - q.1.2)}
+      = ⋃ k ∈ Finset.range n,
+          ((⋂ i ∈ Finset.range k, {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+              (q.2 i).1 ∈ ({MarkJump.discard} : Set (MarkJump N M))})
+            ∩ {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+                (q.2 k).1 ∈ {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}}
+            ∩ {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+                holdSum (k + 1) q.2 + q.1.2 ≤ t}) := by
+    ext q
+    simp only [acceptedWithin, Set.mem_ofPred_eq, Set.mem_iUnion, Set.mem_inter_iff,
+      Set.mem_iInter, Finset.mem_range, Set.mem_singleton_iff, exists_prop]
+    constructor
+    · rintro ⟨k, hk, hdis, hjump, htime⟩
+      exact ⟨k, hk, ⟨⟨fun i hi => hdis i hi, hjump⟩, by linarith⟩⟩
+    · rintro ⟨k, hk, ⟨hdis, hjump⟩, htime⟩
+      exact ⟨k, hk, fun i hi => hdis i hi, hjump, by linarith⟩
+  rw [hset]
+  refine MeasurableSet.biUnion (Finset.range n).countable_toSet fun k _ => ?_
+  refine ((MeasurableSet.biInter (Finset.range k).countable_toSet fun i _ => hcoord i _).inter
+    (hcoord k _)).inter ?_
+  exact measurableSet_le
+    (((measurable_holdSum (k + 1)).comp measurable_snd).add
+      (measurable_snd.comp measurable_fst)) measurable_const
+
+/-- **The first expression, one mark at a time.**  Either the first mark expresses, or it is
+discarded and the chain starts again from the same matrix. -/
+theorem measure_acceptedWithin_succ (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B : Finset (Jump N M))
+    (n : ℕ) (t : ℝ) (v : Pressure N M) :
+    markPathMeasure hM hβ v (acceptedWithin B (n + 1) t)
+      = markLaw hM hβ v {z | (∃ p ∈ B, z.1 = MarkJump.jump p) ∧ z.2 ≤ t}
+        + ∫⁻ z in {z : Hold (MarkJump N M) | z.1 = MarkJump.discard},
+            markPathMeasure hM hβ v (acceptedWithin B n (t - z.2)) ∂(markLaw hM hβ v) := by
+  classical
+  set D : Set (Hold (MarkJump N M)) := {z | z.1 = MarkJump.discard} with hDdef
+  set A : Set (Hold (MarkJump N M)) :=
+    {z | (∃ p ∈ B, z.1 = MarkJump.jump p) ∧ z.2 ≤ t} with hAdef
+  have hfirst : Measurable fun ω : ℕ → Hold (MarkJump N M) => ω 0 := measurable_pi_apply 0
+  have hD : MeasurableSet D :=
+    measurable_fst (measurableSet_singleton MarkJump.discard)
+  have hA : MeasurableSet A := by
+    have h1 : MeasurableSet ((fun z : Hold (MarkJump N M) => z.1) ⁻¹'
+        {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}) :=
+      measurable_fst MeasurableSet.of_discrete
+    exact h1.inter (measurableSet_le measurable_snd measurable_const)
+  set S₁ : Set (ℕ → Hold (MarkJump N M)) := (fun ω => ω 0) ⁻¹' A with hS₁
+  set S₂ : Set (ℕ → Hold (MarkJump N M)) :=
+    {ω | (ω 0).1 = MarkJump.discard ∧ shiftHold ω ∈ acceptedWithin B n (t - (ω 0).2)} with hS₂
+  have hmeas1 : MeasurableSet S₁ := hfirst hA
+  have hmeas2 : MeasurableSet S₂ := by
+    have hpair : Measurable fun ω : ℕ → Hold (MarkJump N M) => (ω 0, shiftHold ω) :=
+      hfirst.prodMk measurable_shiftHold
+    have hrw : S₂ = ((fun ω : ℕ → Hold (MarkJump N M) => ω 0) ⁻¹' D)
+        ∩ (fun ω : ℕ → Hold (MarkJump N M) => (ω 0, shiftHold ω)) ⁻¹'
+          {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+            q.2 ∈ acceptedWithin B n (t - q.1.2)} := rfl
+    rw [hrw]
+    exact (hfirst hD).inter (hpair (measurableSet_acceptedWithin_prod B n t))
+  have hunion : acceptedWithin B (n + 1) t = S₁ ∪ S₂ := acceptedWithin_succ B n t
+  have hdisj : Disjoint S₁ S₂ := by
+    rw [Set.disjoint_left]
+    rintro ω ⟨⟨p, -, hp⟩, -⟩ ⟨hd, -⟩
+    rw [hp] at hd
+    exact absurd hd (by simp)
+  rw [hunion, measure_union hdisj hmeas2]
+  congr 1
+  · rw [hS₁, ← Measure.map_apply hfirst hA, markPathMeasure, map_drivenMeasure_first]
+  · set f : Hold (MarkJump N M) → (ℕ → Hold (MarkJump N M)) → ℝ≥0∞ :=
+      fun z ω' => if z ∈ D then
+        Set.indicator (acceptedWithin B n (t - z.2))
+          (1 : (ℕ → Hold (MarkJump N M)) → ℝ≥0∞) ω' else 0 with hf
+    have hfmeas : Measurable (Function.uncurry f) := by
+      refine Measurable.ite ?_ ?_ measurable_const
+      · exact measurable_fst hD
+      · exact measurable_const.indicator (measurableSet_acceptedWithin_prod B n t)
+    have hind : ∀ ω : ℕ → Hold (MarkJump N M),
+        Set.indicator S₂ (1 : (ℕ → Hold (MarkJump N M)) → ℝ≥0∞) ω
+          = f (ω 0) (shiftHold ω) := by
+      intro ω
+      by_cases hd : ω 0 ∈ D
+      · rw [hf]
+        simp only [if_pos hd]
+        by_cases hin : shiftHold ω ∈ acceptedWithin B n (t - (ω 0).2)
+        · rw [Set.indicator_of_mem hin, Set.indicator_of_mem (show ω ∈ S₂ from ⟨hd, hin⟩)]
+          rfl
+        · rw [Set.indicator_of_notMem hin,
+            Set.indicator_of_notMem (fun hcon => hin hcon.2)]
+      · rw [hf]
+        simp only [if_neg hd]
+        rw [Set.indicator_of_notMem (fun hcon => hd hcon.1)]
+    rw [← lintegral_indicator_one hmeas2, lintegral_congr hind, markPathMeasure,
+      lintegral_drivenMeasure_restart markNext (markLaw hM hβ) v hfmeas,
+      ← lintegral_indicator hD]
+    refine lintegral_congr fun z => ?_
+    by_cases hd : z ∈ D
+    · rw [Set.indicator_of_mem hd, hf]
+      simp only [if_pos hd]
+      rw [lintegral_indicator_one (measurableSet_acceptedWithin B n (t - z.2))]
+      show markPathMeasure hM hβ (markNext v z.1) _ = _
+      rw [show z.1 = MarkJump.discard from hd]
+      rfl
+    · rw [Set.indicator_of_notMem hd, hf]
+      simp only [if_neg hd]
+      exact lintegral_zero
+
+/-! ### The integral the fixed point needs -/
+
+omit [NeZero N] [NeZero M] in
+theorem integral_exp_neg_interval {c : ℝ} (hc : 0 < c) (t : ℝ) :
+    ∫ s in (0:ℝ)..t, Real.exp (-(c * s)) = (1 - Real.exp (-(c * t))) / c := by
+  have h : ∀ s : ℝ, Real.exp (-(c * s)) = Real.exp ((-c) * s) := by
+    intro s; ring_nf
+  simp_rw [h]
+  rw [intervalIntegral.integral_comp_mul_left (fun x => Real.exp x) (by linarith : (-c) ≠ 0),
+    integral_exp, mul_zero, Real.exp_zero, smul_eq_mul]
+  have hct : (-c) * t = -(c * t) := by ring
+  rw [hct]
+  field_simp
+  ring
+
+omit [NeZero N] [NeZero M] in
+/-- **The convolution the construction turns on.**  Against a mark arriving at rate `Λ`, the
+chance `1 - e^{-q(t-s)}` of expressing in the time that is left integrates to this. -/
+theorem lintegral_oneSub_exp {Λ q : ℝ} (hΛ : 0 < Λ) (hq : 0 < q) (hqΛ : q < Λ)
+    {t : ℝ} (ht : 0 ≤ t) :
+    ∫⁻ s, ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ)
+      = ENNReal.ofReal ((1 - Real.exp (-(Λ * t)))
+          - Real.exp (-(q * t)) * Λ / (Λ - q) * (1 - Real.exp (-((Λ - q) * t)))) := by
+  have hmeasg : Measurable fun s : ℝ => ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) := by
+    refine ENNReal.measurable_ofReal.comp (measurable_const.sub ?_)
+    exact Real.measurable_exp.comp ((measurable_const.mul (measurable_const.sub measurable_id)).neg)
+  -- the negative half-line and the times after `t` contribute nothing
+  have hcompl : (Set.Ioi (0 : ℝ))ᶜ = Set.Iic 0 := by ext x; simp
+  have hzero : ∫⁻ s in Set.Ioi t, ENNReal.ofReal (1 - Real.exp (-(q * (t - s))))
+      ∂(expMeasure Λ) = 0 := by
+    refine setLIntegral_eq_zero (measurableSet_Ioi) fun s hs => ?_
+    have h1 : 1 ≤ Real.exp (-(q * (t - s))) := by
+      refine Real.one_le_exp ?_
+      have : t - s < 0 := by simp only [Set.mem_Ioi] at hs; linarith
+      nlinarith
+    exact ENNReal.ofReal_eq_zero.2 (by linarith)
+  have hsplit : ∫⁻ s, ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ)
+      = ∫⁻ s in Set.Ioc 0 t, ENNReal.ofReal (1 - Real.exp (-(q * (t - s))))
+        ∂(expMeasure Λ) := by
+    rw [← lintegral_add_compl _ (measurableSet_Ioi (a := (0 : ℝ))), hcompl,
+      setLIntegral_measure_zero _ _ (expMeasure_Iic_zero hΛ), add_zero,
+      show Set.Ioi (0 : ℝ) = Set.Ioc 0 t ∪ Set.Ioi t by
+        ext x; simp only [Set.mem_Ioi, Set.mem_union, Set.mem_Ioc]; constructor
+        · intro hx; rcases le_or_gt x t with h | h
+          · exact Or.inl ⟨hx, h⟩
+          · exact Or.inr h
+        · rintro (⟨hx, -⟩ | hx) ; · exact hx
+          · linarith,
+      lintegral_union measurableSet_Ioi (by
+        rw [Set.disjoint_left]; rintro x ⟨-, hx⟩ hx'; simp only [Set.mem_Ioi] at hx'; linarith),
+      hzero, add_zero]
+  rw [hsplit]
+  -- on `(0, t]` the density is `Λ e^{-Λ s}`
+  have hdens : expMeasure Λ = MeasureTheory.volume.withDensity (exponentialPDF Λ) := rfl
+  have hmeasd : Measurable (exponentialPDF Λ) := (measurable_exponentialPDFReal Λ).ennreal_ofReal
+  rw [hdens, restrict_withDensity measurableSet_Ioc,
+    lintegral_withDensity_eq_lintegral_mul _ hmeasd hmeasg]
+  have hcongr : ∀ s ∈ Set.Ioc 0 t, (exponentialPDF Λ * fun s : ℝ =>
+      ENNReal.ofReal (1 - Real.exp (-(q * (t - s))))) s
+      = ENNReal.ofReal ((1 - Real.exp (-(q * (t - s)))) * (Λ * Real.exp (-(Λ * s)))) := by
+    intro s hs
+    have hs0 : 0 ≤ s := le_of_lt hs.1
+    have hle : Real.exp (-(q * (t - s))) ≤ 1 :=
+      Real.exp_le_one_iff.2 (by nlinarith [hs.2])
+    simp only [Pi.mul_apply, exponentialPDF_eq, if_pos hs0]
+    rw [← ENNReal.ofReal_mul (by positivity), mul_comm]
+  rw [setLIntegral_congr_fun measurableSet_Ioc hcongr]
+  -- and the integral is elementary
+  have hint : IntervalIntegrable
+      (fun s : ℝ => (1 - Real.exp (-(q * (t - s)))) * (Λ * Real.exp (-(Λ * s))))
+      MeasureTheory.volume 0 t := by
+    apply Continuous.intervalIntegrable
+    fun_prop
+  have hnn : 0 ≤ᵐ[MeasureTheory.volume.restrict (Set.Ioc 0 t)]
+      fun s : ℝ => (1 - Real.exp (-(q * (t - s)))) * (Λ * Real.exp (-(Λ * s))) := by
+    refine (ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun s hs => ?_)
+    have hle : Real.exp (-(q * (t - s))) ≤ 1 :=
+      Real.exp_le_one_iff.2 (by nlinarith [hs.2])
+    have : (0:ℝ) ≤ 1 - Real.exp (-(q * (t - s))) := by linarith
+    positivity
+  rw [← ofReal_integral_eq_lintegral_ofReal hint.1 hnn]
+  congr 1
+  rw [← intervalIntegral.integral_of_le ht]
+  -- expand into two elementary integrals
+  have hexpand : ∀ s : ℝ, (1 - Real.exp (-(q * (t - s)))) * (Λ * Real.exp (-(Λ * s)))
+      = Λ * Real.exp (-(Λ * s))
+        - Λ * Real.exp (-(q * t)) * Real.exp (-((Λ - q) * s)) := by
+    intro s
+    rw [show -(q * (t - s)) = -(q * t) + q * s by ring, Real.exp_add]
+    rw [show -((Λ - q) * s) = -(Λ * s) + q * s by ring, Real.exp_add]
+    ring
+  simp_rw [hexpand]
+  rw [intervalIntegral.integral_sub
+    (by apply Continuous.intervalIntegrable; fun_prop)
+    (by apply Continuous.intervalIntegrable; fun_prop)]
+  rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
+    integral_exp_neg_interval hΛ t, integral_exp_neg_interval (by linarith : 0 < Λ - q) t]
+  field_simp
 
 end SocialNetwork

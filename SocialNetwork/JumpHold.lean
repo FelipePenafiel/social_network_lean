@@ -1057,6 +1057,82 @@ theorem drivenMeasure_restart (s : S) {B : Set (Hold J)} (hB : MeasurableSet B)
     lintegral_map (Kernel.measurable_coe _ hS) measurable_holdHistoryZero,
     lintegral_congr hzero, lintegral_indicator hB]
 
+/-- The chain started at the state one step reaches, as a kernel in that step. -/
+noncomputable def restartKernel (s : S) : Kernel (Hold J) (ℕ → Hold J) where
+  toFun z := drivenMeasure next L (next s z.1)
+  measurable' :=
+    (Measurable.of_discrete (f := fun a : J => drivenMeasure next L (next s a))).comp
+      measurable_fst
+
+omit [DecidableEq J] in
+theorem restartKernel_apply (s : S) (z : Hold J) :
+    restartKernel next L s z = drivenMeasure next L (next s z.1) := rfl
+
+instance isMarkovKernel_restartKernel (s : S) : IsMarkovKernel (restartKernel next L s) :=
+  ⟨fun z => by rw [restartKernel_apply]; infer_instance⟩
+
+omit [DecidableEq J] in
+/-- **The joint law of the first step and the rest.**  The first step follows the law at the
+starting state, and given it the rest is a realisation from the state it reaches. -/
+theorem map_drivenMeasure_firstRest (s : S) :
+    (drivenMeasure next L s).map (fun ω => (ω 0, shiftHold ω))
+      = (L s) ⊗ₘ (restartKernel next L s) := by
+  have hmeas : Measurable fun ω : ℕ → Hold J => (ω 0, shiftHold ω) :=
+    (measurable_pi_apply 0).prodMk measurable_shiftHold
+  have hprob : IsProbabilityMeasure
+      ((drivenMeasure next L s).map (fun ω => (ω 0, shiftHold ω))) :=
+    Measure.isProbabilityMeasure_map hmeas.aemeasurable
+  refine MeasureTheory.ext_of_generate_finite
+    {a : Set (Hold J × (ℕ → Hold J)) | ∃ (B : Set (Hold J)) (E : Set (ℕ → Hold J)),
+      MeasurableSet B ∧ MeasurableSet E ∧ a = B ×ˢ E} ?_ ?_ ?_ ?_
+  · rw [← generateFrom_prod]
+    congr 1
+    ext a
+    constructor
+    · rintro ⟨B, E, hB, hE, rfl⟩
+      exact ⟨B, hB, E, hE, rfl⟩
+    · rintro ⟨B, hB, E, hE, rfl⟩
+      exact ⟨B, E, hB, hE, rfl⟩
+  · rintro a ⟨B, E, hB, hE, rfl⟩ c ⟨B', E', hB', hE', rfl⟩ -
+    exact ⟨B ∩ B', E ∩ E', hB.inter hB', hE.inter hE', Set.prod_inter_prod⟩
+  · rintro a ⟨B, E, hB, hE, rfl⟩
+    rw [Measure.map_apply hmeas (hB.prod hE), Measure.compProd_apply_prod hB hE]
+    have hpre : (fun ω : ℕ → Hold J => (ω 0, shiftHold ω)) ⁻¹' (B ×ˢ E)
+        = {ω | ω 0 ∈ B} ∩ shiftHold ⁻¹' E := rfl
+    rw [hpre, drivenMeasure_restart next L s hB hE]
+    rfl
+  · rw [measure_univ, measure_univ]
+
+omit [DecidableEq J] in
+/-- The disintegration at the first step, as an integral. -/
+theorem lintegral_drivenMeasure_restart (s : S) {f : Hold J → (ℕ → Hold J) → ℝ≥0∞}
+    (hf : Measurable (Function.uncurry f)) :
+    ∫⁻ ω, f (ω 0) (shiftHold ω) ∂(drivenMeasure next L s)
+      = ∫⁻ z, (∫⁻ ω', f z ω' ∂(drivenMeasure next L (next s z.1))) ∂(L s) := by
+  have hmeas : Measurable fun ω : ℕ → Hold J => (ω 0, shiftHold ω) :=
+    (measurable_pi_apply 0).prodMk measurable_shiftHold
+  calc ∫⁻ ω, f (ω 0) (shiftHold ω) ∂(drivenMeasure next L s)
+      = ∫⁻ y, Function.uncurry f y
+          ∂((drivenMeasure next L s).map (fun ω => (ω 0, shiftHold ω))) :=
+        (lintegral_map hf hmeas).symm
+    _ = ∫⁻ y, Function.uncurry f y ∂((L s) ⊗ₘ (restartKernel next L s)) := by
+        rw [map_drivenMeasure_firstRest]
+    _ = ∫⁻ z, (∫⁻ ω', f z ω' ∂(drivenMeasure next L (next s z.1))) ∂(L s) :=
+        Measure.lintegral_compProd hf
+
+omit [DecidableEq J] in
+/-- The first step follows the law at the starting state. -/
+theorem map_drivenMeasure_first (s : S) :
+    (drivenMeasure next L s).map (fun ω => ω 0) = L s := by
+  have hmeas : Measurable fun ω : ℕ → Hold J => (ω 0, shiftHold ω) :=
+    (measurable_pi_apply 0).prodMk measurable_shiftHold
+  have h : (drivenMeasure next L s).map (fun ω => ω 0)
+      = ((drivenMeasure next L s).map (fun ω => (ω 0, shiftHold ω))).map Prod.fst := by
+    rw [Measure.map_map measurable_fst hmeas]
+    rfl
+  rw [h, map_drivenMeasure_firstRest]
+  exact Measure.fst_compProd _ _
+
 end Restart
 
 end SocialNetwork
