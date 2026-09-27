@@ -1680,14 +1680,9 @@ section NegativeBias
 
 variable [NeZero N] [NeZero M]
 
-/-- **Theorem 16.**  For any `β ≥ 0`, any `α < 0` and any starting profile `u ∈ S^α`, the jump
-times of the biased process satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`.
-
-The proof is that of Theorem 1, once Proposition 21 replaces Proposition 5. -/
-theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 / ((M : ℝ) - 1) < γ)
-    (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
-    biasedCtsPathMeasure γ β u {ω | explosionTime ω = ⊤} = 1 := by
-  sorry
+/-! **Theorem 16**, `SocialNetwork.Bias.biasedNonExplosion`, is proved in
+`SocialNetwork.BiasedNonExplosion`: the proof is that of Theorem 1, once Proposition 21
+replaces Proposition 5. -/
 
 theorem pressureSup_le {γ : ℝ} {Q : Profile N M} {c : ℝ}
     (h : ∀ a p, Q.pressure γ a p ≤ c) : pressureSup γ Q ≤ c :=

@@ -34,7 +34,7 @@ the requests below [GL24] has already answered.
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)`.  **Theorem 25** rests on it, and on nothing else unproved | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 — or weaken Proposition 17 and drop it from Theorem 25's route entirely |
-| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence.  Separately, its proof invokes non-explosivity — Theorem 1.1 — and an equivalence it cites rather than proves, so it is blocked on Mathlib as well | whether to restate it as the converse, which is what the paper actually uses |
+| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence.  Separately, its proof invokes an equivalence it cites rather than proves, so it is blocked on Mathlib as well | whether to restate it as the converse, which is what the paper actually uses |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
@@ -352,7 +352,9 @@ blueprint's audit section classifies every formalised proof this way.
   `R^{β,u}(θ)(ω) ≤ T₁(ω) + R^{β,v}(θ)(σω)`, needs every holding time positive,
   which is almost sure, and splits on the jump counter: on the explosion event the
   counter is junk on both sides, and there the matrix at stake is the one the first
-  expression reaches, shown at `T₁` itself.  Theorem 1.1 would remove that case.
+  expression reaches, shown at `T₁` itself.  Theorem 1.1, now proved, makes that
+  event null and would remove the case; the proof still handles it directly, and
+  is unchanged.
 * **Proposition 21.**  The quantity that resets and grows by one per step is `nₐ`,
   not the row supremum; the passage is `u (a, p) = cₚ(1+γ) - γnₐ ≤ nₐ`.
 * **Propositions 17 and 24.**  Appendix C invokes the proofs of Propositions 6
@@ -392,7 +394,6 @@ blueprint's audit section classifies every formalised proof this way.
 Unproved because Mathlib has no theory of the object, not because anything in
 the paper is wrong:
 
-* **Poisson point processes** — Theorem 1.1 and Theorem 16.
 * **Appendix B's continuous-time analysis** — Lemma 14 and Lemma 29: a
   Kolmogorov-type bound on the convergence to `Exp(1)`, and total-variation
   distance.
@@ -402,20 +403,41 @@ the paper is wrong:
 `blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
 not provide, checked against the pinned revision.
 
+**Theorem 1.1 and Theorem 16 have left this list**: they are proved.
+
+Theorem 1.1 is proved by your sandwich (11) — by [GL24]'s construction of it, pp.
+12–14, which is now formalised.  The band of its Figure 2 is built in
+`SocialNetwork/Graphical.lean`, its Lemma 10 is read on the marks there, and
+`SocialNetwork/Collapse.lean` identifies the realisation the band carries with the
+process (3) defines.  Two things are done differently and neither changes a step:
+the marks are carried by the jump-hold form rather than by a point process on
+`[0,∞)²`, Mathlib having none, and [GL24]'s "`T^λ` is a rate-`λ` Poisson process,
+so `sup T^λ_n = ∞`" is proved by a supermartingale instead.  One step is in
+neither source — the identification itself, which [GL24] states in passing — and
+supplying it is what `SocialNetwork/Collapse.lean` mostly is.
+
+**Theorem 16 follows the same route**, which is what Appendix C prescribes.  The
+band is built over an arbitrary state space — a rate per pair per state, the
+state each pair leads to, a distinguished family, and a bound `λ` on the rate it
+carries — so the biased model instantiates the same theorem with the rates of (7)
+and Proposition 21 in place of Proposition 5.  Your biased low family, read off
+the pressures of (6), is the only line of the argument the two proofs do not
+share.  **Proposition 7 is now the only departure in the development.**
+
 ### Equation (13) is blocked, and not on us
 
 Its proof opens: *"For a non-explosive process, a probability measure is
 invariant for `(U_t^{β,u})_t` if and only if its product with the jump rate is
 invariant for the skeleton chain. **Non-explosivity holds by Part 1** …"*
 
-Part 1 is Theorem 1.1, which needs Poisson point processes.  The appeal is not
-rhetorical: `P_t` is the law of `U_t`, `U_t` is read off the jump-hold
-representation through the jump counter, and the counter returns junk on the
-explosion event.  Until that event is known to be null, "invariant for `P_t`" is
-not invariance for the semigroup the argument is about.
+Part 1 is Theorem 1.1, and it is now proved here, so that appeal is discharged.
+It was not rhetorical: `P_t` is the law of `U_t`, `U_t` is read off the
+jump-hold representation through the jump counter, and the counter returns junk
+on the explosion event.  Until that event is known to be null, "invariant for
+`P_t`" is not invariance for the semigroup the argument is about.
 
-The equivalence itself is the other half, and the paper cites it rather than
-proving it.  Mathlib has no form of it.  Whether it should be a third external
+The equivalence itself is the other half, the only one left, and the paper cites
+it rather than proving it.  Mathlib has no form of it.  Whether it should be a third external
 citation here, like Proposition 12, or a lemma proved in this repository, is a
 question for you.
 

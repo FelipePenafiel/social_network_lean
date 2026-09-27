@@ -331,37 +331,209 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   order on the pairs, and the statement is proved for every measurable choice.
   Nothing here is a Poisson point process: on this sample space a homogeneous
   process of rate $\lambda$ is the sequence of partial sums of independent
-  $\mathrm{Exp}(\lambda)$ variables, and what \ref{thm1-1} needs of it is that
-  those sums diverge.
+  $\mathrm{Exp}(\lambda)$ variables.
+
+  \textbf{A correction.}  This node was written to say that the upper bound
+  of~(11) ``is a statement the jump-hold form cannot even express'', and that is
+  too strong.  \ref{thm1-1} is now proved, and proved in the jump-hold form: what
+  its argument needs of the low-pressure pairs is that they carry Gibbs mass
+  $\lambda_<(u)/\jumprate(u)$ and that $\lambda_<(u) \le \lambda$, both of which the
+  jump-hold form states directly.  What \ref{thm1-1} borrows from this node are two
+  integrals proved here on the way to the race: the Laplace transform $\int
+  e^{-\theta x} \mathrm{d}\mathrm{Exp}(a)(x) = a/(a+\theta)$, and the distribution
+  function $\mathrm{Exp}(a)([0,t]) = 1 - e^{-at}$ that \ref{aux-graphical} sums the
+  discarded marks against.  The equality of the two
+  forms stands as a theorem about the model; it was not what was missing.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[A jump-hold chain with a slow sub-family does not explode]
+  \label{aux-noexplosion}
+  \lean{SocialNetwork.jumpHoldMeasure, SocialNetwork.jumpHoldHistory,
+    SocialNetwork.jumpHoldMeasure_map_frestrictLe, SocialNetwork.stepWeight,
+    SocialNetwork.measurable_stepWeight, SocialNetwork.lintegral_exp_neg_expMeasure,
+    SocialNetwork.lintegral_stepWeight_le_one, SocialNetwork.stepExtend,
+    SocialNetwork.stepExtend_apply, SocialNetwork.stepExtend_frestrictLe,
+    SocialNetwork.jumpExtend, SocialNetwork.jumpExtend_apply,
+    SocialNetwork.jumps_stepExtend, SocialNetwork.holdSum_congr,
+    SocialNetwork.lowCountOf, SocialNetwork.lowCountOf_congr,
+    SocialNetwork.lowCountOf_succ, SocialNetwork.discountOf,
+    SocialNetwork.discountOf_congr, SocialNetwork.histDiscountOf,
+    SocialNetwork.measurable_histDiscountOf, SocialNetwork.histDiscountOf_succ,
+    SocialNetwork.partialTraj_ae_history_eq, SocialNetwork.partialTraj_map_lastStep,
+    SocialNetwork.lintegral_partialTraj_histDiscountOf_le,
+    SocialNetwork.lintegral_histDiscountOf_le_one,
+    SocialNetwork.lintegral_discountOf_le_one, SocialNetwork.jumpHoldMeasure_holdSum_le,
+    SocialNetwork.measure_holdBlowUp_eq_one}
+  \leanok
+  \uses{aux-clocks}
+  Let a chain draw at each step a pair from a law depending on the past, and then
+  hold for an exponential time of the total rate $R$ at the state reached,
+  independently of the pair.  Distinguish, at each state, some of the pairs, and
+  suppose that
+  \begin{enumerate}
+    \item every block of $b$ consecutive steps carries at least one distinguished
+      step, whatever the realisation, and
+    \item the distinguished pairs carry total rate at most $\lambda$, whatever the
+      state.
+  \end{enumerate}
+  Then $\mathbb{P}(\sup_n T_n = \infty) = 1$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{No counterpart in the paper}, which asserts a coupling instead; this is
+  the inequality that coupling is used for.  Fix $\theta > 0$ and set
+  $d = (\lambda + \theta)/\lambda > 1$.  Weight a run of $n$ steps by
+  $e^{-\theta T_n} d^{K_n}$, where $K_n$ counts its distinguished steps.
+
+  One step multiplies the expectation by at most
+  \[
+    \underbrace{\frac{R}{R+\theta}}_{\text{the holding time}}
+    \cdot
+    \underbrace{\Bigl(1 + (d-1)\frac{R_{\mathrm{low}}}{R}\Bigr)}_{\text{the pair}}
+    = \frac{R + \theta\,R_{\mathrm{low}}/\lambda}{R+\theta} \le 1 ,
+  \]
+  the two factors being independent, the first the Laplace transform of
+  $\mathrm{Exp}(R)$ and the second the Gibbs mass $R_{\mathrm{low}}/R$ of the
+  distinguished family; the inequality is exactly $R_{\mathrm{low}} \le \lambda$.  The
+  weight is therefore a supermartingale along the Ionescu--Tulcea kernels, so
+  $\mathbb{E}[e^{-\theta T_n} d^{K_n}] \le 1$ for every $n$.
+
+  By the first hypothesis $K_{qb} \ge q$, so $\mathbb{E}[e^{-\theta T_{qb}}] \le
+  d^{-q}$, and Markov's inequality gives $\mathbb{P}(T_{qb} \le t) \le e^{\theta
+  t} d^{-q}$ for every $q$.  Letting $q \to \infty$, the jump times are almost
+  surely not all below $t$; a countable union over integer $t$ finishes.
+
+  Nothing here is a Poisson process, and the sub-family never needs a clock of its
+  own: the two rates the computation uses, $R$ and $R_{\mathrm{low}}$, are both read off
+  the jump-hold form.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The graphical construction of GL24, and the process it carries]
+  \label{aux-graphical}
+  \lean{SocialNetwork.Band, SocialNetwork.Band.totRate, SocialNetwork.Band.loRate,
+    SocialNetwork.Band.jumpPMF, SocialNetwork.Band.stepLaw, SocialNetwork.Band.ctsPath,
+    SocialNetwork.highRate, SocialNetwork.bandRate, SocialNetwork.clockBound_le_bandRate,
+    SocialNetwork.bandRate_pos, SocialNetwork.MarkJump, SocialNetwork.markWeight,
+    SocialNetwork.markPMF, SocialNetwork.markLaw, SocialNetwork.markNext,
+    SocialNetwork.markState, SocialNetwork.markPathMeasure, SocialNetwork.lambdaFinset,
+    SocialNetwork.sum_markWeight_lambdaFinset, SocialNetwork.IsLambdaAt,
+    SocialNetwork.le_lowCountOf_lambda, SocialNetwork.measure_markPathMeasure_blowUp,
+    SocialNetwork.acceptedWithin, SocialNetwork.acceptedWithin_succ,
+    SocialNetwork.measure_acceptedWithin_succ, SocialNetwork.lintegral_oneSub_exp,
+    SocialNetwork.measure_acceptedWithin_le, SocialNetwork.measure_acceptedWithin_ge,
+    SocialNetwork.iSup_measure_acceptedWithin, SocialNetwork.acceptedRest,
+    SocialNetwork.measure_acceptedRest, SocialNetwork.measure_discard_restart,
+    SocialNetwork.Accepts, SocialNetwork.firstAccept, SocialNetwork.measure_allDiscard,
+    SocialNetwork.measure_Accepts, SocialNetwork.acceptedJump, SocialNetwork.acceptedTime,
+    SocialNetwork.collapseStep, SocialNetwork.restAfterAccept,
+    SocialNetwork.measure_collapse_Iic, SocialNetwork.acceptLaw, SocialNetwork.stepLawSlice,
+    SocialNetwork.acceptLaw_eq, SocialNetwork.measure_collapse_prod,
+    SocialNetwork.collapseKernel, SocialNetwork.map_markPathMeasure_collapse,
+    SocialNetwork.collapse, SocialNetwork.map_takeStep_collapse,
+    SocialNetwork.map_markPathMeasure_collapse_eq, SocialNetwork.exists_holdSum_collapse,
+    SocialNetwork.holdBlowUp_collapse, SocialNetwork.measure_ctsPath_blowUp}
+  \leanok
+  \uses{eq3, aux-clocks, aux-noexplosion}
+  Let a chain draw at each step a pair from a law depending only on the state, and then hold
+  for an exponential time of the total rate at the state reached.  Distinguish, at each state,
+  some of the pairs, and suppose the distinguished family carries total rate at most $\lambda$
+  whatever the state is.  Mark the band of [GL24]'s Figure~2: at the state $v$ it is $[0,
+  \lambda + q^>(v))$, the stacking functions $\Phi^{<,\pm}_v$ cut the strip $[0, q^<(v))$ into
+  one interval per distinguished pair, the rest of $[0,\lambda)$ is discarded, and
+  $\Phi^{>,\pm}_v$ cut $[\lambda, \lambda + q^>(v))$ into one interval per remaining pair.
+  Marks arrive after independent exponential times of the band's height, and a mark that is not
+  a discard moves the state.  Then
+  \begin{enumerate}
+    \item if at least one mark in every $b$ lands in the strip, the marks do not accumulate,
+      and
+    \item reading off the marks that are not discards, and summing the holding times between
+      consecutive ones, gives a realisation whose law is exactly the law of the chain.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Follows [GL24] pp.~12--14}, whose steps 1--5 are the first claim.  The strip
+  $[0,\lambda)$ has rate $\lambda$ at every state, by construction and by $q^<(v) \le \lambda$,
+  so \ref{aux-noexplosion} applies to the band and gives $\sup_n T^\lambda_n = \infty$.  This
+  is [GL24]'s ``$\{T^<_n\} \subset \{T^\lambda_n\}$ and $T^\lambda$ is a rate-$\lambda$ Poisson
+  process'', with the supermartingale of \ref{aux-noexplosion} in place of the Poisson process,
+  which Mathlib does not have; nothing else in the construction changes.
+
+  The second claim is the step [GL24] states and does not prove --- ``we will construct the
+  process $(U_t)$ with jump times $\{T_n\}$ as the superposition \dots'' --- and is the
+  plumbing of the sample space that rule~3 of \ref{note-green} asks to be supplied.  It is
+  proved in three moves.  First, the law of the first mark that is not a discard: writing
+  $\Lambda = \lambda + q^>(v)$ and $q$ for the total rate, the chance that one of the first $n$
+  marks expresses a pair of $B$ by time $t$ satisfies a one-mark recursion whose exact fixed
+  point is $\frac{\sum_{p \in B} r_p}{q}(1 - e^{-qt})$; an induction bounds it above by that
+  and below by that minus $((\Lambda - q)/\Lambda)^n$, the chance that all $n$ marks are
+  discarded, so the two meet.  The geometric number of discarded marks and the exponential
+  times between them have been summed away, and what is left is the rectangle $B \times [0,t]$
+  of \ref{eq3}.  Second, independence: a condition imposed on the marks above the first
+  accepted one multiplies that probability by a constant, whatever the deadline and however
+  many marks were discarded first, so the joint law of the pair, the time, and the band above
+  is the semidirect product \ref{eq3} prescribes.  Third, induction on the number of
+  expressions carries this to the finite-dimensional laws, and the measurable cylinders carry
+  it to the whole path space.
+
+  Nothing in any of this mentions which model the rates came from, so the node is stated for an
+  arbitrary such chain and \ref{thm1-1} and \ref{thm16} instantiate the same theorem.
 \end{proof}
 
 \paper{Theorem 1.1}
 \begin{theorem}[Existence]
   \label{thm1-1}
-  \lean{SocialNetwork.nonExplosion}
+  \lean{SocialNetwork.nonExplosion, SocialNetwork.lowFinset, SocialNetwork.mem_lowFinset,
+    SocialNetwork.lowRate, SocialNetwork.lowRate_nonneg, SocialNetwork.lowRate_le_totalRate,
+    SocialNetwork.clockBound, SocialNetwork.clockBound_pos,
+    SocialNetwork.lowRate_le_clockBound, SocialNetwork.one_lt_discountRatio,
+    SocialNetwork.pressureBand, SocialNetwork.pressureBand_ctsPath,
+    SocialNetwork.isState_markState, SocialNetwork.markState_add_of_jumps,
+    SocialNetwork.exists_isLambdaAt_block}
   \leanok
   \uses{eq3, aux-construction}
   For any $\beta \ge 0$ and any $u \in \Sspace$, the jump times satisfy
   $\mathbb{P}(\sup\{T_m : m \ge 1\} = \infty) = 1$.
 \end{theorem}
 \begin{proof}
-  \uses{prop5, aux-clocks}
-  The jump times are sandwiched between two Poisson processes, splitting the
-  expressions into those coming from actors with pressure below $N$ --- which
-  \ref{prop5} says happen at least once every $N$ steps --- and the others.
-  \textbf{Not formalised.}
+  \leanok
+  \uses{prop5, aux-graphical}
+  \textbf{Follows the written proof}, which is [GL24] pp.~12--14.  The paper's own
+  p.~16 compresses it: it splits the expressions into those coming from an actor
+  carrying pressure below $N$ and the others, states the two facts the argument
+  uses of the first kind, and then asserts the sandwich~(11) that turns them into
+  non-explosion.  [GL24] constructs that sandwich, and it is that construction
+  which is formalised, at \ref{aux-graphical}.
 
-  What is missing is not the Poisson theory.  On this sample space a
-  homogeneous Poisson process of rate $\lambda$ is the partial sums of
-  independent $\mathrm{Exp}(\lambda)$ variables, and that those diverge is the
-  strong law, which Mathlib has and \ref{prop18} already uses.  What is missing
-  is the sandwich itself, which the paper asserts --- ``can be constructed in
-  such a way that'' --- and does not construct.  \ref{aux-clocks} is its first
-  half, and the half that is new mathematics here: the clocks of the
-  low-pressure pairs carry total rate at most $NMe^{\beta N}$ whatever the rest
-  of the matrix does, which is what the upper bound of~(11) says, and that is
-  a statement the jump-hold form cannot even express.  What remains is to carry
-  the domination across the jumps, where the state and so the rates change.
+  The two facts are the paper's own.  \emph{They are frequent}: \ref{prop5} puts
+  at least one of them in every $N$ expressions.  The paper states \ref{prop5} for
+  the first $N$ and uses it at every block; that is legitimate because $\Sspace$ is
+  stable along the chain, so the statement applies again at the matrix reached at
+  $T_{mN}$, and it is proved here in that form.  \emph{They are slow}: their pairs
+  carry total rate at most $\lambda = NMe^{\beta N}$ whatever the rest of the
+  matrix does --- there are at most $NM$ of them and each has rate $e^{\beta
+  u(a,o)} \le e^{\beta N}$.  That is the upper bound of~(11), and it is where the
+  hypothesis $u \in \Sspace$ is spent, through \ref{prop5}.  They are [GL24]'s
+  Lemma~10 and its $q^< \le \lambda$.
+
+  From them, \ref{aux-graphical} gives both halves: the marks of the band do not
+  accumulate, and the realisation the band carries \emph{is} the process.  The
+  jump times of that realisation are a sub-sequence of the band's marks, so they
+  are at least as large, and they are unbounded with them.
+
+  \textbf{One step of the written proof is not written anywhere}, in either
+  source: the identification of the constructed process with the one~\ref{eq3}
+  defines.  [GL24] states it --- ``we will construct the process $(U_t)$ with jump
+  times $\{T_n\}$ as the superposition \dots'' --- and the paper states it a
+  fortiori.  Rule~3 of \ref{note-green} calls that the plumbing of the sample
+  space and asks for it to be supplied rather than assumed; it is the second half
+  of \ref{aux-graphical}.  Mathlib has no Poisson point process, so the marks are
+  carried by the jump-hold form instead of by a process on $[0,\infty)^2$, and
+  $\sup_n T^\lambda_n = \infty$ is proved by the supermartingale of
+  \ref{aux-noexplosion} rather than read off a Poisson process; that changes the
+  witness for one sentence of [GL24] and no step of its argument.
 \end{proof}
 
 \paper{Theorem 1.2}
@@ -554,9 +726,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{lemma}
 \begin{proof}
   \uses{thm1-1, def3}
-  \textbf{Not formalised, and blocked on Mathlib} --- through \ref{thm1-1}, not
-  through \ref{thm1-2-skeleton}, which is proved.  The written argument at
-  p.~18 opens:
+  \textbf{Not formalised, and blocked on Mathlib} --- on the correspondence it
+  cites, not on \ref{thm1-2-skeleton}, which is proved, and no longer on
+  \ref{thm1-1}, which is.  The written argument at p.~18 opens:
 
   \begin{quote}
     For a non-explosive process, a probability measure is invariant for
@@ -566,19 +738,19 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
     the jump rate obeys $\jumprate(u) \ge M$ for all $u \in \Sspace$.
   \end{quote}
 
-  ``Part~1'' is \ref{thm1-1}, which needs Poisson point processes.  The appeal
-  is not rhetorical: $P_t$ is the law of $U_t$, and $U_t$ is read off the
+  ``Part~1'' is \ref{thm1-1}, which is now proved, so that appeal is discharged.
+  It was not rhetorical: $P_t$ is the law of $U_t$, and $U_t$ is read off the
   jump-hold representation through the jump counter, which returns a junk value
-  on the explosion event.  Until that event is known to be null the hypothesis
-  of invariance is not invariance for the semigroup the argument is about.
+  on the explosion event; until that event is known to be null the hypothesis of
+  invariance is not invariance for the semigroup the argument is about.
 
   Two of the remaining steps are this repository's to do and neither is done:
   $\jumprate(u) \ge M$ on $\Sspace$, which the null row of \ref{eq2} gives, and
   the finiteness $\sum_u \muskel(u)/\jumprate(u) \le 1/M$ that makes the
   right-hand side a probability measure.
 
-  The step that carries the content is neither: the equivalence quoted above is
-  \textbf{cited, not proved}, in the paper.  It is a standard fact about jump
+  The step that carries the content is neither, and it is now the only one left:
+  the equivalence quoted above is \textbf{cited, not proved}, in the paper.  It is a standard fact about jump
   processes, and Mathlib has no form of it.  Whether it should be a third
   external citation, like \ref{prop12}, or an auxiliary node proved here, is a
   question for the authors and is recorded in \texttt{FOR-THE-AUTHORS.md}.
@@ -1978,16 +2150,30 @@ process pointwise.
 \paper{Theorem 16}
 \begin{theorem}[The biased process does not explode]
   \label{thm16}
-  \lean{SocialNetwork.Bias.biasedNonExplosion}
+  \lean{SocialNetwork.Bias.biasedNonExplosion, SocialNetwork.Bias.lowFinset,
+    SocialNetwork.Bias.mem_lowFinset, SocialNetwork.Bias.lowRate,
+    SocialNetwork.Bias.lowRate_nonneg, SocialNetwork.Bias.lowRate_le_biasedTotalRate,
+    SocialNetwork.Bias.lowRate_le_clockBound, SocialNetwork.Bias.profileBand,
+    SocialNetwork.Bias.profileBand_ctsPath, SocialNetwork.Bias.isBiasedState_markState,
+    SocialNetwork.Bias.markState_add_of_jumps,
+    SocialNetwork.Bias.exists_isLambdaAt_block}
   \leanok
   \uses{eq7}
   For $\beta \ge 0$, $\alpha < 0$ and $u \in \Salpha$, the biased process does
   not explode.
 \end{theorem}
 \begin{proof}
-  \uses{prop21, thm1-1}
-  As \ref{thm1-1}, with \ref{prop21} in place of \ref{prop5}. \textbf{Not
-  formalised}.
+  \leanok
+  \uses{prop21, aux-graphical}
+  \textbf{Follows Appendix C's prescription}, ``as \ref{thm1-1}, with \ref{prop21} in place of
+  \ref{prop5}'', and hence [GL24] pp.~12--14.  The two facts the argument uses are carried over
+  exactly: the pairs carrying pressure below $N$ are again at most $NM$ of rate at most
+  $e^{\beta N}$ each, so again $\lambda = NMe^{\beta N}$, and \ref{prop21} puts one of them in
+  every $N$ expressions.  The biased low family is read off the pressures of~(6) instead of the
+  entries of the matrix, which is the only line of the argument that is not shared:
+  \ref{aux-graphical} is stated for an arbitrary chain with a slow distinguished family, so the
+  band, the summing away of the discarded marks, and the identification of the band with the
+  process are the same theorem applied twice.
 \end{proof}
 
 \paper{Proposition 17}
@@ -2757,20 +2943,29 @@ is the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{thm1-1} and \ref{thm16}, \ref{lem14} and \ref{lem29}, \ref{eq13} and
-\ref{thm1-2} through it.  Verified against the pinned revision
+\ref{lem14} and \ref{lem29}, \ref{eq13} and \ref{thm1-2} through it.  Verified
+against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
-  \item \textbf{Poisson point processes}: nothing.  Mathlib has the Poisson
-    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem.  This is
-    what \ref{thm1-1} and \ref{thm16} need, and it is the largest of these
-    items.
   \item \textbf{The invariance correspondence for a jump process}: nothing.
     That a probability measure is invariant for a non-explosive jump process
     exactly when its product with the jump rate is invariant for the skeleton
     chain is what \ref{eq13} cites, and the paper cites it too rather than
-    proving it.
+    proving it.  This is now the only thing between \ref{thm1-2-skeleton}, which
+    is proved, and \ref{thm1-2}.
+  \item \textbf{Poisson point processes}: nothing --- Mathlib has the Poisson
+    \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem --- and
+    \emph{this list was wrong to say that \ref{thm1-1} and \ref{thm16} need
+    them}.  Both are proved, and no Poisson process is constructed anywhere.
+    [GL24]'s band is built at \ref{aux-graphical} in the jump-hold form instead of
+    as a point process on $[0,\infty)^2$: its marks are a chain that draws a
+    height and then holds for an exponential time of the band's height, which is
+    the same law, and the one sentence of [GL24] that reads ``$T^\lambda$ is a
+    rate-$\lambda$ Poisson process, so $\sup_n T^\lambda_n = \infty$'' is replaced
+    by the supermartingale of \ref{aux-noexplosion}, which proves exactly that
+    conclusion.  The entry is kept because the audit of the library should record
+    what is absent, not only what blocks.
   \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
     \texttt{TendstoInDistribution} makes the qualitative half expressible, but
     the Kolmogorov-type bound Appendix~B uses is absent.  With
@@ -2856,15 +3051,15 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Fifty-five proofs
+\ref{note-green}: does it follow what the paper wrote?  Fifty-eight proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty-six entries.  Every one of them is named, and
+own, so it counts fifty-nine entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (twenty-nine). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (thirty-one). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
@@ -2872,7 +3067,8 @@ an unaudited proof, and it fails the build.
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
-\ref{aux-biased-minorisation} and~\ref{thm25}, and \ref{rem1}, \ref{rem4}
+\ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its own biased
+twin \ref{thm16}, and \ref{rem1}, \ref{rem4}
 and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -2998,12 +3194,41 @@ goes through \ref{aux-nstep} rather than through the paper's conditioning,
 Mathlib offering nothing of that shape --- the same departure as \ref{prop8},
 for the same reason.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
+\ref{thm1-1} takes the written route and no longer departs from it.  The paper's
+p.~16 states the two facts its argument uses of the low-pressure expressions ---
+\ref{prop5} makes them frequent, and the count $NM$ with the bound $e^{\beta N}$
+on each rate makes them slow, which is the upper bound of~(11) --- and then
+asserts the sandwich that turns them into non-explosion.  [GL24] pp.~12--14 builds
+that sandwich, and it is built here, at \ref{aux-graphical}: the band of its
+Figure~2, its Lemma~10 read on the marks, and the identification of the marks with
+the process.  Two substitutions are made and neither changes a step.  The marks
+are carried by the jump-hold form rather than by a point process on
+$[0,\infty)^2$, Mathlib having no Poisson point process, and $\sup_n T^\lambda_n =
+\infty$ is then the supermartingale of \ref{aux-noexplosion} rather than a
+property of that process.  What neither source proves is the identification
+itself, which [GL24] states; rule~3 calls that the plumbing of the sample space
+and asks for it, and it is the second half of \ref{aux-graphical}.
+
+\ref{thm16} follows it, as Appendix~C prescribes.  ``As \ref{thm1-1}, with
+\ref{prop21} in place of \ref{prop5}'' is what the Lean proof is: the two rate
+estimates are carried over exactly, and \ref{aux-graphical} is stated for an
+arbitrary chain with a slow distinguished family, so the band, the summing away
+of the discarded marks and the identification with the process are the same
+theorem applied twice.  The biased low family is read off the pressures of~(6)
+rather than off the entries of the matrix, and that is the only line of the
+argument the two do not share.
+
+\textbf{\ref{prop7} is now the only departure} in this development.  Every other
+proof of a statement of the paper follows the written argument, and where the
+written argument is [GL24]'s rather than the paper's own, that is said at the
+node.
+
+\medskip \noindent\textbf{Supply a step the paper asserts} (thirteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
-and~\ref{aux-zero-predecessors}, and the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}.  Each corresponds to a sentence in the paper of the
+and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
+N+1$ of \ref{def5-repeat}, and \ref{aux-graphical}.  Each corresponds to a sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
 N+1\}$''.  All twelve are true and none is deep; what they are not is checks of
@@ -3013,21 +3238,31 @@ single line and argues neither, and uses the $m$-step bound in the sketch of
 \ref{prop9} without deriving it.  \ref{aux-greedy-avoids} is the one that took
 an outside source to settle: the paper reads ``without visiting $u$'' off
 \ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
+\ref{aux-graphical} is the largest by far, and it took the same source: the
+sandwich~(11) that p.~16 asserts is built at [GL24] pp.~12--14, and that
+construction --- the band of its Figure~2, its Lemma~10 read on the marks, and the
+identification of the marks with the process --- is what the node carries out.
 
-\medskip \noindent\textbf{No counterpart in the paper} (fifteen).
+\medskip \noindent\textbf{No counterpart in the paper} (sixteen).  These are
 \ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},
 \ref{aux-ladder-consensus}, \ref{aux-consensus-ladder},
 \ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
 \ref{aux-biased-ladder-consensus}, \ref{aux-biased-ladder-steep},
 \ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart},
-\ref{aux-doeblin}, \ref{aux-nstep} and \ref{aux-clocks}, together with the
-plumbing of the sample space, which is not made of numbered statements, and so
-appears here only inside definitions and remarks.
+\ref{aux-doeblin}, \ref{aux-nstep}, \ref{aux-clocks} and
+\ref{aux-noexplosion}, with the plumbing of the sample space, which is not made
+of numbered statements and so appears here only inside definitions and
+remarks.
 
-The last five are the substantial ones, and none of them checks anything the
-paper wrote.  \ref{aux-clocks} identifies one step of the process with a race
+The last six are the substantial ones, and none of them checks anything the
+paper wrote.  \ref{aux-noexplosion} is the estimate \ref{thm1-1} needs in place of
+the coupling the paper asserts: a jump-hold chain whose distinguished pairs are
+slow and frequent has unbounded jump times.  It is stated for an arbitrary such
+chain, so both models use it, and its proof is a supermartingale, not a
+construction.  \ref{aux-clocks} identifies one step of the process with a race
 between exponential clocks, which is the form p.~16 argues in and not the form
-\ref{eq3} is built in; the paper uses the identification without stating it.  \ref{aux-holding-times} says what the jump times of a greedy run
+\ref{eq3} is built in; the paper uses the identification without stating it, and
+\ref{thm1-1} turned out not to need it --- see the correction at that node.  \ref{aux-holding-times} says what the jump times of a greedy run
 are, and \ref{aux-restart} is the Markov property at the first jump; the paper
 uses both without stating either.  \ref{aux-doeblin} is Doeblin's criterion,
 which the paper cites; both halves of it are proved here, the uniqueness half
@@ -3089,8 +3324,8 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{\ref{prop22}}, with a repair or the weakening of \ref{prop17}
-    described at \ref{aux-biased-minorisation}.  Either closes \ref{thm25}
+  \item \textbf{\ref{prop22}}, with a repair, or the weakening of \ref{prop17}
+    at \ref{aux-biased-minorisation}.  Either closes \ref{thm25}
     outright, and nothing else in it is unproved.  The smallest item on this
     list, and the only one that is a single decision.
   \item \textbf{\ref{lem19} and~\ref{lem20}}, with the repairs of
@@ -3103,15 +3338,18 @@ In rough order of cost.
     \ref{eq13} and \ref{thm1-2} through it: that a probability measure is
     invariant for a non-explosive jump process exactly when its product with
     the jump rate is invariant for the skeleton.  The paper cites it; Mathlib
-    does not have it.  It also needs \ref{thm1-1}, which is item~4.
-  \item \textbf{Poisson point processes} and the superposition comparison, for
-    \ref{thm1-1} and~\ref{thm16}, and \ref{eq13} through the first.  The
-    largest item by far.
+    does not have it.  \ref{thm1-1}, which its proof also invokes, is now
+    proved, so this is all that is left of Theorem~1.2 --- and it is the largest
+    of the three, since Mathlib has no jump process to state it for.
+  \item \textbf{The quantitative convergence of Appendix~B}, for \ref{lem14}
+    and~\ref{lem29}: a Kolmogorov-type bound on the distance to
+    $\mathrm{Exp}(1)$, and a usable total-variation distance to state it with.
 \end{enumerate}
 
 Items 3 and 4 are contributions to Mathlib rather than to this repository, as
 is \ref{aux-doeblin}, which is proved here and is the clearest thing to offer
-upstream.  The engineering companion to this blueprint,
+upstream; \ref{aux-noexplosion} is a second, being a criterion for a jump-hold
+chain rather than a statement about this model.  The engineering companion to this blueprint,
 \texttt{blueprint/blueprint.md}, records exactly what the library does and does
 not provide, with names, files and line numbers, checked against the pinned
 revision.

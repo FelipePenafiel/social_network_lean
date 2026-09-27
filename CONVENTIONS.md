@@ -41,8 +41,27 @@ bypasses the paper's argument is a check not performed. A departure of the secon
 is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemmas 19
 and 20.
 
-There is exactly one such departure in the repository at present, Proposition 7, and it
-is written out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
+There is one such departure in the repository at present: **Proposition 7**, written
+out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
+
+**Theorem 1.1 and Theorem 16 are no longer among them.** arXiv:2607.19651 asserts the
+sandwich (11) rather than constructing it, but [GL24] pp. 12–14 constructs it in full,
+and that construction is now formalised: `SocialNetwork/Band.lean` builds the band of its
+Figure 2 and `SocialNetwork/BandCollapse.lean` identifies the realisation the band carries
+with the process the rates define.  Both are written for an arbitrary
+`SocialNetwork.Band` — a state space, a rate per pair per state, the state each pair leads
+to, a distinguished family, and a bound `λ` on the rate it carries — so
+`SocialNetwork/Graphical.lean` instantiates them for the model of equation (3) and
+`SocialNetwork/BiasedNonExplosion.lean` for the biased model of Section 3, which is
+exactly Appendix C's "as Theorem 1.1, with Proposition 21 in place of Proposition 5".
+
+Two substitutions are made and neither changes a step of the argument.  Mathlib has no
+Poisson point process, so the marks are carried by the jump-hold form — draw a mark, then
+hold for an exponential time of the band's height — which is the same law; and [GL24]'s
+"`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`" becomes the supermartingale
+criterion `SocialNetwork.measure_holdBlowUp_eq_one`, which proves exactly that conclusion.
+The identification of the constructed process with the one (3) defines is stated in neither
+source and is supplied here, as rule 3 asks.
 
 **Where the paper's proof does not close, the statement is left resting on the step that
 fails — even when a different argument would establish it.** This is the sharp end of

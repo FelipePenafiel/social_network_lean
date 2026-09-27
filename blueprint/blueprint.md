@@ -232,27 +232,42 @@ Mathlib provides, not of what this repository happens to want.
 
 ## Still missing, in CONTINUOUS time
 
-6. **Non-explosion criteria.**  Theorem 1.1 is proved by sandwiching the jump times between two
-   Poisson processes.  **Mathlib has no Poisson point process**; what it has is the Poisson
-   *distribution* on `ℕ` (`ProbabilityTheory.poissonMeasure`,
-   `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.
+6. **Non-explosion criteria.**  Nothing: no Poisson point process (what Mathlib has is the
+   Poisson *distribution* on `ℕ`, `ProbabilityTheory.poissonMeasure` in
+   `Mathlib/Probability/Distributions/Poisson/Basic.lean`, and the Poisson limit theorem), no
+   **stochastic domination**, no **coupling** structure, no **compensator**:
+   `stochasticallyDominates`, a coupling structure and `compensator` all return zero hits.
+   Nothing on the minimum of independent exponentials either, nor on which of several is
+   smallest.
 
-   That absence is *not* what blocks Theorem 1.1.  The process here is built jump-hold, so a
-   homogeneous Poisson process of rate `λ` is the partial sums of i.i.d. `Exp (λ)` variables
-   and nothing more; that those diverge is `ProbabilityTheory.strong_law_ae_real`, which
-   `SocialNetwork/Frequencies.lean` already uses.  What blocks it is the sandwich itself,
-   which the paper asserts rather than constructs.  Its first half is
-   `SocialNetwork/Clocks.lean`: one step of the process is the race between one exponential
-   clock per pair, which is the form (11) is stated in and which the jump-hold form cannot
-   express.  Mathlib has neither half of that — nothing on the minimum of independent
-   exponentials, nothing on which of several is smallest — nor, for the rest,
-   **stochastic domination**, **couplings** or **compensators**: `stochasticallyDominates`,
-   a coupling structure and `compensator` all return zero hits.
+   **This blocks no theorem here, and no proof.**  Theorem 1.1 and Theorem 16 are proved, and
+   [GL24]'s written proof of the sandwich (pp. 12–14) is now verified, without a Poisson
+   process anywhere.  The band of its Figure 2 is carried by the jump-hold form instead
+   (`SocialNetwork/Band.lean`, written for an arbitrary state space so that both models
+   instantiate it): draw a mark of the band, then hold for an exponential time of the band's
+   height.  That is the same law, and the property the construction turns
+   on survives it — the strip `[0, λ)` has mass `λ/Λ` whatever the matrix is.  [GL24]'s
+   "`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`" becomes
+   `SocialNetwork.measure_holdBlowUp_eq_one`, a criterion for an arbitrary jump-hold chain,
+   fed the paper's own two estimates: Proposition 5 makes the low expressions frequent, and
+   there are at most `NM` of them, each of rate at most `e^{βN}`.
+
+   The identification of the constructed process with the jump-hold one
+   (`SocialNetwork/BandCollapse.lean`) needs the law of a geometric sum of `Exp (Λ)` variables,
+   which is `Exp (pΛ)`; Mathlib has neither that nor the Erlang law (`gammaMeasure` exists,
+   with no additivity, and is used nowhere else in the library).  It is proved without them:
+   the truncated event "one of the first `n` marks is accepted, by time `t`" satisfies a
+   one-mark recursion whose exact fixed point is the answer, and a two-sided induction pins
+   it between that and that minus the chance that all `n` marks are discarded.
+   `SocialNetwork/Clocks.lean` identifies one step with a race between exponential clocks,
+   which is the form p. 16 argues in; that identification turned out not to be needed, and
+   what Theorem 1.1 borrows from that file are two integrals.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing.  This is a live blocker rather than a dormant
-   one: equation (13) is what carries `μ̃^β` to `μ^β`, and its written proof opens *for a
-   non-explosive process* and then appeals to Theorem 1.1, so it needs item 6 as well.  The
-   paper cites the equivalence rather than proving it.
+   the jump chain and of the process.  Nothing.  This is the live blocker, and now the only
+   one on the continuous-time side: equation (13) is what carries `μ̃^β` to `μ^β`, its written
+   proof opens *for a non-explosive process* — which Theorem 1.1 now supplies — and then
+   cites the equivalence rather than proving it.  Mathlib has no jump process to state it
+   for.
 8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
@@ -264,8 +279,8 @@ Mathlib provides, not of what this repository happens to want.
 
 Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
 continuous-time versions follow from the discrete ones through the transfer (13) and the
-control of the holding times.  So they are blocked by items 1–3, not by 6.  Only Theorem 1.1 —
-and its biased twin Theorem 16 — genuinely needs the continuous-time item 6.
+control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 is
+what item 7 blocks, and nothing else does.
 
 Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
 mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting
