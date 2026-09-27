@@ -1133,6 +1133,36 @@ theorem map_drivenMeasure_first (s : S) :
   rw [h, map_drivenMeasure_firstRest]
   exact Measure.fst_compProd _ _
 
+omit [DecidableEq J] in
+/-- If every step law puts no mass on negative holding times, neither does the chain. -/
+theorem drivenMeasure_holdTime_nonneg (hL : ∀ t : S, L t {z : Hold J | z.2 < 0} = 0) (s : S)
+    (n : ℕ) : drivenMeasure next L s {ω | (ω n).2 < 0} = 0 := by
+  induction n generalizing s with
+  | zero =>
+      have hmeas : MeasurableSet {z : Hold J | z.2 < 0} :=
+        measurableSet_lt measurable_snd measurable_const
+      have hpre : {ω : ℕ → Hold J | (ω 0).2 < 0}
+          = (fun ω : ℕ → Hold J => ω 0) ⁻¹' {z : Hold J | z.2 < 0} := rfl
+      rw [hpre, ← Measure.map_apply (measurable_pi_apply 0) hmeas,
+        map_drivenMeasure_first, hL s]
+  | succ n ih =>
+      have hmeasE : MeasurableSet {ω : ℕ → Hold J | (ω n).2 < 0} :=
+        measurableSet_lt (measurable_snd.comp (measurable_pi_apply n)) measurable_const
+      have hset : {ω : ℕ → Hold J | (ω (n + 1)).2 < 0}
+          = {ω : ℕ → Hold J | ω 0 ∈ Set.univ} ∩ shiftHold ⁻¹' {ω' | (ω' n).2 < 0} := by
+        ext ω
+        simp only [Set.mem_ofPred_eq, Set.mem_univ, true_and, Set.mem_inter_iff,
+          Set.mem_preimage]
+        show (ω (n + 1)).2 < 0 ↔ (ω (1 + n)).2 < 0
+        rw [Nat.add_comm]
+      rw [hset, drivenMeasure_restart next L s MeasurableSet.univ hmeasE,
+        Measure.restrict_univ]
+      have hz : ∀ z : Hold J,
+          drivenMeasure next L (next s z.1) {ω : ℕ → Hold J | (ω n).2 < 0} = 0 :=
+        fun z => ih (next s z.1)
+      simp only [hz]
+      exact lintegral_zero
+
 end Restart
 
 end SocialNetwork

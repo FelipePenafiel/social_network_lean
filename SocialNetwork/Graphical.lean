@@ -524,23 +524,24 @@ theorem acceptedWithin_succ (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
         linarith
 
 omit [NeZero N] [NeZero M] in
-theorem measurableSet_acceptedWithin_prod (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
-    MeasurableSet {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
-      q.2 ∈ acceptedWithin B n (t - q.1.2)} := by
-  have hcoord : ∀ (i : ℕ) (s : Set (MarkJump N M)),
-      MeasurableSet {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) | (q.2 i).1 ∈ s} :=
-    fun i s => (measurable_fst.comp ((measurable_pi_apply i).comp measurable_snd))
+/-- The event, with its deadline shifted by a measurable amount, is measurable in the pair. -/
+theorem measurableSet_acceptedWithin_comap {α : Type*} [MeasurableSpace α] {g : α → ℝ}
+    (hg : Measurable g) (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    MeasurableSet {r : α × (ℕ → Hold (MarkJump N M)) |
+      r.2 ∈ acceptedWithin B n (t - g r.1)} := by
+  have hcoord : ∀ (i : ℕ) (c : Set (MarkJump N M)),
+      MeasurableSet {r : α × (ℕ → Hold (MarkJump N M)) | (r.2 i).1 ∈ c} :=
+    fun i c => (measurable_fst.comp ((measurable_pi_apply i).comp measurable_snd))
       MeasurableSet.of_discrete
-  have hset : {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
-        q.2 ∈ acceptedWithin B n (t - q.1.2)}
+  have hset : {r : α × (ℕ → Hold (MarkJump N M)) | r.2 ∈ acceptedWithin B n (t - g r.1)}
       = ⋃ k ∈ Finset.range n,
-          ((⋂ i ∈ Finset.range k, {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
-              (q.2 i).1 ∈ ({MarkJump.discard} : Set (MarkJump N M))})
-            ∩ {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
-                (q.2 k).1 ∈ {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}}
-            ∩ {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
-                holdSum (k + 1) q.2 + q.1.2 ≤ t}) := by
-    ext q
+          ((⋂ i ∈ Finset.range k, {r : α × (ℕ → Hold (MarkJump N M)) |
+              (r.2 i).1 ∈ ({MarkJump.discard} : Set (MarkJump N M))})
+            ∩ {r : α × (ℕ → Hold (MarkJump N M)) |
+                (r.2 k).1 ∈ {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}}
+            ∩ {r : α × (ℕ → Hold (MarkJump N M)) |
+                holdSum (k + 1) r.2 + g r.1 ≤ t}) := by
+    ext r
     simp only [acceptedWithin, Set.mem_ofPred_eq, Set.mem_iUnion, Set.mem_inter_iff,
       Set.mem_iInter, Finset.mem_range, Set.mem_singleton_iff, exists_prop]
     constructor
@@ -553,8 +554,14 @@ theorem measurableSet_acceptedWithin_prod (B : Finset (Jump N M)) (n : ℕ) (t :
   refine ((MeasurableSet.biInter (Finset.range k).countable_toSet fun i _ => hcoord i _).inter
     (hcoord k _)).inter ?_
   exact measurableSet_le
-    (((measurable_holdSum (k + 1)).comp measurable_snd).add
-      (measurable_snd.comp measurable_fst)) measurable_const
+    (((measurable_holdSum (k + 1)).comp measurable_snd).add (hg.comp measurable_fst))
+    measurable_const
+
+omit [NeZero N] [NeZero M] in
+theorem measurableSet_acceptedWithin_prod (B : Finset (Jump N M)) (n : ℕ) (t : ℝ) :
+    MeasurableSet {q : Hold (MarkJump N M) × (ℕ → Hold (MarkJump N M)) |
+      q.2 ∈ acceptedWithin B n (t - q.1.2)} :=
+  measurableSet_acceptedWithin_comap measurable_snd B n t
 
 /-- **The first expression, one mark at a time.**  Either the first mark expresses, or it is
 discarded and the chain starts again from the same matrix. -/
@@ -734,5 +741,379 @@ theorem lintegral_oneSub_exp {Λ q : ℝ} (hΛ : 0 < Λ) (hq : 0 < q) (hqΛ : q 
   rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
     integral_exp_neg_interval hΛ t, integral_exp_neg_interval (by linarith : 0 < Λ - q) t]
   field_simp
+
+/-! ### The two ingredients of the recursion -/
+
+/-- The chain never waits a negative time. -/
+theorem markPathMeasure_holdTime_nonneg (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M)
+    (n : ℕ) : markPathMeasure hM hβ v {ω | (ω n).2 < 0} = 0 := by
+  refine drivenMeasure_holdTime_nonneg markNext (markLaw hM hβ) (fun w => ?_) v n
+  have hset : {z : Hold (MarkJump N M) | z.2 < 0}
+      = (Set.univ : Set (MarkJump N M)) ×ˢ (Set.Iio (0 : ℝ)) := by
+    ext z; simp
+  have hnull : expMeasure (bandRate β w) (Set.Iio (0 : ℝ)) = 0 :=
+    measure_mono_null Set.Iio_subset_Iic_self (expMeasure_Iic_zero (bandRate_pos β w))
+  have hprob : IsProbabilityMeasure (expMeasure (bandRate β w)) :=
+    isProbabilityMeasure_expMeasure (bandRate_pos β w)
+  rw [markLaw, hset, Measure.prod_prod, hnull, mul_zero]
+
+/-- Before time zero nothing has been expressed. -/
+theorem measure_acceptedWithin_of_neg (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β)
+    (B : Finset (Jump N M)) (n : ℕ) {t : ℝ} (ht : t < 0) (v : Pressure N M) :
+    markPathMeasure hM hβ v (acceptedWithin B n t) = 0 := by
+  refine measure_mono_null (fun ω hω => ?_)
+    (measure_biUnion_null_iff (Finset.range n).countable_toSet |>.2
+      fun i _ => markPathMeasure_holdTime_nonneg hM hβ v i)
+  obtain ⟨k, hk, -, -, htime⟩ := hω
+  by_contra hcon
+  have hnn : ∀ i ∈ Finset.range n, ¬ ((ω i).2 < 0) := by
+    intro i hi hneg
+    exact hcon (Set.mem_biUnion hi hneg)
+  have : 0 ≤ holdSum (k + 1) ω :=
+    Finset.sum_nonneg fun i hi => not_lt.1 (hnn i (Finset.mem_range.2
+      (lt_of_lt_of_le (Finset.mem_range.1 hi) (by omega))))
+  linarith
+
+/-- The Gibbs mass of a family of pairs, read in the band. -/
+theorem markPMF_toMeasure_image (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M)
+    (B : Finset (Jump N M)) :
+    (markPMF hM hβ v).toMeasure {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}
+      = ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / bandRate β v) := by
+  have hcoe : {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p}
+      = ↑(B.image MarkJump.jump) := by
+    ext m; simp [eq_comm]
+  rw [hcoe, markPMF_toMeasure_finset hM hβ v,
+    Finset.sum_image (by intro x _ y _ h; cases h; rfl)]
+  have hjump : ∑ p ∈ B, markWeight β v (MarkJump.jump p)
+      = ENNReal.ofReal (∑ p ∈ B, jumpRate β v p.1 p.2) := by
+    show ∑ p ∈ B, ENNReal.ofReal (jumpRate β v p.1 p.2) = _
+    rw [← ENNReal.ofReal_sum_of_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le]
+  rw [hjump, ← ENNReal.ofReal_inv_of_pos (bandRate_pos β v),
+    ← ENNReal.ofReal_mul (Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le),
+    ← div_eq_mul_inv]
+
+/-- The first mark expresses a pair of `B`, by time `t`. -/
+theorem markLaw_apply_accept (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B : Finset (Jump N M))
+    (v : Pressure N M) {t : ℝ} (ht : 0 ≤ t) :
+    markLaw hM hβ v {z | (∃ p ∈ B, z.1 = MarkJump.jump p) ∧ z.2 ≤ t}
+      = ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / bandRate β v)
+        * ENNReal.ofReal (1 - Real.exp (-(bandRate β v * t))) := by
+  have hprob : IsProbabilityMeasure (expMeasure (bandRate β v)) :=
+    isProbabilityMeasure_expMeasure (bandRate_pos β v)
+  have hset : {z : Hold (MarkJump N M) | (∃ p ∈ B, z.1 = MarkJump.jump p) ∧ z.2 ≤ t}
+      = {m : MarkJump N M | ∃ p ∈ B, m = MarkJump.jump p} ×ˢ Set.Iic t := rfl
+  rw [markLaw, hset, Measure.prod_prod, markPMF_toMeasure_image hM hβ v B,
+    expMeasure_Iic_of_nonneg (bandRate_pos β v) ht]
+
+/-- The first mark is discarded: the chain starts again from the same matrix, after an
+exponential time of the band's height. -/
+theorem lintegral_discard_markLaw (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M)
+    {f : ℝ → ℝ≥0∞} (hf : Measurable f) :
+    ∫⁻ z in {z : Hold (MarkJump N M) | z.1 = MarkJump.discard}, f z.2 ∂(markLaw hM hβ v)
+      = ENNReal.ofReal ((clockBound N M β - lowRate β v) / bandRate β v)
+        * ∫⁻ s, f s ∂(expMeasure (bandRate β v)) := by
+  have hprob : IsProbabilityMeasure (expMeasure (bandRate β v)) :=
+    isProbabilityMeasure_expMeasure (bandRate_pos β v)
+  have hD : ({z : Hold (MarkJump N M) | z.1 = MarkJump.discard})
+      = ({MarkJump.discard} : Set (MarkJump N M)) ×ˢ (Set.univ : Set ℝ) := by
+    ext z; simp
+  have hmass : (markPMF hM hβ v).toMeasure ({MarkJump.discard} : Set (MarkJump N M))
+      = ENNReal.ofReal ((clockBound N M β - lowRate β v) / bandRate β v) := by
+    have hcoe : ({MarkJump.discard} : Set (MarkJump N M))
+        = ↑({MarkJump.discard} : Finset (MarkJump N M)) := by simp
+    rw [hcoe, markPMF_toMeasure_finset hM hβ v, Finset.sum_singleton]
+    show ENNReal.ofReal (clockBound N M β - lowRate β v) * _ = _
+    rw [← ENNReal.ofReal_inv_of_pos (bandRate_pos β v),
+      ← ENNReal.ofReal_mul (by linarith [lowRate_le_clockBound hM hβ v]), ← div_eq_mul_inv]
+  rw [← hmass, markLaw, hD, ← lintegral_indicator (by
+      exact (measurableSet_singleton MarkJump.discard).prod MeasurableSet.univ)]
+  have hfun : ∀ z : Hold (MarkJump N M),
+      Set.indicator (({MarkJump.discard} : Set (MarkJump N M)) ×ˢ (Set.univ : Set ℝ))
+        (fun z => f z.2) z
+      = Set.indicator ({MarkJump.discard} : Set (MarkJump N M))
+          (1 : MarkJump N M → ℝ≥0∞) z.1 * f z.2 := by
+    intro z
+    by_cases hz : z.1 = MarkJump.discard
+    · rw [Set.indicator_of_mem
+        (show z ∈ ({MarkJump.discard} : Set (MarkJump N M)) ×ˢ (Set.univ : Set ℝ) from
+          ⟨hz, Set.mem_univ _⟩),
+        Set.indicator_of_mem (show z.1 ∈ ({MarkJump.discard} : Set (MarkJump N M)) from hz)]
+      show f z.2 = 1 * f z.2
+      rw [one_mul]
+    · rw [Set.indicator_of_notMem (fun hcon => hz hcon.1),
+        Set.indicator_of_notMem (show z.1 ∉ ({MarkJump.discard} : Set (MarkJump N M)) from hz),
+        zero_mul]
+  rw [lintegral_congr hfun,
+    lintegral_prod_mul
+      (f := fun m : MarkJump N M =>
+        Set.indicator ({MarkJump.discard} : Set (MarkJump N M))
+          (1 : MarkJump N M → ℝ≥0∞) m)
+      (g := f)
+      (measurable_one.indicator
+        (measurableSet_singleton MarkJump.discard)).aemeasurable hf.aemeasurable,
+    lintegral_indicator_one (measurableSet_singleton MarkJump.discard)]
+
+/-! ### The fixed point -/
+
+omit [NeZero N] [NeZero M] in
+theorem totalRate_le_bandRate (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M) :
+    totalRate β v ≤ bandRate β v := by
+  have := lowRate_le_clockBound hM hβ v
+  rw [bandRate, highRate]
+  linarith
+
+omit [NeZero N] [NeZero M] in
+theorem bandRate_sub_totalRate (β : ℝ) (v : Pressure N M) :
+    bandRate β v - totalRate β v = clockBound N M β - lowRate β v := by
+  rw [bandRate, highRate]
+  ring
+
+/-- **The step of [GL24]'s construction is the step of the jump-hold one, from above.** -/
+theorem measure_acceptedWithin_le (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B : Finset (Jump N M))
+    (n : ℕ) (t : ℝ) (v : Pressure N M) :
+    markPathMeasure hM hβ v (acceptedWithin B n t)
+      ≤ ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v
+          * (1 - Real.exp (-(totalRate β v * t)))) := by
+  induction n generalizing t with
+  | zero =>
+      have : acceptedWithin B 0 t = ∅ := by
+        ext ω
+        simp only [acceptedWithin, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
+        rintro ⟨k, hk, -⟩
+        omega
+      rw [this, measure_empty]
+      exact zero_le
+  | succ n ih =>
+      rcases lt_or_ge t 0 with ht | ht
+      · rw [measure_acceptedWithin_of_neg hM hβ B (n + 1) ht v]
+        exact zero_le
+      set Λ := bandRate β v with hΛ
+      set q := totalRate β v with hq
+      set rB := ∑ p ∈ B, jumpRate β v p.1 p.2 with hrB
+      have hqpos : 0 < q := totalRate_pos β v
+      have hΛpos : 0 < Λ := bandRate_pos β v
+      have hqΛ : q ≤ Λ := totalRate_le_bandRate hM hβ v
+      have hrB0 : 0 ≤ rB :=
+        Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le
+      have hrho : Λ - q = clockBound N M β - lowRate β v := bandRate_sub_totalRate β v
+      have hrho0 : 0 ≤ Λ - q := by linarith
+      have hmeasf : Measurable fun s : ℝ =>
+          markPathMeasure hM hβ v (acceptedWithin B n (t - s)) :=
+        measurable_measure_prodMk_left
+          (measurableSet_acceptedWithin_comap (measurable_id (α := ℝ)) B n t)
+      rw [measure_acceptedWithin_succ hM hβ B n t v, markLaw_apply_accept hM hβ B v ht,
+        lintegral_discard_markLaw hM hβ v hmeasf, ← hrho]
+      simp only [← hΛ, ← hrB]
+      -- the integral is bounded by the target's own convolution
+      have hstep : ∫⁻ s, markPathMeasure hM hβ v (acceptedWithin B n (t - s))
+            ∂(expMeasure Λ)
+          ≤ ENNReal.ofReal (rB / q)
+            * ∫⁻ s, ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ) := by
+        rw [← lintegral_const_mul _ (by
+          refine ENNReal.measurable_ofReal.comp (measurable_const.sub ?_)
+          exact Real.measurable_exp.comp
+            ((measurable_const.mul (measurable_const.sub measurable_id)).neg))]
+        refine lintegral_mono fun s => le_trans (ih (t - s)) (le_of_eq ?_)
+        rw [← ENNReal.ofReal_mul (div_nonneg hrB0 hqpos.le)]
+      refine le_trans (add_le_add le_rfl (mul_le_mul' le_rfl hstep)) ?_
+      rcases eq_or_lt_of_le hqΛ with heq | hlt
+      · rw [← heq]
+        simp only [sub_self, zero_div, ENNReal.ofReal_zero, zero_mul, add_zero]
+        exact le_of_eq (by rw [← ENNReal.ofReal_mul (div_nonneg hrB0 hqpos.le)])
+      · rw [lintegral_oneSub_exp hΛpos hqpos hlt ht]
+        have hE : Real.exp (-(q * t)) * Real.exp (-((Λ - q) * t)) = Real.exp (-(Λ * t)) := by
+          rw [← Real.exp_add]
+          ring_nf
+        have hconvex : Λ * Real.exp (-(q * t)) ≤ q * Real.exp (-(Λ * t)) + (Λ - q) := by
+          have hb : (0:ℝ) ≤ 1 - q / Λ := by
+            rw [sub_nonneg, div_le_one hΛpos]; linarith
+          have h := convexOn_exp.2 (Set.mem_univ (-(Λ * t))) (Set.mem_univ (0:ℝ))
+            (by positivity : (0:ℝ) ≤ q / Λ) hb (by ring)
+          simp only [smul_eq_mul, mul_zero, Real.exp_zero, mul_one, add_zero] at h
+          have hxy : q / Λ * -(Λ * t) = -(q * t) := by field_simp
+          rw [hxy] at h
+          have hmul : Λ * Real.exp (-(q * t))
+              ≤ Λ * (q / Λ * Real.exp (-(Λ * t)) + (1 - q / Λ)) :=
+            mul_le_mul_of_nonneg_left h hΛpos.le
+          have hfix : Λ * (q / Λ * Real.exp (-(Λ * t)) + (1 - q / Λ))
+              = q * Real.exp (-(Λ * t)) + (Λ - q) := by
+            field_simp
+          linarith [hmul, hfix]
+        have hK : 0 ≤ (1 - Real.exp (-(Λ * t)))
+            - Real.exp (-(q * t)) * Λ / (Λ - q) * (1 - Real.exp (-((Λ - q) * t))) := by
+          have hlt' : 0 < Λ - q := by linarith
+          rw [sub_nonneg, div_mul_eq_mul_div, div_le_iff₀ hlt']
+          have hexp : Real.exp (-(q * t)) * Λ * (1 - Real.exp (-((Λ - q) * t)))
+              = Λ * Real.exp (-(q * t)) - Λ * Real.exp (-(Λ * t)) := by
+            rw [← hE]; ring
+          rw [hexp]
+          nlinarith [hconvex]
+        have h1mexp : (0:ℝ) ≤ 1 - Real.exp (-(Λ * t)) := by
+          have : Real.exp (-(Λ * t)) ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith)
+          linarith
+        rw [← ENNReal.ofReal_mul (div_nonneg hrB0 hqpos.le),
+          ← ENNReal.ofReal_mul (div_nonneg hrho0 hΛpos.le),
+          ← ENNReal.ofReal_mul (div_nonneg hrB0 hΛpos.le),
+          ← ENNReal.ofReal_add (mul_nonneg (div_nonneg hrB0 hΛpos.le) h1mexp)
+            (mul_nonneg (div_nonneg hrho0 hΛpos.le)
+              (mul_nonneg (div_nonneg hrB0 hqpos.le) hK))]
+        refine ENNReal.ofReal_le_ofReal (le_of_eq ?_)
+        rw [← hE]
+        field_simp
+        ring
+
+omit [NeZero N] [NeZero M] in
+theorem sum_le_totalRate (β : ℝ) (v : Pressure N M) (B : Finset (Jump N M)) :
+    ∑ p ∈ B, jumpRate β v p.1 p.2 ≤ totalRate β v :=
+  Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+    fun p _ _ => (jumpRate_pos β v p.1 p.2).le
+
+/-- **The step of [GL24]'s construction is the step of the jump-hold one, from below.**  The
+error is the chance that the first `n` marks are all discarded. -/
+theorem measure_acceptedWithin_ge (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B : Finset (Jump N M))
+    (n : ℕ) {t : ℝ} (ht : 0 ≤ t) (v : Pressure N M) :
+    ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v
+        * (1 - Real.exp (-(totalRate β v * t))))
+      ≤ markPathMeasure hM hβ v (acceptedWithin B n t)
+        + ENNReal.ofReal (((bandRate β v - totalRate β v) / bandRate β v) ^ n) := by
+  induction n generalizing t with
+  | zero =>
+      have hle : ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v
+          * (1 - Real.exp (-(totalRate β v * t)))) ≤ 1 := by
+        refine ENNReal.ofReal_le_one.2 ?_
+        have h1 : (∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v ≤ 1 :=
+          (div_le_one (totalRate_pos β v)).2 (sum_le_totalRate β v B)
+        have h2 : 1 - Real.exp (-(totalRate β v * t)) ≤ 1 := by
+          have := Real.exp_pos (-(totalRate β v * t)); linarith
+        have h3 : 0 ≤ 1 - Real.exp (-(totalRate β v * t)) := by
+          have : Real.exp (-(totalRate β v * t)) ≤ 1 :=
+            Real.exp_le_one_iff.2 (by nlinarith [totalRate_pos β v])
+          linarith
+        have h4 : 0 ≤ (∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v :=
+          div_nonneg (Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le)
+            (totalRate_pos β v).le
+        nlinarith
+      simpa using le_trans hle le_add_self
+  | succ n ih =>
+      set Λ := bandRate β v with hΛ
+      set q := totalRate β v with hq
+      set rB := ∑ p ∈ B, jumpRate β v p.1 p.2 with hrB
+      have hqpos : 0 < q := totalRate_pos β v
+      have hΛpos : 0 < Λ := bandRate_pos β v
+      have hqΛ : q ≤ Λ := totalRate_le_bandRate hM hβ v
+      have hrB0 : 0 ≤ rB :=
+        Finset.sum_nonneg fun p _ => (jumpRate_pos β v p.1 p.2).le
+      have hrho : Λ - q = clockBound N M β - lowRate β v := bandRate_sub_totalRate β v
+      have hrho0 : 0 ≤ Λ - q := by linarith
+      have hr0 : 0 ≤ (Λ - q) / Λ := by positivity
+      have hmeasf : Measurable fun s : ℝ =>
+          markPathMeasure hM hβ v (acceptedWithin B n (t - s)) :=
+        measurable_measure_prodMk_left
+          (measurableSet_acceptedWithin_comap (measurable_id (α := ℝ)) B n t)
+      rw [measure_acceptedWithin_succ hM hβ B n t v, markLaw_apply_accept hM hβ B v ht,
+        lintegral_discard_markLaw hM hβ v hmeasf, ← hrho]
+      simp only [← hΛ, ← hrB]
+      -- the target's convolution is below the chain's, up to the error
+      have hpt : ∀ s : ℝ, ENNReal.ofReal (rB / q * (1 - Real.exp (-(q * (t - s)))))
+          ≤ markPathMeasure hM hβ v (acceptedWithin B n (t - s))
+            + ENNReal.ofReal (((Λ - q) / Λ) ^ n) := by
+        intro s
+        rcases le_or_gt 0 (t - s) with hts | hts
+        · exact ih hts
+        · refine le_trans (le_of_eq ?_) (zero_le)
+          refine ENNReal.ofReal_eq_zero.2 ?_
+          have hneg : q * (t - s) < 0 := mul_neg_of_pos_of_neg hqpos hts
+          have h1 : 1 ≤ Real.exp (-(q * (t - s))) :=
+            Real.one_le_exp (by linarith)
+          have h2 : rB / q * (1 - Real.exp (-(q * (t - s)))) ≤ 0 := by
+            have hc : 0 ≤ rB / q := by positivity
+            nlinarith
+          exact h2
+      have hconv : ENNReal.ofReal (rB / q)
+            * ∫⁻ s, ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ)
+          ≤ (∫⁻ s, markPathMeasure hM hβ v (acceptedWithin B n (t - s)) ∂(expMeasure Λ))
+            + ENNReal.ofReal (((Λ - q) / Λ) ^ n) := by
+        have hprob : IsProbabilityMeasure (expMeasure Λ) :=
+          isProbabilityMeasure_expMeasure hΛpos
+        rw [← lintegral_const_mul _ (by
+          refine ENNReal.measurable_ofReal.comp (measurable_const.sub ?_)
+          exact Real.measurable_exp.comp
+            ((measurable_const.mul (measurable_const.sub measurable_id)).neg))]
+        calc ∫⁻ s, ENNReal.ofReal (rB / q) * ENNReal.ofReal
+                (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ)
+            = ∫⁻ s, ENNReal.ofReal (rB / q * (1 - Real.exp (-(q * (t - s)))))
+                ∂(expMeasure Λ) := by
+              refine lintegral_congr fun s => ?_
+              rw [← ENNReal.ofReal_mul (by positivity)]
+          _ ≤ ∫⁻ s, (markPathMeasure hM hβ v (acceptedWithin B n (t - s))
+                + ENNReal.ofReal (((Λ - q) / Λ) ^ n)) ∂(expMeasure Λ) := lintegral_mono hpt
+          _ = _ := by
+              rw [lintegral_add_right _ measurable_const, lintegral_const, measure_univ,
+                mul_one]
+      -- assemble
+      rcases eq_or_lt_of_le hqΛ with heq | hlt
+      · rw [← heq]
+        simp only [sub_self, zero_div, ENNReal.ofReal_zero, zero_mul, add_zero,
+          zero_pow (Nat.succ_ne_zero n)]
+        exact le_of_eq (by rw [← ENNReal.ofReal_mul (by positivity)])
+      · have hE : Real.exp (-(q * t)) * Real.exp (-((Λ - q) * t)) = Real.exp (-(Λ * t)) := by
+          rw [← Real.exp_add]
+          ring_nf
+        have hconvex : Λ * Real.exp (-(q * t)) ≤ q * Real.exp (-(Λ * t)) + (Λ - q) := by
+          have hb : (0:ℝ) ≤ 1 - q / Λ := by
+            rw [sub_nonneg, div_le_one hΛpos]; linarith
+          have h := convexOn_exp.2 (Set.mem_univ (-(Λ * t))) (Set.mem_univ (0:ℝ))
+            (by positivity : (0:ℝ) ≤ q / Λ) hb (by ring)
+          simp only [smul_eq_mul, mul_zero, Real.exp_zero, mul_one, add_zero] at h
+          have hxy : q / Λ * -(Λ * t) = -(q * t) := by field_simp
+          rw [hxy] at h
+          have hmul : Λ * Real.exp (-(q * t))
+              ≤ Λ * (q / Λ * Real.exp (-(Λ * t)) + (1 - q / Λ)) :=
+            mul_le_mul_of_nonneg_left h hΛpos.le
+          have hfix : Λ * (q / Λ * Real.exp (-(Λ * t)) + (1 - q / Λ))
+              = q * Real.exp (-(Λ * t)) + (Λ - q) := by
+            field_simp
+          linarith [hmul, hfix]
+        have hK : 0 ≤ (1 - Real.exp (-(Λ * t)))
+            - Real.exp (-(q * t)) * Λ / (Λ - q) * (1 - Real.exp (-((Λ - q) * t))) := by
+          have hlt' : 0 < Λ - q := by linarith
+          rw [sub_nonneg, div_mul_eq_mul_div, div_le_iff₀ hlt']
+          have hexp : Real.exp (-(q * t)) * Λ * (1 - Real.exp (-((Λ - q) * t)))
+              = Λ * Real.exp (-(q * t)) - Λ * Real.exp (-(Λ * t)) := by
+            rw [← hE]; ring
+          rw [hexp]
+          nlinarith [hconvex]
+        have hsplit : ENNReal.ofReal (rB / q * (1 - Real.exp (-(q * t))))
+            = ENNReal.ofReal (rB / Λ) * ENNReal.ofReal (1 - Real.exp (-(Λ * t)))
+              + ENNReal.ofReal ((Λ - q) / Λ)
+                * (ENNReal.ofReal (rB / q)
+                  * ENNReal.ofReal ((1 - Real.exp (-(Λ * t)))
+                    - Real.exp (-(q * t)) * Λ / (Λ - q)
+                      * (1 - Real.exp (-((Λ - q) * t))))) := by
+          have h1mexp : (0:ℝ) ≤ 1 - Real.exp (-(Λ * t)) := by
+            have : Real.exp (-(Λ * t)) ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith)
+            linarith
+          rw [← ENNReal.ofReal_mul (div_nonneg hrB0 hΛpos.le),
+            ← ENNReal.ofReal_mul (div_nonneg hrB0 hqpos.le),
+            ← ENNReal.ofReal_mul hr0,
+            ← ENNReal.ofReal_add (mul_nonneg (div_nonneg hrB0 hΛpos.le) h1mexp)
+              (mul_nonneg hr0 (mul_nonneg (div_nonneg hrB0 hqpos.le) hK))]
+          congr 1
+          rw [← hE]
+          field_simp
+          ring
+        rw [hsplit, ← lintegral_oneSub_exp hΛpos hqpos hlt ht]
+        calc ENNReal.ofReal (rB / Λ) * ENNReal.ofReal (1 - Real.exp (-(Λ * t)))
+              + ENNReal.ofReal ((Λ - q) / Λ) * (ENNReal.ofReal (rB / q)
+                * ∫⁻ s, ENNReal.ofReal (1 - Real.exp (-(q * (t - s)))) ∂(expMeasure Λ))
+            ≤ ENNReal.ofReal (rB / Λ) * ENNReal.ofReal (1 - Real.exp (-(Λ * t)))
+              + ENNReal.ofReal ((Λ - q) / Λ)
+                * ((∫⁻ s, markPathMeasure hM hβ v (acceptedWithin B n (t - s))
+                    ∂(expMeasure Λ)) + ENNReal.ofReal (((Λ - q) / Λ) ^ n)) := by
+              gcongr
+          _ = _ := by
+              rw [mul_add, ← add_assoc, ← ENNReal.ofReal_mul hr0]
+              congr 2
+              ring
 
 end SocialNetwork
