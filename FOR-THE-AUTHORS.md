@@ -403,14 +403,28 @@ the paper is wrong:
 `blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
 not provide, checked against the pinned revision.
 
-**Theorem 1.1 and Theorem 16 have left this list**: they are proved.  Not by your
-sandwich (11), which you assert and [GL24] pp. 12–14 constructs, but by the one
-property of it your argument goes on to use — the low expressions cannot
-accumulate in bounded time — established from your own two estimates, Proposition 5
-and `q^< ≤ λ`.  That is a departure from a written proof, it is recorded as such in
-`CONVENTIONS.md` and at the blueprint node, and the reason is that Mathlib has no
-Poisson point process.  If you would rather see [GL24]'s construction formalised,
-say so: `GL24.md` §6 item 5 says what it would take.
+**Theorem 1.1 and Theorem 16 have left this list**: they are proved.
+
+Theorem 1.1 is proved by your sandwich (11) — by [GL24]'s construction of it, pp.
+12–14, which is now formalised.  The band of its Figure 2 is built in
+`SocialNetwork/Graphical.lean`, its Lemma 10 is read on the marks there, and
+`SocialNetwork/Collapse.lean` identifies the realisation the band carries with the
+process (3) defines.  Two things are done differently and neither changes a step:
+the marks are carried by the jump-hold form rather than by a point process on
+`[0,∞)²`, Mathlib having none, and [GL24]'s "`T^λ` is a rate-`λ` Poisson process,
+so `sup T^λ_n = ∞`" is proved by a supermartingale instead.  One step is in
+neither source — the identification itself, which [GL24] states in passing — and
+supplying it is what `SocialNetwork/Collapse.lean` mostly is.
+
+**Theorem 16 still departs.**  [GL24] treats the unbiased model, and the band as
+formalised is built over the matrices of (3) and their rates, so no written
+construction covers the biased one; Appendix C's "as Theorem 1.1" points at your
+p. 16, which asserts.  What is proved there is the one property of the sandwich
+the argument uses — low expressions cannot accumulate in bounded time — from your
+own two estimates, Proposition 21 and `q^< ≤ λ`.  The construction would carry
+over, using only the rates and a uniform bound on the low family; rebuilding the
+band over an arbitrary state space is the remaining work, and it needs nothing
+from Mathlib.  `GL24.md` §6 item 5 says what it would take.
 
 ### Equation (13) is blocked, and not on us
 

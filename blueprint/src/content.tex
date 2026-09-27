@@ -338,9 +338,11 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   too strong.  \ref{thm1-1} is now proved, and proved in the jump-hold form: what
   its argument needs of the low-pressure pairs is that they carry Gibbs mass
   $\lambda_<(u)/\jumprate(u)$ and that $\lambda_<(u) \le \lambda$, both of which the
-  jump-hold form states directly.  What \ref{thm1-1} borrows from this node is one
-  integral, the Laplace transform $\int e^{-\theta x} \mathrm{d}\mathrm{Exp}(a)(x)
-  = a/(a+\theta)$, proved here on the way to the race.  The equality of the two
+  jump-hold form states directly.  What \ref{thm1-1} borrows from this node are two
+  integrals proved here on the way to the race: the Laplace transform $\int
+  e^{-\theta x} \mathrm{d}\mathrm{Exp}(a)(x) = a/(a+\theta)$, and the distribution
+  function $\mathrm{Exp}(a)([0,t]) = 1 - e^{-at}$ that \ref{aux-graphical} sums the
+  discarded marks against.  The equality of the two
   forms stands as a theorem about the model; it was not what was missing.
 \end{proof}
 
@@ -407,16 +409,89 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   the jump-hold form.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The graphical construction of GL24, and the process it carries]
+  \label{aux-graphical}
+  \lean{SocialNetwork.highRate, SocialNetwork.bandRate,
+    SocialNetwork.clockBound_le_bandRate, SocialNetwork.bandRate_pos,
+    SocialNetwork.MarkJump, SocialNetwork.markWeight, SocialNetwork.markPMF,
+    SocialNetwork.markLaw, SocialNetwork.markNext, SocialNetwork.markState,
+    SocialNetwork.markPathMeasure, SocialNetwork.lambdaFinset,
+    SocialNetwork.sum_markWeight_lambdaFinset, SocialNetwork.IsLambdaAt,
+    SocialNetwork.exists_isLambdaAt_block, SocialNetwork.le_lowCountOf_lambda,
+    SocialNetwork.measure_markPathMeasure_blowUp, SocialNetwork.acceptedWithin,
+    SocialNetwork.acceptedWithin_succ, SocialNetwork.measure_acceptedWithin_succ,
+    SocialNetwork.lintegral_oneSub_exp, SocialNetwork.measure_acceptedWithin_le,
+    SocialNetwork.measure_acceptedWithin_ge,
+    SocialNetwork.iSup_measure_acceptedWithin, SocialNetwork.acceptedRest,
+    SocialNetwork.measure_acceptedRest, SocialNetwork.measure_discard_restart,
+    SocialNetwork.Accepts, SocialNetwork.firstAccept, SocialNetwork.measure_allDiscard,
+    SocialNetwork.measure_Accepts, SocialNetwork.acceptedJump,
+    SocialNetwork.acceptedTime, SocialNetwork.collapseStep,
+    SocialNetwork.restAfterAccept, SocialNetwork.measure_collapse_Iic,
+    SocialNetwork.acceptLaw, SocialNetwork.stepLawSlice, SocialNetwork.acceptLaw_eq,
+    SocialNetwork.measure_collapse_prod, SocialNetwork.collapseKernel,
+    SocialNetwork.map_markPathMeasure_collapse, SocialNetwork.jumpNext,
+    SocialNetwork.ctsPathMeasure_eq_drivenMeasure, SocialNetwork.collapse,
+    SocialNetwork.map_takeStep_collapse,
+    SocialNetwork.map_markPathMeasure_collapse_eq,
+    SocialNetwork.exists_holdSum_collapse, SocialNetwork.holdBlowUp_collapse}
+  \leanok
+  \uses{eq3, prop5, aux-clocks, aux-noexplosion}
+  Fix $\beta \ge 0$ and $u \in \Sspace$, and mark the band of [GL24]'s Figure~2.
+  At the matrix $v$ the band is $[0, \lambda + q^>(v))$: the stacking functions
+  $\Phi^{<,\pm}_v$ cut the strip $[0, q^<(v))$ into one interval per low-pressure
+  pair, the rest of $[0,\lambda)$ is discarded, and $[\lambda, \lambda + q^>(v))$
+  is cut by $\Phi^{>,\pm}_v$ into one interval per high-pressure pair.  Marks
+  arrive after independent exponential times of the band's height, and a mark
+  that is not a discard moves the matrix by $\pi^{a,o}$.  Then
+  \begin{enumerate}
+    \item the marks do not accumulate, and
+    \item reading off the marks that are not discards, and summing the holding
+      times between consecutive ones, gives a realisation whose law is exactly
+      the law of~\ref{eq3}.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Follows [GL24] pp.~12--14}, whose steps 1--5 are the first claim.  The
+  strip $[0,\lambda)$ has rate $\lambda$ at every matrix, by construction and by
+  $q^<(v) \le \lambda$; at least one mark in every $N$ lands in it, since a
+  discard does and, if all $N$ of a block express, \ref{prop5} exhibits one whose
+  actor carries pressure below $N$; so \ref{aux-noexplosion} applies to the band
+  with $b = N$ and gives $\sup_n T^\lambda_n = \infty$.  This is [GL24]'s
+  ``$\{T^<_n\} \subset \{T^\lambda_n\}$ and $T^\lambda$ is a rate-$\lambda$
+  Poisson process'', with the supermartingale of \ref{aux-noexplosion} in place of
+  the Poisson process, which Mathlib does not have; nothing else in the
+  construction changes.
+
+  The second claim is the step [GL24] states and does not prove --- ``we will
+  construct the process $(U_t)$ with jump times $\{T_n\}$ as the superposition
+  \dots'' --- and is the plumbing of the sample space that rule~3 of
+  \ref{note-green} asks to be supplied.  It is proved in three moves.  First, the
+  law of the first mark that is not a discard: writing $\Lambda = \lambda +
+  q^>(v)$ and $q = \jumprate(v)$, the chance that one of the first $n$ marks
+  expresses a pair of $B$ by time $t$ satisfies a one-mark recursion whose exact
+  fixed point is $\frac{\sum_{p \in B} r_p}{q}(1 - e^{-qt})$; an induction bounds
+  it above by that and below by that minus $((\Lambda - q)/\Lambda)^n$, the chance
+  that all $n$ marks are discarded, so the two meet.  The geometric number of
+  discarded marks and the exponential times between them have been summed away,
+  and what is left is the rectangle $B \times [0,t]$ of~\ref{eq3}.  Second,
+  independence: a condition imposed on the marks above the first accepted one
+  multiplies that probability by a constant, whatever the deadline and however
+  many marks were discarded first, so the joint law of the pair, the time, and the
+  band above is the semidirect product \ref{eq3} prescribes.  Third, induction on
+  the number of expressions carries this to the finite-dimensional laws, and the
+  measurable cylinders carry it to the whole path space.
+\end{proof}
+
 \paper{Theorem 1.1}
 \begin{theorem}[Existence]
   \label{thm1-1}
   \lean{SocialNetwork.nonExplosion, SocialNetwork.lowFinset, SocialNetwork.mem_lowFinset,
     SocialNetwork.lowRate, SocialNetwork.lowRate_nonneg, SocialNetwork.lowRate_le_totalRate,
     SocialNetwork.clockBound, SocialNetwork.clockBound_pos,
-    SocialNetwork.lowRate_le_clockBound, SocialNetwork.jumpPMF_toMeasure_finset,
-    SocialNetwork.lintegral_stepLaw_stepWeight_le_one, SocialNetwork.IsLowAt,
-    SocialNetwork.isLowAt_congr, SocialNetwork.exists_isLowAt_block,
-    SocialNetwork.le_lowCountOf, SocialNetwork.one_lt_discountRatio}
+    SocialNetwork.lowRate_le_clockBound, SocialNetwork.one_lt_discountRatio}
   \leanok
   \uses{eq3, aux-construction}
   For any $\beta \ge 0$ and any $u \in \Sspace$, the jump times satisfy
@@ -424,45 +499,41 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{theorem}
 \begin{proof}
   \leanok
-  \uses{prop5, aux-noexplosion}
-  \textbf{Follows the paper's proof}, and supplies the step it asserts.  Split the
-  expressions into those coming from an actor carrying pressure below $N$ and the
-  others.  Two facts about the first kind are what the proof uses.
+  \uses{prop5, aux-graphical}
+  \textbf{Follows the written proof}, which is [GL24] pp.~12--14.  The paper's own
+  p.~16 compresses it: it splits the expressions into those coming from an actor
+  carrying pressure below $N$ and the others, states the two facts the argument
+  uses of the first kind, and then asserts the sandwich~(11) that turns them into
+  non-explosion.  [GL24] constructs that sandwich, and it is that construction
+  which is formalised, at \ref{aux-graphical}.
 
-  \emph{They are frequent}: \ref{prop5} puts at least one of them in every $N$
-  expressions.  The paper states \ref{prop5} for the first $N$ and uses it at every
-  block; that is legitimate because $\Sspace$ is stable along the chain, so the
-  statement applies again at the matrix reached at $T_{mN}$, and it is proved here
-  in that form.
+  The two facts are the paper's own.  \emph{They are frequent}: \ref{prop5} puts
+  at least one of them in every $N$ expressions.  The paper states \ref{prop5} for
+  the first $N$ and uses it at every block; that is legitimate because $\Sspace$ is
+  stable along the chain, so the statement applies again at the matrix reached at
+  $T_{mN}$, and it is proved here in that form.  \emph{They are slow}: their pairs
+  carry total rate at most $\lambda = NMe^{\beta N}$ whatever the rest of the
+  matrix does --- there are at most $NM$ of them and each has rate $e^{\beta
+  u(a,o)} \le e^{\beta N}$.  That is the upper bound of~(11), and it is where the
+  hypothesis $u \in \Sspace$ is spent, through \ref{prop5}.  They are [GL24]'s
+  Lemma~10 and its $q^< \le \lambda$.
 
-  \emph{They are slow}: their pairs carry total rate at most $\lambda = NMe^{\beta
-  N}$ whatever the rest of the matrix does --- there are at most $NM$ of them and
-  each has rate $e^{\beta u(a,o)} \le e^{\beta N}$.  That is the upper bound
-  of~(11), and it is where the hypothesis $u \in \Sspace$ is spent, through
-  \ref{prop5}.
+  From them, \ref{aux-graphical} gives both halves: the marks of the band do not
+  accumulate, and the realisation the band carries \emph{is} the process.  The
+  jump times of that realisation are a sub-sequence of the band's marks, so they
+  are at least as large, and they are unbounded with them.
 
-  \textbf{What the paper asserts and does not construct} is the sandwich itself:
-  the low expressions ``can be constructed in such a way that'' they are the points
-  of a Poisson process of rate $\lambda$.  One consequence of that coupling is what
-  the proof goes on to use --- that low expressions cannot accumulate in bounded
-  time --- and it is that consequence which is proved here, by
-  \ref{aux-noexplosion}, from the same two facts.
-
-  \textbf{A departure, and the reason for it.}  [GL24] \emph{does} construct the
-  sandwich, at its pp.~12--14: a Poisson point process $\mathcal{N}$ on
-  $[0,\infty)^2$ drives the chain, the stacking functions
-  $\Phi^{<,\pm}_v, \Phi^{>,\pm}_v$ cut the band $[0, \lambda + q^>(v))$ into one
-  interval per pair, a mark of height below $q^<(v)$ is a low expression and one of
-  height in $[q^<(v), \lambda)$ is discarded, so that the low expressions are
-  literally a sub-sequence of the marks of the rate-$\lambda$ strip, which do not
-  accumulate.  Its Lemma~10 is \ref{prop5} and its $q^< \le \lambda$ is the bound
-  above, so the two estimates used here are [GL24]'s own; what is not formalised is
-  the construction between them.  Mathlib has no Poisson point process, and the
-  graphical construction would in addition have to be identified with the
-  jump--hold construction this development is built on.  Under the rule of
-  \ref{note-green} that is a permitted departure --- the route cannot be followed in
-  Lean today --- and this paragraph is the written reason the rule requires.
-  \texttt{GL24.md} carries the detail.
+  \textbf{One step of the written proof is not written anywhere}, in either
+  source: the identification of the constructed process with the one~\ref{eq3}
+  defines.  [GL24] states it --- ``we will construct the process $(U_t)$ with jump
+  times $\{T_n\}$ as the superposition \dots'' --- and the paper states it a
+  fortiori.  Rule~3 of \ref{note-green} calls that the plumbing of the sample
+  space and asks for it to be supplied rather than assumed; it is the second half
+  of \ref{aux-graphical}.  Mathlib has no Poisson point process, so the marks are
+  carried by the jump-hold form instead of by a process on $[0,\infty)^2$, and
+  $\sup_n T^\lambda_n = \infty$ is proved by the supermartingale of
+  \ref{aux-noexplosion} rather than read off a Poisson process; that changes the
+  witness for one sentence of [GL24] and no step of its argument.
 \end{proof}
 
 \paper{Theorem 1.2}
@@ -2096,12 +2167,27 @@ process pointwise.
   \leanok
   \uses{prop21, aux-noexplosion}
   \textbf{Follows Appendix C's prescription}, ``as \ref{thm1-1}, with
-  \ref{prop21} in place of \ref{prop5}'', and nothing else changes: the pairs
-  carrying pressure below $N$ are again at most $NM$ of rate at most $e^{\beta N}$
-  each, so again $\lambda = NMe^{\beta N}$, and \ref{aux-noexplosion} is stated for
-  a jump-hold chain rather than for either model, so it serves both.  The biased
-  low family is read off the pressures of~(6) instead of the entries of the
-  matrix, which is the only line of the argument that is not shared.
+  \ref{prop21} in place of \ref{prop5}'': the pairs carrying pressure below $N$
+  are again at most $NM$ of rate at most $e^{\beta N}$ each, so again $\lambda =
+  NMe^{\beta N}$, and the biased low family is read off the pressures of~(6)
+  instead of the entries of the matrix, which is the only line of the argument
+  that is not shared.
+
+  \textbf{A departure, and the reason for it.}  \ref{thm1-1} now goes through
+  [GL24]'s band, \ref{aux-graphical}; this theorem does not.  \ref{aux-graphical}
+  is built over the matrices of \ref{eq3} and their rates, and [GL24] pp.~12--14
+  treat the unbiased model, so no written construction covers the biased one:
+  Appendix~C's ``as \ref{thm1-1}'' points at the p.~16 argument, which asserts the
+  sandwich rather than building it.  What is proved here instead is the one
+  property of that sandwich the argument goes on to use --- that low expressions
+  cannot accumulate in bounded time --- by \ref{aux-noexplosion}, which is stated
+  for an arbitrary jump-hold chain and so serves this model as well.  The
+  construction would carry over, since it uses only the rates and the uniform
+  bound on the low family; rebuilding \ref{aux-graphical} over an arbitrary state
+  space, so that both models instantiate it, is the remaining work.  Until then
+  this is the one departure in the development besides \ref{prop7}, and this
+  paragraph is the written reason rule~3 of \ref{note-green} requires.
+  \texttt{GL24.md} carries the detail.
 \end{proof}
 
 \paper{Proposition 17}
@@ -2885,11 +2971,15 @@ against the pinned revision
   \item \textbf{Poisson point processes}: nothing --- Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem --- and
     \emph{this list was wrong to say that \ref{thm1-1} and \ref{thm16} need
-    them}.  They are proved, and no Poisson process is constructed anywhere: what
-    the argument of p.~16 uses of its sandwich is that the low-pressure
-    expressions cannot accumulate, and that follows from the two rate estimates
-    alone, by \ref{aux-noexplosion}.  The entry is kept because the audit of the
-    library should record what is absent, not only what blocks.
+    them}.  Both are proved, and no Poisson process is constructed anywhere.
+    [GL24]'s band is built at \ref{aux-graphical} in the jump-hold form instead of
+    as a point process on $[0,\infty)^2$: its marks are a chain that draws a
+    height and then holds for an exponential time of the band's height, which is
+    the same law, and the one sentence of [GL24] that reads ``$T^\lambda$ is a
+    rate-$\lambda$ Poisson process, so $\sup_n T^\lambda_n = \infty$'' is replaced
+    by the supermartingale of \ref{aux-noexplosion}, which proves exactly that
+    conclusion.  The entry is kept because the audit of the library should record
+    what is absent, not only what blocks.
   \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
     \texttt{TendstoInDistribution} makes the qualitative half expressible, but
     the Kolmogorov-type bound Appendix~B uses is absent.  With
@@ -3118,33 +3208,40 @@ goes through \ref{aux-nstep} rather than through the paper's conditioning,
 Mathlib offering nothing of that shape --- the same departure as \ref{prop8},
 for the same reason.
 
-\ref{thm1-1} and~\ref{thm16} take the paper's route and supply the step it
-asserts.  The two facts the proof uses of the low-pressure expressions are the
-paper's own --- \ref{prop5} makes them frequent, and the count $NM$ with the bound
-$e^{\beta N}$ on each rate makes them slow, which is the upper bound of~(11) ---
-and \ref{prop5}, stated there for the first $N$ expressions, is applied at every
-block, which the stability of $\Sspace$ licenses and which is proved here in that
-form.  What the paper asserts is the sandwich: the low expressions ``can be
-constructed in such a way that'' they are the points of a Poisson process of rate
-$NMe^{\beta N}$.  That construction is not carried out here either; what is proved
-instead, at \ref{aux-noexplosion}, is the one property of it the argument goes on
-to use, that low expressions cannot accumulate in bounded time.
+\ref{thm1-1} takes the written route and no longer departs from it.  The paper's
+p.~16 states the two facts its argument uses of the low-pressure expressions ---
+\ref{prop5} makes them frequent, and the count $NM$ with the bound $e^{\beta N}$
+on each rate makes them slow, which is the upper bound of~(11) --- and then
+asserts the sandwich that turns them into non-explosion.  [GL24] pp.~12--14 builds
+that sandwich, and it is built here, at \ref{aux-graphical}: the band of its
+Figure~2, its Lemma~10 read on the marks, and the identification of the marks with
+the process.  Two substitutions are made and neither changes a step.  The marks
+are carried by the jump-hold form rather than by a point process on
+$[0,\infty)^2$, Mathlib having no Poisson point process, and $\sup_n T^\lambda_n =
+\infty$ is then the supermartingale of \ref{aux-noexplosion} rather than a
+property of that process.  What neither source proves is the identification
+itself, which [GL24] states; rule~3 calls that the plumbing of the sample space
+and asks for it, and it is the second half of \ref{aux-graphical}.
 
-These two are \textbf{the second departure} in this development, and the only one
-besides \ref{prop7}.  [GL24] pp.~12--14 carries the construction out in full, so a
-written proof of the step exists and is not verified here.  The reason it is not ---
-Mathlib has no Poisson point process, and the graphical construction would have to
-be identified with the jump--hold one --- is of the kind rule~3 of
-\texttt{CONVENTIONS.md} permits, and it is written out at \ref{thm1-1} and in
+\ref{thm16} is \textbf{the second departure} in this development, and the only one
+besides \ref{prop7}.  Appendix~C prescribes ``as \ref{thm1-1}, with \ref{prop21}
+in place of \ref{prop5}'', and the two rate estimates are carried over exactly;
+what is not carried over is the band, because \ref{aux-graphical} is built over
+the matrices of \ref{eq3} and [GL24] treats the unbiased model, so no written
+construction covers the biased one.  What is proved instead is the one property of
+the sandwich the argument uses, by \ref{aux-noexplosion}.  The reason --- the
+construction is written for one model and formalised for it, and would have to be
+rebuilt over an arbitrary state space to serve both --- is of the kind rule~3 of
+\texttt{CONVENTIONS.md} permits, and it is written out at \ref{thm16} and in
 \texttt{GL24.md} as that rule requires.  Every other step, and the order of the
 steps, is the paper's.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
+\medskip \noindent\textbf{Supply a step the paper asserts} (thirteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
-and~\ref{aux-zero-predecessors}, and the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}.  Each corresponds to a sentence in the paper of the
+and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
+N+1$ of \ref{def5-repeat}, and \ref{aux-graphical}.  Each corresponds to a sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
 N+1\}$''.  All twelve are true and none is deep; what they are not is checks of
@@ -3154,6 +3251,10 @@ single line and argues neither, and uses the $m$-step bound in the sketch of
 \ref{prop9} without deriving it.  \ref{aux-greedy-avoids} is the one that took
 an outside source to settle: the paper reads ``without visiting $u$'' off
 \ref{prop7}, which does not give it, and it is Corollary~8 of [GL24].
+\ref{aux-graphical} is the largest by far, and it took the same source: the
+sandwich~(11) that p.~16 asserts is built at [GL24] pp.~12--14, and that
+construction --- the band of its Figure~2, its Lemma~10 read on the marks, and the
+identification of the marks with the process --- is what the node carries out.
 
 \medskip \noindent\textbf{No counterpart in the paper} (sixteen).  These are
 \ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},

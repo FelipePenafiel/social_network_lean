@@ -16,7 +16,7 @@ independently of the pair.  `SocialNetwork.ctsPathMeasure` and
 
 ## What this file proves
 
-`SocialNetwork.measure_explosionTime_eq_one`.  Distinguish some of the pairs at each state.
+`SocialNetwork.measure_holdBlowUp_eq_one`.  Distinguish some of the pairs at each state.
 If
 
 * every block of `b` consecutive steps carries at least one distinguished step, and

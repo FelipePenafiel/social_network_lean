@@ -61,7 +61,7 @@ the other way round: `Appendix` used to import this file and never used anything
 ## Main statements
 
 * `SocialNetwork.generator_eq`, `SocialNetwork.generator_const` — the algebra of `G`, proved.
-* `SocialNetwork.nonExplosion` — **Theorem 1.1**, proved in `SocialNetwork.NonExplosion`.
+* `SocialNetwork.nonExplosion` — **Theorem 1.1**, proved in `SocialNetwork.Collapse`.
 * `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, unproved.
 * `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, unproved.
 * `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, proved from the display
@@ -729,8 +729,9 @@ def IsCarriedByState (μ : Measure (Pressure N M)) : Prop := μ (stateSet N M)�
 def IsInvariantCts (β : ℝ) (μ : Measure (Pressure N M)) : Prop :=
   ∀ t : ℝ, 0 ≤ t → Kernel.Invariant (transitionKernel β t) μ
 
-/-! **Theorem 1.1**, `SocialNetwork.nonExplosion`, is proved in `SocialNetwork.NonExplosion`,
-which needs the estimate of this file on one step of the kernel. -/
+/-! **Theorem 1.1**, `SocialNetwork.nonExplosion`, is proved in `SocialNetwork.Collapse`, along
+[GL24]'s graphical construction; `SocialNetwork.NonExplosion` supplies the bound `λ` of
+equation (11) that the construction is built out of, and `SocialNetwork.Graphical` the band. -/
 
 /-- **Theorem 1.2.** The process has a unique invariant probability measure `μ^β`.
 

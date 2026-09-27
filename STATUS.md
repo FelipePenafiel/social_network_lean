@@ -67,12 +67,12 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 21 | 22 | 43 |
+| Proved | 21 | 23 | 44 |
 | Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 12 | 0 | 12 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **29** | **91** |
+| **Total** | **62** | **30** | **92** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -87,7 +87,7 @@ are covered, and all 56 of them are stated in Lean.
 | Remark 3 | `IsState.trust_eq_zero` +1 | stated |
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
-| Theorem 1.1 | `nonExplosion` +15 | proved |
+| Theorem 1.1 | `nonExplosion` +9 | proved |
 | Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
 | Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
@@ -159,6 +159,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | The race between the clocks | `clockSplit` +24 | proved |
 | A jump-hold chain with a slow sub-family does not explode | `jumpHoldMeasure` +28 | proved |
+| The graphical construction of GL24, and the process it carries | `highRate` +48 | proved |
 | Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |

@@ -5,9 +5,34 @@ Released under the Apache 2.0 license.
 import SocialNetwork.Graphical
 
 /-!
-# Collapsing [GL24]'s construction onto the jump-hold process
+# The band is the process, and Theorem 1.1
 
-Placeholder header, rewritten at the end.
+[GL24] p. 13 writes "we will construct the process `(U_t)` with jump times `{T_n}` as the
+superposition …", and then uses the constructed process as if it were the one the generator (3)
+defines.  That identification is stated in neither [GL24] nor arXiv:2607.19651; under rule 3 of
+`CONVENTIONS.md` it is the plumbing of the sample space, which is to be supplied rather than
+assumed.  This file supplies it, and reads Theorem 1.1 off the band.
+
+## The collapse
+
+`SocialNetwork.collapse` reads a realisation of the process off the band of
+`SocialNetwork.Graphical`: keep the marks that are not discards, and give each the sum of the
+holding times since the previous one.  Three facts make it the process.
+
+* `SocialNetwork.measure_acceptedRest` — what happens above the first accepted mark is a fresh
+  band, started from the matrix the expression leads to, independent of when the expression
+  happened and of how many marks were discarded first.
+* `SocialNetwork.map_markPathMeasure_collapse` — so the pair, the time and the band above have
+  the joint law of one step of `SocialNetwork.stepLaw`, the jump-hold form of equation (3).
+* `SocialNetwork.map_markPathMeasure_collapse_eq` — and therefore the whole realisation has the
+  law of `SocialNetwork.ctsPathMeasure`.  The finite-dimensional laws agree by induction on the
+  number of expressions, and the measurable cylinders carry that to the path space.
+
+## Theorem 1.1
+
+`SocialNetwork.nonExplosion` is then [GL24]'s conclusion.  The jump times of the collapsed
+realisation are a sub-sequence of the band's marks — reading `n` expressions consumes at least
+`n` marks — so they are at least as large, and they are unbounded with them.
 -/
 
 open MeasureTheory ProbabilityTheory Finset
@@ -1115,7 +1140,7 @@ a Poisson process of rate `λ`, which do not accumulate
 [GL24] asserts: the realisation carried by the band *is* the process
 (`SocialNetwork.map_markPathMeasure_collapse_eq`).  The collapsed jump times are a subsequence
 of the band's, so they are at least as large, and they are unbounded with it. -/
-theorem nonExplosion_ofGraphical (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
+theorem nonExplosion (hM : 2 ≤ M) (_hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
     (hu : IsState u) :
     ctsPathMeasure β u {ω | explosionTime ω = ⊤} = 1 := by
   set A : Set (ℕ → Hold (MarkJump N M)) := {ω | ∀ n, 0 ≤ (ω n).2} with hAdef

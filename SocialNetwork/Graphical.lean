@@ -5,9 +5,43 @@ Released under the Apache 2.0 license.
 import SocialNetwork.NonExplosion
 
 /-!
-# The graphical construction of [GL24]
+# The band of [GL24]'s Figure 2
 
-Placeholder header, rewritten at the end.
+The proof of Theorem 1.1 at p. 16 of arXiv:2607.19651 asserts a sandwich (11): the expressions
+coming from an actor carrying pressure below `N` "can be constructed in such a way that" they
+are the points of a Poisson process of rate `λ = NMe^{βN}`.  [GL24] pp. 12–14 carries that
+construction out, and this file is it.
+
+## The band
+
+At the matrix `v` the band is `[0, λ + q^>(v))`, where `q^>(v)` is the rate carried by the
+pairs whose actor is under pressure `≥ N`.  [GL24]'s stacking functions `Φ^{<,±}_v` cut the
+strip `[0, q^<(v))` into one interval per low-pressure pair; the rest of `[0, λ)` is discarded,
+which is possible because `q^<(v) ≤ λ` whatever `v` is; and `Φ^{>,±}_v` cut
+`[λ, λ + q^>(v))` into one interval per high-pressure pair.  A mark of the Poisson point
+process on `[0,∞)²` is thus read as an element of `SocialNetwork.MarkJump`: a pair, or a
+discard.
+
+Mathlib has no Poisson point process, so the marks are carried by the jump-hold form instead:
+`SocialNetwork.markPathMeasure` draws a mark from `SocialNetwork.markPMF` and then holds for an
+exponential time of the band's height `Λ = λ + q^>(v)`, independently.  That is the same law,
+and it is the form `SocialNetwork.JumpHold` is written for.
+
+## What this file proves
+
+* `SocialNetwork.exists_isLambdaAt_block` — **Lemma 10 of [GL24]**, read on the marks: at least
+  one mark in every `N` lands in the strip `[0, λ)`.  A discarded mark does, and if all `N` of
+  a block express then Proposition 5 exhibits one whose actor carries pressure below `N`.
+* `SocialNetwork.measure_markPathMeasure_blowUp` — the marks do not accumulate.  This is
+  [GL24]'s "`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`", proved by the
+  supermartingale criterion `SocialNetwork.measure_holdBlowUp_eq_one` instead.
+* `SocialNetwork.iSup_measure_acceptedWithin` — **the law of the first expression**: the first
+  mark that is not discarded carries a pair of `B` by time `t` with probability
+  `(∑_{p ∈ B} rate p / q(v))(1 - e^{-q(v)t})`, which is the rectangle `B × [0,t]` of
+  equation (3).  The geometric number of discarded marks, and the exponential times between
+  them, are summed away by a two-sided induction whose fixed point is exact.
+
+`SocialNetwork.Collapse` then identifies the realisation the band carries with the process.
 -/
 
 open MeasureTheory ProbabilityTheory Finset

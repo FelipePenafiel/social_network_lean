@@ -240,22 +240,27 @@ Mathlib provides, not of what this repository happens to want.
    Nothing on the minimum of independent exponentials either, nor on which of several is
    smallest.
 
-   **This blocks no theorem here, and one proof.**  Theorem 1.1 and Theorem 16 are proved,
-   and no Poisson process is constructed: what the argument uses of the sandwich is that the
-   low-pressure expressions cannot accumulate in bounded time, and that follows from two rate
-   estimates by `SocialNetwork.measure_holdBlowUp_eq_one` (`SocialNetwork/JumpHold.lean`),
-   a criterion for an arbitrary jump-hold chain.  The two estimates are the paper's own:
-   Proposition 5 makes the low expressions frequent, and there are at most `NM` of them, each
-   of rate at most `e^{βN}`.
+   **This blocks no theorem here, and no proof.**  Theorem 1.1 and Theorem 16 are proved, and
+   [GL24]'s written proof of the sandwich (pp. 12–14) is now verified, without a Poisson
+   process anywhere.  The band of its Figure 2 is carried by the jump-hold form instead
+   (`SocialNetwork/Graphical.lean`): draw a mark of the band, then hold for an exponential
+   time of the band's height.  That is the same law, and the property the construction turns
+   on survives it — the strip `[0, λ)` has mass `λ/Λ` whatever the matrix is.  [GL24]'s
+   "`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`" becomes
+   `SocialNetwork.measure_holdBlowUp_eq_one`, a criterion for an arbitrary jump-hold chain,
+   fed the paper's own two estimates: Proposition 5 makes the low expressions frequent, and
+   there are at most `NM` of them, each of rate at most `e^{βN}`.
 
-   What is blocked is the **verification of [GL24]'s written proof** (pp. 12–14), which does
-   construct the sandwich; `GL24.md` §4 records what that would take.  Besides the point
-   process itself, the identification of the construction with the jump-hold one needs the
-   law of a geometric sum of `Exp (Λ)` variables, which is `Exp (pΛ)`; Mathlib has neither
-   that nor the Erlang law (`gammaMeasure` exists, with no additivity, and is used nowhere
-   else in the library).  `SocialNetwork/Clocks.lean` identifies one step with a race between
-   exponential clocks, which is the form p. 16 argues in; that identification turned out not
-   to be needed, and what Theorem 1.1 borrows from that file is one integral.
+   The identification of the constructed process with the jump-hold one
+   (`SocialNetwork/Collapse.lean`) needs the law of a geometric sum of `Exp (Λ)` variables,
+   which is `Exp (pΛ)`; Mathlib has neither that nor the Erlang law (`gammaMeasure` exists,
+   with no additivity, and is used nowhere else in the library).  It is proved without them:
+   the truncated event "one of the first `n` marks is accepted, by time `t`" satisfies a
+   one-mark recursion whose exact fixed point is the answer, and a two-sided induction pins
+   it between that and that minus the chance that all `n` marks are discarded.
+   `SocialNetwork/Clocks.lean` identifies one step with a race between exponential clocks,
+   which is the form p. 16 argues in; that identification turned out not to be needed, and
+   what Theorem 1.1 borrows from that file are two integrals.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
    the jump chain and of the process.  Nothing.  This is the live blocker, and now the only
    one on the continuous-time side: equation (13) is what carries `μ̃^β` to `μ^β`, its written
