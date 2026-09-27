@@ -24,7 +24,7 @@ This file supplies the two halves of it:
 * `SocialNetwork.exists_isLowAt_block` — Proposition 5, applied at every block of `N` steps
   rather than only at the first, which the paper does silently.
 
-`SocialNetwork.measure_explosionTime_eq_one` then carries the domination across the jumps,
+`SocialNetwork.measure_holdBlowUp_eq_one` then carries the domination across the jumps,
 where the state and so the rates change; that is the step the paper asserts and does not
 construct, and `SocialNetwork.JumpHold` says exactly what it proves instead.
 -/
@@ -231,7 +231,7 @@ theorem one_lt_discountRatio {β θ : ℝ} (hθ : 0 < θ) :
 expression from an actor carrying pressure below `N` in every `N`, and those expressions carry
 total rate at most `λ = NMe^{βN}` whatever the rest of the matrix does; so the jump times
 dominate the points of a Poisson process of rate `λ`, which are unbounded.  The domination is
-carried across the jumps by `SocialNetwork.measure_explosionTime_eq_one`, in the form the
+carried across the jumps by `SocialNetwork.measure_holdBlowUp_eq_one`, in the form the
 conclusion needs: the weight `e^{-θTₙ}d^{Kₙ}` is a supermartingale, where `Kₙ` counts the low
 expressions and `d = (λ + θ)/λ`. -/
 theorem nonExplosion (hM : 2 ≤ M) (_hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
@@ -240,7 +240,7 @@ theorem nonExplosion (hM : 2 ≤ M) (_hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) 
   have hmeas : ctsPathMeasure β u
       = jumpHoldMeasure (ctsDrivingKernel β u) (stepLaw β u) := rfl
   rw [hmeas]
-  refine measure_explosionTime_eq_one (low := IsLowAt u) (D := ENNReal.ofReal
+  refine measure_holdBlowUp_eq_one (low := IsLowAt u) (D := ENNReal.ofReal
       ((clockBound N M β + 1) / clockBound N M β)) (θ := 1) _ _ (isLowAt_congr u)
     (fun n h => lowFinset ((Trajectory.ofStepHistory h).state u (n + 1))) (lowFinset u)
     ?_ ?_ ?_ ?_ one_pos (one_lt_discountRatio one_pos) (b := N) ?_

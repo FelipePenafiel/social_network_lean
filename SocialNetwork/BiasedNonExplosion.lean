@@ -15,7 +15,7 @@ Appendix C says the proof is that of Theorem 1 with Proposition 21 in place of P
 and that is what this file is: the low-pressure family of a profile carries total rate at most
 `λ = NMe^{βN}` (`SocialNetwork.Bias.lowRate_le_clockBound`), Proposition 21 puts one of its
 pairs in every `N` expressions (`SocialNetwork.Bias.exists_isLowAt_block`), and
-`SocialNetwork.measure_explosionTime_eq_one` — which is stated for a jump-hold chain, not for
+`SocialNetwork.measure_holdBlowUp_eq_one` — which is stated for a jump-hold chain, not for
 either model — does the rest.  The two models share every step but these two.
 -/
 
@@ -181,7 +181,7 @@ times of the biased process satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`.
 
 **Follows the paper's proof of Theorem 1**, once Proposition 21 replaces Proposition 5, which
 is what Appendix C prescribes.  The two models share everything else:
-`SocialNetwork.measure_explosionTime_eq_one` carries the domination across the jumps here as
+`SocialNetwork.measure_holdBlowUp_eq_one` carries the domination across the jumps here as
 it does there. -/
 theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 / ((M : ℝ) - 1) < γ)
     (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
@@ -193,7 +193,7 @@ theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 
   have hmeas : biasedCtsPathMeasure γ β u
       = jumpHoldMeasure (biasedCtsDrivingKernel γ β u) (biasedStepLaw γ β u) := rfl
   rw [hmeas]
-  refine measure_explosionTime_eq_one (low := IsLowAt γ u) (D := ENNReal.ofReal
+  refine measure_holdBlowUp_eq_one (low := IsLowAt γ u) (D := ENNReal.ofReal
       ((clockBound N M β + 1) / clockBound N M β)) (θ := 1) _ _ (isLowAt_congr γ u)
     (fun n h => lowFinset γ (stateAfterStepHistory u h (n + 1))) (lowFinset γ u)
     ?_ ?_ ?_ ?_ one_pos (one_lt_discountRatio one_pos) (b := N) ?_

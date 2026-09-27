@@ -243,7 +243,7 @@ Mathlib provides, not of what this repository happens to want.
    **This blocks no theorem here, and one proof.**  Theorem 1.1 and Theorem 16 are proved,
    and no Poisson process is constructed: what the argument uses of the sandwich is that the
    low-pressure expressions cannot accumulate in bounded time, and that follows from two rate
-   estimates by `SocialNetwork.measure_explosionTime_eq_one` (`SocialNetwork/JumpHold.lean`),
+   estimates by `SocialNetwork.measure_holdBlowUp_eq_one` (`SocialNetwork/JumpHold.lean`),
    a criterion for an arbitrary jump-hold chain.  The two estimates are the paper's own:
    Proposition 5 makes the low expressions frequent, and there are at most `NM` of them, each
    of rate at most `e^{βN}`.

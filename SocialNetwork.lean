@@ -14,6 +14,7 @@ import SocialNetwork.Defs
 import SocialNetwork.Doeblin
 import SocialNetwork.Favouring
 import SocialNetwork.Frequencies
+import SocialNetwork.Graphical
 import SocialNetwork.Greedy
 import SocialNetwork.JumpHold
 import SocialNetwork.Kac
