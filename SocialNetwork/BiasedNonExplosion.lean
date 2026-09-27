@@ -3,7 +3,7 @@ Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.BiasedResults
-import SocialNetwork.NonExplosion
+import SocialNetwork.Graphical
 
 /-!
 # Theorem 16: the biased process does not explode
@@ -12,13 +12,20 @@ import SocialNetwork.NonExplosion
 Theorem 1.1 for the biased model.
 
 Appendix C says the proof is that of Theorem 1 with Proposition 21 in place of Proposition 5,
-and that is what this file is: the low-pressure family of a profile carries total rate at most
-`λ = NMe^{βN}` (`SocialNetwork.Bias.lowRate_le_clockBound`), Proposition 21 puts one of its
-pairs in every `N` expressions (`SocialNetwork.Bias.exists_isLowAt_block`), and
-`SocialNetwork.measure_holdBlowUp_eq_one` — which is stated for a jump-hold chain, not for
-either model — does the rest.  The two models share every step but these two.
--/
+and that is what this file is.  Theorem 1.1 goes through [GL24]'s band, which
+`SocialNetwork.Band` and `SocialNetwork.BandCollapse` build for an arbitrary state space; this
+file instantiates it for the biased model.  Two things are needed.
 
+* The band's data: the rates of equation (7), the operators `π^{a,o}` on profiles, the pairs
+  carrying pressure below `N`, and the bound `λ = NMe^{βN}` on the rate they carry
+  (`SocialNetwork.Bias.profileBand`).
+* **Lemma 10 of [GL24]** with Proposition 21 in place of Proposition 5: at least one mark in
+  every `N` lands in the strip of height `λ`
+  (`SocialNetwork.Bias.exists_isLambdaAt_block`).
+
+Everything between them is shared with Theorem 1.1, word for word, because the band knows
+nothing about which model it came from.
+-/
 open MeasureTheory ProbabilityTheory Finset
 open scoped ENNReal
 
@@ -74,115 +81,123 @@ theorem lowRate_le_clockBound {β : ℝ} (hβ : 0 ≤ β) (γ : ℝ) (P : Profil
 
 variable [NeZero N] [NeZero M]
 
-/-- The Gibbs law of equation (7) gives a family of pairs the fraction of the total rate that
-it carries. -/
-theorem biasedJumpPMF_toMeasure_finset (γ β : ℝ) (P : Profile N M) (s : Finset (Jump N M)) :
-    (biasedJumpPMF γ β P).toMeasure ↑s
-      = ENNReal.ofReal ((∑ p ∈ s, biasedJumpRate γ β P p.1 p.2) / biasedTotalRate γ β P) := by
-  have hw : ∀ t : Finset (Jump N M),
-      (∑ p ∈ t, biasedJumpWeight γ β P p)
-        = ENNReal.ofReal (∑ p ∈ t, biasedJumpRate γ β P p.1 p.2) := by
-    intro t
-    rw [ENNReal.ofReal_sum_of_nonneg fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le]
-    rfl
-  have htsum : (∑' q : Jump N M, biasedJumpWeight γ β P q)
-      = ENNReal.ofReal (biasedTotalRate γ β P) := by
-    rw [tsum_eq_sum (s := Finset.univ) fun p hp => absurd (Finset.mem_univ p) hp, hw Finset.univ]
-    rfl
-  rw [PMF.toMeasure_apply_finset]
-  simp only [biasedJumpPMF_apply]
-  rw [← Finset.sum_mul, hw s, htsum,
-    ← ENNReal.ofReal_inv_of_pos (biasedTotalRate_pos γ β P),
-    ← ENNReal.ofReal_mul (Finset.sum_nonneg fun p _ => (biasedJumpRate_pos γ β P p.1 p.2).le),
-    ← div_eq_mul_inv]
+/-! ### The band of the biased model -/
 
-/-- **One step of the biased process, discounted**: the estimate of
-`SocialNetwork.lintegral_stepLaw_stepWeight_le_one` at a profile. -/
-theorem lintegral_biasedStepLaw_stepWeight_le_one {β : ℝ} (hβ : 0 ≤ β) {θ : ℝ} (hθ : 0 < θ)
-    (γ : ℝ) (P : Profile N M) :
-    ∫⁻ z, stepWeight (ENNReal.ofReal ((clockBound N M β + θ) / clockBound N M β)) θ
-      (lowFinset γ P) z ∂(biasedStepLaw γ β P) ≤ 1 := by
-  have hmassc : (biasedJumpPMF γ β P).toMeasure ((↑(lowFinset γ P) : Set (Jump N M))ᶜ)
-      = ENNReal.ofReal ((biasedTotalRate γ β P - lowRate γ β P) / biasedTotalRate γ β P) := by
-    rw [← Finset.coe_compl, biasedJumpPMF_toMeasure_finset γ β P]
-    congr 1
-    have hsplit := Finset.sum_compl_add_sum (lowFinset γ P)
-      fun p : Jump N M => biasedJumpRate γ β P p.1 p.2
-    rw [lowRate, biasedTotalRate]
-    rw [show (∑ p ∈ (lowFinset γ P)ᶜ, biasedJumpRate γ β P p.1 p.2)
-        = (∑ p : Jump N M, biasedJumpRate γ β P p.1 p.2)
-          - ∑ p ∈ lowFinset γ P, biasedJumpRate γ β P p.1 p.2 by rw [← hsplit]; ring]
-  exact lintegral_stepWeight_le_one (biasedTotalRate_pos γ β P) (clockBound_pos N M β) hθ
-    (lowRate_nonneg γ β P) (lowRate_le_biasedTotalRate γ β P) (lowRate_le_clockBound hβ γ P)
-    (biasedJumpPMF_toMeasure_finset γ β P _) hmassc
+/-- [GL24]'s band for the biased model: the rates of equation (7), the operators `π^{a,o}` on
+profiles, the pairs carrying pressure below `N`, and the bound `λ = NMe^{βN}` on the rate they
+carry. -/
+noncomputable def profileBand (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) : Band N M (Profile N M) where
+  rate P p := biasedJumpRate γ β P p.1 p.2
+  rate_pos P p := biasedJumpRate_pos γ β P p.1 p.2
+  next P p := Profile.express p.1 p.2 P
+  low := lowFinset γ
+  lam := clockBound N M β
+  lam_pos := clockBound_pos N M β
+  low_le_lam P := lowRate_le_clockBound hβ γ P
 
-/-! ### Proposition 21 at every block -/
+@[simp]
+theorem profileBand_totRate (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) (P : Profile N M) :
+    (profileBand γ hβ).totRate P = biasedTotalRate γ β P := rfl
 
-/-- Step `k` of a realisation is *low* when the pair expressed at it carries pressure below `N`
-at the profile reached at that step. -/
-noncomputable def IsLowAt (γ : ℝ) (u : Profile N M) (k : ℕ) (j : ℕ → Jump N M) : Prop :=
-  j k ∈ lowFinset γ (stateAfter u j k)
+@[simp]
+theorem profileBand_stepLaw (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) (P : Profile N M) :
+    (profileBand γ hβ).stepLaw P = biasedStepLaw γ β P := rfl
 
-noncomputable instance decidableIsLowAt (γ : ℝ) (u : Profile N M) (k : ℕ) (j : ℕ → Jump N M) :
-    Decidable (IsLowAt γ u k j) := inferInstanceAs (Decidable (_ ∈ _))
+/-- The band of the biased model carries the biased process.  Both sides are the
+Ionescu-Tulcea measure of the same kernels; this is a matter of unfolding. -/
+theorem profileBand_ctsPath (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) (u : Profile N M) :
+    (profileBand γ hβ).ctsPath u = biasedCtsPathMeasure γ β u := by
+  have hstate : ∀ (j : ℕ → Jump N M) (n : ℕ),
+      stateAfterJumps (profileBand γ hβ).next u j n = stateAfter u j n := by
+    intro j n
+    induction n with
+    | zero => rfl
+    | succ n ih => rw [stateAfterJumps_succ, ih, stateAfter_succ]; rfl
+  have hker : drivenKernel (profileBand γ hβ).next (profileBand γ hβ).stepLaw u
+      = biasedCtsDrivingKernel γ β u := by
+    funext n
+    ext h : 1
+    rw [drivenKernel_apply, biasedCtsDrivingKernel_apply, profileBand_stepLaw]
+    exact congrArg _ (hstate _ (n + 1))
+  rw [Band.ctsPath, drivenMeasure, jumpHoldMeasure, biasedCtsPathMeasure]
+  simp only [hker, profileBand_stepLaw]
+  rfl
 
-omit [NeZero N] [NeZero M] in
-/-- Whether step `k` is low is read off the first `k + 1` expressed pairs. -/
-theorem isLowAt_congr (γ : ℝ) (u : Profile N M) (k : ℕ) (j j' : ℕ → Jump N M)
-    (h : ∀ i ≤ k, j i = j' i) : IsLowAt γ u k j ↔ IsLowAt γ u k j' := by
-  rw [IsLowAt, IsLowAt, stateAfter_congr u k fun i hi => h i hi.le, h k le_rfl]
+/-! ### Proposition 21 at every block, read on the marks -/
 
-omit [NeZero N] [NeZero M] in
-/-- **Proposition 21, read at the `m`-th block of `N` steps.**  The profile reached after `mN`
-expressions is still a state of `S^α`, so Proposition 21 applies to the realisation read from
-there. -/
-theorem exists_isLowAt_block (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {u : Profile N M}
-    (hu : IsBiasedState u) (j : ℕ → Jump N M) (m : ℕ) :
-    ∃ k, m * N ≤ k ∧ k < m * N + N ∧ IsLowAt γ u k j := by
-  obtain ⟨i, hiN, hi⟩ := exists_pressure_lt hM hN hγ
-    (isBiasedState_stateAfter hu j (m * N)) (shiftPath (m * N) j)
-  refine ⟨m * N + i, by omega, by omega, ?_⟩
-  rw [IsLowAt, mem_lowFinset, stateAfter_add]
-  exact hi _
+/-- `S^α` is preserved along the mark chain: a discarded mark changes nothing, and an
+expression is `π^{a,o}`. -/
+theorem isBiasedState_markState (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) {u : Profile N M}
+    (hu : IsBiasedState u) (j : ℕ → MarkJump N M) (n : ℕ) :
+    IsBiasedState (markState (profileBand γ hβ) u j n) := by
+  induction n with
+  | zero => exact hu
+  | succ n ih =>
+      rw [markState_succ]
+      cases hj : j n with
+      | discard => exact ih
+      | jump p => exact ih.express p.1 p.2
 
-omit [NeZero N] [NeZero M] in
-/-- At least one step in every `N` is low, so after `m` blocks at least `m` steps are. -/
-theorem le_lowCountOf (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {u : Profile N M}
-    (hu : IsBiasedState u) (j : ℕ → Jump N M) (m : ℕ) :
-    m ≤ lowCountOf (IsLowAt γ u) (m * N) j := by
-  induction m with
-  | zero => simp [lowCountOf]
-  | succ m ih =>
-      obtain ⟨k, hk1, hk2, hk3⟩ := exists_isLowAt_block hM hN hγ hu j m
-      have hsub : {i ∈ Finset.range (m * N) | IsLowAt γ u i j}
-          ⊆ {i ∈ Finset.range ((m + 1) * N) | IsLowAt γ u i j} := by
-        have hrange : Finset.range (m * N) ⊆ Finset.range ((m + 1) * N) := by
-          have hsucc : (m + 1) * N = m * N + N := by ring
-          rw [hsucc]
-          exact Finset.range_subset.2 fun x hx => Finset.mem_range.2 (by omega)
-        exact Finset.filter_subset_filter _ hrange
-      have hmem : k ∈ {i ∈ Finset.range ((m + 1) * N) | IsLowAt γ u i j} := by
-        refine Finset.mem_filter.2 ⟨Finset.mem_range.2 ?_, hk3⟩
-        have hsucc : (m + 1) * N = m * N + N := by ring
-        rw [hsucc]
-        omega
-      have hnot : k ∉ {i ∈ Finset.range (m * N) | IsLowAt γ u i j} := by
-        intro hcon
-        exact absurd (Finset.mem_range.1 (Finset.mem_filter.1 hcon).1) (by omega)
-      have hlt : lowCountOf (IsLowAt γ u) (m * N) j
-          < lowCountOf (IsLowAt γ u) ((m + 1) * N) j :=
-        Finset.card_lt_card ((Finset.ssubset_iff_of_subset hsub).2 ⟨k, hmem, hnot⟩)
-      omega
+/-- A run of marks that all express follows the realisation they spell out. -/
+theorem markState_add_of_jumps (γ : ℝ) {β : ℝ} (hβ : 0 ≤ β) {u : Profile N M}
+    {j : ℕ → MarkJump N M} {m n : ℕ} {jj : ℕ → Jump N M}
+    (h : ∀ i < n, j (m + i) = .jump (jj i)) :
+    ∀ k ≤ n, markState (profileBand γ hβ) u j (m + k)
+      = stateAfter (markState (profileBand γ hβ) u j m) jj k := by
+  intro k
+  induction k with
+  | zero => intro _; rw [Nat.add_zero, stateAfter_zero]
+  | succ k ih =>
+      intro hk
+      rw [← Nat.add_assoc, markState_succ_jump _ u j (h k (by omega)), ih (by omega),
+        stateAfter_succ]
+      rfl
+
+/-- **Lemma 10 of [GL24], transported to the marks of the biased band.**  Among any `N`
+consecutive marks at least one lands in the strip of height `λ`: a discarded mark does, and if
+all `N` express then Proposition 21 exhibits one whose actor carries pressure below `N`.  This
+is the one line of the argument that is not shared with Theorem 1.1. -/
+theorem exists_isLambdaAt_block (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ) {β : ℝ}
+    (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) (j : ℕ → MarkJump N M) (m : ℕ) :
+    ∃ k, m * N ≤ k ∧ k < m * N + N ∧ IsLambdaAt (profileBand γ hβ) u k j := by
+  classical
+  by_cases hdis : ∃ i < N, j (m * N + i) = .discard
+  · obtain ⟨i, hiN, hi⟩ := hdis
+    exact ⟨m * N + i, by omega, by omega, by
+      rw [IsLambdaAt, hi]; exact Finset.mem_insert_self _ _⟩
+  · push Not at hdis
+    -- every mark of the block expresses; read off the realisation it spells
+    have hjump : ∀ i, i < N → ∃ p : Jump N M, j (m * N + i) = .jump p := by
+      intro i hi
+      cases hji : j (m * N + i) with
+      | discard => exact absurd hji (hdis i hi)
+      | jump p => exact ⟨p, rfl⟩
+    choose p hp using hjump
+    set jj : ℕ → Jump N M := fun i => if hi : i < N then p i hi else default with hjj
+    have hstep : ∀ i < N, j (m * N + i) = .jump (jj i) := by
+      intro i hi
+      rw [hjj]
+      simp only [dif_pos hi]
+      exact hp i hi
+    obtain ⟨k, hkN, hk⟩ := exists_pressure_lt hM hN hγ
+      (isBiasedState_markState γ hβ hu j (m * N)) jj
+    refine ⟨m * N + k, by omega, by omega, ?_⟩
+    rw [IsLambdaAt, hstep k hkN, mem_lambdaFinset]
+    refine Or.inr ⟨jj k, ?_, rfl⟩
+    show _ ∈ lowFinset γ _
+    rw [mem_lowFinset, markState_add_of_jumps γ hβ hstep k hkN.le]
+    exact hk _
 
 /-! ### Theorem 16 -/
 
 /-- **Theorem 16.**  For any `β ≥ 0`, any `α < 0` and any starting profile `u ∈ S^α`, the jump
 times of the biased process satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`.
 
-**Follows the paper's proof of Theorem 1**, once Proposition 21 replaces Proposition 5, which
-is what Appendix C prescribes.  The two models share everything else:
-`SocialNetwork.measure_holdBlowUp_eq_one` carries the domination across the jumps here as
-it does there. -/
+**Follows Appendix C's prescription**, "as Theorem 1.1, with Proposition 21 in place of
+Proposition 5", and hence [GL24] pp. 12–14: the pairs carrying pressure below `N` are again at
+most `NM` of rate at most `e^{βN}` each, so again `λ = NMe^{βN}`; Proposition 21 puts one of
+them in every `N` expressions; and the band of `SocialNetwork.Band`, which knows nothing about
+which model it came from, does the rest. -/
 theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 / ((M : ℝ) - 1) < γ)
     (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
     biasedCtsPathMeasure γ β u {ω | explosionTime ω = ⊤} = 1 := by
@@ -190,28 +205,9 @@ theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 
     refine lt_trans (one_div_pos.2 ?_) hγ
     have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
     linarith
-  have hmeas : biasedCtsPathMeasure γ β u
-      = jumpHoldMeasure (biasedCtsDrivingKernel γ β u) (biasedStepLaw γ β u) := rfl
-  rw [hmeas]
-  refine measure_holdBlowUp_eq_one (low := IsLowAt γ u) (D := ENNReal.ofReal
-      ((clockBound N M β + 1) / clockBound N M β)) (θ := 1) _ _ (isLowAt_congr γ u)
-    (fun n h => lowFinset γ (stateAfterStepHistory u h (n + 1))) (lowFinset γ u)
-    ?_ ?_ ?_ ?_ one_pos (one_lt_discountRatio one_pos) (b := N) ?_
-  · intro z
-    rw [IsLowAt, stateAfter_zero]
-  · intro n h x hx
-    have hjx : Preorder.frestrictLe₂ (π := fun _ : ℕ => Jump N M) (Nat.le_succ n)
-        (fun i => (x i).1) = fun i => (h i).1 := by
-      funext i
-      exact congrArg (fun y : (i : Finset.Iic n) → Step N M => (y i).1) hx
-    have hstate : stateAfter u (jumpExtend fun i => (x i).1) (n + 1)
-        = stateAfterStepHistory u h (n + 1) := stateAfter_ofHistoryPath_eq hjx u le_rfl
-    rw [IsLowAt, jumps_stepExtend, hstate, stepExtend_apply _ (le_refl (n + 1))]
-  · exact lintegral_biasedStepLaw_stepWeight_le_one hβ one_pos γ u
-  · intro n h
-    rw [biasedCtsDrivingKernel_apply]
-    exact lintegral_biasedStepLaw_stepWeight_le_one hβ one_pos γ _
-  · exact fun j q => le_lowCountOf hM hN hγ0 hu j q
+  have h := measure_ctsPath_blowUp (profileBand γ hβ) (b := N)
+    (exists_isLambdaAt_block hM hN hγ0 hβ hu)
+  rwa [profileBand_ctsPath] at h
 
 end Bias
 
