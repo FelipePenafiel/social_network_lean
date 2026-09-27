@@ -41,8 +41,17 @@ bypasses the paper's argument is a check not performed. A departure of the secon
 is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemmas 19
 and 20.
 
-There is exactly one such departure in the repository at present, Proposition 7, and it
-is written out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
+There are two such departures in the repository at present.  Proposition 7 is written
+out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.  The other is **Theorem 1.1**
+and its twin Theorem 16: arXiv:2607.19651 asserts the sandwich (11) rather than
+constructing it, but [GL24] pp. 12–14 constructs it in full — a Poisson point process in
+the plane, stacking functions that decode a mark into a pair, and the low jumps as a
+thinning of the rate-`λ` strip.  That construction is not formalised here, because
+Mathlib has no Poisson point process and because the graphical construction would then
+have to be identified with the jump–hold construction `SocialNetwork.ctsPathMeasure` is
+built on.  What is proved instead is the property the construction is used for: the low
+expressions cannot accumulate in bounded time.  The two estimates it consumes are
+[GL24]'s own, its Lemma 10 and its bound `q^< ≤ λ`.
 
 **Where the paper's proof does not close, the statement is left resting on the step that
 fails — even when a different argument would establish it.** This is the sharp end of

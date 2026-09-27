@@ -446,9 +446,23 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   of a Poisson process of rate $\lambda$.  One consequence of that coupling is what
   the proof goes on to use --- that low expressions cannot accumulate in bounded
   time --- and it is that consequence which is proved here, by
-  \ref{aux-noexplosion}, from the same two facts.  The route is the paper's; the
-  asserted construction is replaced by the property it is asserted to have, not by
-  a different argument for the theorem.
+  \ref{aux-noexplosion}, from the same two facts.
+
+  \textbf{A departure, and the reason for it.}  [GL24] \emph{does} construct the
+  sandwich, at its pp.~12--14: a Poisson point process $\mathcal{N}$ on
+  $[0,\infty)^2$ drives the chain, the stacking functions
+  $\Phi^{<,\pm}_v, \Phi^{>,\pm}_v$ cut the band $[0, \lambda + q^>(v))$ into one
+  interval per pair, a mark of height below $q^<(v)$ is a low expression and one of
+  height in $[q^<(v), \lambda)$ is discarded, so that the low expressions are
+  literally a sub-sequence of the marks of the rate-$\lambda$ strip, which do not
+  accumulate.  Its Lemma~10 is \ref{prop5} and its $q^< \le \lambda$ is the bound
+  above, so the two estimates used here are [GL24]'s own; what is not formalised is
+  the construction between them.  Mathlib has no Poisson point process, and the
+  graphical construction would in addition have to be identified with the
+  jump--hold construction this development is built on.  Under the rule of
+  \ref{note-green} that is a permitted departure --- the route cannot be followed in
+  Lean today --- and this paragraph is the written reason the rule requires.
+  \texttt{GL24.md} carries the detail.
 \end{proof}
 
 \paper{Theorem 1.2}
@@ -3114,10 +3128,16 @@ form.  What the paper asserts is the sandwich: the low expressions ``can be
 constructed in such a way that'' they are the points of a Poisson process of rate
 $NMe^{\beta N}$.  That construction is not carried out here either; what is proved
 instead, at \ref{aux-noexplosion}, is the one property of it the argument goes on
-to use, that low expressions cannot accumulate in bounded time.  Replacing an
-asserted construction by the property it is asserted to have is not the same as
-replacing the proof: every other step, and the order of the steps, is the
-paper's.
+to use, that low expressions cannot accumulate in bounded time.
+
+These two are \textbf{the second departure} in this development, and the only one
+besides \ref{prop7}.  [GL24] pp.~12--14 carries the construction out in full, so a
+written proof of the step exists and is not verified here.  The reason it is not ---
+Mathlib has no Poisson point process, and the graphical construction would have to
+be identified with the jump--hold one --- is of the kind rule~3 of
+\texttt{CONVENTIONS.md} permits, and it is written out at \ref{thm1-1} and in
+\texttt{GL24.md} as that rule requires.  Every other step, and the order of the
+steps, is the paper's.
 
 \medskip \noindent\textbf{Supply a step the paper asserts} (twelve).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},

@@ -403,6 +403,15 @@ the paper is wrong:
 `blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
 not provide, checked against the pinned revision.
 
+**Theorem 1.1 and Theorem 16 have left this list**: they are proved.  Not by your
+sandwich (11), which you assert and [GL24] pp. 12–14 constructs, but by the one
+property of it your argument goes on to use — the low expressions cannot
+accumulate in bounded time — established from your own two estimates, Proposition 5
+and `q^< ≤ λ`.  That is a departure from a written proof, it is recorded as such in
+`CONVENTIONS.md` and at the blueprint node, and the reason is that Mathlib has no
+Poisson point process.  If you would rather see [GL24]'s construction formalised,
+say so: `GL24.md` §6 item 5 says what it would take.
+
 ### Equation (13) is blocked, and not on us
 
 Its proof opens: *"For a non-explosive process, a probability measure is

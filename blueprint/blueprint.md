@@ -240,14 +240,20 @@ Mathlib provides, not of what this repository happens to want.
    Nothing on the minimum of independent exponentials either, nor on which of several is
    smallest.
 
-   **This no longer blocks anything here.**  Theorem 1.1 and Theorem 16 are proved, and no
-   Poisson process is constructed: the paper sandwiches the jump times between two of them,
-   but what its argument uses of the sandwich is that the low-pressure expressions cannot
-   accumulate in bounded time, and that follows from two rate estimates by
-   `SocialNetwork.measure_explosionTime_eq_one` (`SocialNetwork/JumpHold.lean`), a criterion
-   for an arbitrary jump-hold chain.  The two estimates are the paper's own: Proposition 5
-   makes the low expressions frequent, and there are at most `NM` of them, each of rate at
-   most `e^{βN}`.  `SocialNetwork/Clocks.lean` identifies one step with a race between
+   **This blocks no theorem here, and one proof.**  Theorem 1.1 and Theorem 16 are proved,
+   and no Poisson process is constructed: what the argument uses of the sandwich is that the
+   low-pressure expressions cannot accumulate in bounded time, and that follows from two rate
+   estimates by `SocialNetwork.measure_explosionTime_eq_one` (`SocialNetwork/JumpHold.lean`),
+   a criterion for an arbitrary jump-hold chain.  The two estimates are the paper's own:
+   Proposition 5 makes the low expressions frequent, and there are at most `NM` of them, each
+   of rate at most `e^{βN}`.
+
+   What is blocked is the **verification of [GL24]'s written proof** (pp. 12–14), which does
+   construct the sandwich; `GL24.md` §4 records what that would take.  Besides the point
+   process itself, the identification of the construction with the jump-hold one needs the
+   law of a geometric sum of `Exp (Λ)` variables, which is `Exp (pΛ)`; Mathlib has neither
+   that nor the Erlang law (`gammaMeasure` exists, with no additivity, and is used nowhere
+   else in the library).  `SocialNetwork/Clocks.lean` identifies one step with a race between
    exponential clocks, which is the form p. 16 argues in; that identification turned out not
    to be needed, and what Theorem 1.1 borrows from that file is one integral.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
