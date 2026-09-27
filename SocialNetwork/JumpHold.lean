@@ -654,4 +654,409 @@ theorem measure_holdBlowUp_eq_one
 
 end NoExplosion
 
+/-! ### A chain driven by a state, and its restart
+
+Both chains of this development have the same shape: a state space, a rule moving the state
+along a jump, and a law of one step read at the current state.  `SocialNetwork.ctsPathMeasure`
+is the case of the matrices and `SocialNetwork.stepLaw`; the mark chain of
+`SocialNetwork.Graphical` is the case of the band.  The restart at the first step is proved
+once, here. -/
+
+section Driven
+
+variable {S : Type*} [MeasurableSpace S] [DiscreteMeasurableSpace S]
+  (next : S → J → S) (L : S → Measure (Hold J))
+
+/-- The state after `n` jumps. -/
+def stateAfterJumps (s : S) (j : ℕ → J) : ℕ → S
+  | 0 => s
+  | n + 1 => next (stateAfterJumps s j n) (j n)
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+@[simp]
+theorem stateAfterJumps_zero (s : S) (j : ℕ → J) : stateAfterJumps next s j 0 = s := rfl
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+theorem stateAfterJumps_succ (s : S) (j : ℕ → J) (n : ℕ) :
+    stateAfterJumps next s j (n + 1) = next (stateAfterJumps next s j n) (j n) := rfl
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+theorem stateAfterJumps_congr (s : S) {j j' : ℕ → J} :
+    ∀ n : ℕ, (∀ k < n, j k = j' k) → stateAfterJumps next s j n = stateAfterJumps next s j' n := by
+  intro n
+  induction n with
+  | zero => intro _; rfl
+  | succ n ih =>
+      intro h
+      rw [stateAfterJumps_succ, stateAfterJumps_succ, ih fun k hk => h k (by omega),
+        h n (by omega)]
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+/-- Running `n + k` jumps is running `n` of them and then running the rest from there. -/
+theorem stateAfterJumps_add (s : S) (j : ℕ → J) (n k : ℕ) :
+    stateAfterJumps next s j (n + k)
+      = stateAfterJumps next (stateAfterJumps next s j n) (fun i => j (n + i)) k := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+      rw [show n + (k + 1) = n + k + 1 by ring, stateAfterJumps_succ, ih,
+        stateAfterJumps_succ]
+
+omit [DecidableEq J] [DiscreteMeasurableSpace S] in
+theorem measurable_stateAfterJumpsHistory (s : S) (n k : ℕ) :
+    Measurable fun h : (i : Finset.Iic n) → Hold J =>
+      stateAfterJumps next s (jumpExtend fun i => (h i).1) k :=
+  (Measurable.of_discrete (f := fun g : (i : Finset.Iic n) → J =>
+    stateAfterJumps next s (jumpExtend g) k)).comp (measurable_holdHistoryJumps n)
+
+/-- The kernel driving the chain: replay the jumps so far, and read the law at the state they
+reach. -/
+noncomputable def drivenKernel (s : S) (n : ℕ) :
+    Kernel ((i : Finset.Iic n) → Hold J) (Hold J) where
+  toFun h := L (stateAfterJumps next s (jumpExtend fun i => (h i).1) (n + 1))
+  measurable' :=
+    (Measurable.of_discrete (f := fun t : S => L t)).comp
+      (measurable_stateAfterJumpsHistory next s n (n + 1))
+
+omit [DecidableEq J] in
+theorem drivenKernel_apply (s : S) (n : ℕ) (h : (i : Finset.Iic n) → Hold J) :
+    drivenKernel next L s n h
+      = L (stateAfterJumps next s (jumpExtend fun i => (h i).1) (n + 1)) := rfl
+
+instance isMarkovKernel_drivenKernel [∀ t : S, IsProbabilityMeasure (L t)] (s : S) (n : ℕ) :
+    IsMarkovKernel (drivenKernel next L s n) :=
+  ⟨fun h => by rw [drivenKernel_apply]; infer_instance⟩
+
+/-- The law of a realisation of the chain started at `s`. -/
+noncomputable def drivenMeasure [∀ t : S, IsProbabilityMeasure (L t)] (s : S) :
+    Measure (ℕ → Hold J) :=
+  jumpHoldMeasure (drivenKernel next L s) (L s)
+
+instance isProbabilityMeasure_drivenMeasure [∀ t : S, IsProbabilityMeasure (L t)] (s : S) :
+    IsProbabilityMeasure (drivenMeasure next L s) := by
+  rw [drivenMeasure]; infer_instance
+
+end Driven
+
+/-! ### The restart at the first jump -/
+
+section Restart
+
+variable {S : Type*} [MeasurableSpace S] [DiscreteMeasurableSpace S]
+  (next : S → J → S) (L : S → Measure (Hold J)) [∀ t : S, IsProbabilityMeasure (L t)]
+
+/-- The realisation shifted past its first step. -/
+def shiftHold (ω : ℕ → Hold J) : ℕ → Hold J := fun i => ω (1 + i)
+
+omit [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem measurable_shiftHold : Measurable (shiftHold (J := J)) :=
+  measurable_pi_lambda _ fun i => measurable_pi_apply (1 + i)
+
+/-- A history of the first `n + 2` steps, shifted past its first entry. -/
+def shiftHoldHistory (n : ℕ) (x : (i : Finset.Iic (n + 1)) → Hold J) :
+    (i : Finset.Iic n) → Hold J :=
+  fun i => x ⟨1 + i.1, Finset.mem_Iic.2 (by have := Finset.mem_Iic.1 i.2; omega)⟩
+
+omit [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem measurable_shiftHoldHistory (n : ℕ) : Measurable (shiftHoldHistory (J := J) n) :=
+  measurable_pi_lambda _ fun _ => measurable_pi_apply _
+
+/-- A history of the first `n + 1` steps, extended by one more step. -/
+def extendHoldHistory {n : ℕ} (x : (i : Finset.Iic n) → Hold J) (z : Hold J) :
+    (i : Finset.Iic (n + 1)) → Hold J :=
+  fun i => if h : i.1 ≤ n then x ⟨i.1, Finset.mem_Iic.2 h⟩ else z
+
+omit [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem measurable_extendHoldHistory {n : ℕ} (x : (i : Finset.Iic n) → Hold J) :
+    Measurable (extendHoldHistory x) := by
+  refine measurable_pi_lambda _ fun i => ?_
+  by_cases h : i.1 ≤ n
+  · simp [extendHoldHistory, h]
+  · simpa [extendHoldHistory, h] using measurable_id'
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem shiftHoldHistory_extendHoldHistory {n : ℕ} (x : (i : Finset.Iic (n + 1)) → Hold J)
+    (z : Hold J) :
+    shiftHoldHistory (n + 1) (extendHoldHistory x z) = extendHoldHistory (shiftHoldHistory n x) z := by
+  funext i
+  have hi : i.1 ≤ n + 1 := Finset.mem_Iic.1 i.2
+  simp only [shiftHoldHistory, extendHoldHistory]
+  by_cases h : i.1 ≤ n
+  · rw [dif_pos (by omega), dif_pos h]
+  · rw [dif_neg (by omega), dif_neg h]
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem frestrictLe_shiftHold (n : ℕ) (ω : ℕ → Hold J) :
+    Preorder.frestrictLe (π := fun _ : ℕ => Hold J) n (shiftHold ω)
+      = shiftHoldHistory n (Preorder.frestrictLe (π := fun _ : ℕ => Hold J) (n + 1) ω) := rfl
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem shiftHoldHistory_zero_comp (y : (i : Finset.Iic 0) → Hold J) :
+    (shiftHoldHistory (J := J) 0) ∘ (extendHoldHistory y) = holdHistoryZero := by
+  funext z i
+  simp only [Function.comp_apply, shiftHoldHistory, extendHoldHistory, holdHistoryZero]
+  rw [dif_neg (by omega)]
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+/-- The state the first jump of a history reaches. -/
+theorem stateAfterJumps_one (s : S) {n : ℕ} (h : (i : Finset.Iic n) → Hold J) :
+    stateAfterJumps next s (jumpExtend fun i => (h i).1) 1
+      = next s (h ⟨0, Finset.mem_Iic.2 (Nat.zero_le n)⟩).1 := by
+  rw [stateAfterJumps_succ, stateAfterJumps_zero, jumpExtend_apply _ (Nat.zero_le n)]
+
+omit [MeasurableSpace J] [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] [MeasurableSpace S] [DiscreteMeasurableSpace S] in
+/-- Replaying a shifted history from the state the first step reaches is replaying the whole
+history one step further. -/
+theorem stateAfterJumps_shiftHoldHistory (s : S) {n : ℕ}
+    (x : (i : Finset.Iic (n + 1)) → Hold J) {k : ℕ} (hk : k ≤ n + 1) :
+    stateAfterJumps next (stateAfterJumps next s (jumpExtend fun i => (x i).1) 1)
+        (jumpExtend fun i => ((shiftHoldHistory n x) i).1) k
+      = stateAfterJumps next s (jumpExtend fun i => (x i).1) (1 + k) := by
+  rw [stateAfterJumps_add]
+  refine stateAfterJumps_congr next _ k fun i hi => ?_
+  have hin : i ≤ n := by omega
+  rw [jumpExtend_apply _ hin, jumpExtend_apply _ (show 1 + i ≤ n + 1 by omega)]
+  rfl
+
+omit [DiscreteMeasurableSpace J] [Countable J] [DecidableEq J] in
+theorem IicProdIoc_prodMk_piSingleton_hold {n : ℕ} (x : (i : Finset.Iic n) → Hold J) :
+    (IicProdIoc (X := fun _ : ℕ => Hold J) n (n + 1)) ∘ (Prod.mk x) ∘
+        (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Hold J) n)
+      = extendHoldHistory x := by
+  funext z i
+  simp only [Function.comp_apply, IicProdIoc, extendHoldHistory]
+  by_cases h : i.1 ≤ n
+  · rw [dif_pos h, dif_pos h]
+  · rw [dif_neg h, dif_neg h]
+    simp only [MeasurableEquiv.piSingleton, MeasurableEquiv.coe_mk, Equiv.coe_fn_mk,
+      eqRec_eq_cast, cast_eq]
+
+omit [DecidableEq J] in
+/-- One step of the kernel keeps the history it started from and appends a step drawn from the
+law at the state the history reaches. -/
+theorem drivenPartialTraj_succ_apply (s : S) (n : ℕ) (x : (i : Finset.Iic n) → Hold J) :
+    Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) n (n + 1) x
+      = (L (stateAfterJumps next s (jumpExtend fun i => (x i).1) (n + 1))).map
+          (extendHoldHistory x) := by
+  have hpi : Measurable (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Hold J) n) :=
+    (MeasurableEquiv.piSingleton (X := fun _ : ℕ => Hold J) n).measurable
+  have hIic : Measurable (IicProdIoc (X := fun _ : ℕ => Hold J) n (n + 1)) :=
+    measurable_IicProdIoc
+  have hmk : Measurable (Prod.mk (β := (i : Finset.Ioc n (n + 1)) → Hold J) x) :=
+    measurable_prodMk_left
+  rw [Kernel.partialTraj_succ_self, Kernel.map_apply _ hIic, Kernel.prod_apply,
+    Kernel.id_apply, Kernel.map_apply _ hpi, drivenKernel_apply, Measure.dirac_prod,
+    Measure.map_map hmk hpi, Measure.map_map hIic (hmk.comp hpi),
+    IicProdIoc_prodMk_piSingleton_hold]
+
+omit [DecidableEq J] in
+/-- **The restart at the first jump, on histories.**  From a fixed first step, the history of
+the steps that follow is the history of the chain started at the state that step reaches. -/
+theorem map_drivenPartialTraj_shiftHoldHistory (s : S) (n : ℕ)
+    (y : (i : Finset.Iic 0) → Hold J) :
+    (Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0 (n + 1) y).map
+        (shiftHoldHistory n)
+      = jumpHoldHistory
+          (drivenKernel next L (stateAfterJumps next s (jumpExtend fun i => (y i).1) 1))
+          (L (stateAfterJumps next s (jumpExtend fun i => (y i).1) 1)) n := by
+  induction n with
+  | zero =>
+      rw [drivenPartialTraj_succ_apply, Measure.map_map (measurable_shiftHoldHistory 0)
+        (measurable_extendHoldHistory y), shiftHoldHistory_zero_comp]
+      unfold jumpHoldHistory
+      rw [Kernel.partialTraj_self, Measure.id_comp]
+  | succ n ih =>
+      set v := stateAfterJumps next s (jumpExtend fun i => (y i).1) 1 with hv
+      have hone : ∀ x : (i : Finset.Iic (n + 1)) → Hold J,
+          stateAfterJumps next s (jumpExtend fun i => (x i).1) 1
+            = next s (x ⟨0, Finset.mem_Iic.2 (Nat.zero_le (n + 1))⟩).1 :=
+        fun x => stateAfterJumps_one next s x
+      have hae : ∀ᵐ x ∂(Kernel.partialTraj (X := fun _ : ℕ => Hold J)
+          (drivenKernel next L s) 0 (n + 1) y),
+          stateAfterJumps next s (jumpExtend fun i => (x i).1) 1 = v := by
+        have hmeas : Measurable fun x : (i : Finset.Iic (n + 1)) → Hold J =>
+            stateAfterJumps next s (jumpExtend fun i => (x i).1) 1 :=
+          measurable_stateAfterJumpsHistory next s (n + 1) 1
+        have hmeas0 : Measurable fun x : (i : Finset.Iic 0) → Hold J =>
+            stateAfterJumps next s (jumpExtend fun i => (x i).1) 1 :=
+          measurable_stateAfterJumpsHistory next s 0 1
+        have hcomp : (fun x : (i : Finset.Iic (n + 1)) → Hold J =>
+              stateAfterJumps next s (jumpExtend fun i => (x i).1) 1)
+            = (fun h : (i : Finset.Iic 0) → Hold J =>
+                stateAfterJumps next s (jumpExtend fun i => (h i).1) 1) ∘
+              (Preorder.frestrictLe₂ (π := fun _ : ℕ => Hold J) (Nat.zero_le (n + 1))) := by
+          funext x
+          show stateAfterJumps next s (jumpExtend fun i => (x i).1) 1
+            = stateAfterJumps next s (jumpExtend fun i =>
+                ((Preorder.frestrictLe₂ (π := fun _ : ℕ => Hold J)
+                  (Nat.zero_le (n + 1)) x) i).1) 1
+          rw [stateAfterJumps_one next s x, stateAfterJumps_one next s
+            (Preorder.frestrictLe₂ (π := fun _ : ℕ => Hold J) (Nat.zero_le (n + 1)) x)]
+          rfl
+        have hmap : (Kernel.partialTraj (X := fun _ : ℕ => Hold J)
+              (drivenKernel next L s) 0 (n + 1) y).map
+            (fun x : (i : Finset.Iic (n + 1)) → Hold J =>
+              stateAfterJumps next s (jumpExtend fun i => (x i).1) 1) = Measure.dirac v := by
+          rw [hcomp, ← Measure.map_map hmeas0
+              (Preorder.measurable_frestrictLe₂ (X := fun _ : ℕ => Hold J) (Nat.zero_le (n + 1))),
+            Kernel.partialTraj_map_frestrictLe₂_apply (X := fun _ : ℕ => Hold J) y
+              (Nat.zero_le (n + 1)), Kernel.partialTraj_self, Kernel.id_apply,
+            Measure.map_dirac' hmeas0 y]
+        rw [Filter.eventually_iff, mem_ae_iff]
+        have hset : {x : (i : Finset.Iic (n + 1)) → Hold J |
+              stateAfterJumps next s (jumpExtend fun i => (x i).1) 1 = v}ᶜ
+            = (fun x : (i : Finset.Iic (n + 1)) → Hold J =>
+                stateAfterJumps next s (jumpExtend fun i => (x i).1) 1) ⁻¹' {v}ᶜ := rfl
+        rw [hset, ← Measure.map_apply hmeas MeasurableSet.of_discrete, hmap,
+          Measure.dirac_apply' _ MeasurableSet.of_discrete]
+        simp
+      ext T hT
+      have hpt : ∀ x : (i : Finset.Iic (n + 1)) → Hold J,
+          stateAfterJumps next s (jumpExtend fun i => (x i).1) 1 = v →
+          Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L s)
+              (n + 1) (n + 2) x (shiftHoldHistory (n + 1) ⁻¹' T)
+            = Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L v) n (n + 1)
+                (shiftHoldHistory n x) T := by
+        intro x hx
+        rw [drivenPartialTraj_succ_apply, drivenPartialTraj_succ_apply,
+          Measure.map_apply (measurable_extendHoldHistory x)
+            ((measurable_shiftHoldHistory (n + 1)) hT),
+          Measure.map_apply (measurable_extendHoldHistory (shiftHoldHistory n x)) hT]
+        have hpre : extendHoldHistory x ⁻¹' (shiftHoldHistory (n + 1) ⁻¹' T)
+            = extendHoldHistory (shiftHoldHistory n x) ⁻¹' T := by
+          rw [← Set.preimage_comp]
+          exact congrArg (fun f => f ⁻¹' T)
+            (funext fun z => shiftHoldHistory_extendHoldHistory x z)
+        have hstate : stateAfterJumps next v
+              (jumpExtend fun i => ((shiftHoldHistory n x) i).1) (n + 1)
+            = stateAfterJumps next s (jumpExtend fun i => (x i).1) (n + 1 + 1) := by
+          rw [← hx, stateAfterJumps_shiftHoldHistory next s x (le_refl (n + 1)),
+            show 1 + (n + 1) = n + 1 + 1 from by omega]
+        rw [hpre, hstate]
+      have hstep : jumpHoldHistory (drivenKernel next L v) (L v) (n + 1) T
+          = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L v)
+              n (n + 1) h T ∂(jumpHoldHistory (drivenKernel next L v) (L v) n) := by
+        unfold jumpHoldHistory
+        rw [Kernel.partialTraj_succ_eq_comp (Nat.zero_le n), ← Measure.comp_assoc,
+          Measure.bind_apply hT (Kernel.aemeasurable _)]
+      rw [Measure.map_apply (measurable_shiftHoldHistory (n + 1)) hT,
+        Kernel.partialTraj_succ_eq_comp (Nat.zero_le (n + 1)),
+        Kernel.comp_apply' _ _ _ ((measurable_shiftHoldHistory (n + 1)) hT), hstep]
+      calc ∫⁻ x, Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L s)
+              (n + 1) (n + 1 + 1) x (shiftHoldHistory (n + 1) ⁻¹' T)
+            ∂(Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0 (n + 1) y)
+          = ∫⁻ x, Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L v)
+                n (n + 1) (shiftHoldHistory n x) T
+              ∂(Kernel.partialTraj (X := fun _ : ℕ => Hold J)
+                (drivenKernel next L s) 0 (n + 1) y) :=
+            lintegral_congr_ae (hae.mono fun x hx => hpt x hx)
+        _ = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L v)
+                n (n + 1) h T
+              ∂((Kernel.partialTraj (X := fun _ : ℕ => Hold J)
+                (drivenKernel next L s) 0 (n + 1) y).map (shiftHoldHistory n)) :=
+            (lintegral_map (Kernel.measurable_coe _ hT) (measurable_shiftHoldHistory n)).symm
+        _ = ∫⁻ h, Kernel.partialTraj (X := fun _ : ℕ => Hold J) (drivenKernel next L v)
+                n (n + 1) h T ∂(jumpHoldHistory (drivenKernel next L v) (L v) n) := by rw [ih]
+
+omit [DecidableEq J] in
+/-- **The restart at the first jump, on realisations.**  From a fixed first step, the rest of
+the realisation is a realisation of the chain started at the state that step reaches. -/
+theorem map_drivenTraj_shiftHold (s : S) (y : (i : Finset.Iic 0) → Hold J) :
+    (Kernel.traj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0 y).map shiftHold
+      = drivenMeasure next L (stateAfterJumps next s (jumpExtend fun i => (y i).1) 1) := by
+  have hprob : IsProbabilityMeasure
+      ((Kernel.traj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0 y).map shiftHold) :=
+    Measure.isProbabilityMeasure_map measurable_shiftHold.aemeasurable
+  refine MeasureTheory.ext_of_generate_finite
+    {a : Set (ℕ → Hold J) | ∃ (b : ℕ) (T : Set ((i : Finset.Iic b) → Hold J)),
+      MeasurableSet T ∧ a = Preorder.frestrictLe (π := fun _ : ℕ => Hold J) b ⁻¹' T}
+    ?_ ?_ ?_ ?_
+  · refine le_antisymm (iSup_le fun i => ?_) (MeasurableSpace.generateFrom_le ?_)
+    · rintro a ⟨T, hT, rfl⟩
+      exact MeasurableSpace.measurableSet_generateFrom
+        ⟨i, (fun h : (j : Finset.Iic i) → Hold J => h ⟨i, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' T,
+          (measurable_pi_apply _) hT, rfl⟩
+    · rintro a ⟨b, T, hT, rfl⟩
+      exact Preorder.measurable_frestrictLe b hT
+  · rintro a ⟨b, T, hT, rfl⟩ c ⟨b', T', hT', rfl⟩ -
+    rcases le_total b b' with hbb | hbb
+    · exact ⟨b', (Preorder.frestrictLe₂ (π := fun _ : ℕ => Hold J) hbb ⁻¹' T) ∩ T',
+        ((Preorder.measurable_frestrictLe₂ hbb) hT).inter hT',
+        by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+    · exact ⟨b, T ∩ (Preorder.frestrictLe₂ (π := fun _ : ℕ => Hold J) hbb ⁻¹' T'),
+        hT.inter ((Preorder.measurable_frestrictLe₂ hbb) hT'),
+        by rw [Set.preimage_inter, ← Set.preimage_comp]; rfl⟩
+  · rintro a ⟨b, T, hT, rfl⟩
+    have hpre : shiftHold ⁻¹' (Preorder.frestrictLe (π := fun _ : ℕ => Hold J) b ⁻¹' T)
+        = Preorder.frestrictLe (π := fun _ : ℕ => Hold J) (b + 1) ⁻¹'
+          (shiftHoldHistory b ⁻¹' T) := rfl
+    rw [Measure.map_apply measurable_shiftHold (Preorder.measurable_frestrictLe b hT),
+      hpre, ← Measure.map_apply (Preorder.measurable_frestrictLe (b + 1))
+        ((measurable_shiftHoldHistory b) hT),
+      Kernel.traj_map_frestrictLe_apply, ← Measure.map_apply (measurable_shiftHoldHistory b) hT,
+      map_drivenPartialTraj_shiftHoldHistory,
+      ← Measure.map_apply (Preorder.measurable_frestrictLe b) hT]
+    rw [drivenMeasure, jumpHoldMeasure_map_frestrictLe]
+  · rw [measure_univ, measure_univ]
+
+omit [DecidableEq J] in
+/-- **The restart at the first jump.**  The first step is drawn from the law at the starting
+state, and given it the rest of the realisation is a realisation of the chain started at the
+state it reaches. -/
+theorem drivenMeasure_restart (s : S) {B : Set (Hold J)} (hB : MeasurableSet B)
+    {E : Set (ℕ → Hold J)} (hE : MeasurableSet E) :
+    drivenMeasure next L s ({ω | ω 0 ∈ B} ∩ shiftHold ⁻¹' E)
+      = ∫⁻ z in B, drivenMeasure next L (next s z.1) E ∂(L s) := by
+  have hS : MeasurableSet ({ω : ℕ → Hold J | ω 0 ∈ B} ∩ shiftHold ⁻¹' E) :=
+    ((measurable_pi_apply 0) hB).inter (measurable_shiftHold hE)
+  have hzero : ∀ z : Hold J,
+      Kernel.traj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0 (holdHistoryZero z)
+          ({ω : ℕ → Hold J | ω 0 ∈ B} ∩ shiftHold ⁻¹' E)
+        = Set.indicator B (fun w : Hold J => drivenMeasure next L (next s w.1) E) z := by
+    intro z
+    have hmeasc : MeasurableSet ({h : (i : Finset.Iic 0) → Hold J |
+        h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ) := by
+      have hset : {h : (i : Finset.Iic 0) → Hold J | h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ
+          = (fun h : (i : Finset.Iic 0) → Hold J => h ⟨0, Finset.mem_Iic.2 le_rfl⟩) ⁻¹' {z}ᶜ :=
+        rfl
+      rw [hset]
+      exact (measurable_pi_apply _) (measurableSet_singleton z).compl
+    have hcoord : Kernel.traj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0
+        (holdHistoryZero z) ({ω : ℕ → Hold J | ω 0 = z}ᶜ) = 0 := by
+      have h1 : ({ω : ℕ → Hold J | ω 0 = z}ᶜ)
+          = Preorder.frestrictLe (π := fun _ : ℕ => Hold J) 0 ⁻¹'
+            ({h : (i : Finset.Iic 0) → Hold J | h ⟨0, Finset.mem_Iic.2 le_rfl⟩ = z}ᶜ) := rfl
+      rw [h1, ← Measure.map_apply (Preorder.measurable_frestrictLe 0) hmeasc,
+        Kernel.traj_map_frestrictLe_apply, Kernel.partialTraj_self, Kernel.id_apply,
+        Measure.dirac_apply' _ hmeasc,
+        Set.indicator_of_notMem (by simp [holdHistoryZero])]
+    have hshift : Kernel.traj (X := fun _ : ℕ => Hold J) (drivenKernel next L s) 0
+        (holdHistoryZero z) (shiftHold ⁻¹' E)
+        = drivenMeasure next L (next s z.1) E := by
+      rw [← Measure.map_apply measurable_shiftHold hE, map_drivenTraj_shiftHold,
+        stateAfterJumps_one]
+      rfl
+    by_cases hzB : z ∈ B
+    · rw [Set.indicator_of_mem hzB, ← hshift]
+      refine le_antisymm (measure_mono Set.inter_subset_right) ?_
+      refine le_measure_of_inter hcoord (le_refl _) ?_
+      rintro ω ⟨h1, h2⟩
+      refine ⟨?_, h2⟩
+      show ω 0 ∈ B
+      rw [show ω 0 = z from h1]
+      exact hzB
+    · rw [Set.indicator_of_notMem hzB]
+      refine le_antisymm ?_ (by simp)
+      rw [← hcoord]
+      refine measure_mono ?_
+      rintro ω ⟨h1, -⟩ hcon
+      apply hzB
+      rw [← show ω 0 = z from hcon]
+      exact h1
+  rw [drivenMeasure, jumpHoldMeasure, Measure.bind_apply hS (Kernel.aemeasurable _),
+    lintegral_map (Kernel.measurable_coe _ hS) measurable_holdHistoryZero,
+    lintegral_congr hzero, lintegral_indicator hB]
+
+end Restart
+
 end SocialNetwork
