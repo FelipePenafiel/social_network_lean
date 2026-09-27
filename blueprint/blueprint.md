@@ -232,27 +232,30 @@ Mathlib provides, not of what this repository happens to want.
 
 ## Still missing, in CONTINUOUS time
 
-6. **Non-explosion criteria.**  Theorem 1.1 is proved by sandwiching the jump times between two
-   Poisson processes.  **Mathlib has no Poisson point process**; what it has is the Poisson
-   *distribution* on `ℕ` (`ProbabilityTheory.poissonMeasure`,
-   `Mathlib/Probability/Distributions/Poisson/Basic.lean`) and the Poisson limit theorem.
+6. **Non-explosion criteria.**  Nothing: no Poisson point process (what Mathlib has is the
+   Poisson *distribution* on `ℕ`, `ProbabilityTheory.poissonMeasure` in
+   `Mathlib/Probability/Distributions/Poisson/Basic.lean`, and the Poisson limit theorem), no
+   **stochastic domination**, no **coupling** structure, no **compensator**:
+   `stochasticallyDominates`, a coupling structure and `compensator` all return zero hits.
+   Nothing on the minimum of independent exponentials either, nor on which of several is
+   smallest.
 
-   That absence is *not* what blocks Theorem 1.1.  The process here is built jump-hold, so a
-   homogeneous Poisson process of rate `λ` is the partial sums of i.i.d. `Exp (λ)` variables
-   and nothing more; that those diverge is `ProbabilityTheory.strong_law_ae_real`, which
-   `SocialNetwork/Frequencies.lean` already uses.  What blocks it is the sandwich itself,
-   which the paper asserts rather than constructs.  Its first half is
-   `SocialNetwork/Clocks.lean`: one step of the process is the race between one exponential
-   clock per pair, which is the form (11) is stated in and which the jump-hold form cannot
-   express.  Mathlib has neither half of that — nothing on the minimum of independent
-   exponentials, nothing on which of several is smallest — nor, for the rest,
-   **stochastic domination**, **couplings** or **compensators**: `stochasticallyDominates`,
-   a coupling structure and `compensator` all return zero hits.
+   **This no longer blocks anything here.**  Theorem 1.1 and Theorem 16 are proved, and no
+   Poisson process is constructed: the paper sandwiches the jump times between two of them,
+   but what its argument uses of the sandwich is that the low-pressure expressions cannot
+   accumulate in bounded time, and that follows from two rate estimates by
+   `SocialNetwork.measure_explosionTime_eq_one` (`SocialNetwork/JumpHold.lean`), a criterion
+   for an arbitrary jump-hold chain.  The two estimates are the paper's own: Proposition 5
+   makes the low expressions frequent, and there are at most `NM` of them, each of rate at
+   most `e^{βN}`.  `SocialNetwork/Clocks.lean` identifies one step with a race between
+   exponential clocks, which is the form p. 16 argues in; that identification turned out not
+   to be needed, and what Theorem 1.1 borrows from that file is one integral.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing.  This is a live blocker rather than a dormant
-   one: equation (13) is what carries `μ̃^β` to `μ^β`, and its written proof opens *for a
-   non-explosive process* and then appeals to Theorem 1.1, so it needs item 6 as well.  The
-   paper cites the equivalence rather than proving it.
+   the jump chain and of the process.  Nothing.  This is the live blocker, and now the only
+   one on the continuous-time side: equation (13) is what carries `μ̃^β` to `μ^β`, its written
+   proof opens *for a non-explosive process* — which Theorem 1.1 now supplies — and then
+   cites the equivalence rather than proving it.  Mathlib has no jump process to state it
+   for.
 8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
@@ -264,8 +267,8 @@ Mathlib provides, not of what this repository happens to want.
 
 Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
 continuous-time versions follow from the discrete ones through the transfer (13) and the
-control of the holding times.  So they are blocked by items 1–3, not by 6.  Only Theorem 1.1 —
-and its biased twin Theorem 16 — genuinely needs the continuous-time item 6.
+control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 is
+what item 7 blocks, and nothing else does.
 
 Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
 mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting

@@ -61,7 +61,7 @@ the other way round: `Appendix` used to import this file and never used anything
 ## Main statements
 
 * `SocialNetwork.generator_eq`, `SocialNetwork.generator_const` — the algebra of `G`, proved.
-* `SocialNetwork.nonExplosion` — **Theorem 1.1**, unproved.
+* `SocialNetwork.nonExplosion` — **Theorem 1.1**, proved in `SocialNetwork.NonExplosion`.
 * `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, unproved.
 * `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, unproved.
 * `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, proved from the display
@@ -729,16 +729,8 @@ def IsCarriedByState (μ : Measure (Pressure N M)) : Prop := μ (stateSet N M)�
 def IsInvariantCts (β : ℝ) (μ : Measure (Pressure N M)) : Prop :=
   ∀ t : ℝ, 0 ≤ t → Kernel.Invariant (transitionKernel β t) μ
 
-/-- **Theorem 1.1.** For any `β ≥ 0` and any starting matrix `u ∈ S`, the jump times satisfy
-`P (sup {Tₘ : m ≥ 1} = ∞) = 1`: the process does not explode.
-
-The paper's proof sandwiches the jump times between two Poisson processes, using Proposition 5
-to control how often an expression comes from an actor carrying little pressure.  Mathlib has
-no Poisson point process, so the comparison is not available. -/
-theorem nonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) {u : Pressure N M}
-    (hu : IsState u) :
-    ctsPathMeasure β u {ω | explosionTime ω = ⊤} = 1 := by
-  sorry
+/-! **Theorem 1.1**, `SocialNetwork.nonExplosion`, is proved in `SocialNetwork.NonExplosion`,
+which needs the estimate of this file on one step of the kernel. -/
 
 /-- **Theorem 1.2.** The process has a unique invariant probability measure `μ^β`.
 

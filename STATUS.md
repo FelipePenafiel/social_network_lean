@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-17 statements. They are unproved for three different reasons, and
+15 statements. They are unproved for three different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 The group that was only work is empty: every numbered statement of the paper is
@@ -51,30 +51,28 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Blocked on Mathlib (6)
+### Blocked on Mathlib (4)
 
 The paper's proof is fine; Mathlib has no theory of the object it uses.
 Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the audit of exactly what is absent, checked against the pinned revision.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 1.1 | `nonExplosion` | the sandwich (11), which the paper asserts — *can be constructed in such a way that* — rather than constructs.  Not the Poisson theory: on this sample space a homogeneous process is the partial sums of i.i.d. exponentials, and that those diverge is the strong law.  Half of the sandwich is now supplied, the clock form of one step; what is left is carrying the domination across the jumps |
-| Theorem 1.2 | `existsUnique_invariantCts` | equation (13), and so Theorem 1.1 through it |
-| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Its proof opens *For a non-explosive process* and then *Non-explosivity holds by Part 1*, which is Theorem 1.1 — Poisson point processes.  The equivalence it invokes, that `μ` is invariant for the process iff `q·μ` is invariant for the skeleton, is cited rather than proved there |
+| Theorem 1.2 | `existsUnique_invariantCts` | equation (13) |
+| equation (13) | `invariantCts_eq_of_invariantSkeleton` | the stationary-law transfer.  Its proof opens *For a non-explosive process*, and that much is now Theorem 1.1; what it then invokes — that `μ` is invariant for the process exactly when `q·μ` is invariant for the skeleton — is cited rather than proved, and Mathlib has neither the correspondence nor the jump process to state it for |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
-| Theorem 16 | `Bias.biasedNonExplosion` | the sandwich (11), as Theorem 1.1 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 19 | 21 | 40 |
+| Proved | 21 | 22 | 43 |
 | Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 14 | 0 | 14 |
+| Stated in Lean, unproved | 12 | 0 | 12 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **28** | **90** |
+| **Total** | **62** | **29** | **91** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -89,7 +87,7 @@ are covered, and all 56 of them are stated in Lean.
 | Remark 3 | `IsState.trust_eq_zero` +1 | stated |
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
-| Theorem 1.1 | `nonExplosion` | unproved — blocked on Mathlib |
+| Theorem 1.1 | `nonExplosion` +15 | proved |
 | Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
 | Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | unproved — blocked on Mathlib |
@@ -124,7 +122,7 @@ are covered, and all 56 of them are stated in Lean.
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 19, Lemma 20 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | unproved — blocked on Mathlib |
 | Corollary 15 | `le_characteristicTime` | proof written, rests on Proposition 12, Lemma 14 |
-| Theorem 16 | `Bias.biasedNonExplosion` | unproved — blocked on Mathlib |
+| Theorem 16 | `Bias.biasedNonExplosion` +12 | proved |
 | Proposition 17 | `Bias.measure_biasedBounded_ge` +1 | proved |
 | Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` +14 | proved |
 | Definition 5 — Matrices favouring an opinion | `IsFavouring` +2 | stated |
@@ -160,6 +158,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | The race between the clocks | `clockSplit` +24 | proved |
+| A jump-hold chain with a slow sub-family does not explode | `jumpHoldMeasure` +28 | proved |
 | Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |

@@ -44,6 +44,10 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
   space (`SocialNetwork/Doeblin.lean`), and with it **Theorem 1.2 for the skeleton**:
   `μ̃^β` exists and is unique;
 * **Kac's inequality**, which is the half of Kac's lemma Proposition 9 uses;
+* **Theorem 1.1 and its biased twin Theorem 16** — the process does not explode.  The
+  paper's sandwich (11) is asserted rather than constructed; what its argument uses of it
+  is proved instead, as a criterion for any jump-hold chain whose distinguished pairs are
+  slow and frequent (`SocialNetwork/JumpHold.lean`);
 * the biased model of Section 3, with Propositions 21, 17 and 24, and **Proposition 18
   and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
   surely all but one actor eventually stop expressing.
@@ -93,8 +97,11 @@ SocialNetwork/Markov.lean     the law of a cylinder, and the Markov property of 
 SocialNetwork/Minorisation.lean    the minorisation of the skeleton chain (the paper's p. 17)
 SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
+SocialNetwork/JumpHold.lean   non-explosion for a jump-hold chain with a slow sub-family
+SocialNetwork/NonExplosion.lean    Theorem 1.1: the process does not explode
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
-SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 16, 25, 27, 31
+SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, 31
+SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1
 
 blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
 blueprint/blueprint.md        what Mathlib provides and what it does not, with line numbers
