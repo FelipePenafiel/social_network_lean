@@ -1116,4 +1116,44 @@ theorem measure_acceptedWithin_ge (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B 
               congr 2
               ring
 
+/-! ### The macro-step law -/
+
+theorem discardRatio_nonneg (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (v : Pressure N M) :
+    0 ≤ (bandRate β v - totalRate β v) / bandRate β v :=
+  div_nonneg (by linarith [totalRate_le_bandRate hM hβ v]) (bandRate_pos β v).le
+
+theorem discardRatio_lt_one (β : ℝ) (v : Pressure N M) :
+    (bandRate β v - totalRate β v) / bandRate β v < 1 := by
+  rw [div_lt_one (bandRate_pos β v)]
+  linarith [totalRate_pos β v]
+
+/-- **The law of the first expression of [GL24]'s construction.**  Letting the number of marks
+grow, the two bounds meet: the first mark of the band that is not discarded carries a pair in
+`B` and does so by time `t` with probability
+
+`(∑_{p ∈ B} rate p / q) (1 - e^{-q t})`,
+
+which is `SocialNetwork.stepLaw` read on the rectangle `B ×ˢ Iic t`.  The geometric number of
+discarded marks has been summed away: that is the content of [GL24]'s Figure 2. -/
+theorem iSup_measure_acceptedWithin (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β) (B : Finset (Jump N M))
+    {t : ℝ} (ht : 0 ≤ t) (v : Pressure N M) :
+    ⨆ n, markPathMeasure hM hβ v (acceptedWithin B n t)
+      = ENNReal.ofReal ((∑ p ∈ B, jumpRate β v p.1 p.2) / totalRate β v
+          * (1 - Real.exp (-(totalRate β v * t)))) := by
+  refine le_antisymm (iSup_le fun n => measure_acceptedWithin_le hM hβ B n t v) ?_
+  set L := ⨆ n, markPathMeasure hM hβ v (acceptedWithin B n t) with hLdef
+  have hLle : L ≤ 1 := iSup_le fun n => prob_le_one
+  have hLne : L ≠ ⊤ := ne_top_of_le_ne_top ENNReal.one_ne_top hLle
+  set δ := (bandRate β v - totalRate β v) / bandRate β v with hδdef
+  have hδ0 : 0 ≤ δ := discardRatio_nonneg hM hβ v
+  have hδ1 : δ < 1 := discardRatio_lt_one β v
+  have h0 : Filter.Tendsto (fun n : ℕ => ENNReal.ofReal (δ ^ n)) Filter.atTop (nhds 0) := by
+    simp_rw [ENNReal.ofReal_pow hδ0]
+    exact ENNReal.tendsto_pow_atTop_nhds_zero_of_lt_one (ENNReal.ofReal_lt_one.2 hδ1)
+  have htend : Filter.Tendsto (fun n : ℕ => L + ENNReal.ofReal (δ ^ n)) Filter.atTop (nhds L) := by
+    simpa using h0.const_add L
+  refine ge_of_tendsto' htend fun n => ?_
+  exact (measure_acceptedWithin_ge hM hβ B n ht v).trans
+    (add_le_add (le_iSup (fun n => markPathMeasure hM hβ v (acceptedWithin B n t)) n) le_rfl)
+
 end SocialNetwork
