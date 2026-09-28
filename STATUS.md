@@ -67,12 +67,12 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 21 | 23 | 44 |
+| Proved | 21 | 24 | 45 |
 | Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 12 | 0 | 12 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **62** | **30** | **92** |
+| **Total** | **62** | **31** | **93** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 56 statements and displayed equations
@@ -163,6 +163,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | Doeblin's criterion | `iterateKernel` +31 | proved |
 | The -step kernel is the law of the skeleton | `lintegral_pathMeasure_skeleton` +3 | proved |
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |
+| The jump rate on , and the sum of (13) | `IsState.le_totalRate` +1 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |
 | a biased ladder is a biased steep ladder | `Bias.IsBiasedLadder.isBiasedSteepLadder` +6 | proved |

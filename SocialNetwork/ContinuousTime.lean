@@ -107,6 +107,30 @@ theorem totalRate_zero (β : ℝ) : totalRate β (0 : Pressure N M) = ((M * N : 
   rw [totalRate, Finset.sum_congr rfl fun p _ => h p]
   simp [Finset.card_univ, Fintype.card_prod, Nat.mul_comm]
 
+/-- On the state space `S` the total jump rate is at least `M`.
+
+**Supplies a step the paper asserts.**  The proof of equation (13) at p. 18 reads "since every
+`u \in S` carries an actor with null social pressure, the jump rate obeys `q_\beta (u) \ge M`
+for all `u \in S`", and does not argue it.  The zero row is the second requirement of equation
+(2), `SocialNetwork.IsState.exists_zero_row`, and the `M` pairs it carries each have rate
+`exp (\beta \cdot 0) = 1`.
+
+This is the bound that makes the normalising sum of equation (13) finite; see
+`SocialNetwork.tsum_div_totalRate_le`. -/
+theorem IsState.le_totalRate (β : ℝ) {v : Pressure N M} (hv : IsState v) :
+    (M : ℝ) ≤ totalRate β v := by
+  obtain ⟨a, ha⟩ := hv.exists_zero_row
+  have hrow : ∑ o : Opinion M, jumpRate β v a o = (M : ℝ) := by
+    have h : ∀ o : Opinion M, jumpRate β v a o = 1 := fun o => by simp [jumpRate, ha o]
+    rw [Finset.sum_congr rfl fun o _ => h o]
+    simp
+  have hsum : totalRate β v = ∑ b : Actor N, ∑ o : Opinion M, jumpRate β v b o := by
+    rw [totalRate]
+    exact Fintype.sum_prod_type _
+  rw [hsum, ← hrow]
+  exact Finset.single_le_sum
+    (fun b _ => Finset.sum_nonneg fun o _ => (jumpRate_pos β v b o).le) (Finset.mem_univ a)
+
 variable [NeZero N] [NeZero M]
 
 theorem totalRate_pos (β : ℝ) (v : Pressure N M) : 0 < totalRate β v :=
@@ -728,6 +752,33 @@ def IsCarriedByState (μ : Measure (Pressure N M)) : Prop := μ (stateSet N M)�
 /-- Invariance for the continuous-time process: invariance under every `P_t`, `t ≥ 0`. -/
 def IsInvariantCts (β : ℝ) (μ : Measure (Pressure N M)) : Prop :=
   ∀ t : ℝ, 0 ≤ t → Kernel.Invariant (transitionKernel β t) μ
+
+omit [NeZero N] [NeZero M] in
+/-- The normalising sum of equation (13) is at most `1/M`, hence finite and non-zero.
+
+**Supplies a step the paper asserts.**  Equation (13) divides by `\sum_v \mu\tilde (v)/q_\beta (v)`,
+and the display is a probability measure only if that sum is finite; the paper's reason is the
+bound `q_\beta \ge M` quoted at `SocialNetwork.IsState.le_totalRate`, and it stops there.  Off
+`S` the measure gives no mass, so those terms cost nothing. -/
+theorem tsum_div_totalRate_le (β : ℝ) (μ : Measure (Pressure N M)) [IsProbabilityMeasure μ]
+    (hμ : IsCarriedByState μ) :
+    ∑' v : Pressure N M, μ {v} / ENNReal.ofReal (totalRate β v) ≤ 1 / (M : ℝ≥0∞) := by
+  have hterm : ∀ v : Pressure N M,
+      μ {v} / ENNReal.ofReal (totalRate β v) ≤ μ {v} / (M : ℝ≥0∞) := by
+    intro v
+    by_cases hv : IsState v
+    · refine ENNReal.div_le_div_left ?_ _
+      rw [← ENNReal.ofReal_natCast]
+      exact ENNReal.ofReal_le_ofReal (hv.le_totalRate β)
+    · have hzero : μ {v} = 0 :=
+        measure_mono_null (Set.singleton_subset_iff.2 hv) hμ
+      simp [hzero]
+  have hsum : ∑' v : Pressure N M, μ {v} / (M : ℝ≥0∞) = 1 / (M : ℝ≥0∞) := by
+    rw [tsum_congr fun v => div_eq_mul_inv (μ {v}) ((M : ℝ≥0∞)), ENNReal.tsum_mul_right,
+      tsum_measure_singleton μ, ← div_eq_mul_inv]
+  calc ∑' v : Pressure N M, μ {v} / ENNReal.ofReal (totalRate β v)
+      ≤ ∑' v : Pressure N M, μ {v} / (M : ℝ≥0∞) := ENNReal.tsum_le_tsum hterm
+    _ = 1 / (M : ℝ≥0∞) := hsum
 
 /-! **Theorem 1.1**, `SocialNetwork.nonExplosion`, is proved in `SocialNetwork.Graphical`, along
 [GL24]'s graphical construction; `SocialNetwork.NonExplosion` supplies the bound `λ` of

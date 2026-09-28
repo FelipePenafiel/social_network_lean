@@ -384,6 +384,11 @@ blueprint's audit section classifies every formalised proof this way.
   step (20), which is why the two coincide here where the unbiased proof had
   `1/((M+1)N)` and `1/(2(M-1))`.  The threshold above which `ε₁ + ε₂ ≤ 1/2` is
   `β₁ = max(1, 4γ(2N³(M+1)³ + C))`.
+* **Equation (13), the rate floor.**  "Since every `u ∈ S` carries an actor with
+  null social pressure, the jump rate obeys `q_β(u) ≥ M`" is asserted and not
+  argued; and the finiteness of `∑ μ̃^β(u)/q_β(u)`, without which the
+  right-hand side of (13) is not a probability measure, is not stated at all.
+  Both are proved here.
 * **Measurability.**  The paper does not address it anywhere.  Every measurability
   lemma here has no counterpart in the text.
 
@@ -441,8 +446,11 @@ it rather than proving it.  Mathlib has no form of it.  Whether it should be a t
 citation here, like Proposition 12, or a lemma proved in this repository, is a
 question for you.
 
-The two remaining steps are ours to do and are not done: `q_β(u) ≥ M` on `S`,
-which the null row of (6) gives, and the finiteness `∑ μ̃^β(u)/q_β(u) ≤ 1/M`.
+The two remaining steps were ours to do, and both are now done: `q_β(u) ≥ M`
+on `S`, which the null row of (2) gives, and the finiteness
+`∑ μ̃^β(u)/q_β(u) ≤ 1/M` that makes the right-hand side a probability measure
+at all.  They are `SocialNetwork.IsState.le_totalRate` and
+`SocialNetwork.tsum_div_totalRate_le`, blueprint node `aux-rate-floor`.
 
 ### Theorem 1.2 for the skeleton, and two remarks on your page 17
 

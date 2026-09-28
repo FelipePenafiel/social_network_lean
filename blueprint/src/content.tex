@@ -712,6 +712,33 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   Lean statement drops that hypothesis.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The jump rate on $\Sspace$, and the sum of~(13)]
+  \label{aux-rate-floor}
+  \lean{SocialNetwork.IsState.le_totalRate, SocialNetwork.tsum_div_totalRate_le}
+  \leanok
+  \uses{eq2, eq3}
+  For every $u \in \Sspace$, $\jumprate(u) \ge M$; and for every probability
+  measure $\mu$ carried by $\Sspace$,
+  \[
+    \sum_{v} \frac{\mu(v)}{\jumprate(v)} \le \frac{1}{M} .
+  \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper asserts.}  The proof of \ref{eq13} reads
+  ``since every $u \in \Sspace$ carries an actor with null social pressure, the
+  jump rate obeys $\jumprate(u) \ge M$ for all $u \in \Sspace$'', and stops
+  there.  The zero row is the second requirement of \ref{eq2}; the $M$ pairs
+  that actor carries have rate $e^{\beta \cdot 0} = 1$ each, so they alone
+  contribute $M$ to the sum of \ref{eq3}, and the other rates are positive.
+
+  The second half is what makes the right-hand side of \ref{eq13} a probability
+  measure at all, and the paper does not state it.  Off $\Sspace$ the measure
+  gives no mass, so those terms cost nothing; on $\Sspace$ each term is at most
+  $\mu(v)/M$, and $\mu$ is a probability measure.
+\end{proof}
+
 \paper{Equation (13)}
 \begin{lemma}[Transfer to continuous time]
   \label{eq13}
@@ -725,7 +752,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{lemma}
 \begin{proof}
-  \uses{thm1-1, def3}
+  \uses{thm1-1, def3, aux-rate-floor}
   \textbf{Not formalised, and blocked on Mathlib} --- on the correspondence it
   cites, not on \ref{thm1-2-skeleton}, which is proved, and no longer on
   \ref{thm1-1}, which is.  The written argument at p.~18 opens:
@@ -744,10 +771,11 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   on the explosion event; until that event is known to be null the hypothesis of
   invariance is not invariance for the semigroup the argument is about.
 
-  Two of the remaining steps are this repository's to do and neither is done:
-  $\jumprate(u) \ge M$ on $\Sspace$, which the null row of \ref{eq2} gives, and
-  the finiteness $\sum_u \muskel(u)/\jumprate(u) \le 1/M$ that makes the
-  right-hand side a probability measure.
+  Two of the remaining steps were this repository's to do, and
+  \ref{aux-rate-floor} now does both: $\jumprate(u) \ge M$ on $\Sspace$, which
+  the null row of \ref{eq2} gives, and the finiteness
+  $\sum_u \muskel(u)/\jumprate(u) \le 1/M$ that makes the right-hand side a
+  probability measure.
 
   The step that carries the content is neither, and it is now the only one left:
   the equivalence quoted above is \textbf{cited, not proved}, in the paper.  It is a standard fact about jump
@@ -3223,15 +3251,16 @@ proof of a statement of the paper follows the written argument, and where the
 written argument is [GL24]'s rather than the paper's own, that is said at the
 node.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (thirteen).
+\medskip \noindent\textbf{Supply a step the paper asserts} (fourteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
 and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}, and \ref{aux-graphical}.  Each corresponds to a sentence in the paper of the
+N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, and \ref{aux-rate-floor}.
+Each corresponds to a sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All twelve are true and none is deep; what they are not is checks of
+N+1\}$''.  All fourteen are true and none is deep; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
