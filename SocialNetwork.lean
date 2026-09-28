@@ -26,6 +26,7 @@ import SocialNetwork.Minorisation
 import SocialNetwork.NonExplosion
 import SocialNetwork.Skeleton
 import SocialNetwork.Trajectory
+import SocialNetwork.Transfer
 
 /-!
 # Formalisation of arXiv:2607.19651

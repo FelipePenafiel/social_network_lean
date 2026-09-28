@@ -546,14 +546,38 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\muinv$.
 \end{theorem}
 \begin{proof}
-  \uses{thm1-2-skeleton, eq13}
+  \uses{thm1-2-skeleton, eq13, thm1-2-unique}
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
   $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
-  processes.  \textbf{Not formalised.} \ref{thm1-2-skeleton} is proved, so
-  $\muskel$ exists and is unique and the transfer is the only step left; but
-  that transfer runs through \ref{thm1-1}, so this theorem is blocked on
-  Mathlib after all.
+  processes.
+
+  \textbf{Half formalised.}  \emph{Uniqueness} is \ref{thm1-2-unique}:
+  \ref{eq13} writes any invariant probability measure of the process in terms
+  of $\muskel$, which \ref{thm1-2-skeleton} says is unique, so there is at most
+  one.  \emph{Existence is not formalised}, and it is now all that is missing.
+  It is the other direction of the correspondence --- that
+  $\muskel/\jumprate$, normalised, \emph{is} invariant for every $P_t$ --- and
+  \ref{aux-transfer} proves only the direction \ref{eq13} consumes.  A lower
+  bound on $P_t$ is enough for that direction and is not enough for this one,
+  which wants a forward equation for the semigroup; Mathlib has neither that
+  nor a jump process to state it for.
+\end{proof}
+
+\paper{Theorem 1.2}
+\begin{theorem}[At most one invariant measure]
+  \label{thm1-2-unique}
+  \lean{SocialNetwork.eq_of_invariantCts}
+  \leanok
+  \uses{eq3, aux-construction}
+  Two invariant probability measures of $(\Uproc{u}_t)_t$ carried by $\Sspace$
+  are equal.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{eq13, thm1-2-skeleton}
+  \ref{eq13} expresses each of them as the same function of $\muskel$, and
+  $\muskel$ is unique by \ref{thm1-2-skeleton}.
 \end{proof}
 
 \aux{Lemma}
@@ -712,6 +736,83 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   Lean statement drops that hypothesis.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[The jump rate on $\Sspace$, and the sum of~(13)]
+  \label{aux-rate-floor}
+  \lean{SocialNetwork.IsState.le_totalRate, SocialNetwork.tsum_div_totalRate_le}
+  \leanok
+  \uses{eq2, eq3}
+  For every $u \in \Sspace$, $\jumprate(u) \ge M$; and for every probability
+  measure $\mu$ carried by $\Sspace$,
+  \[
+    \sum_{v} \frac{\mu(v)}{\jumprate(v)} \le \frac{1}{M} .
+  \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper asserts.}  The proof of \ref{eq13} reads
+  ``since every $u \in \Sspace$ carries an actor with null social pressure, the
+  jump rate obeys $\jumprate(u) \ge M$ for all $u \in \Sspace$'', and stops
+  there.  The zero row is the second requirement of \ref{eq2}; the $M$ pairs
+  that actor carries have rate $e^{\beta \cdot 0} = 1$ each, so they alone
+  contribute $M$ to the sum of \ref{eq3}, and the other rates are positive.
+
+  The second half is what makes the right-hand side of \ref{eq13} a probability
+  measure at all, and the paper does not state it.  Off $\Sspace$ the measure
+  gives no mass, so those terms cost nothing; on $\Sspace$ each term is at most
+  $\mu(v)/M$, and $\mu$ is a probability measure.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The correspondence of p.~18, in the direction~(13) needs]
+  \label{aux-transfer}
+  \lean{SocialNetwork.firstStepKernel, SocialNetwork.firstStepKernel_apply, SocialNetwork.map_ctsPathMeasure_firstStep, SocialNetwork.ctsPathMeasure_firstStep_apply, SocialNetwork.jumpTime_mono, SocialNetwork.jumpTime_one, SocialNetwork.jumpTime_two, SocialNetwork.process_eq_of_lt_holdingTime, SocialNetwork.process_eq_of_one_jump, SocialNetwork.ctsPathMeasure_lt_holdingTime, SocialNetwork.expMeasure_Icc_zero, SocialNetwork.skeletonKernel_singleton, SocialNetwork.oneJumpSet, SocialNetwork.oneJumpPairs, SocialNetwork.oneJumpSet_eq_preimage, SocialNetwork.measurableSet_oneJumpPairs, SocialNetwork.le_ctsPathMeasure_oneJumpSet, SocialNetwork.le_transitionKernel_singleton, SocialNetwork.finsetSum_le_of_invariantCts, SocialNetwork.one_sub_exp_neg_le, SocialNetwork.mul_exp_neg_le_one_sub_exp_neg, SocialNetwork.finsetSum_rate_le, SocialNetwork.le_of_forall_singleton_le, SocialNetwork.ext_of_forall_singleton, SocialNetwork.bind_mono, SocialNetwork.rateMeasure, SocialNetwork.rateMeasure_singleton, SocialNetwork.rateMeasure_compl_stateSet, SocialNetwork.bind_skeletonKernel_le_rateMeasure, SocialNetwork.bind_iterateKernel_le, SocialNetwork.eq_of_le_of_univ_eq, SocialNetwork.rateMeasure_univ_ne_top, SocialNetwork.invariant_rateMeasure}
+  \leanok
+  \uses{eq3, def3, aux-construction, aux-minorisation}
+  If a probability measure $\mu$ carried by $\Sspace$ is invariant for every
+  $P_t$, $t \ge 0$, then $\jumprate \cdot \mu$ is a finite measure, and it is
+  invariant for the skeleton kernel of \ref{def3}.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper cites.}  This is one direction of ``a
+  probability measure is invariant for $(\Uproc{u}_t)_t$ if and only if its
+  product with the jump rate is invariant for the skeleton chain'', quoted
+  without proof at p.~18 and absent from Mathlib.
+
+  Only a \emph{lower} bound on $P_t$ is used, and the jump-hold form of
+  \ref{aux-construction} gives it outright.  By time $t$ either no jump has
+  occurred --- which leaves the process where it started --- or exactly one has;
+  the two events are disjoint, each is read off the first two holding times
+  alone, and the second factorises through the joint law of the first step and
+  the rest of the realisation.  So
+  \[
+    P_t(v,w) \;\ge\; \mathbf{1}_{\{v = w\}}\, e^{-\jumprate(v)t}
+      + \kappa(v,w)\, e^{-\jumprate(w)t}\bigl(1 - e^{-\jumprate(v)t}\bigr) .
+  \]
+  Put that into $\muinv(w) = \sum_v P_t(v,w)\muinv(v)$, keep finitely many $v$,
+  move the first term across, and bound both sides with $1 + x \le e^{x}$: after
+  dividing by $t$ what is left is
+  \[
+    e^{-(\jumprate(w) + \rho)t} \sum_{v \in F} \jumprate(v)\,\kappa(v,w)\,\mu(v)
+      \;\le\; \jumprate(w)\,\mu(w),
+  \]
+  with $\rho = \sum_{v \in F}\jumprate(v)$, and $t \to 0$ gives $\nu\kappa \le
+  \nu$ for $\nu = \jumprate \cdot \mu$.
+
+  Finiteness and equality both come from \ref{aux-minorisation}.  Iterating
+  $\nu\kappa \le \nu$ and evaluating at the canonical ladder gives $\nu(l^o) \ge
+  c\,\nu(\Sspace)$, while $\nu(l^o) = \jumprate(l^o)\mu(l^o) < \infty$, so $\nu$
+  is finite; and a finite measure that dominates its own image under a Markov
+  kernel equals it, the two having the same total mass.
+
+  \textbf{\ref{thm1-1} is not used.}  The paper's argument opens by invoking it,
+  and that appeal is discharged --- but the two events above are read off the
+  jump counter directly, whether or not the jump times accumulate afterwards.
+  Nor is any Chapman--Kolmogorov identity used: $P_s$ is never composed with
+  $P_t$.
+\end{proof}
+
 \paper{Equation (13)}
 \begin{lemma}[Transfer to continuous time]
   \label{eq13}
@@ -725,10 +826,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \]
 \end{lemma}
 \begin{proof}
-  \uses{thm1-1, def3}
-  \textbf{Not formalised, and blocked on Mathlib} --- on the correspondence it
-  cites, not on \ref{thm1-2-skeleton}, which is proved, and no longer on
-  \ref{thm1-1}, which is.  The written argument at p.~18 opens:
+  \leanok
+  \uses{def3, thm1-1, thm1-2-skeleton, aux-transfer, aux-rate-floor}
+  \textbf{Follows the paper's proof}, with the step it cites supplied at
+  \ref{aux-transfer}.  The written argument at p.~18 is:
 
   \begin{quote}
     For a non-explosive process, a probability measure is invariant for
@@ -738,22 +839,19 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
     the jump rate obeys $\jumprate(u) \ge M$ for all $u \in \Sspace$.
   \end{quote}
 
-  ``Part~1'' is \ref{thm1-1}, which is now proved, so that appeal is discharged.
-  It was not rhetorical: $P_t$ is the law of $U_t$, and $U_t$ is read off the
-  jump-hold representation through the jump counter, which returns a junk value
-  on the explosion event; until that event is known to be null the hypothesis of
-  invariance is not invariance for the semigroup the argument is about.
+  ``Part~1'' is \ref{thm1-1}, which is proved.  The bound $\jumprate \ge M$, and
+  the finiteness of $\sum_u \muskel(u)/\jumprate(u)$ that it is there for, are
+  \ref{aux-rate-floor}.  The equivalence itself the paper cites rather than
+  proves, and \ref{aux-transfer} is the direction this display consumes.
 
-  Two of the remaining steps are this repository's to do and neither is done:
-  $\jumprate(u) \ge M$ on $\Sspace$, which the null row of \ref{eq2} gives, and
-  the finiteness $\sum_u \muskel(u)/\jumprate(u) \le 1/M$ that makes the
-  right-hand side a probability measure.
+  Given those the display is arithmetic: $\jumprate \cdot \muinv$ is a finite
+  invariant measure of the skeleton, so normalising it and appealing to the
+  uniqueness of \ref{thm1-2-skeleton} identifies it with $\muskel$; inverting
+  that identification, and summing over $\Sspace$ to fix the constant, is
+  exactly the quotient displayed.
 
-  The step that carries the content is neither, and it is now the only one left:
-  the equivalence quoted above is \textbf{cited, not proved}, in the paper.  It is a standard fact about jump
-  processes, and Mathlib has no form of it.  Whether it should be a third
-  external citation, like \ref{prop12}, or an auxiliary node proved here, is a
-  question for the authors and is recorded in \texttt{FOR-THE-AUTHORS.md}.
+  Two things the Lean proof does not use: \ref{thm1-1}, for the reason recorded
+  at \ref{aux-transfer}; and the paper's $N \ge 3$.
 \end{proof}
 
 \section{Ladders, consensus, and the main estimates}
@@ -2943,17 +3041,21 @@ is the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{lem14} and \ref{lem29}, \ref{eq13} and \ref{thm1-2} through it.  Verified
+\ref{lem14} and \ref{lem29}, and the existence half of \ref{thm1-2}.  Verified
 against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
-  \item \textbf{The invariance correspondence for a jump process}: nothing.
-    That a probability measure is invariant for a non-explosive jump process
-    exactly when its product with the jump rate is invariant for the skeleton
-    chain is what \ref{eq13} cites, and the paper cites it too rather than
-    proving it.  This is now the only thing between \ref{thm1-2-skeleton}, which
-    is proved, and \ref{thm1-2}.
+  \item \textbf{The invariance correspondence for a jump process}: nothing,
+    and \emph{half of it is now supplied here}.  That a probability measure is
+    invariant for the process exactly when its product with the jump rate is
+    invariant for the skeleton chain is what \ref{eq13} cites, and the paper
+    cites it rather than proving it.  \ref{aux-transfer} proves the direction
+    \ref{eq13} consumes, from a lower bound on $P_t$ read off the jump-hold
+    representation, and \ref{eq13} is proved with it; the converse, which
+    \ref{thm1-2} needs for existence, is not, and wants a forward equation for
+    the semigroup.  The entry stays: what is proved here is about this jump
+    process, not about jump processes.
   \item \textbf{Poisson point processes}: nothing --- Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem --- and
     \emph{this list was wrong to say that \ref{thm1-1} and \ref{thm16} need
@@ -3051,15 +3153,15 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Fifty-eight proofs
+\ref{note-green}: does it follow what the paper wrote?  Sixty-four proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts fifty-nine entries.  Every one of them is named, and
+own, so it counts sixty-five entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (thirty-one). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (thirty-three). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
@@ -3068,7 +3170,8 @@ an unaudited proof, and it fails the build.
 \ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
 \ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its own biased
-twin \ref{thm16}, and \ref{rem1}, \ref{rem4}
+twin \ref{thm16}, the transfer \ref{eq13} and the uniqueness it settles,
+\ref{thm1-2-unique}, and \ref{rem1}, \ref{rem4}
 and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -3223,15 +3326,16 @@ proof of a statement of the paper follows the written argument, and where the
 written argument is [GL24]'s rather than the paper's own, that is said at the
 node.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (thirteen).
+\medskip \noindent\textbf{Supply a step the paper asserts} (fifteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
 and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}, and \ref{aux-graphical}.  Each corresponds to a sentence in the paper of the
+N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, \ref{aux-rate-floor} and
+\ref{aux-transfer}.  Each corresponds to a sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All twelve are true and none is deep; what they are not is checks of
+N+1\}$''.  All fifteen are true; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
@@ -3334,13 +3438,12 @@ In rough order of cost.
     follows by assembling them with \ref{aux-consensus-ladder}, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1} with them.
-  \item \textbf{The invariance correspondence for a jump process}, for
-    \ref{eq13} and \ref{thm1-2} through it: that a probability measure is
-    invariant for a non-explosive jump process exactly when its product with
-    the jump rate is invariant for the skeleton.  The paper cites it; Mathlib
-    does not have it.  \ref{thm1-1}, which its proof also invokes, is now
-    proved, so this is all that is left of Theorem~1.2 --- and it is the largest
-    of the three, since Mathlib has no jump process to state it for.
+  \item \textbf{The converse of \ref{aux-transfer}}, for the existence half of
+    \ref{thm1-2}: that $\muskel/\jumprate$, normalised, \emph{is} invariant for
+    every $P_t$.  \ref{eq13} is now proved and with it the uniqueness half,
+    \ref{thm1-2-unique}, so existence is all that is left of Theorem~1.2.  The
+    direction already proved needs only a lower bound on $P_t$; this one wants a
+    forward equation for the semigroup, which is a different piece of work.
   \item \textbf{The quantitative convergence of Appendix~B}, for \ref{lem14}
     and~\ref{lem29}: a Kolmogorov-type bound on the distance to
     $\mathrm{Exp}(1)$, and a usable total-variation distance to state it with.
