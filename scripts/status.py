@@ -132,15 +132,13 @@ REASONS: dict[str, tuple[str, str]] = {
 
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
-    "eq13": (
+    "thm1-2": (
         BLOCKED_ON_MATHLIB,
-        "the stationary-law transfer.  Its proof opens *For a non-explosive process*, and "
-        "that much is now Theorem 1.1; what it then invokes — that `μ` is invariant for the "
-        "process exactly when `q·μ` is invariant for the skeleton — is cited rather than "
-        "proved, and Mathlib has neither the correspondence nor the jump process to state "
-        "it for",
+        "only its existence half.  Equation (13) is proved, and with it uniqueness; what is "
+        "missing is the converse of the correspondence — that `μ̃/q`, normalised, *is* "
+        "invariant for every `P_t` — which wants a forward equation for the semigroup "
+        "rather than the lower bound on `P_t` the other direction needs",
     ),
-    "thm1-2": (BLOCKED_ON_MATHLIB, "equation (13)"),
 }
 
 
@@ -150,6 +148,7 @@ REASONS: dict[str, tuple[str, str]] = {
 # proofs, not numbered statements.
 PAPER_OVERRIDE: dict[str, str | None] = {
     "thm1-2-skeleton": "Theorem 1.2, skeleton half",
+    "thm1-2-unique": "Theorem 1.2, uniqueness half",
     "prop12-biased": "Proposition 12, biased twin",
     "aux-hitting-rate": None,
     "eq19": None,

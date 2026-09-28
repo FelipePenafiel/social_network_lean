@@ -263,11 +263,28 @@ Mathlib provides, not of what this repository happens to want.
    which is the form p. 16 argues in; that identification turned out not to be needed, and
    what Theorem 1.1 borrows from that file are two integrals.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing.  This is the live blocker, and now the only
-   one on the continuous-time side: equation (13) is what carries `μ̃^β` to `μ^β`, its written
-   proof opens *for a non-explosive process* — which Theorem 1.1 now supplies — and then
-   cites the equivalence rather than proving it.  Mathlib has no jump process to state it
-   for.
+   the jump chain and of the process.  Nothing in Mathlib, and **half of it is now supplied
+   here**.  Equation (13) is what carries `μ̃^β` to `μ^β`; its written proof opens *for a
+   non-explosive process* — which Theorem 1.1 supplies — and then cites the equivalence
+   rather than proving it.
+
+   `SocialNetwork/Transfer.lean` proves the direction equation (13) consumes, and equation
+   (13) with it (`SocialNetwork.invariantCts_eq_of_invariantSkeleton`), together with the
+   uniqueness half of Theorem 1.2 that it yields
+   (`SocialNetwork.eq_of_invariantCts`).  It needs neither a forward equation nor a
+   Chapman–Kolmogorov identity, only a *lower* bound on `P_t` that the jump-hold
+   representation gives outright: by time `t` either no jump has occurred or exactly one has,
+   the two events are disjoint and each is read off the first two holding times, so
+   `P_t(v,w) ≥ [v=w] e^{-q(v)t} + κ(v,w) e^{-q(w)t}(1 - e^{-q(v)t})`.  Feeding that into the
+   invariance equation, dividing by `t` and letting `t → 0` gives `νκ ≤ ν` for `ν = q·μ`;
+   the minorisation of p. 15 makes `ν` finite and turns the inequality into an equality.
+   Non-explosion is not used: the jump counter is read off the first two holding times
+   whatever the later ones do.
+
+   **The converse is what is still missing**, and Theorem 1.2 needs it for existence: that
+   `μ̃/q`, normalised, *is* invariant for every `P_t`.  A lower bound cannot give it.  That,
+   and the general statement for an arbitrary jump process rather than this one, are what a
+   Mathlib contribution here would be.
 8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
@@ -280,7 +297,8 @@ Mathlib provides, not of what this repository happens to want.
 Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
 continuous-time versions follow from the discrete ones through the transfer (13) and the
 control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 is
-what item 7 blocks, and nothing else does.
+what item 7 blocks, and nothing else does — and now only its existence half, equation (13)
+and the uniqueness half being proved.
 
 Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
 mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting

@@ -809,22 +809,11 @@ theorem existsUnique_invariantSkeleton (hM : 2 ≤ M) {β : ℝ} (hβ : 0 ≤ β
       IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ Kernel.Invariant (skeletonKernel β) μ :=
   existsUnique_invariant_skeletonKernel hM hβ
 
-/-- **Equation (13)**, the transfer from the skeleton to continuous time:
-
-```
-μ^β (u) = (μ̃^β (u) / q_β (u)) / ∑_{v ∈ S} (μ̃^β (v) / q_β (v)).
-```
-
-This is the correspondence that makes the two invariant measures determine each other; the
-paper notes that it is a bijection between the stationary laws of the two processes. -/
-theorem invariantCts_eq_of_invariantSkeleton (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
-    {μ μskel : Measure (Pressure N M)} (hμ : IsProbabilityMeasure μ) (hμS : IsCarriedByState μ)
-    (hμinv : IsInvariantCts β μ) (hs : IsProbabilityMeasure μskel)
-    (hsS : IsCarriedByState μskel) (hsinv : Kernel.Invariant (skeletonKernel β) μskel)
-    (v : Pressure N M) :
-    μ {v} = (μskel {v} / ENNReal.ofReal (totalRate β v)) /
-      ∑' w : Pressure N M, μskel {w} / ENNReal.ofReal (totalRate β w) := by
-  sorry
+/-! **Equation (13)**, `SocialNetwork.invariantCts_eq_of_invariantSkeleton`, is proved in
+`SocialNetwork.Transfer`: the correspondence it cites --- a probability measure is invariant
+for the process exactly when its product with the jump rate is invariant for the skeleton ---
+is proved there from a lower bound on `P_t`, and `SocialNetwork.tsum_div_totalRate_le` above
+is what makes the right-hand side of the display a probability measure. -/
 
 end Invariant
 

@@ -34,7 +34,7 @@ the requests below [GL24] has already answered.
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)`.  **Theorem 25** rests on it, and on nothing else unproved | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 — or weaken Proposition 17 and drop it from Theorem 25's route entirely |
-| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so with uniqueness it yields the *uniqueness* half of Theorem 1.2 and not existence.  Separately, its proof invokes an equivalence it cites rather than proves, so it is blocked on Mathlib as well | whether to restate it as the converse, which is what the paper actually uses |
+| [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | **now proved**, and with it the *uniqueness* half of Theorem 1.2.  But as stated it takes both `μ` and `μ̃` as given, so it cannot give existence: it presupposes that `μ` exists.  The equivalence it cites is proved here in the direction it consumes, and the converse — which is what existence needs — is not | whether to restate it as the converse, which is what the paper actually uses.  This is now the only thing between the repository and Theorem 1.2 |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
@@ -55,7 +55,7 @@ repository has already taken the only route available, and says so at the declar
 | [§5](#5-not-the-papers-fault) | **Remark 6** | its horizon is `N`, not `(M+1)N`: part 2 of Theorem 2 concludes `L`, not `L^o`, and cannot be quoted as it stands.  **Proved** outright, its route needing only the last stage of Proposition 7 |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
 | [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Stated in Lean as you state it, but weakening it would make **Theorem 25** provable without Proposition 22 |
-| [§5](#5-not-the-papers-fault) | **Theorem 1.2, for the skeleton** | **Proved**, both halves, from the criterion and your page-17 minorisation.  The existence half needs no Markov-chain theory — on a countable space the excursion measure is a sum, not a limit.  Your `ε*` becomes an explicit constant, (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass, and the Lean statement drops your `N ≥ 3`.  Theorem 1.2 in continuous time is a separate matter: it waits on equation (13) |
+| [§5](#5-not-the-papers-fault) | **Theorem 1.2, for the skeleton** | **Proved**, both halves, from the criterion and your page-17 minorisation.  The existence half needs no Markov-chain theory — on a countable space the excursion measure is a sum, not a limit.  Your `ε*` becomes an explicit constant, (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass, and the Lean statement drops your `N ≥ 3`.  Theorem 1.2 in continuous time is a separate matter: equation (13) is now proved, so its uniqueness half is too, and only existence is left |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma in Proposition 9** | the proof opens with the *identity*, which needs irreducibility, and then uses only the *inequality*, which holds for every invariant probability measure.  Nothing there waits on Theorem 1.2; the inequality is **proved** outright here |
 | [§2.11](#2-statements-that-had-to-be-changed), [§5](#5-not-the-papers-fault) | **Corollary 11** | the sentence "`τ` … independent from `(U_t^{β,u})_t`" admits a reading under which the corollary is **false**.  Under the reading your equation (19) uses — `τ` the process's own first jump time from `0` — it is true and **proved** here |
 | [§5](#5-not-the-papers-fault) | **Theorem 4, part 1** | the "strong Markov property at `T_N`" is the *simple* one: for the skeleton `T_N` is a deterministic index.  Mathlib has no strong Markov property, and none was needed.  **Proved** |
@@ -262,7 +262,7 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.2 | **Corollary 15** (and 30) | Quantifies over `l ∈ L^o` and concludes about `L^o`, so it is vacuous unless `L^o ≠ ∅`, which the paper never records. | `SocialNetwork.ladderOf` and `SocialNetwork.Bias.biasedLadderOf` supply the witnesses — the staircase itself, and the profile in which actor `a` has heard exactly `a` expressions of `o`.  Blueprint `aux-ladder-nonempty` and `aux-biased-ladder-nonempty`.  Both corollaries are now proved. |
 | 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `note-eq6`; the stronger condition is what `IsBiasedState` carries. |
 | 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `note-def4`; recorded, and the Lean definition carries it. |
-| 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed.  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what the paper uses and is not what is stated.  **Your call** whether to restate it. |
+| 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed, and now **proved** as stated, together with the uniqueness half it yields (`eq_of_invariantCts`).  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what existence needs, is what the paper uses, and is not what is stated.  **Your call** whether to restate it. |
 | 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is proved** from it.  See §3.3.  Proposition 23 is untouched. |
 | 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `aux-hitting-rate` and `eq19` — each carrying a `sorry`, and Lemma 13 is proved from them.  They were filed here as *citations from outside the paper*, which was wrong: they are steps of your own proofs of part 2 of Theorem 2 and of Corollary 11, and [GL24] writes both out at its p. 19 — the first as its equations (16)–(18), the second as its Corollary 13.  Both are now **proved**: the first along the [GL24] argument, modulo Lemmas 19 and 20; the second outright, from a restart of the continuous-time process at its first jump (§4).  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
@@ -384,6 +384,10 @@ blueprint's audit section classifies every formalised proof this way.
   step (20), which is why the two coincide here where the unbiased proof had
   `1/((M+1)N)` and `1/(2(M-1))`.  The threshold above which `ε₁ + ε₂ ≤ 1/2` is
   `β₁ = max(1, 4γ(2N³(M+1)³ + C))`.
+* **Equation (13), the correspondence.**  "A probability measure is invariant for
+  the process if and only if its product with the jump rate is invariant for the
+  skeleton chain" is cited and not proved.  The direction (13) consumes is proved
+  here from a lower bound on `P_t`; see the entry below.
 * **Equation (13), the rate floor.**  "Since every `u ∈ S` carries an actor with
   null social pressure, the jump rate obeys `q_β(u) ≥ M`" is asserted and not
   argued; and the finiteness of `∑ μ̃^β(u)/q_β(u)`, without which the
@@ -429,28 +433,50 @@ and Proposition 21 in place of Proposition 5.  Your biased low family, read off
 the pressures of (6), is the only line of the argument the two proofs do not
 share.  **Proposition 7 is now the only departure in the development.**
 
-### Equation (13) is blocked, and not on us
+### Equation (13) is proved.  What is left of Theorem 1.2 is existence
 
 Its proof opens: *"For a non-explosive process, a probability measure is
 invariant for `(U_t^{β,u})_t` if and only if its product with the jump rate is
 invariant for the skeleton chain. **Non-explosivity holds by Part 1** …"*
 
-Part 1 is Theorem 1.1, and it is now proved here, so that appeal is discharged.
-It was not rhetorical: `P_t` is the law of `U_t`, `U_t` is read off the
-jump-hold representation through the jump counter, and the counter returns junk
-on the explosion event.  Until that event is known to be null, "invariant for
-`P_t`" is not invariance for the semigroup the argument is about.
+**Equation (13) is now proved** — `SocialNetwork.invariantCts_eq_of_invariantSkeleton`,
+blueprint node `eq13` — and so is the uniqueness half of Theorem 1.2 that it
+yields, `SocialNetwork.eq_of_invariantCts`.
 
-The equivalence itself is the other half, the only one left, and the paper cites
-it rather than proving it.  Mathlib has no form of it.  Whether it should be a third external
-citation here, like Proposition 12, or a lemma proved in this repository, is a
-question for you.
+The equivalence you cite is not in Mathlib, so the direction (13) consumes is
+proved here, at `SocialNetwork.invariant_rateMeasure` (blueprint
+`aux-transfer`): if `μ` is invariant for every `P_t` then `q_β · μ` is a finite
+invariant measure of the skeleton.  The route is short and uses none of the
+theory the citation suggests.  Only a *lower* bound on `P_t` is needed, and the
+jump-hold representation gives it: by time `t` either no jump has occurred or
+exactly one has, the two events are disjoint and each is read off the first two
+holding times, so
 
-The two remaining steps were ours to do, and both are now done: `q_β(u) ≥ M`
-on `S`, which the null row of (2) gives, and the finiteness
-`∑ μ̃^β(u)/q_β(u) ≤ 1/M` that makes the right-hand side a probability measure
-at all.  They are `SocialNetwork.IsState.le_totalRate` and
-`SocialNetwork.tsum_div_totalRate_le`, blueprint node `aux-rate-floor`.
+```
+P_t (v, w) ≥ [v = w] e^{-q(v)t} + κ(v, w) e^{-q(w)t} (1 - e^{-q(v)t}).
+```
+
+Putting that into the invariance equation, dividing by `t` and letting `t → 0`
+gives `νκ ≤ ν` for `ν = q_β · μ`; your page-15 minorisation then makes `ν`
+finite — `ν(l^o) ≥ c ν(S)` with `ν(l^o) < ∞` — and a finite measure dominating
+its own image under a Markov kernel equals it.
+
+Two things worth saying about that route.  **It does not use Theorem 1.1.**
+Your appeal to it is discharged, since Part 1 is proved here; but the two events
+above are read off the jump counter directly, whether or not the jump times
+accumulate afterwards, so non-explosion never enters.  And **it does not use any
+Chapman–Kolmogorov identity**: `P_s` is never composed with `P_t`.
+
+The two small steps that were ours are also done: `q_β(u) ≥ M` on `S`, which the
+null row of (2) gives, and the finiteness `∑ μ̃^β(u)/q_β(u) ≤ 1/M` that makes the
+right-hand side a probability measure at all — `SocialNetwork.IsState.le_totalRate`
+and `SocialNetwork.tsum_div_totalRate_le`, blueprint node `aux-rate-floor`.
+
+**What is still missing is the converse**, and it is exactly the restatement
+§2.5 asks you about: that `μ̃^β/q_β`, normalised, *is* invariant for every
+`P_t`.  That is what existence in Theorem 1.2 needs, and a lower bound on `P_t`
+cannot give it — it wants a forward equation for the semigroup.  Theorem 1.2 is
+now blocked on that alone.
 
 ### Theorem 1.2 for the skeleton, and two remarks on your page 17
 
