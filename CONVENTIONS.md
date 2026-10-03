@@ -41,8 +41,11 @@ bypasses the paper's argument is a check not performed. A departure of the secon
 is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemmas 19
 and 20.
 
-There is one such departure in the repository at present: **Proposition 7**, written
-out at the declaration and in `FOR-THE-AUTHORS.md` §1.4.
+There are two such departures in the repository at present: **Proposition 7** and
+**Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§1.4 and 1.7;
+**Lemma 29**, which Appendix C proves "as Lemma 14", inherits the second.  Both keep the
+paper's own estimates, at the places the paper applies them and with its constants; what
+changes is how they are put together, because the written composition does not hold.
 
 **Theorem 1.1 and Theorem 16 are no longer among them.** arXiv:2607.19651 asserts the
 sandwich (11) rather than constructing it, but [GL24] pp. 12–14 constructs it in full,
@@ -71,8 +74,9 @@ That records a theorem and loses the finding, which is the one thing this develo
 produces that a reader of the paper does not already have. So the proof is written out
 in full on the paper's own ingredients, it inherits `sorryAx` from the step that fails,
 and the alternative route is described in `FOR-THE-AUTHORS.md` for the authors to take
-or leave. Theorem 25 is the case to look at: Proposition 17 does give the box Appendix C
-takes from Proposition 22, and the node is deliberately not closed that way.
+or leave. Proposition 7 is the case to look at: it is written out in full on Lemmas 19
+and 20 and inherits `sorryAx` from them, and the repairs the blueprint records for those
+two are deliberately not adopted.
 
 **A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
 same estimates, applied at the same places and with the same constants, but arranges them

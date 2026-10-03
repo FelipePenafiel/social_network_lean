@@ -33,7 +33,6 @@ the requests below [GL24] has already answered.
 |---|---|---|---|
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
-| [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | does not follow from Proposition 6.  The transported bound is `N - 1 + 1/(2γ)`, below `N` only for `γ ≥ 1/2`, and here `γ < 1/(M-1)`.  **Theorem 25** rests on it, and on nothing else unproved | either a proof using the feedback `u(a,p) ≤ nₐ`, or the weaker constant `N + 1/(2γ)` carried through Propositions 23 and 17 — or weaken Proposition 17 and drop it from Theorem 25's route entirely |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
@@ -41,6 +40,8 @@ repository has already taken the only route available, and says so at the declar
 
 | | Statement | What was found |
 |---|---|---|
+| [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | **Withdrawn.**  This file reported that it does not follow from Proposition 6; that came from reading your slack `½γ` as `1/(2γ)`.  With `½γ` it follows exactly as you say, and it is **proved** — and **Theorem 25** with it, by your route |
+| [§1.7](#1-proofs-that-do-not-survive-formalisation) | **Lemma 14** | Appendix B multiplies a bound on `τ₁⁻ᵒ` by one on `τ₂⁻ᵒ` conditioned on `τ₁⁻ᵒ ≥ t`, through a conditioning on an event that involves the interval being bounded.  Your rates compose without it, by a first-step induction, with your constant.  **Proved**, and **Lemma 29** with it, as Appendix C says |
 | [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemmas 19 and 20 |
 | [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemmas 19 and 20 |
 | [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | the biased twin of Lemma 13, so it inherits Lemma 13's two missing displays in biased form |
@@ -48,12 +49,12 @@ repository has already taken the only route available, and says so at the declar
 | [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
 | [§2.3](#2-statements-that-had-to-be-changed) | **Equation (6)** | the second condition is not stable under `π_α^{a,o}`, though your justification for it proves a stronger one that is |
 | [§2.4](#2-statements-that-had-to-be-changed) | **Definition 4** | needs a sign condition to be the set the proofs use |
-| [§2.6](#2-statements-that-had-to-be-changed), [§3.3](#3-the-two-axioms) | **Theorem 31** | its route needs a biased Proposition 12, which the paper does not state.  Declared as a second axiom; Theorem 31 is **proved** from it |
+| [§2.6](#2-statements-that-had-to-be-changed), [§3.3](#3-the-two-axioms) | **Theorem 31** | its route needs a biased Proposition 12, which the paper does not state.  Declared as a second axiom; Theorem 31 is written out from it, and rests on Lemma 28 besides |
 | [§2.8](#2-statements-that-had-to-be-changed) | **Proof of Lemma 13** | `τ` is exponential of mean `1/(MN)`, so `P(τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`.  Harmless — the written form is the weaker one |
 | [§3](#3-the-two-axioms) | **Proposition 12, twice** | it is Theorem 5.3 of [LM22], not a result of this paper, and cannot be stated once for both models without becoming inconsistent |
 | [§5](#5-not-the-papers-fault) | **Remark 6** | its horizon is `N`, not `(M+1)N`: part 2 of Theorem 2 concludes `L`, not `L^o`, and cannot be quoted as it stands.  **Proved** outright, its route needing only the last stage of Proposition 7 |
 | [§2.10](#2-statements-that-had-to-be-changed) | **Proposition 9** | the statement quantifies over `u ∉ L̂` with no other hypothesis, but its proof calls Proposition 7, which is stated on `S` | `IsState u` added.  The paper works in `S` throughout |
-| [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Stated in Lean as you state it, but weakening it would make **Theorem 25** provable without Proposition 22 |
+| [§5](#5-not-the-papers-fault) | **Proposition 17** | its proof needs no hypothesis on `α`, only `γ > 0`; the `α < 0` in the statement is where Section 5.4 uses it.  Stated in Lean as you state it |
 | [§2.5](#2-statements-that-had-to-be-changed) | **Equation (13)** | as stated it takes both `μ` and `μ̃` as given, so it yields the *uniqueness* half of Theorem 1.2 and presupposes existence.  Existence is the converse of the equivalence it cites, which is what the paper uses.  **Both directions are proved** here, and Theorem 1.2 with them; restating (13) as the converse would make the statement say what is used, and nothing waits on it |
 | [§5](#5-not-the-papers-fault) | **Theorem 1.2, for the skeleton** | **Proved**, both halves, from the criterion and your page-17 minorisation.  The existence half needs no Markov-chain theory — on a countable space the excursion measure is a sum, not a limit.  Your `ε*` becomes an explicit constant, (12) is proved from *any* matrix, which is what lets the minorising measure be a single Dirac mass, and the Lean statement drops your `N ≥ 3`.  Theorem 1.2 in continuous time is now **proved** as well: equation (13) gives its uniqueness half, and the converse of the equivalence (13) cites gives existence |
 | [§5](#5-not-the-papers-fault) | **Kac's lemma in Proposition 9** | the proof opens with the *identity*, which needs irreducibility, and then uses only the *inequality*, which holds for every invariant probability measure.  Nothing there waits on Theorem 1.2; the inequality is **proved** outright here |
@@ -64,16 +65,19 @@ repository has already taken the only route available, and says so at the declar
 
 ## 1. Proofs that do not survive formalisation
 
-Three written proofs do not compose — §§1.1–1.3.  Each is left unproved on
+Two written proofs do not compose — §§1.1–1.2.  Each is left unproved on
 purpose.  A repair is new mathematics and is yours to write, not the
-formalisation's to guess.
+formalisation's to guess.  A third, Proposition 22 (§1.3), stood here because of
+this repository's own misreading, and is withdrawn.
 
-Three more belong here for different reasons.  **Proposition 7** (§1.4) composes
+Four more belong here for different reasons.  **Proposition 7** (§1.4) composes
 only along a different route; the missing step turned out to be avoidable, so it
-is proved, but you should know the written route does not run.  **Lemma 28**
+is proved, but you should know the written route does not run.  **Lemma 14**
+(§1.7) is of the same kind: its estimates are right and their written
+composition is not, so it is proved along another, with your constant.  **Lemma 28**
 (§1.5) is blocked one level up, on ingredients Lemma 13 needs that the paper
 displays inside proofs rather than states.  And **Proposition 9** (§1.6) stood
-here as a fourth item needing a decision, for one clause of one sentence; it does
+here as an item needing a decision, for one clause of one sentence; it does
 not any more, because [GL24] states that clause as its Corollary 8.
 
 ### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
@@ -101,44 +105,30 @@ to `0`, and at the terminal `k` the bound is negative.
 `max (0, n(u) + r - (k+1)/(M-1))` together with a staircase mechanism that
 replenishes the witnesses, again as a proposal to check.
 
-### 1.3 Proposition 22 — does not follow from Proposition 6
+### 1.3 Proposition 22 — withdrawn
 
-*Blueprint:* `note-prop22`. *Lean:* `SocialNetwork.Bias.entry_mem_of_nearGreedy`.
+*Blueprint:* `note-prop22`, `prop22`. *Lean:* `SocialNetwork.Bias.entry_mem_of_nearGreedy`,
+**proved**.
 
-Appendix C says only that "the proof of Propositions 22, 23 and 24 follows as the
-proofs of Propositions 6, 7 and 8".  For Proposition 24 that holds.  For
-Proposition 22 it does not.
+An earlier version of this file told you that Proposition 22 does not follow from
+Proposition 6: in the repeat case the near-greedy event leaves a slack at the
+repeat time, and the chain ended at `N - 1 + 1/(2γ)`, not below `N` for
+`γ < 1/(M-1)`.  **That was this repository's error, not yours.**  Your
+Appendix C writes the slack as `½γ` — in Remark 7, in
+`ζ_{α,β} = e^{βγ/2}/(e^{βγ/2} + MN)`, and in the exponents `e^{-βγ/2}` of
+Lemmas 28 and 29 and Corollary 30 — and the repository had transcribed it as
+`1/(2γ)` throughout.  With `½γ` the chain ends at `N - 1 + ½γ < N`, and
+Proposition 22 follows from Proposition 6 exactly as you say.  It is proved,
+and Theorem 25 with it, by the route you prescribe.
 
-Proposition 6 splits on whether the first `N` expressions come from distinct
-actors.  The distinct case transports unchanged.  In the repeat case an actor
-expressing at steps `j < k < N` has heard `k - j - 1` expressions at step `k`, and
-*exact* greediness makes its entry the maximum of the whole matrix, so the matrix
-is capped at `(k - j - 1) + (N - k) = N - j - 1 ≤ N - 1`.
+Two details of the proof, neither a decision.  The lower bound `-MN` comes from
+the row sums, which equation (6) makes `(M-1) α nₐ ≥ 0` rather than `0`, so it
+uses `α > 0`; and, as in Proposition 6, the passage from the bound at the repeat
+time to the bound at step `N` is carried out explicitly.
 
-Under `ξ̃` the expressed pair is only within `1/(2γ)` of the maximum, so the same
-chain gives `N - 1 + 1/(2γ)`, which is below `N` only when `γ ≥ 1/2`.  Here
-`γ = 1/(M-1) - α` with `α > 0`, so `γ < 1/(M-1)`: **the transported bound never
-reaches `N` for any `M ≥ 3`.**
-
-The statement is not obviously false.  Since `u (a, p) ≤ nₐ`, the slack is
-self-correcting: a large maximum forces an actor that has heard a lot to express,
-and expressing resets it.  A run from `n = (0,1,2)` with `M = N = 3` and `γ = 1/4`
-climbs to `3` after two expressions and is pushed back to `2` by the third,
-because the only pair within `1/(2γ) = 2` of the maximum belongs to the actor
-carrying it.
-
-**Decision for you:** either a proof that uses that feedback — Proposition 6's
-chain never looks past step `k`, so it cannot supply one — or a weaker constant.
-`N + 1/(2γ)` would do: Propositions 23 and 17 only need a bound depending on
-`α`, `M` and `N`.  If you take the weaker constant, it has to be carried through
-those two statements.
-
-*The contrast is sharp, and worth having in front of you.*  **Proposition 17 is
-now proved**, and its deterministic half is the same two-case argument over the
-same quantity `nₐ`.  It closes because its event `ξ` is *exact* greediness: the
-maximum at the repeat time is the expressing actor's own entry, and there is
-nothing to absorb.  Proposition 22 differs from it only by the slack, and that
-is precisely what the argument cannot carry.
+The suggestions this section used to make — a proof using the feedback
+`u(a,p) ≤ nₐ`, a weaker constant, or weakening Proposition 17 — are withdrawn
+with it.
 
 ### 1.4 Proposition 7 — the written route needs a step that is not there
 
@@ -189,15 +179,16 @@ stability lemma or to restate Proposition 7's proof along the shorter route.
 
 *Blueprint:* `lem28`. *Lean:* `SocialNetwork.Bias.biasedProbHitting_le`.
 
-Lemma 28 is Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and Appendix C gives
+Lemma 28 is Lemma 13 with `1/((M+1)N)` replaced by `½γ`, and Appendix C gives
 it no proof of its own.  Lemma 13's proof runs on two inequalities the paper
 displays inside proofs and never states (§2.7); the biased proof needs those two
 in biased form, and they are not in the paper either.
 
 So Lemma 28 is unproved not because its own argument fails but because the
 argument it is told to copy rests on statements that do not exist.  Once §2.7 is
-settled the same two transcriptions serve here, and its remaining ingredients —
-Propositions 22 and 23 — are §1.3.
+settled the same two transcriptions serve here.  Of its remaining ingredients,
+Proposition 22 is proved (§1.3) and Proposition 23 waits on biased analogues of
+Lemmas 19 and 20.
 
 The Lean statement was also wrong, and that was a fault of this repository rather
 than of the paper; it is now restated in the paper's own form.  See §2.9.
@@ -249,6 +240,61 @@ and it is stated on one realisation.  **Proved**; Proposition 9 now rests only o
 Lemmas 19 and 20, through Proposition 7.  [`GL24.md`](GL24.md) §2.1 records how
 it was found.
 
+### 1.7 Lemma 14 — the conditioning of Appendix B
+
+*Blueprint:* `lem14`, `note-lem14`. *Lean:* `SocialNetwork.le_probHittingGT_consensusOther`,
+`SocialNetwork.probHittingLE_consensusOther_le`, **proved**; and
+`SocialNetwork.Bias.le_biasedProbHittingGT`, `SocialNetwork.Bias.biasedProbHittingLE_le`
+for Lemma 29, **proved**.
+
+The mechanism of Appendix B is right, and so are its estimates: from `L^o` the
+process stays in `L̂^o` until an opinion `p ≠ o` is expressed; against a negative
+pressure that is a failure, at rate at most `NM e^{-β/(M-1)}`; by the null row it
+opens a block in `Ĉ^o`, at rate at most `NM`, and the block returns to `L^o`
+unless it is not greedy, which has probability at most `1 - ζ_β^{len}` by
+Proposition 8 and Remark 4.
+
+What does not hold together is the composition.  The proof bounds
+`P(τ₁⁻ᵒ ≥ t)` and `P(τ₂⁻ᵒ ≥ t | τ₁⁻ᵒ ≥ t)` and multiplies.  The second is reached
+through
+
+> `P(T_{n_j} - T_{n_{j-1}} > t | τ₁⁻ᵒ ≥ T_{n_j}) ≥ P(E_j ≥ t)`
+
+and a geometric number `G` of the `E_j`, taken independent of them.  Neither step
+is argued, and the first conditions on an event that involves the interval it
+bounds: asking that no negative expression occur before `T_{n_j}` favours short
+intervals, which is the wrong direction for a lower bound.  The rate bounds the
+text appeals to give domination conditionally on the past, not conditionally on
+that event.
+
+**What was done.**  The same rates are composed by a first-step comparison with an
+exponential clock, by induction on the number of jumps.  A state is in phase `0`
+if it lies in `L̂^o`, and in phase `j ≥ 1` if it lies in `Ĉ^o ∪ C^o` and `j`
+greedy expressions take it to `L̂^o`; from phase `j`, `C^{-o}` is avoided before
+`min(t, T_n)` with probability at least `ζ_β^j e^{-Λt}`, with your
+`Λ = 2N³(M+1)³e^{-β/(M-1)}`.  The two failure modes are handled at once, so no
+conditioning between them is needed, and the constant is yours.
+
+Two smaller differences, neither costing anything.  A block is the `N`
+expressions of the last stage of Proposition 7 rather than all `(M+1)N` — that
+stage is all a block uses, and it does not rest on Lemmas 19 and 20 — which only
+shortens the constant; Remark 6 makes the same choice.  And Theorem 1.1 is not
+used: "not reached before `min(t, T_n)`" decreases to "not reached before `t`"
+whether or not the jump times accumulate.
+
+**Lemma 29 follows as Lemma 14**, as Appendix C says, with Proposition 24 in place
+of Proposition 8.  Two steps the slack `½γ` changes are supplied: in `C_α^o` a
+positive pressure for `o` is at least `(1+γ)/2` — the row is ahead of each other
+opinion by a positive multiple of `1 + γ`, and the row sums of (6) are
+`(M-1) α nₐ ≥ 0` — so a near-greedy expression expresses `o`; and since `½γ < 1`,
+a near-greedy run in a block comes from `N` distinct actors and lands on `L_α^o`.
+`Ĉ_α^o` is your `Ĉ^o` with the bound on the other opinions lowered from `1` to
+`1 - ½γ`.
+
+**Nothing here needs a decision.**  It is recorded because the written proof
+asserts a conditioning that does not follow, and you may want to restate it
+along the induction.
+
 ---
 
 ## 2. Statements that had to be changed
@@ -263,10 +309,10 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.3 | **Equation (6)** | The second condition is not stable under `π_α^{a,o}`, though the justification the paper gives for it proves a stronger condition that is. | Blueprint `note-eq6`; the stronger condition is what `IsBiasedState` carries. |
 | 2.4 | **Definition 4** | Needs a sign condition to be the set the proofs use. | Blueprint `note-def4`; recorded, and the Lean definition carries it. |
 | 2.5 | **Equation (13)**, the transfer | The statement takes *both* `μ` and `μ̃` as given and concludes the formula.  Combined with uniqueness for the skeleton it yields the **uniqueness** half of Theorem 1.2 — but not existence, since it presupposes that `μ` exists. | Not changed, and **proved** as stated, together with the uniqueness half it yields (`eq_of_invariantCts`).  The converse direction — "the measure defined by (13) from `μ̃` is invariant for the semigroup" — is what existence needs and what the paper uses, and is not what is stated; it is **proved** too (`ctsOfSkeleton_spec`), so Theorem 1.2 is.  Whether to restate (13) is your call, and nothing waits on it. |
-| 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is proved** from it.  See §3.3.  Proposition 23 is untouched. |
+| 2.6 | **Theorem 31** | Its route needs a biased analogue of Proposition 12, which the paper does not state: Proposition 12 is over `Pressure N M` and Theorem 31 lives over `Profile N M`.  Proposition 23 likewise has no biased analogues of Lemmas 19 and 20 to assemble from. | The analogue is now declared as a second axiom and **Theorem 31 is written out** from it; it rests on Lemma 28 besides.  See §3.3.  Proposition 23 is untouched. |
 | 2.7 | **Lemma 13** | Its proof rests on two inequalities the paper displays but never states: the bound on `P (R^{β,u} (L) > t)` inside the proof of part 2 of Theorem 2, and equation (19), which reads Corollary 11 quantitatively.  Theorem 2.2 and Corollary 11 are *both* stated only as limits, and a limit has thrown the rate away, so **Lemma 13 does not follow from the numbered statements it cites**. | The two displays are transcribed verbatim as Lean statements of their own — `probHittingGT_ladderSet_le_of_ne_zero` and `probHittingGT_ladderSet_zero_le`, blueprint `aux-hitting-rate` and `eq19` — each carrying a `sorry`, and Lemma 13 is proved from them.  They were filed here as *citations from outside the paper*, which was wrong: they are steps of your own proofs of part 2 of Theorem 2 and of Corollary 11, and [GL24] writes both out at its p. 19 — the first as its equations (16)–(18), the second as its Corollary 13.  Both are now **proved**: the first along the [GL24] argument, modulo Lemmas 19 and 20; the second outright, from a restart of the continuous-time process at its first jump (§4).  **Your call** whether either should become a numbered statement of the paper. |
 | 2.8 | **Proof of Lemma 13**, the term `P (τ > β)` | `τ` is declared exponential of mean `1/(MN)`, for which `P (τ > β) = e^{-MNβ}`; the proof writes `e^{-β/(MN)}`. | Harmless, and no decision needed: `e^{-MNβ} ≤ e^{-β/(MN)}` for `β ≥ 0`, so the written form is the weaker of the two and Lemma 13 follows from either.  The Lean statement uses the written form, so it assumes the weaker one. |
-| 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `1/(2γ)`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
+| 2.9 | **Lemma 28**, as formalised | The Lean statement was about the skeleton path measure and the discrete steps `k ≤ ⌈2β⌉`, not the continuous-time hitting time `R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant could depend on both.  It therefore could not serve as (16) for the biased Proposition 12, which is what the lemma exists for. | Restated in the shape of Lemma 13 with `1/((M+1)N)` replaced by `½γ`, and `C` quantified in front.  **A formalisation-side correction, not a correction to the paper** — the paper's display was right all along. |
 | 2.10 | **Proposition 9** | The statement quantifies over `β > 0` and `u ∉ L̂`, with no hypothesis on `u` beyond that; its proof calls Proposition 7, which is stated for `u ∈ S`, and the whole paper works in `S`. | `IsState u` added to the Lean statement.  Also stated for an *arbitrary* invariant probability measure of the skeleton rather than for a named `μ̃^β`, since its existence is Theorem 1.2 — which, with Kac's inequality in place of Kac's identity, Proposition 9 no longer needs. |
 | 2.11 | **Corollary 11**, as formalised | The Lean statement rendered "`τ` exponential of mean `1/(MN)`, independent from `(U_t^{β,u})_t`" as a supremum over `s ≥ 0` of `e^{-MNs} · P(R^{β,0}(L) > s + ε_β)`.  Its `s = 0` term is `P(R^{β,0}(L) > ε_β)` at weight `1`, which tends to **one**, so the statement was **false**. | Restated as `P(R^{β,0}(L) > T₁ + ε_β) → 0` with `T₁` the process's own first jump time — `probHittingGTAfterFirstJump` — which from `0` is exponential of mean `1/(MN)` (`totalRate_zero`, now proved).  **A formalisation-side correction, not a correction to the paper.**  But see the reading below: your `τ` has to be `T₁`, and the sentence can be read otherwise. |
 
@@ -373,17 +419,24 @@ blueprint's audit section classifies every formalised proof this way.
   `1 + (M+1)N ≤ (M+1)N²`, true since `N ≥ 3`.  It is tight enough to be worth
   writing down: the greedy term alone already uses `M(M+1)N²` of the `(M+1)²N²`
   available.
+* **Lemma 14.**  That the expression of `p ≠ o` by the null row "leads the
+  process to `Ĉ^o`": the others lose `1/(M-1)` towards `o`, which keeps them
+  non-negative, and gain `1` towards `p`, which keeps them below `1`; with
+  `N ≥ 3` one of them still carries at least `1` for `o`.
+* **Lemma 29.**  The two steps the slack changes, at §1.7.
+* **Proposition 22.**  As at Proposition 6, the passage from the repeat time to
+  the bound at step `N` is carried out explicitly.
 * **Corollary 30.**  Appendix C gives it as "the rearrangement of Corollary 15
-  with `1/(M-1)` replaced by `1/(2γ)`", and it is exactly that; the Lean proof is
+  with `1/(M-1)` replaced by `½γ`", and it is exactly that; the Lean proof is
   Corollary 15's, transposed.
 * **Theorem 31.**  Appendix C says only "the proof follows exactly as the proof of
   Theorem 3", and names none of the constants.  The four taken here are what
-  Section 5.3 produces with `1/(2γ)` in place of `1/(M-1)`: `s₁ = 1`,
-  `ε₁ = 2N³(M+1)³e^{-β/(2γ)}`, `s₂ = 2β`, `ε₂ = Ce^{-β/(2γ)}` with `C` from
-  Lemma 28, and `δ = θ = 1/(4γ)` — the exponent halved to absorb the factor `β` of
+  Section 5.3 produces with `½γ` in place of `1/(M-1)`: `s₁ = 1`,
+  `ε₁ = 2N³(M+1)³e^{-βγ/2}`, `s₂ = 2β`, `ε₂ = Ce^{-βγ/2}` with `C` from
+  Lemma 28, and `δ = θ = γ/4` — the exponent halved to absorb the factor `β` of
   step (20), which is why the two coincide here where the unbiased proof had
   `1/((M+1)N)` and `1/(2(M-1))`.  The threshold above which `ε₁ + ε₂ ≤ 1/2` is
-  `β₁ = max(1, 4γ(2N³(M+1)³ + C))`.
+  `β₁ = max(1, (4/γ)(2N³(M+1)³ + C))`.
 * **Equation (13), the correspondence.**  "A probability measure is invariant for
   the process if and only if its product with the jump rate is invariant for the
   skeleton chain" is cited and not proved.  Both directions are proved here: the
@@ -402,12 +455,12 @@ blueprint's audit section classifies every formalised proof this way.
 
 ## 5. Not the paper's fault
 
-Unproved because Mathlib has no theory of the object, not because anything in
-the paper is wrong:
+Nothing is unproved here any more because Mathlib lacks a theory.
 
-* **Appendix B's continuous-time analysis** — Lemma 14 and Lemma 29: a
-  Kolmogorov-type bound on the convergence to `Exp(1)`, and total-variation
-  distance.
+**Lemmas 14 and 29 were the last on this list**, filed as needing a
+Kolmogorov-type bound on the convergence to `Exp(1)` and a total-variation
+distance.  Appendix B uses neither — it compares exponential clocks — and both
+lemmas are proved (§1.7).
 
 `blueprint/blueprint.md` is the engineering audit of what Mathlib does and does
 not provide, checked against the pinned revision.
@@ -432,7 +485,8 @@ state each pair leads to, a distinguished family, and a bound `λ` on the rate i
 carries — so the biased model instantiates the same theorem with the rates of (7)
 and Proposition 21 in place of Proposition 5.  Your biased low family, read off
 the pressures of (6), is the only line of the argument the two proofs do not
-share.  **Proposition 7 is now the only departure in the development.**
+share.  **Proposition 7 and Lemma 14 are the departures in the development**
+(§§1.4 and 1.7), and Lemma 29 inherits the second.
 
 ### Equation (13) and Theorem 1.2 are proved, and so is the equivalence they cite
 
@@ -532,29 +586,17 @@ no hypothesis on where they start.  That is what lets the minorising measure be
 a single Dirac mass, which is what the criterion consumes; it is worth stating
 that way if you revise.
 
-### Theorem 25 rests on Proposition 22, and need not
+### Theorem 25 is proved, by your route
 
 Your Appendix C says the proof "follows exactly as the proof of Theorem 1", and
 the proof of Theorem 1 part 2 puts together Propositions 6 and 8; transported,
-those are Propositions 22 and 24.  Proposition 24 is proved here.  Proposition
-22 is §1.3 above and does not compose, so the minorisation and Theorem 25 carry
-a `sorry` through it — every other step in them is proved, so **one repair of
-Proposition 22 closes Theorem 25 outright**.
+those are Propositions 22 and 24.  Both are proved here, so Theorem 25 is, along
+exactly that route.
 
-**There is a second way out, and it is cheaper.**  A Doeblin minorisation needs
-*a* box, not your constant, and **Proposition 17 gives one in any regime**: its
-proof uses no hypothesis on `α` at all, only `γ > 0`.  The `α < 0` in its
-statement is the regime Section 5.4 applies it in, not one the argument needs.
-Stating Proposition 17 for `γ > 0` costs you nothing and makes Theorem 25 follow
-from it with no appeal to Proposition 22 at all.
-
-That route needs one step that appears in no version of your paper, which is why
-it is described here rather than formalised: Proposition 17 bounds the pressures
-from above and the rates need both sides, and for `γ < 1/(M-1)` the one gives the
-other — some opinion carries at least `nₐ/M` of what the actor heard, so a cap on
-the pressures caps `nₐ`, and `u(a,p) ≥ -γ nₐ`.  Lean is checking your arguments
-here, not only your statements, so the mathematics is offered and the decision is
-yours.
+An earlier version of this file proposed avoiding Proposition 22 by weakening
+Proposition 17, whose proof uses only `γ > 0`.  That is no longer needed.  The
+observation about Proposition 17 stands and costs nothing to state if you revise,
+but nothing depends on it.
 
 ### Proposition 9: the identity needs irreducibility, the inequality does not
 

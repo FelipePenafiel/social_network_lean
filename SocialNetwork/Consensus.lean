@@ -87,41 +87,53 @@ theorem opinion_eq_of_isMax (hv : IsConsensus o v) {b : Actor N} {p : Opinion M}
   have h2 := hmax a o
   omega
 
-/-- Consensus is preserved along a greedy trajectory, for as long as the trajectory is
-greedy.
+/-- What the last step of Proposition 7 uses of the set `P` it starts from, and nothing else:
+its states lie in `S` and carry a non-negative `o`-column, a maximising pair of any of them lies
+in column `o`, and expressing `o` keeps a state in `P`.
 
-The horizon is arbitrary rather than `N`: the assembly of Proposition 7 needs the consensus
-carried from the time Lemma 20 delivers it up to `MN`, and that gap is not `N`. -/
-theorem isConsensus_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v) {m : ℕ}
-    (hg : ∀ k, k < m → IsGreedyAt T v k) :
-    ∀ k, k ≤ m → IsConsensus o (T.state v k) := by
+`C^o` is such a set (`SocialNetwork.isSweepable_consensus`), and so is the extended consensus
+set `Ĉ^o` that Appendix B of the paper returns through, which is not contained in `C^o`.  The
+three stages of the module docstring use these four properties alone. -/
+structure IsSweepable (P : Pressure N M → Prop) (o : Opinion M) : Prop where
+  isState : ∀ ⦃v⦄, P v → IsState v
+  nonneg : ∀ ⦃v⦄, P v → ∀ a, 0 ≤ v a o
+  opinion_eq : ∀ ⦃v⦄, P v → ∀ ⦃b : Actor N⦄ ⦃p : Opinion M⦄, (∀ a q, v a q ≤ v b p) → p = o
+  express : ∀ ⦃v⦄, P v → ∀ a, P (SocialNetwork.express a o v)
+
+namespace IsSweepable
+
+variable {P : Pressure N M → Prop}
+
+/-- `P` is preserved along a greedy trajectory, for as long as the trajectory is greedy. -/
+theorem state (hP : IsSweepable P o) (hv : P v) {m : ℕ}
+    (hg : ∀ k, k < m → IsGreedyAt T v k) : ∀ k, k ≤ m → P (T.state v k) := by
   intro k
   induction k with
   | zero => intro _; rw [T.state_zero]; exact hv
   | succ k ih =>
       intro hk
       have hck := ih (by omega)
-      have hop : T.opinion k = o := opinion_eq_of_isMax hck (hg k (by omega))
+      have hop : T.opinion k = o := hP.opinion_eq hck (hg k (by omega))
       rw [T.state_succ, hop]
-      exact hck.express hM hN _
+      exact hP.express hck _
 
-/-- Every one of the first `N` greedy expressions expresses the consensus opinion. -/
-theorem opinion_eq_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+/-- Every one of the first `N` greedy expressions expresses `o`. -/
+theorem opinion_eq_of_greedy (hP : IsSweepable P o) (hv : P v)
     (hg : ∀ k, k < N → IsGreedyAt T v k) {k : ℕ} (hk : k < N) : T.opinion k = o :=
-  opinion_eq_of_isMax (isConsensus_state T hM hN hv hg k (le_of_lt hk)) (hg k hk)
+  hP.opinion_eq (hP.state T hv hg k (le_of_lt hk)) (hg k hk)
 
-/-- No actor expresses twice among the first `N` greedy expressions from a consensus state.
+/-- No actor expresses twice among the first `N` greedy expressions.
 
 This is the argument of Proposition 5: an actor that already expressed carries too little
 pressure to be the maximum, because some actor has not expressed at all and has been
-accumulating pressure for the consensus opinion the whole time. -/
-theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+accumulating pressure for `o` the whole time. -/
+theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hP : IsSweepable P o) (hv : P v)
     (hg : ∀ k, k < N → IsGreedyAt T v k) {j k : ℕ} (hjk : j < k) (hk : k < N) :
     T.actor j ≠ T.actor k := by
   intro hEq
   have hMpos : (0 : ℤ) < (M : ℤ) - 1 := one_lt_of_two_le hM
   have hop : ∀ l, l < N → T.opinion l = o := fun l hl =>
-    opinion_eq_of_greedy T hM hN hv hg hl
+    hP.opinion_eq_of_greedy T hv hg hl
   -- an actor that has not expressed before step `k`
   obtain ⟨b, hb⟩ : ∃ b : Actor N, ∀ i, i < k → T.actor i ≠ b := by
     have hex : ∃ b : Actor N, b ∉ (Finset.range k).image fun i => T.actor i := by
@@ -144,7 +156,7 @@ theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus
   rw [Nat.zero_add, T.state_zero] at hb1
   have hbge : (k : ℤ) * ((M : ℤ) - 1) ≤ T.state v k b o := by
     rw [hb1]
-    have := hv.nonneg b
+    have := hP.nonneg hv b
     linarith
   -- the actor expressing at step `k` expressed already at step `j`, so its row is small
   have hzero : rowSup (T.state v (j + 1)) (T.actor j) = 0 :=
@@ -160,17 +172,14 @@ theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus
   have hmul := mul_lt_mul_of_pos_right hcast hMpos
   linarith
 
-/-- **The last step of Proposition 7.** Starting from a consensus state for `o`, `N` greedy
-expressions land the process exactly on a ladder supporting `o`.
-
-**No counterpart in the paper**: Proposition 7 closes with "by definition", and it is not
-by definition — see the module docstring. -/
-theorem isLadder_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+/-- **The last step of Proposition 7, for any sweepable set.**  `N` greedy expressions from a
+state of `P` land exactly on a ladder supporting `o`. -/
+theorem isLadder_state (hM : 2 ≤ M) (hP : IsSweepable P o) (hv : P v)
     (hg : ∀ k, k < N → IsGreedyAt T v k) : IsLadder o (T.state v N) := by
   have hop : ∀ l, l < N → T.opinion l = o := fun l hl =>
-    opinion_eq_of_greedy T hM hN hv hg hl
+    hP.opinion_eq_of_greedy T hv hg hl
   have hdist : ∀ j k, j < k → k < N → T.actor j ≠ T.actor k := fun _ _ hjk hk =>
-    actor_ne_actor_of_greedy T hM hN hv hg hjk hk
+    hP.actor_ne_actor_of_greedy T hM hv hg hjk hk
   have hfinj : Function.Injective fun i : Fin N => T.actor (i : ℕ) := by
     intro i j hij
     rcases lt_trichotomy (i : ℕ) (j : ℕ) with h | h | h
@@ -195,7 +204,7 @@ theorem isLadder_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
     refine ⟨by rw [h1, hzero o]; ring, fun p hp => by rw [h2 p hp, hzero p]; ring⟩
   have hsurj : ∀ a : Actor N, ∃ i : Fin N, T.actor (i : ℕ) = a := fun a =>
     Finite.surjective_of_injective hfinj a
-  refine ⟨T.isState_state hv.isState N, ?_, ?_⟩
+  refine ⟨T.isState_state (hP.isState hv) N, ?_, ?_⟩
   · -- the `o`-column takes exactly the `N` ladder values
     ext z
     simp only [Finset.mem_image, Finset.mem_univ, true_and, mem_ladderValues_iff]
@@ -221,6 +230,46 @@ theorem isLadder_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
     obtain ⟨h1, h2⟩ := hval i
     rw [← hi, h1, h2 p hp]
     ring
+
+
+end IsSweepable
+
+/-- `C^o` is sweepable: a maximising pair of a consensus state lies in column `o`, and
+expressing `o` keeps the state in `C^o`. -/
+theorem isSweepable_consensus (hM : 2 ≤ M) (hN : 2 ≤ N) (o : Opinion M) :
+    IsSweepable (IsConsensus (N := N) o) o :=
+  ⟨fun _ hv => hv.isState, fun _ hv => hv.nonneg, fun _ hv _ _ h => opinion_eq_of_isMax hv h,
+    fun _ hv a => hv.express hM hN a⟩
+
+/-- Consensus is preserved along a greedy trajectory, for as long as the trajectory is
+greedy.
+
+The horizon is arbitrary rather than `N`: the assembly of Proposition 7 needs the consensus
+carried from the time Lemma 20 delivers it up to `MN`, and that gap is not `N`. -/
+theorem isConsensus_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v) {m : ℕ}
+    (hg : ∀ k, k < m → IsGreedyAt T v k) :
+    ∀ k, k ≤ m → IsConsensus o (T.state v k) :=
+  (isSweepable_consensus hM hN o).state T hv hg
+
+/-- Every one of the first `N` greedy expressions expresses the consensus opinion. -/
+theorem opinion_eq_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+    (hg : ∀ k, k < N → IsGreedyAt T v k) {k : ℕ} (hk : k < N) : T.opinion k = o :=
+  (isSweepable_consensus hM hN o).opinion_eq_of_greedy T hv hg hk
+
+/-- No actor expresses twice among the first `N` greedy expressions from a consensus state. -/
+theorem actor_ne_actor_of_greedy (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+    (hg : ∀ k, k < N → IsGreedyAt T v k) {j k : ℕ} (hjk : j < k) (hk : k < N) :
+    T.actor j ≠ T.actor k :=
+  (isSweepable_consensus hM hN o).actor_ne_actor_of_greedy T hM hv hg hjk hk
+
+/-- **The last step of Proposition 7.** Starting from a consensus state for `o`, `N` greedy
+expressions land the process exactly on a ladder supporting `o`.
+
+**No counterpart in the paper**: Proposition 7 closes with "by definition", and it is not
+by definition — see the module docstring. -/
+theorem isLadder_state (hM : 2 ≤ M) (hN : 2 ≤ N) (hv : IsConsensus o v)
+    (hg : ∀ k, k < N → IsGreedyAt T v k) : IsLadder o (T.state v N) :=
+  (isSweepable_consensus hM hN o).isLadder_state T hM hv hg
 
 end ConsensusToLadder
 

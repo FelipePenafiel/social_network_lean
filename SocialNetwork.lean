@@ -5,12 +5,15 @@ Released under the Apache 2.0 license.
 import SocialNetwork.Appendix
 import SocialNetwork.Bias
 import SocialNetwork.Clocks
+import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedMetastability
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedNonExplosion
 import SocialNetwork.BiasedResults
 import SocialNetwork.Band
 import SocialNetwork.BandCollapse
 import SocialNetwork.Consensus
+import SocialNetwork.ConsensusExit
 import SocialNetwork.ContinuousTime
 import SocialNetwork.Defs
 import SocialNetwork.Doeblin
@@ -23,6 +26,7 @@ import SocialNetwork.JumpHold
 import SocialNetwork.Kac
 import SocialNetwork.Ladder
 import SocialNetwork.Markov
+import SocialNetwork.Metastability
 import SocialNetwork.Minorisation
 import SocialNetwork.NonExplosion
 import SocialNetwork.Skeleton

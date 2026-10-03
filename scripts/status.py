@@ -84,12 +84,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "the induction invariant is not preserved: the actor that expresses at step `k` "
         "has its row reset, and at the terminal `k` the bound is negative",
     ),
-    "prop22": (
-        BLOCKED_ON_PAPER,
-        "does not follow from Proposition 6 as Appendix C asserts: under near-greedy "
-        "expression the chain gives `N - 1 + 1/(2γ)`, which reaches `N` only for "
-        "`γ ≥ 1/2`, and here `γ < 1/(M-1)`",
-    ),
     "prop23": (
         BLOCKED_ON_PAPER,
         "assembles biased analogues of Lemmas 19 and 20, which the paper does not state",
@@ -98,13 +92,6 @@ REASONS: dict[str, tuple[str, str]] = {
         BLOCKED_ON_PAPER,
         "the biased twin of Lemma 13, and its ingredients — the biased forms of the two "
         "displays below — are not in the paper either",
-    ),
-    "thm25": (
-        BLOCKED_ON_PAPER,
-        "its minorisation is the argument of p. 17 transported, and the box that argument "
-        "takes from Proposition 6 is Proposition 22 here.  Everything else in it is proved, "
-        "so one repair closes this outright; Proposition 17 also gives a box, by a step the "
-        "paper does not make, and that route is recorded rather than taken",
     ),
     "prop26": (
         BLOCKED_ON_PAPER,
@@ -128,10 +115,8 @@ REASONS: dict[str, tuple[str, str]] = {
         "the same citation over `Profile N M`.  Two are needed because the abstract "
         "statement is inconsistent",
     ),
-    # -- Mathlib ------------------------------------------------------------
-
-    "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
-    "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
+    # -- Mathlib: nothing.  Lemmas 14 and 29 stood here; Appendix B compares
+    # exponential clocks and needs nothing Mathlib lacks, and both are proved.
 }
 
 
@@ -533,6 +518,10 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     if NOT_YET not in kinds:
         w("The group that was only work is empty: every numbered statement of the paper is")
         w("stated in Lean, and nothing unproved here is unproved for want of doing it.")
+    if BLOCKED_ON_MATHLIB not in kinds:
+        w("Nothing is blocked on Mathlib: where the library lacks a theory the paper uses,")
+        w("the argument is carried out here, and `blueprint/blueprint.md` records what is")
+        w("absent.")
     w("[`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item")
     w("asks for.")
     w("")
