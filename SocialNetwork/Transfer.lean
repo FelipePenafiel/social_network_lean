@@ -60,8 +60,8 @@ needed to bound its law below.
   equation (13) consumes: `q_β · μ` is a finite invariant measure of the skeleton.
 * `SocialNetwork.invariantCts_eq_of_invariantSkeleton` — **equation (13)**.
 * `SocialNetwork.eq_of_invariantCts` — **Theorem 1.2, the uniqueness half**, which equation
-  (13) gives at once.  Existence is the converse of the correspondence and is not proved
-  here.
+  (13) gives at once.  Existence is the converse of the correspondence, and it is
+  `SocialNetwork.Existence`.
 -/
 
 open MeasureTheory ProbabilityTheory Finset
@@ -795,8 +795,8 @@ theorem invariantCts_eq_of_invariantSkeleton (hM : 2 ≤ M) (_hN : 3 ≤ N) {β 
 measure carried by `S`: equation (13) writes both of them in terms of `μ̃^β`, which
 `SocialNetwork.existsUnique_invariantSkeleton` says is unique.
 
-Existence is the converse direction of the correspondence, and is not proved here; see the
-node `thm1-2` of the blueprint. -/
+Existence is the converse direction of the correspondence, proved in
+`SocialNetwork.Existence`, where the two halves are put together. -/
 theorem eq_of_invariantCts (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {μ ν : Measure (Pressure N M)} (hμ : IsProbabilityMeasure μ) (hμS : IsCarriedByState μ)
     (hμinv : IsInvariantCts β μ) (hν : IsProbabilityMeasure ν) (hνS : IsCarriedByState ν)

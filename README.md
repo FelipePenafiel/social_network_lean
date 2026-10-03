@@ -50,6 +50,11 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
   `SocialNetwork/BandCollapse.lean`), down to the identification of the constructed
   process with the one equation (3) defines.  It is written for an arbitrary state space,
   so both models instantiate it, which is what Appendix C prescribes;
+* **Equation (13) and Theorem 1.2** — `μ^β` exists, is unique, and is `μ̃^β / q_β`
+  normalised.  The equivalence the paper cites at p. 18 between invariance for the
+  process and for the skeleton is proved in both directions
+  (`SocialNetwork/Transfer.lean`, `SocialNetwork/Existence.lean`), and neither needs a
+  forward equation for the semigroup;
 * the biased model of Section 3, with Propositions 21, 17 and 24, and **Proposition 18
   and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
   surely all but one actor eventually stop expressing.
@@ -104,6 +109,8 @@ SocialNetwork/NonExplosion.lean    the bound λ of equation (11) on the low-pres
 SocialNetwork/Band.lean       the band of [GL24]'s Figure 2, for an arbitrary state space
 SocialNetwork/BandCollapse.lean    the band is the process
 SocialNetwork/Graphical.lean  the band of equation (3)'s model, and Theorem 1.1
+SocialNetwork/Transfer.lean   equation (13), from the correspondence of p. 18 one way
+SocialNetwork/Existence.lean  the correspondence the other way, and Theorem 1.2
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
 SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, 31
 SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1

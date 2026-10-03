@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-14 statements. They are unproved for three different reasons, and
+13 statements. They are unproved for three different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 The group that was only work is empty: every numbered statement of the paper is
@@ -51,14 +51,13 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Blocked on Mathlib (3)
+### Blocked on Mathlib (2)
 
 The paper's proof is fine; Mathlib has no theory of the object it uses.
 Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the audit of exactly what is absent, checked against the pinned revision.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 1.2 | `existsUnique_invariantCts` | only its existence half.  Equation (13) is proved, and with it uniqueness; what is missing is the converse of the correspondence — that `μ̃/q`, normalised, *is* invariant for every `P_t` — which wants a forward equation for the semigroup rather than the lower bound on `P_t` the other direction needs |
 | Lemma 14 | `le_probHittingGT_consensusOther` +1 | the continuous-time analysis of Appendix B |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +1 | Appendix B, as Lemma 14 |
 
@@ -66,16 +65,16 @@ Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is the
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 23 | 25 | 48 |
+| Proved | 25 | 26 | 51 |
 | Proof written, resting on an unproved statement | 12 | 3 | 15 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 11 | 0 | 11 |
+| Stated in Lean, unproved | 10 | 0 | 10 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **63** | **32** | **95** |
+| **Total** | **64** | **33** | **97** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
-the paper. Counted as the paper numbers them, 57 statements and displayed equations
-are covered, and all 57 of them are stated in Lean.
+the paper. Counted as the paper numbers them, 58 statements and displayed equations
+are covered, and all 58 of them are stated in Lean.
 
 ### The statements of the paper
 
@@ -87,7 +86,8 @@ are covered, and all 57 of them are stated in Lean.
 | equation (3) | `generator` +3 | stated |
 | Definition 3 | `skeletonKernel` +8 | stated |
 | Theorem 1.1 | `nonExplosion` +14 | proved |
-| Theorem 1.2 | `existsUnique_invariantCts` | unproved — blocked on Mathlib |
+| Theorem 1.2 | `existsUnique_invariantCts` | proved |
+| Theorem 1.2, existence half | `ctsOfSkeleton` +2 | proved |
 | Theorem 1.2, uniqueness half | `eq_of_invariantCts` | proved |
 | Theorem 1.2, skeleton half | `existsUnique_invariantSkeleton` +2 | proved |
 | equation (13) | `invariantCts_eq_of_invariantSkeleton` | proved |
@@ -165,6 +165,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | The minorisation of the skeleton chain | `descendActor` +16 | proved |
 | The jump rate on , and the sum of (13) | `IsState.le_totalRate` +1 | proved |
 | The correspondence of p. 18, in the direction (13) needs | `firstStepKernel` +32 | proved |
+| The correspondence of p. 18, in the other direction | `survival` +34 | proved |
 | A consensus state has a positive entry | `IsConsensus.exists_pos` | proved |
 | a ladder is a consensus state | `IsLadder.isConsensus` | proved |
 | a biased ladder is a biased steep ladder | `Bias.IsBiasedLadder.isBiasedSteepLadder` +6 | proved |

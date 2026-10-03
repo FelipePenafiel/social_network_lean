@@ -62,7 +62,8 @@ the other way round: `Appendix` used to import this file and never used anything
 
 * `SocialNetwork.generator_eq`, `SocialNetwork.generator_const` — the algebra of `G`, proved.
 * `SocialNetwork.nonExplosion` — **Theorem 1.1**, proved in `SocialNetwork.Graphical`.
-* `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, unproved.
+* `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, proved in
+  `SocialNetwork.Existence`.
 * `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, unproved.
 * `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, proved from the display
   below, modulo Proposition 7.
@@ -784,15 +785,10 @@ theorem tsum_div_totalRate_le (β : ℝ) (μ : Measure (Pressure N M)) [IsProbab
 [GL24]'s graphical construction; `SocialNetwork.NonExplosion` supplies the bound `λ` of
 equation (11) that the construction is built out of, and `SocialNetwork.Band` the band. -/
 
-/-- **Theorem 1.2.** The process has a unique invariant probability measure `μ^β`.
-
-The paper obtains it from the skeleton: a uniform Doeblin minorisation gives the skeleton a
-unique invariant measure `μ̃^β`, which is then transferred by equation (13).  Mathlib has
-neither the minorisation criterion nor the transfer. -/
-theorem existsUnique_invariantCts (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β) :
-    ∃! μ : Measure (Pressure N M),
-      IsProbabilityMeasure μ ∧ IsCarriedByState μ ∧ IsInvariantCts β μ := by
-  sorry
+/-! **Theorem 1.2**, `SocialNetwork.existsUnique_invariantCts`, is proved in
+`SocialNetwork.Existence`: the skeleton's invariant measure below is transferred by the
+correspondence of p. 18, whose two directions are `SocialNetwork.Transfer` (uniqueness, and
+equation (13)) and `SocialNetwork.Existence` (existence). -/
 
 /-- **Definition 3**, the invariant measure `μ̃^β` of the skeleton process.
 
