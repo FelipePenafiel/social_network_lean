@@ -106,11 +106,12 @@ theorem lintegral_expMeasure_totalRate (β : ℝ) (v : Pressure N M) {f : ℝ �
     (hf : Measurable f) :
     ∫⁻ s, f s ∂(expMeasure (totalRate β v))
       = ENNReal.ofReal (totalRate β v) * ∫⁻ s, survival β v s * f s := by
+  have hsf : Measurable fun s => survival β v s * f s := (measurable_survival β v).mul hf
+  have hd : Measurable (exponentialPDF (totalRate β v)) :=
+    (measurable_exponentialPDFReal (totalRate β v)).ennreal_ofReal
   rw [show expMeasure (totalRate β v)
       = volume.withDensity (exponentialPDF (totalRate β v)) from rfl,
-    lintegral_withDensity_eq_lintegral_mul _
-      (measurable_exponentialPDFReal (totalRate β v)).ennreal_ofReal hf,
-    ← lintegral_const_mul _ ((measurable_survival β v).mul hf)]
+    lintegral_withDensity_eq_lintegral_mul _ hd hf, ← lintegral_const_mul _ hsf]
   refine lintegral_congr fun s => ?_
   rw [Pi.mul_apply, exponentialPDF_totalRate, mul_assoc]
 
@@ -165,6 +166,7 @@ def nJumpSet (v w : Pressure N M) (n : ℕ) (t : ℝ) : Set (ℕ → Step N M) :
 def nJumpGraph (v w : Pressure N M) (n : ℕ) : Set (ℝ × (ℕ → Step N M)) :=
   {x | x.2 ∈ nJumpSet v w n x.1}
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_nJumpGraph (v w : Pressure N M) (n : ℕ) :
     MeasurableSet (nJumpGraph v w n) := by
   have h1 : Measurable fun x : ℝ × (ℕ → Step N M) => jumpTime n x.2 :=
@@ -182,6 +184,7 @@ theorem measurableSet_nJumpGraph (v w : Pressure N M) (n : ℕ) :
   exact (measurableSet_le h1 measurable_fst).inter
     ((measurableSet_lt measurable_fst h2).inter (h3 (measurableSet_singleton w)))
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_nJumpSet (v w : Pressure N M) (n : ℕ) (t : ℝ) :
     MeasurableSet (nJumpSet v w n t) := by
   show MeasurableSet (Prod.mk t ⁻¹' nJumpGraph v w n)
@@ -265,6 +268,7 @@ theorem nJumpSet_succ_eq_preimage (v w : Pressure N M) (n : ℕ) (t : ℝ) :
   · rintro ⟨h1, h2, h3⟩
     exact ⟨by linarith, by linarith, h3⟩
 
+omit [NeZero N] [NeZero M] in
 theorem measurableSet_nJumpPairs (v w : Pressure N M) (n : ℕ) (t : ℝ) :
     MeasurableSet (nJumpPairs v w n t) := by
   have hset : nJumpPairs v w n t = ⋃ p : Jump N M,
@@ -379,9 +383,13 @@ theorem firstStep_lastStep (β : ℝ) {F : Pressure N M → Pressure N M → ℝ
     have hK : ∀ u, Measurable fun r => ∫⁻ s, survival β w r * F u x (t - r - s) ∂E := fun u =>
       Measurable.lintegral_prod_right
         (f := fun r s : ℝ => survival β w r * F u x (t - r - s)) (hjoint' u x)
+    have hT : ∀ u, Measurable fun r =>
+        survival β w r * (skeletonKernel β v {u} * ∫⁻ s, F u x (t - r - s) ∂E) :=
+      fun u => (measurable_survival β w).mul ((hJ u).const_mul _)
     simp only [firstStep]
+    rw [← hEdef]
     simp_rw [← ENNReal.tsum_mul_left]
-    rw [lintegral_tsum fun u => ((measurable_survival β w).mul ((hJ u).const_mul _)).aemeasurable]
+    rw [lintegral_tsum fun u => (hT u).aemeasurable]
     refine tsum_congr fun u => ?_
     have hpt : ∀ r, survival β w r * (skeletonKernel β v {u} * ∫⁻ s, F u x (t - r - s) ∂E)
         = skeletonKernel β v {u} * ∫⁻ s, survival β w r * F u x (t - r - s) ∂E := by
@@ -436,20 +444,21 @@ theorem firstStep_nJump_zero (β : ℝ) (v w : Pressure N M) (t : ℝ) :
 
 /-- **`P^{(n+1)} = 𝓛 P^{(n)}`**: the decomposition along the last expression before `t`. -/
 theorem nJump_succ_eq_lastStep (β : ℝ) (n : ℕ) :
-    (fun v w t => nJump β v w (n + 1) t) = lastStep β (fun v w t => nJump β v w n t) := by
+    (fun (v w : Pressure N M) t => nJump β v w (n + 1) t)
+      = lastStep β (fun v w t => nJump β v w n t) := by
   induction n with
   | zero =>
       funext v w t
       rw [nJump_succ_eq_firstStep, firstStep_nJump_zero]
   | succ n ih =>
       funext v w t
-      have hfirst : (fun u x s => nJump β u x (n + 1) s)
+      have hfirst : (fun (u x : Pressure N M) s => nJump β u x (n + 1) s)
           = firstStep β (fun u x s => nJump β u x n s) := by
         funext u x s
         exact nJump_succ_eq_firstStep β u x n s
       show nJump β v w (n + 1 + 1) t = lastStep β (fun u x s => nJump β u x (n + 1) s) v w t
       rw [nJump_succ_eq_firstStep, ih,
-        firstStep_lastStep β (fun u x => measurable_nJump β u x n), ← hfirst]
+        firstStep_lastStep β (fun u x => measurable_nJump β u x n), ← hfirst, ih]
 
 end LastStep
 
@@ -466,8 +475,14 @@ noncomputable def mixJump (β : ℝ) (μ : Measure (Pressure N M)) (w : Pressure
   ∑' v, μ {v} * nJump β v w n t
 
 theorem measurable_mixJump (β : ℝ) (μ : Measure (Pressure N M)) (w : Pressure N M) (n : ℕ) :
-    Measurable (mixJump β μ w n) :=
-  Measurable.ennreal_tsum fun v => (measurable_nJump β v w n).const_mul _
+    Measurable (mixJump β μ w n) := by
+  have h : mixJump β μ w n
+      = fun t => ⨆ s : Finset (Pressure N M), ∑ v ∈ s, μ {v} * nJump β v w n t := by
+    funext t
+    exact ENNReal.tsum_eq_iSup_sum
+  rw [h]
+  exact Measurable.iSup fun s =>
+    Finset.measurable_sum s fun v _ => (measurable_nJump β v w n).const_mul _
 
 theorem mixJump_zero (β : ℝ) (μ : Measure (Pressure N M)) (w : Pressure N M) (t : ℝ) :
     mixJump β μ w 0 t = μ {w} * survival β w t := by
@@ -490,8 +505,10 @@ theorem mixJump_succ (β : ℝ) (μ : Measure (Pressure N M)) (w : Pressure N M)
         ((measurable_nJump β v x n).comp (measurable_const.sub measurable_id))
     simp only [mixJump]
     simp_rw [← ENNReal.tsum_mul_left]
-    rw [lintegral_tsum fun v => ((measurable_survival β w).mul
-      (((measurable_nJump β v x n).comp (measurable_const.sub measurable_id)).const_mul _)).aemeasurable]
+    have hm' : ∀ v, Measurable fun r => survival β w r * (μ {v} * nJump β v x n (t - r)) :=
+      fun v => (measurable_survival β w).mul
+        (((measurable_nJump β v x n).comp (measurable_const.sub measurable_id)).const_mul _)
+    rw [lintegral_tsum fun v => (hm' v).aemeasurable]
     refine tsum_congr fun v => ?_
     rw [← lintegral_const_mul _ (hm v)]
     exact lintegral_congr fun r => by ring
@@ -528,7 +545,7 @@ theorem sum_mixJump_le (β : ℝ) {μ : Measure (Pressure N M)}
         simp_rw [mixJump_succ]
         rw [← Summable.tsum_finsetSum fun _ _ => ENNReal.summable]
         refine tsum_congr fun x => ?_
-        rw [← Finset.mul_sum, ← lintegral_finset_sum _ fun n _ => hmix x n]
+        rw [← Finset.mul_sum, ← lintegral_finsetSum _ fun n _ => hmix x n]
         simp_rw [Finset.mul_sum]
       have hstep : ∑ n ∈ Finset.range K, mixJump β μ w (n + 1) t
           ≤ ENNReal.ofReal (totalRate β w) * μ {w} * I := by
@@ -547,7 +564,11 @@ theorem sum_mixJump_le (β : ℝ) {μ : Measure (Pressure N M)}
               have hpt : ∀ r, survival β w r * (μ {x} * Set.indicator (Set.Ici 0) 1 (t - r))
                   = μ {x} * (survival β w r * Set.indicator (Set.Ici 0) 1 (t - r)) :=
                 fun r => by ring
-              rw [lintegral_congr hpt, lintegral_const_mul' _ _ (measure_ne_top μ {x})]
+              have hmI : Measurable fun r =>
+                  survival β w r * Set.indicator (Set.Ici (0 : ℝ)) (1 : ℝ → ℝ≥0∞) (t - r) :=
+                (measurable_survival β w).mul ((measurable_one.indicator measurableSet_Ici).comp
+                  (measurable_const.sub measurable_id))
+              rw [lintegral_congr hpt, lintegral_const_mul _ hmI]
               ring
           _ = (∑' x, skeletonKernel β x {w} * (ENNReal.ofReal (totalRate β x) * μ {x})) * I :=
               ENNReal.tsum_mul_right
@@ -618,7 +639,7 @@ theorem transitionKernel_le_tsum_nJump (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} 
         have h := mem_nJumpSet_jumpCount v hpos hexp ht
         rwa [show process v t ω = w from hω] at h
       · exact Or.inr (Or.inr hexp)
-    · push_neg at hpos
+    · simp only [not_forall, not_lt] at hpos
       exact Or.inr (Or.inl hpos)
   rw [transitionKernel_apply, Measure.map_apply (measurable_process v t) (measurableSet_singleton w)]
   calc ctsPathMeasure β v (process v t ⁻¹' {w})
