@@ -13,7 +13,8 @@ Three files at the root divide the rest between them.
 to close and what each item asks of the authors — the written proofs that do not compose,
 the statements that had to be changed, and the two axioms; and
 [`CONVENTIONS.md`](../CONVENTIONS.md) is how the translation is written.  What is blocked
-*there* is blocked on the paper; what is blocked here is blocked on Mathlib.
+*there* is blocked on the paper.  Nothing in the repository is blocked on Mathlib any more:
+this file records what the library lacks, and where the repository supplies it.
 
 What is in this file is the audit that has no place in a mathematical blueprint: exact
 declaration names, file paths and line numbers for what Mathlib does and does not provide.
@@ -301,7 +302,10 @@ Mathlib provides, not of what this repository happens to want.
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
    Slutsky's theorem available; `Mathlib/MeasureTheory/Measure/LevyProkhorovMetric.lean`
    metrises weak convergence.  What is absent is the Kolmogorov-type *bound*, and the
-   criterion of [LM22] that Proposition 12 invokes.
+   criterion of [LM22] that Proposition 12 invokes.  Lemmas 14 and 29 were once filed as
+   waiting on this item; they do not — Appendix B compares exponential clocks, and nothing
+   more — and both are proved (`SocialNetwork/ConsensusExit.lean`,
+   `SocialNetwork/BiasedConsensusExit.lean`).
 
 ## Which theorems depend on which
 

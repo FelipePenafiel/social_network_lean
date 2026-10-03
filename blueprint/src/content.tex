@@ -49,9 +49,9 @@ not proved --- which of four kinds of obstruction it has met.
   the statement is left resting on the step that fails, even when a different
   argument would establish it: closing it another way would record a theorem and
   lose the finding, which is the one thing this development produces that a
-  reader of the paper does not already have.  \ref{thm25} is the case to look
-  at --- a route that closes it is written out at
-  \ref{aux-biased-minorisation} and deliberately not taken.
+  reader of the paper does not already have.  \ref{lem19} and~\ref{lem20} are
+  the cases to look at --- a repair of each is recorded at \ref{note-lem19}
+  and~\ref{note-lem20} and deliberately not adopted.
 
   So each proof environment below opens by saying which it is: it follows the
   paper's proof of such and such, it supplies a step the paper asserts, or it
@@ -1190,8 +1190,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   Apply \ref{prop12} with the bounds of \ref{lem13} and~\ref{lem14} and
   \ref{cor15}. \emph{Formalised, but neither sorry-free nor axiom-free}: the
   assembly below is complete in Lean, and what it inherits is \texttt{sorryAx}
-  from \ref{lem13} and~\ref{lem14} together with the [LM22] axiom of
-  \ref{prop12}.
+  from \ref{lem13} alone together with the [LM22] axiom of \ref{prop12}.
 
   Section~5.3 checks the four assumptions in half a page; each is one lemma:
   \begin{itemize}
@@ -1556,7 +1555,7 @@ process pointwise.
 \aux{Lemma}
 \begin{lemma}[From consensus to a ladder]
   \label{aux-consensus-ladder}
-  \lean{SocialNetwork.isLadder_state, SocialNetwork.isLadder_state_of_mem_greedyEvents, SocialNetwork.opinion_eq_of_greedy, SocialNetwork.IsConsensus.express, SocialNetwork.actor_ne_actor_of_greedy, SocialNetwork.state_add_of_hearing, SocialNetwork.opinion_eq_of_mem_greedyEvents}
+  \lean{SocialNetwork.isLadder_state, SocialNetwork.isLadder_state_of_mem_greedyEvents, SocialNetwork.opinion_eq_of_greedy, SocialNetwork.IsConsensus.express, SocialNetwork.actor_ne_actor_of_greedy, SocialNetwork.state_add_of_hearing, SocialNetwork.opinion_eq_of_mem_greedyEvents, SocialNetwork.IsSweepable, SocialNetwork.IsSweepable.isLadder_state, SocialNetwork.isSweepable_consensus}
   \leanok
   \uses{aux-greedy, def2, def1, aux-consensus-pos}
   If $v \in C^o$ and $\bigcap_{j=1}^N \xi_j^v$ occurs then $\Uskel{v}_N \in \ladder^o$.
@@ -2256,7 +2255,7 @@ process pointwise.
 \paper{Lemma 14}
 \begin{lemma}[Two-sided control of the exit from a consensus set]
   \label{lem14}
-  \lean{SocialNetwork.le_probHittingGT_consensusOther, SocialNetwork.probHittingLE_consensusOther_le}
+  \lean{SocialNetwork.le_probHittingGT_consensusOther, SocialNetwork.probHittingLE_consensusOther_le, SocialNetwork.IsExtendedConsensus, SocialNetwork.IsSteepLadder.express_isExtendedConsensus, SocialNetwork.ExitInv, SocialNetwork.exitRate, SocialNetwork.avoidBefore, SocialNetwork.le_ctsPathMeasure_avoidBefore_succ, SocialNetwork.le_ctsPathMeasure_lt_hittingTimeCts, SocialNetwork.le_exp_add_mul_lintegral, SocialNetwork.le_ctsPathMeasure_avoidBefore_of_score, SocialNetwork.rate_phase_zero, SocialNetwork.rate_phase_succ, SocialNetwork.le_ctsPathMeasure_avoidBefore}
   \leanok
   \uses{def2, def1}
   For any $t > 0$ and any $o$:
@@ -2268,7 +2267,36 @@ process pointwise.
   \end{enumerate}
 \end{lemma}
 \begin{proof}
-  Proved in Appendix~B of the paper.  \textbf{Not formalised}.
+  \leanok
+  \uses{def4, rem5, prop8, rem4, aux-consensus-ladder, aux-transfer,
+    aux-holding-times}
+  \textbf{Supplies a step the paper asserts, and takes a different route
+  through one of them.}  Appendix~B's mechanism is kept, with its rates and its
+  constant.  From $\ladder^o$ the process stays in $\steep^o$ until an opinion
+  $p \ne o$ is expressed.  Against a negative pressure that is a failure, at
+  total rate at most $NMe^{-\beta/(M-1)}$.  By the actor with the null row it
+  lands in the extended consensus set $\hat{C}^o$, at rate at most $NM$; that it
+  does is asserted in the text and supplied here.  From $\hat{C}^o$ a greedy run
+  returns to $\ladder^o$, and it fails with probability at most
+  $1 - \zeta_\beta^{N}$ by \ref{prop8} and \ref{rem4}.
+
+  The composition is not the paper's, because the written one does not hold
+  together: see \ref{note-lem14}.  The same estimates are composed by a
+  first-step comparison with an exponential clock, by induction on the number of
+  jumps.  A state is in phase $0$ if it lies in $\steep^o$, and in phase $j \ge
+  1$ if it lies in $\hat{C}^o \cup C^o$ and $j$ greedy expressions take it to
+  $\steep^o$.  From phase $j$, $C^{-o}$ is avoided before $\min(t, T_n)$ with
+  probability at least $\zeta_\beta^j e^{-\Lambda t}$, $\Lambda =
+  2N^3(M+1)^3e^{-\beta/(M-1)}$.  One step of the induction restarts the process
+  at its first jump through \ref{aux-transfer}, and the limit $n \to \infty$ is
+  a decreasing limit of events, so \ref{thm1-1} is not used.
+
+  Two smaller changes cost nothing.  A block has the $N$ expressions of the
+  last stage of \ref{prop7}, \ref{aux-consensus-ladder}, rather than its
+  $(M+1)N$: that stage is all a block uses, it does not rest on \ref{lem19}
+  and~\ref{lem20}, and it only shortens the constant.  \ref{rem6} makes the same
+  choice.  And part~2 is part~1's comparison started in phase $N$, followed by
+  \ref{rem4} and $1 - e^{-x} \le x$, as the paper does.
 \end{proof}
 
 \paper{Corollary 15}
@@ -2276,7 +2304,7 @@ process pointwise.
   \label{cor15}
   \lean{SocialNetwork.le_characteristicTime}
   \leanok
-  \uses{prop12, lem14}
+  \uses{lem14}
   For any $\beta \ge 0$,
   $c_\beta \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{M-1}}$.
 \end{corollary}
@@ -2289,11 +2317,9 @@ process pointwise.
     e^{-1} \;=\; \mathbb{P}(\Rhit{l}(C^{-o}) > c_\beta)
     \;\ge\; e^{-2c_\beta N^3(M+1)^3 e^{-\beta/(M-1)}} ,
   \]
-  and rearrange. \emph{Formalised, but not sorry-free}: the proof above is
-  complete in Lean, and inherits \texttt{sorryAx} from \ref{lem14} alone.  Its
-  only addition to the paper is the witness: the statement quantifies over $l
-  \in L^o$, so it is vacuous unless $L^o \ne \emptyset$, which the paper does
-  not record.
+  and rearrange.  Its only addition to the paper is the witness: the statement
+  quantifies over $l \in L^o$, so it is vacuous unless $L^o \ne \emptyset$,
+  which the paper does not record.
 \end{proof}
 
 \aux{Lemma}
@@ -2370,18 +2396,16 @@ process pointwise.
   $\|U(a,\cdot)\|_\infty$, in its two cases: either the first $N$ expressions
   come from $N$ distinct actors, and every row was reset, or some actor
   expresses at $j < k < N$ and greediness at $k$ caps the whole profile at $n_a
-  = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.  Unlike
-  \ref{prop22}, the chain closes here: greediness is \emph{exact}, so the
-  maximum at the repeat time is the expressing actor's own entry, with no slack
-  of $1/(2\gamma)$ to absorb.
+  = k-j-1$, which $N-k$ further expressions raise to at most $N-j-1$.
+  \ref{prop22} is the same chain under the near-greedy event, which leaves a
+  slack of $\gamma/2$ at the repeat time; here greediness is \emph{exact}, so
+  the maximum at the repeat time is the expressing actor's own entry.
 
   \textbf{Nothing in either half uses the regime}: it enters only through
   $0 < \gamma$, so the argument proves the statement for every $\gamma > 0$.
   The Lean statement nonetheless carries the paper's $\alpha < 0$, since what is
-  being checked here is the paper's proposition.  The observation is not idle ---
-  see \ref{aux-biased-minorisation}, where the weaker form would remove the only
-  obstruction left on \ref{thm25} --- and it is put to the authors rather than
-  acted on.
+  being checked here is the paper's proposition, and the observation is put to
+  the authors rather than acted on.
 
   The probability is the one-step bound: with $\beta \ge 0$ the maximising
   pairs carry the largest rate, so they carry at least $(NM)^{-1}$ of the total
@@ -2589,11 +2613,12 @@ process pointwise.
   \uses{eq6}
   \[
     \tilde{\xi}_n^{\alpha,u} = \Bigl\{ U^{\alpha,u}_{T_{n-1}}(A_n^\alpha, O_n^\alpha)
-      > \max_{(a,o)} U^{\alpha,u}_{T_{n-1}}(a,o) - \tfrac{1}{2\gamma} \Bigr\} .
+      > \max_{(a,o)} U^{\alpha,u}_{T_{n-1}}(a,o) - \tfrac{1}{2}\gamma \Bigr\} .
   \]
-  The slack of $\tfrac{1}{2\gamma}$ is what replaces the lattice gap $\pressone$
+  The slack of $\tfrac{1}{2}\gamma$ is what replaces the lattice gap $\pressone$
   of the unbiased model: it is what makes a uniform lower bound on
-  $\mathbb{P}(\tilde{\xi}_n^{\alpha,u})$ available.
+  $\mathbb{P}(\tilde{\xi}_n^{\alpha,u})$ available.  An earlier version of this
+  blueprint read it as $\tfrac{1}{2\gamma}$; see \ref{note-prop22}.
 
   The two measurability lemmas named above have \textbf{no counterpart in the
   paper} (\ref{note-green}).
@@ -2609,9 +2634,23 @@ process pointwise.
   $\bigcap_{j=1}^{N} \tilde{\xi}_j^{\alpha,u} \subset \{ -MN < U^{\alpha,u}_{T_N} < N \}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop6}
-  \textbf{Not formalised, and it does not follow from Proposition~6 as the text
-  asserts.} See \ref{note-prop22}.
+  \leanok
+  \uses{prop6, prop21, eq6}
+  \textbf{Follows the paper's proof of Proposition~6}, in its two cases, which
+  is what Appendix~C prescribes.  If the first $N$ expressions come from $N$
+  distinct actors, every row was reset, so $n_a \le N-1$ and $u(a,p) \le n_a <
+  N$.  Otherwise some actor expresses at steps $j < k < N$; at step $k$ its
+  pressure is at most the $k-j-1$ expressions it has heard, the near-greedy
+  event puts every entry within $\tfrac{1}{2}\gamma$ of it, and the remaining
+  $N-k$ expressions add at most one each, so the profile ends below $N - 1 +
+  \tfrac{1}{2}\gamma < N$.  The lower bound is \ref{prop6}'s, from the row sums,
+  which equation~(6) makes $(M-1)\alpha n_a \ge 0$ rather than $0$; that is
+  where $\alpha > 0$ is used.  As at \ref{prop6}, the passage from the bound at
+  step $k$ to the bound at step $N$ is carried out explicitly.
+
+  An earlier version of this blueprint recorded the proposition as not
+  following from Proposition~6; that was a misreading of the slack, recorded at
+  \ref{note-prop22}.
 \end{proof}
 
 \paper{Proposition 23}
@@ -2638,8 +2677,8 @@ process pointwise.
   For all $m \ge 1$,
   $\mathbb{P}\bigl( \bigcap_{j=1}^{m} \tilde{\xi}_j^{\alpha,u} \bigr)
    \ge (\zeta_{\alpha,\beta})^m$ with
-  $\zeta_{\alpha,\beta} = e^{\frac{\beta}{2\gamma}} /
-   \bigl( e^{\frac{\beta}{2\gamma}} + MN \bigr)$.
+  $\zeta_{\alpha,\beta} = e^{\frac{\beta\gamma}{2}} /
+   \bigl( e^{\frac{\beta\gamma}{2}} + MN \bigr)$.
 \end{proposition}
 \begin{proof}
   \leanok
@@ -2650,7 +2689,7 @@ process pointwise.
 
   The one-step bound is the same computation: the maximising pair carries
   weight $e^{\beta y}$, every pair outside $\tilde{Y}_\gamma$ carries at most
-  $e^{\beta y} e^{-\beta/(2\gamma)}$, and there are at most $MN$ of them.  What
+  $e^{\beta y} e^{-\beta\gamma/2}$, and there are at most $MN$ of them.  What
   the lattice supplied in the unbiased model --- a gap of $1/(M-1)$ below the
   maximum --- the event $\tilde{\xi}$ supplies by construction, which is what
   Remark~7 is for.  As in \ref{prop8} the iteration goes through the
@@ -2690,23 +2729,10 @@ process pointwise.
   \ref{eq5}, and the rates of \ref{eq7} are exponentials of $\beta u(a,o)$, so
   each has probability at least $e^{-2\beta B}/MN$.
 
-  \textbf{This rests on \ref{prop22}, which is blocked on the paper}
-  (\ref{note-prop22}), and it is written out in full and left resting on it, the
-  way \ref{prop7} rests on \ref{lem19} and~\ref{lem20}.  Every other step is
-  proved, so the Lean assembly inherits \texttt{sorryAx} from \ref{prop22} alone.
-
-  \textbf{A route that avoids it exists, and is not taken.} \ref{prop17} bounds
-  the pressures after $N$ \emph{exactly} greedy expressions, at probability
-  $(NM)^{-N}$, and its proof uses no regime hypothesis, only $\gamma > 0$; that
-  bound is one-sided, but in $\gamma < \pressone$ some opinion carries at least
-  $n_a/M$ of what the actor heard, so a cap on the pressures caps $n_a$ and hence
-  bounds them below.  That assembles \ref{thm25} with no \texttt{sorry} at all.
-  It is not Appendix~C's argument: the second step appears in no version of the
-  paper, and this library formalises the paper's arguments rather than its
-  statements.  It is recorded here, and in \texttt{FOR-THE-AUTHORS.md}, as
-  something the authors may want --- weakening \ref{prop17} to $\gamma > 0$ costs
-  nothing and would make \ref{prop22} unnecessary for \ref{thm25} --- but the
-  choice is theirs, not the formalisation's.
+  This node rested on \ref{prop22} for as long as this blueprint misread the
+  slack of \ref{rem7}; with the paper's $\tfrac{1}{2}\gamma$ it is proved, by the
+  route Appendix~C prescribes.  The route through \ref{prop17} that was
+  recorded here as an alternative is no longer needed.
 
   The two halves compose through the biased form of \ref{aux-nstep}, proved the
   same way.
@@ -2736,17 +2762,12 @@ process pointwise.
   countable space, and \ref{aux-biased-minorisation} is the minorisation it
   consumes.  Existence and uniqueness come together, as there.
 
-  \textbf{Not proved}: that minorisation rests on \ref{prop22}, whose written
-  proof does not close (\ref{note-prop22}), so this node inherits
-  \texttt{sorryAx} from it and from nothing else.  A repair of \ref{prop22} ---
-  or the weakening of \ref{prop17} discussed at \ref{aux-biased-minorisation}
-  --- closes it immediately; both are the authors' to decide.
-
-  \textbf{A warning to anyone tempted to close it here}: \ref{prop17} does give
-  a box, and this node was once marked proved on that basis.  The mathematics
-  was sound; the filing was not.  Appendix~C does not make that argument, and
-  proving a statement of the paper by an argument the authors have not written
-  is what \ref{note-green} forbids.
+  \textbf{Proved.}  This node was left resting on \ref{prop22} while this
+  blueprint misread the slack of \ref{rem7} as $\tfrac{1}{2\gamma}$, and before
+  that it was once marked proved through \ref{prop17}, an argument Appendix~C
+  does not make; neither filing stands.  With the paper's $\tfrac{1}{2}\gamma$,
+  \ref{prop22} follows from \ref{prop6} as Appendix~C says, and the proof here is
+  the one the paper prescribes.
 \end{proof}
 
 \paper{Proposition 26}
@@ -2796,13 +2817,13 @@ process pointwise.
   \leanok
   \uses{eq8}
   For any $u \in \Salpha$,
-  $\mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > 2\beta) \le C e^{-\frac{\beta}{2\gamma}}$,
+  $\mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > 2\beta) \le C e^{-\frac{\beta\gamma}{2}}$,
   with $C$ depending only on $\alpha$, $M$ and $N$.
 \end{lemma}
 \begin{proof}
   \uses{lem13}
   \textbf{Not formalised.}  The Lean statement has the shape of \ref{lem13}
-  with $\pressone$ replaced by $\tfrac{1}{2\gamma}$, which is what this lemma
+  with $\pressone$ replaced by $\tfrac{1}{2}\gamma$, which is what this lemma
   exists for: it has to serve as \eqref{eq:h16} for \ref{prop12-biased}.  That
   fixes two things about it.  It is about the continuous-time hitting time
   $R^{\alpha,\beta,u}$, not about the skeleton path measure and the discrete
@@ -2813,15 +2834,40 @@ process pointwise.
 \paper{Lemma 29}
 \begin{lemma}[Two-sided control of the exit, under bias]
   \label{lem29}
-  \lean{SocialNetwork.Bias.le_biasedProbHittingGT, SocialNetwork.Bias.biasedProbHittingLE_le}
+  \lean{SocialNetwork.Bias.le_biasedProbHittingGT, SocialNetwork.Bias.biasedProbHittingLE_le, SocialNetwork.Bias.IsBiasedConsensus.half_le_of_pos, SocialNetwork.Bias.IsBiasedExtendedConsensus, SocialNetwork.Bias.IsBiasedSteepLadder.express_isBiasedExtendedConsensus, SocialNetwork.Bias.IsBiasedSweepable, SocialNetwork.Bias.IsBiasedSweepable.isBiasedLadder_stateAfter, SocialNetwork.Bias.BiasedExitInv, SocialNetwork.Bias.biasedExitRate, SocialNetwork.Bias.one_sub_le_biasedZeta_pow, SocialNetwork.Bias.biasedCtsPathMeasure_firstStep_apply, SocialNetwork.Bias.le_biasedCtsPathMeasure_avoidBefore}
   \leanok
   \uses{eq8}
-  The two-sided control of \ref{lem14}, with $\pressone$ replaced by
-  $\tfrac{1}{2\gamma}$.
+  For $0 < \alpha < \pressone$, the two-sided control of \ref{lem14}, with
+  $\pressone$ replaced by $\tfrac{1}{2}\gamma$: from $l \in \ladder_\alpha^o$,
+  $\mathbb{P}(R^{\alpha,\beta,l}(C_\alpha^{-o}) > t) \ge
+  e^{-2tN^3(M+1)^3 e^{-\beta\gamma/2}}$, and from $u \in C_\alpha^o$,
+  $\mathbb{P}(R^{\alpha,\beta,u}(C_\alpha^{-o}) \le t) \le (N^2M +
+  2tN^3(M+1)^3) e^{-\beta\gamma/2}$.
 \end{lemma}
 \begin{proof}
-  \uses{lem14}
-  \textbf{Not formalised}.
+  \leanok
+  \uses{lem14, prop24, rem7, eq6, aux-biased-ladder-steep}
+  \textbf{Follows the paper's proof}, which is that of \ref{lem14}: the Lean
+  proof is \ref{lem14}'s transposed, departures included, with the near-greedy
+  event of \ref{rem7} in place of the greedy one and \ref{prop24} in place of
+  \ref{prop8}.  The biased Remark~4, $\zeta_{\alpha,\beta}^m \ge 1 -
+  mMNe^{-\beta\gamma/2}$, is proved the same way.
+
+  \textbf{Supplies two steps the transport needs}, which the slack changes and
+  Appendix~C does not write.  A near-greedy expression from $C_\alpha^o$
+  expresses $o$: in $C_\alpha^o$ a positive pressure for $o$ is at least
+  $(1+\gamma)/2$, because against each other opinion the row is ahead by a
+  positive multiple of $1 + \gamma$ and the row sums of equation~(6) are
+  $(M-1)\alpha n_a \ge 0$; so the maximum exceeds $\tfrac{1}{2}\gamma$ and the
+  non-positive pressures are out of reach.  And a near-greedy run sweeps onto
+  $\ladder_\alpha^o$: at step $k$ of a block an actor that already expressed
+  carries at most $k-1$ and one that has not carries at least $k$, and
+  $\tfrac{1}{2}\gamma < 1$, so the $N$ expressions come from $N$ distinct
+  actors.  The extended set $\hat{C}_\alpha^o$ is Appendix~B's with the bound on
+  the other opinions lowered from $1$ to $1 - \tfrac{1}{2}\gamma$, which is what
+  a near-greedy expression needs; the null row of $\steep_\alpha^o$ expressing
+  $p \ne o$ lands in it, leaving the others at $1 - \gamma k \le 1 - \gamma$ for
+  $p$.
 \end{proof}
 
 \paper{Corollary 30}
@@ -2831,17 +2877,15 @@ process pointwise.
   \leanok
   \uses{lem29}
   For $0 < \alpha < \pressone$ and $\beta \ge 0$,
-  $c_{\alpha,\beta} \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta}{2\gamma}}$.
+  $c_{\alpha,\beta} \ge \tfrac{1}{2} N^{-3}(M+1)^{-3} e^{\frac{\beta\gamma}{2}}$.
 \end{corollary}
 \begin{proof}
   \leanok
   \uses{cor15, lem29, aux-biased-ladder-nonempty}
   The rearrangement of \ref{cor15}, with $\pressone$ replaced by
-  $\tfrac{1}{2\gamma}$: apply \ref{lem29}, part~1, at $t = c_{\alpha,\beta}$ to
-  the ladder of \ref{aux-biased-ladder-nonempty}. \emph{Formalised, but not
-  sorry-free}: complete in Lean, inheriting \texttt{sorryAx} from \ref{lem29}
-  alone.  Its only addition to the paper is the witness \ref{cor15} needed as
-  well.
+  $\tfrac{1}{2}\gamma$: apply \ref{lem29}, part~1, at $t = c_{\alpha,\beta}$ to
+  the ladder of \ref{aux-biased-ladder-nonempty}.  Its only addition to the
+  paper is the witness \ref{cor15} needed as well.
 \end{proof}
 
 \aux{Lemma}
@@ -2884,30 +2928,30 @@ process pointwise.
     lem28, lem29, aux-biased-ladder-consensus}
   As \ref{thm3}, which is all Appendix~C says. \emph{Formalised, but neither
   sorry-free nor axiom-free}: the assembly is complete in Lean, and inherits
-  \texttt{sorryAx} from \ref{lem28} and~\ref{lem29} together with the second
-  [LM22] axiom, the biased twin \ref{prop12-biased}.
+  \texttt{sorryAx} from \ref{lem28} alone together with the second [LM22]
+  axiom, the biased twin \ref{prop12-biased}.
 
   The four assumptions are checked as in Section~5.3, with $\pressone$ replaced
-  by $\tfrac{1}{2\gamma}$ throughout:
+  by $\tfrac{1}{2}\gamma$ throughout:
   \begin{itemize}
     \item \eqref{eq:h15} at $s_1 = 1$,
-      $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta/(2\gamma)}$, from part 1 of
+      $\varepsilon_1 = 2N^3(M+1)^3 e^{-\beta\gamma/2}$, from part 1 of
       \ref{lem29} through $1 - e^{-x} \le x$;
     \item \eqref{eq:h16} at $s_2 = 2\beta$, from
       \ref{lem28} and the inclusion $\ladder_\alpha \subseteq \ladder_\alpha^o
       \cup C_\alpha^{-o}$ of \ref{aux-biased-ladder-consensus};
-    \item \eqref{eq:h17} at $\delta = 1/(4\gamma)$, from
+    \item \eqref{eq:h17} at $\delta = \gamma/4$, from
       \ref{cor30};
-    \item \eqref{eq:h18} at $\theta = 1/(4\gamma)$, from part 2 of
+    \item \eqref{eq:h18} at $\theta = \gamma/4$, from part 2 of
       \ref{lem29} at $t = 2\beta$.
   \end{itemize}
 
   \textbf{Supplies a step the paper asserts}: Appendix~C names none of the
   constants.  They are what Section~5.3 produces once the exponent
-  $\tfrac{1}{2\gamma}$ replaces $\pressone$ --- halved to $\tfrac{1}{4\gamma}$
+  $\tfrac{1}{2}\gamma$ replaces $\pressone$ --- halved to $\tfrac{1}{4}\gamma$
   to absorb the factor $\beta$ of step~(20), so that $\delta = \theta$ here
   where the unbiased proof had two different values --- together with an
-  explicit threshold $\beta_1 = \max\{1, 4\gamma(2N^3(M+1)^3 + C)\}$ above which
+  explicit threshold $\beta_1 = \max\{1, \tfrac{4}{\gamma}(2N^3(M+1)^3 + C)\}$ above which
   $\varepsilon_1 + \varepsilon_2 \le 1/2$, and, as in Theorem~3, constants taken
   uniform over the finitely many opinions.
 \end{proof}
@@ -2944,7 +2988,8 @@ process pointwise.
 \label{sec:corrections}
 
 Formalising surfaced five places where the written text needs correcting.
-None of them affects the results.
+None of them affects the results.  A sixth, at Proposition~22, was this
+repository's own misreading and is kept below as withdrawn.
 
 \aux{Remark}
 \begin{remark}[Lemma~19: the $\lfloor m \rfloor + 1$ distinct actors]
@@ -3010,58 +3055,49 @@ None of them affects the results.
 \end{remark}
 
 \aux{Remark}
-\begin{remark}[Proposition~22 does not follow from Proposition~6]
+\begin{remark}[Lemma~14: the conditioning of Appendix~B]
+  \label{note-lem14}
+  \uses{lem14}
+  Appendix~B bounds the two failure times separately and multiplies:
+  \[
+    \mathbb{P}(\Rhit{l}(S \setminus (\hat{C}^o \cup C^o)) \ge t)
+    \;\ge\; \mathbb{P}(\tau_1^{-o} \ge t)\,
+      \mathbb{P}(\tau_2^{-o} \ge t \mid \tau_1^{-o} \ge t).
+  \]
+  The first factor is a comparison with an exponential clock and is sound.  The
+  second is reached through
+  $\mathbb{P}(T_{n_j^{-o}} - T_{n_{j-1}^{-o}} > t \mid \tau_1^{-o} \ge
+  T_{n_j^{-o}}) \ge \mathbb{P}(E_j \ge t)$ and a geometric number $G$ of the
+  $E_j$, taken independent of them.  Neither step is argued, and the first
+  conditions on an event that involves the interval it bounds: asking that no
+  negative expression occur before $T_{n_j^{-o}}$ favours short intervals,
+  which is the wrong direction for a lower bound.  The rate bounds the text
+  appeals to --- at most $NM$ for an opening, at most $NMe^{-\beta/(M-1)}$ for a
+  failure --- give domination conditionally on the past, not conditionally on
+  that event.
+
+  Nothing in the conclusion is in doubt, and nothing needs repairing in the
+  estimates.  \ref{lem14} composes the same rates, at the same places and with
+  the same constant, by a first-step comparison with an exponential clock run
+  by induction on the number of jumps; the induction handles the two failure
+  modes at once, so no conditioning between them is needed.  \ref{lem29}
+  inherits the same composition.
+\end{remark}
+
+\aux{Remark}
+\begin{remark}[Proposition~22: a misreading, withdrawn]
   \label{note-prop22}
   \uses{rem7, prop6}
-  Appendix~C says only that ``the proof of Propositions 22, 23 and 24 follows
-  as the proofs of Propositions 6, 7 and 8''.  For Proposition~24 that is
-  right.  For Proposition~22 the transported argument does not reach the
-  stated bound, and the gap is exactly the slack $1/(2\gamma)$ that
-  distinguishes $\tilde{\xi}$ from $\xi$.
-
-  Proposition~6 runs in two cases.  If the first $N$ expressions come from $N$
-  distinct actors then every row was reset, so every entry is at most $N-1$;
-  that case transports unchanged, with $n_a$ in place of
-  $\|U(a,\cdot)\|_\infty$.  If some actor expresses at steps $j < k < N$, then
-  at step $k$ it has heard $k - j - 1$ expressions, and greediness makes its
-  entry the maximum of the whole matrix, so every entry is at most $k-j-1$;
-  over the remaining $N-k$ steps each entry grows by at most one, giving
-  $(k-j-1) + (N-k) = N-j-1 \le N-1$.
-
-  Under $\tilde{\xi}$ the expressed pair is only within $1/(2\gamma)$ of the
-  maximum, so the second case gives
-  \[
-    U^{\alpha,u}_{T_N}(a,p) \;<\; N - j - 1 + \tfrac{1}{2\gamma}
-    \;\le\; N - 1 + \tfrac{1}{2\gamma},
-  \]
-  which is $< N$ only when $\gamma \ge 1/2$.  In the regime of Appendix~C,
-  $\gamma = 1/(M-1) - \alpha$ with $\alpha > 0$, so $\gamma < 1/(M-1)$: for
-  every $M \ge 3$ the transported bound never gives $N$.
-
-  The statement is not obviously false --- the slack is self-correcting, since
-  $u(a,p) \le n_a$ means a large maximum forces an actor that has heard a lot
-  to express, and expressing resets it.  A run started from
-  $n = (0,1,2)$ with $M = N = 3$, $\gamma = 1/4$ does climb to $3$ after two
-  expressions and is then pushed back to $2$ by the third, because the only
-  pair within $1/(2\gamma) = 2$ of the maximum belongs to the actor carrying
-  it.  What is missing is a proof that uses that feedback; the chain of
-  Proposition~6, which never looks at the steps after $k$, cannot supply one.
-  Either such a proof, or a weaker constant such as $N + 1/(2\gamma)$ carried
-  through Propositions~23 and~17 --- both only need a bound depending on
-  $\alpha, M, N$ --- would settle it.
-
-  \textbf{What this blocks is \ref{thm25}}, through
-  \ref{aux-biased-minorisation}: the proof of Theorem~1 that Appendix~C
-  transports takes its box from \ref{prop6}, and \ref{prop22} is that box here.
-  Everything else in that minorisation is proved, so one repair closes Theorem~25
-  outright.  A second route closes it without repairing anything: a Doeblin
-  minorisation needs \emph{a} box, not the paper's constant, and \ref{prop17}
-  gives one in any regime once its gratuitous hypothesis is dropped.  That route
-  is not taken here, because the second half of it --- reading a lower bound off
-  an upper one in $\gamma < \pressone$ --- is an argument the paper does not
-  make; it is written out at \ref{aux-biased-minorisation} for the authors to
-  take or leave.  The remark also blocks \ref{prop23}, through the horizon
-  $C(\alpha,M,N)$ that a bound on the profile is what makes constant.
+  An earlier version of this blueprint recorded here that Proposition~22 does
+  not follow from Proposition~6.  It does.  The finding came from reading the
+  slack of Remark~7 as $\tfrac{1}{2\gamma}$: the chain of Proposition~6 then
+  ends at $N - 1 + \tfrac{1}{2\gamma}$, which is not below $N$ in the regime
+  $\gamma < \pressone$.  The paper writes $\tfrac{1}{2}\gamma$, throughout
+  Appendix~C --- in Remark~7, in $\zeta_{\alpha,\beta}$, and in the exponents of
+  Lemmas~28 and~29 and Corollary~30 --- and the chain ends at $N - 1 +
+  \tfrac{1}{2}\gamma < N$.  \ref{prop22} is proved by the paper's argument, and
+  \ref{thm25} with it.  The error was this repository's, not the paper's; the
+  remark is kept because \texttt{FOR-THE-AUTHORS.md} had reported it.
 \end{remark}
 
 \aux{Remark}
@@ -3115,8 +3151,10 @@ is the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{lem14} and \ref{lem29}.  Verified
-against the pinned revision
+Nothing, any more.  \ref{lem14} and~\ref{lem29} stood here, on the strength of
+the quantitative-convergence entry below; Appendix~B uses no such bound, and
+both are proved.  The list is kept as an audit of what the library lacks.
+Verified against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
@@ -3145,9 +3183,11 @@ against the pinned revision
     what is absent, not only what blocks.
   \item \textbf{Quantitative convergence to $\mathrm{Exp}(1)$}:
     \texttt{TendstoInDistribution} makes the qualitative half expressible, but
-    the Kolmogorov-type bound Appendix~B uses is absent.  With
-    \textbf{total-variation distance between measures}, of which there is
-    nothing usable, this is what \ref{lem14} and \ref{lem29} need.
+    a Kolmogorov-type bound on the distance to $\mathrm{Exp}(1)$ is absent, and
+    so is a usable \textbf{total-variation distance between measures}.
+    \emph{This list was wrong to say that \ref{lem14} and~\ref{lem29} need
+    them}: Appendix~B compares exponential clocks and nothing more, and the
+    comparison is proved here by a first-step induction.
   \item \textbf{Doeblin's condition $\Rightarrow$ a unique invariant measure}:
     nothing.  \texttt{Kernel.Invariant} is defined, together with three lemmas,
     and \emph{no other file in Mathlib uses it}.  Irreducibility is the
@@ -3184,24 +3224,26 @@ needs $\muinv$ to exist, and part~2 of Theorem~2 never mentions $\muinv$.
 
 \subsection*{Blocked on the paper}
 
-\ref{lem19}, \ref{lem20}, \ref{aux-greedy-avoids} and \ref{prop22}; through
-them \ref{prop7}, \ref{prop9}, \ref{prop23}, \ref{thm25}, \ref{prop26},
-\ref{thm2-1}, \ref{thm27} and \ref{lem28}.  In each case the written proof does
-not compose, and the repair changes the argument rather than its presentation,
-so it is recorded --- at \ref{note-lem19}, \ref{note-lem20},
-\ref{note-prop22} and the node of \ref{aux-greedy-avoids} --- rather than
-guessed at in Lean.
+\ref{lem19}, \ref{lem20} and \ref{aux-greedy-avoids}; through them
+\ref{prop7}, \ref{prop9}, \ref{prop23}, \ref{prop26}, \ref{thm2-1},
+\ref{thm27} and \ref{lem28}.  In each case the written proof does not compose,
+and the repair changes the argument rather than its presentation, so it is
+recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
+\ref{aux-greedy-avoids} --- rather than guessed at in Lean.
 
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
-\ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20}, \ref{thm25} from
-\ref{prop22}.  That is what makes an obstruction visible instead of absorbed,
-and it is why \ref{thm25} is not proved by the route that would close it ---
-see \ref{note-green} and \ref{aux-biased-minorisation}.
+\ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20}.  That is what
+makes an obstruction visible instead of absorbed.
+
+\ref{prop22} stood in this list, and \ref{thm25} through it, while this
+blueprint misread the slack of Remark~7 (\ref{note-prop22}); both are proved.
 
 \ref{prop7}'s assembly takes a route that does not need the step the written
-proof asserts.  It is the one departure of that kind here, and the reason is at
-its node.
+proof asserts, and \ref{lem14} composes Appendix~B's estimates without the
+conditioning the written proof uses (\ref{note-lem14}); \ref{lem29} inherits
+that composition.  These are the departures of that kind here, and the reasons
+are at the nodes.
 
 \subsection*{Cited from outside the paper}
 
@@ -3228,21 +3270,22 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Sixty-seven proofs
+\ref{note-green}: does it follow what the paper wrote?  Seventy proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts sixty-eight entries.  Every one of them is named, and
+own, so it counts seventy-one entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (thirty-five). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (thirty-eight). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
-\ref{thm3} and~\ref{thm31}, the minorisation \ref{aux-minorisation} of p.~17
+\ref{thm3} and~\ref{thm31}, \ref{lem14} and its biased twin \ref{lem29},
+\ref{prop22}, the minorisation \ref{aux-minorisation} of p.~17
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
 \ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its own biased
 twin \ref{thm16}, the transfer \ref{eq13} and the uniqueness it settles,
@@ -3269,13 +3312,24 @@ supplied: the inclusion $\ladder \subseteq \ladder^o \cup C^{-o}$, the supremum
 of~(20), and the threshold $\beta_1$; and its \ref{prop12} is an axiom, not a
 theorem. \ref{cor15} is the paper's rearrangement, but needs $\ladder^o \ne
 \emptyset$, which is \ref{aux-ladder-nonempty}; \ref{cor30} is that same
-rearrangement with $\pressone$ replaced by $\tfrac{1}{2\gamma}$, and needs the
-same witness, \ref{aux-biased-ladder-nonempty}. \ref{lem13} is the paper's case
+rearrangement with $\pressone$ replaced by $\tfrac{1}{2}\gamma$, and needs the
+same witness, \ref{aux-biased-ladder-nonempty}. \ref{lem14} keeps
+Appendix~B's mechanism, rates and constant, and composes them by a first-step
+induction in place of the conditioning the text writes, which does not hold
+together (\ref{note-lem14}); it supplies the landing in $\hat{C}^o$, which the
+text asserts, and its blocks are the $N$ expressions of the last stage of
+\ref{prop7} rather than all $(M+1)N$. \ref{lem29} is \ref{lem14} transposed,
+as Appendix~C says, and supplies the two steps the slack $\tfrac{1}{2}\gamma$
+changes: that a near-greedy expression from $C_\alpha^o$ expresses $o$, and
+that a near-greedy run sweeps onto $\ladder_\alpha^o$. \ref{prop22} is the
+chain of \ref{prop6} run under the near-greedy event, ending at $N - 1 +
+\tfrac{1}{2}\gamma < N$, with the lower bound from the row sums of
+equation~(6). \ref{lem13} is the paper's case
 split, resting on two inequalities the paper displays inside proofs rather than
 states --- \ref{aux-hitting-rate} and~\ref{eq19} --- and supplying the
 arithmetic of ``putting the inequalities above together''. \ref{thm31} is the
 same verification as \ref{thm3} with $\pressone$ replaced by
-$\tfrac{1}{2\gamma}$, which is all Appendix~C asks for; it names none of the
+$\tfrac{1}{2}\gamma$, which is all Appendix~C asks for; it names none of the
 constants, so the four they take here are supplied, and it rests on a
 \emph{second} axiom, the biased twin \ref{prop12-biased}, since one cannot serve
 both models.
@@ -3283,8 +3337,9 @@ both models.
 but it applies \ref{lem20} at $\tau(u)$ rather than at $N+1$: the written route
 needs $\bigcup_o S^o$ to be stable under a greedy expression, which the paper
 does not establish, and starting where \ref{lem19} actually lands removes the
-need.  It is the one place where a formalised proof takes a different route
-through the paper's own lemmas, and the reason is written out at the node.
+need.  It is one of the two places where a formalised proof takes a different
+route through the paper's own estimates, \ref{lem14} being the other, and the
+reason is written out at the node.
 \ref{prop17} and~\ref{prop24} are the arguments of \ref{prop6} and~\ref{prop8}
 that Appendix~C invokes; the iteration common to the two is run once in Lean,
 for an arbitrary choice of admissible pairs at each profile, since that is all
@@ -3344,20 +3399,8 @@ drops it.
 biased model, and Appendix~C prescribes exactly that: Theorem~25 ``follows
 exactly as the proof of Theorem~1''.  The two ingredients p.~17 puts together
 are \ref{prop6} and \ref{prop8}; transported, they are \ref{prop22} and
-\ref{prop24}, and those are what the minorisation here consumes.  \ref{prop24}
-is proved and \ref{prop22} is not, so both nodes are written out in full and
-inherit \texttt{sorryAx} from \ref{prop22} alone.
-
-A route that closes \ref{thm25} outright exists and is deliberately not taken:
-\ref{prop17} gives a box after an \emph{exactly} greedy run, at probability
-$(NM)^{-N}$, using no regime hypothesis, and in $\gamma < \pressone$ its
-one-sided bound gives a two-sided one because some opinion carries at least
-$n_a/M$ of what the actor heard.  That second step is in no version of the
-paper, so taking that route would establish a statement of the paper by an
-argument the authors have not written --- see \ref{note-green}.  Both halves of
-the observation are recorded, here and in \texttt{FOR-THE-AUTHORS.md}, as a
-decision for the authors: weakening \ref{prop17} to $\gamma > 0$ is free and
-makes \ref{prop22} unnecessary for Theorem~25.
+\ref{prop24}, and those are what the minorisation here consumes.  Both are
+proved, so both nodes are.
 
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the
@@ -3397,10 +3440,10 @@ theorem applied twice.  The biased low family is read off the pressures of~(6)
 rather than off the entries of the matrix, and that is the only line of the
 argument the two do not share.
 
-\textbf{\ref{prop7} is now the only departure} in this development.  Every other
-proof of a statement of the paper follows the written argument, and where the
-written argument is [GL24]'s rather than the paper's own, that is said at the
-node.
+\textbf{\ref{prop7} and \ref{lem14} are the departures} in this development,
+and \ref{lem29} inherits the second.  Every other proof of a statement of the
+paper follows the written argument, and where the written argument is [GL24]'s
+rather than the paper's own, that is said at the node.
 
 \medskip \noindent\textbf{Supply a step the paper asserts} (sixteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
@@ -3457,11 +3500,11 @@ is being checked here except that they agree.
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the
 result of the audit, and the rule of \ref{note-green} is written to keep it
-that way.  Where the paper's route does not close --- Lemmas~19 and~20, and
-Proposition~22 --- the statement is left unproved and the obstruction is
-recorded in Section~\ref{sec:corrections} above, rather than repaired by an
-argument the authors have not seen; the statements downstream of it,
-\ref{prop7} and \ref{thm25} among them, are written out and left resting on it,
+that way.  Where the paper's route does not close --- Lemmas~19 and~20 ---
+the statement is left unproved and the obstruction is recorded in
+Section~\ref{sec:corrections} above, rather than repaired by an argument the
+authors have not seen; the statements downstream of it, \ref{prop7} among
+them, are written out and left resting on it,
 which is what makes the obstruction visible instead of absorbing it.  Where the route closes but leaves the
 numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
@@ -3470,7 +3513,11 @@ and~\ref{eq19}; the first inherits \texttt{sorryAx} from \ref{lem19}
 and~\ref{lem20}, and the second is proved.  And where the route needs
 a step the paper does not have but a shorter route through the same lemmas does
 not --- \ref{prop7} --- the shorter route is taken and the difference is
-written down, rather than the missing step being assumed.
+written down, rather than the missing step being assumed.  And where the
+written composition of correct estimates does not hold together ---
+\ref{lem14}, and \ref{lem29} after it --- the same estimates are composed in a
+way that does, at the same places and with the same constants, and the
+difference is written down at \ref{note-lem14}.
 \texttt{FOR-THE-AUTHORS.md} at the root of the repository collects those, and
 the decisions they call for, in one place.
 
@@ -3505,25 +3552,21 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{\ref{prop22}}, with a repair, or the weakening of \ref{prop17}
-    at \ref{aux-biased-minorisation}.  Either closes \ref{thm25}
-    outright, and nothing else in it is unproved.  The smallest item on this
-    list, and the only one that is a single decision.
   \item \textbf{\ref{lem19} and~\ref{lem20}}, with the repairs of
     \ref{note-lem19} and~\ref{note-lem20}.  Worth settling with the authors
     first, since the repairs change the written proofs.  \ref{prop7} then
     follows by assembling them with \ref{aux-consensus-ladder}, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1} with them.
-  \item \textbf{The quantitative convergence of Appendix~B}, for \ref{lem14}
-    and~\ref{lem29}: a Kolmogorov-type bound on the distance to
-    $\mathrm{Exp}(1)$, and a usable total-variation distance to state it with.
+  \item \textbf{\ref{lem28}}, the biased twin of \ref{lem13}, which waits on the
+    biased forms of \ref{aux-hitting-rate} and~\ref{eq19}; Appendix~C does not
+    state them.  With it, \ref{thm31} rests on its axiom alone.
 \end{enumerate}
 
-Item 3 is a contribution to Mathlib rather than to this repository, as
-is \ref{aux-doeblin}, which is proved here and is the clearest thing to offer
-upstream; \ref{aux-noexplosion} is a second, being a criterion for a jump-hold
-chain rather than a statement about this model.  The engineering companion to this blueprint,
-\texttt{blueprint/blueprint.md}, records exactly what the library does and does
-not provide, with names, files and line numbers, checked against the pinned
-revision.
+Nothing on this list waits on Mathlib.  \ref{aux-doeblin}, which is proved
+here, is the clearest thing in this repository to offer upstream, and
+\ref{aux-noexplosion} is a second, being a criterion for a jump-hold chain
+rather than a statement about this model.  What the library does and does not
+provide is recorded, with names, files and line numbers checked against the
+pinned revision, in \texttt{blueprint/blueprint.md}, the engineering companion
+to this blueprint.

@@ -29,7 +29,7 @@ contract between the paper and the repository, and holds the detail behind all f
 
 ## Where things stand
 
-Every numbered statement of the paper — 56 statements and displayed equations — is
+Every numbered statement of the paper — 58 statements and displayed equations — is
 stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is proved.
 
 **Proved outright**, depending on nothing but Lean's own axioms:
@@ -55,32 +55,37 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
   process and for the skeleton is proved in both directions
   (`SocialNetwork/Transfer.lean`, `SocialNetwork/Existence.lean`), and neither needs a
   forward equation for the semigroup;
-* the biased model of Section 3, with Propositions 21, 17 and 24, and **Proposition 18
+* **Lemma 14**, both parts, and Corollary 15 with it — the two-sided control of the exit
+  from a consensus set that Appendix B proves by comparing exponential clocks.  Appendix
+  B's composition of its estimates does not hold together as written, and the same
+  estimates are composed here by a first-step induction, with the paper's constant;
+* the biased model of Section 3, with Propositions 21, 17, 22 and 24, and **Proposition 18
   and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
-  surely all but one actor eventually stop expressing.
+  surely all but one actor eventually stop expressing;
+* **Theorem 25**, the invariant measure of the biased skeleton, by Appendix C's route,
+  and **Lemma 29** with Corollary 30, the biased twins of Lemma 14 and Corollary 15.
 
-**Proved modulo one citation**, Theorem 5.3 of [LM22], which the paper invokes as
+**Written out modulo one citation**, Theorem 5.3 of [LM22], which the paper invokes as
 Proposition 12 and nothing in this library can discharge: **both metastability theorems,
-3 and 31**. It is declared as an `axiom` rather than left as a `sorry`, so that it does
+3 and 31**, which also rest on Lemmas 13 and 28 respectively. It is declared as an `axiom` rather than left as a `sorry`, so that it does
 not sit in the inventory of outstanding work pretending to be pickable. There have to be
 two, one per process; [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3 says why a single
 abstract axiom would be inconsistent.
 
 **Written out and resting on an obstruction.** Proposition 7 is assembled from its three
 stages and waits on Lemmas 19 and 20, the two written proofs of Appendix A that do not
-compose; Proposition 9 and Theorem 2.1 wait behind it. Theorem 25 is written on Appendix
-C's own route and rests on Proposition 22. Each inherits `sorryAx` from its obstruction
-and from nothing else, so it turns green the moment that one does.
+compose; Proposition 9 and Theorem 2.1 wait behind it. Each inherits `sorryAx` from its
+obstruction and from nothing else, so it turns green the moment that one does.
 
-What is unproved is unproved for three reasons, which [`STATUS.md`](STATUS.md) keeps
-apart because they are not comparable: Mathlib has no theory of the object, the paper's
-own proof does not compose, or the statement is a citation from outside the paper.
+What is unproved is unproved for two reasons, which [`STATUS.md`](STATUS.md) keeps
+apart because they are not comparable: the paper's own proof does not compose, or the
+statement is a citation from outside the paper.  Nothing waits on Mathlib any more.
 
 **Lean checks the paper's arguments, not only its statements.** A Lean proof here follows
 the paper's proof; where the written argument does not close, the statement is left
 unproved and the obstruction is written down, rather than repaired by an argument the
 authors have not seen. That holds even when another argument would close the statement —
-Theorem 25 is the case to look at. The rule is stated in full in
+Lemmas 19 and 20 are the cases to look at. The rule is stated in full in
 [`CONVENTIONS.md`](CONVENTIONS.md), and [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) is
 what it reports to.
 
@@ -103,7 +108,9 @@ SocialNetwork/Doeblin.lean    Doeblin's criterion, both halves, for any countabl
 SocialNetwork/Markov.lean     the law of a cylinder, and the Markov property of the skeleton
 SocialNetwork/Minorisation.lean    the minorisation of the skeleton chain (the paper's p. 17)
 SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9
-SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1, 2, 3
+SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1 and 2
+SocialNetwork/ConsensusExit.lean   Lemma 14: leaving a consensus set (Appendix B)
+SocialNetwork/Metastability.lean   Corollary 15 and Theorem 3
 SocialNetwork/JumpHold.lean   non-explosion for a jump-hold chain with a slow sub-family
 SocialNetwork/NonExplosion.lean    the bound λ of equation (11) on the low-pressure pairs
 SocialNetwork/Band.lean       the band of [GL24]'s Figure 2, for an arbitrary state space
@@ -112,8 +119,10 @@ SocialNetwork/Graphical.lean  the band of equation (3)'s model, and Theorem 1.1
 SocialNetwork/Transfer.lean   equation (13), from the correspondence of p. 18 one way
 SocialNetwork/Existence.lean  the correspondence the other way, and Theorem 1.2
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
-SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, 31
+SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, Lemma 28
 SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1
+SocialNetwork/BiasedConsensusExit.lean  Lemma 29, the biased twin of Lemma 14
+SocialNetwork/BiasedMetastability.lean  Corollary 30 and Theorem 31
 
 blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
 blueprint/blueprint.md        what Mathlib provides and what it does not, with line numbers
