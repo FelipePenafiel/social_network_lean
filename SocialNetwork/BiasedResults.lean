@@ -3,7 +3,7 @@ Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.BiasedModel
-import SocialNetwork.ContinuousTime
+import SocialNetwork.Metastability
 import SocialNetwork.Frequencies
 import SocialNetwork.Greedy
 
