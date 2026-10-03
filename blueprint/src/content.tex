@@ -546,22 +546,46 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   $\muinv$.
 \end{theorem}
 \begin{proof}
-  \uses{thm1-2-skeleton, eq13, thm1-2-unique}
+  \leanok
+  \uses{thm1-2-skeleton, eq13, thm1-2-unique, thm1-2-exists}
   A uniform Doeblin minorisation gives the skeleton a unique invariant measure
   $\muskel$, which is transferred to continuous time by \ref{eq13}, the
   correspondence being a bijection between the stationary laws of the two
   processes.
 
-  \textbf{Half formalised.}  \emph{Uniqueness} is \ref{thm1-2-unique}:
-  \ref{eq13} writes any invariant probability measure of the process in terms
-  of $\muskel$, which \ref{thm1-2-skeleton} says is unique, so there is at most
-  one.  \emph{Existence is not formalised}, and it is now all that is missing.
-  It is the other direction of the correspondence --- that
-  $\muskel/\jumprate$, normalised, \emph{is} invariant for every $P_t$ --- and
-  \ref{aux-transfer} proves only the direction \ref{eq13} consumes.  A lower
-  bound on $P_t$ is enough for that direction and is not enough for this one,
-  which wants a forward equation for the semigroup; Mathlib has neither that
-  nor a jump process to state it for.
+  \textbf{Follows the paper's proof}, with the step it cites supplied in both
+  directions.  \emph{Uniqueness} is \ref{thm1-2-unique}: \ref{eq13} writes any
+  invariant probability measure of the process in terms of $\muskel$, which
+  \ref{thm1-2-skeleton} says is unique, so there is at most one.
+  \emph{Existence} is \ref{thm1-2-exists}: $\muskel/\jumprate$, normalised, is
+  invariant for every $P_t$.  The two halves rest on the two directions of the
+  correspondence the paper quotes at p.~18, \ref{aux-transfer} and
+  \ref{aux-transfer-converse}, and \ref{thm1-1} enters through the second alone.
+\end{proof}
+
+\paper{Theorem 1.2}
+\begin{theorem}[There is an invariant measure]
+  \label{thm1-2-exists}
+  \lean{SocialNetwork.ctsOfSkeleton, SocialNetwork.ctsOfSkeleton_singleton, SocialNetwork.ctsOfSkeleton_spec}
+  \leanok
+  \uses{eq3, def3, aux-construction}
+  Let $\muskel$ be an invariant probability measure of the skeleton carried by
+  $\Sspace$.  Then the right-hand side of \ref{eq13},
+  \[
+    u \longmapsto \frac{\muskel(u)/\jumprate(u)}
+                       {\sum_{v \in \Sspace} \muskel(v)/\jumprate(v)} ,
+  \]
+  is an invariant probability measure of $(\Uproc{u}_t)_t$ carried by
+  $\Sspace$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{thm1-2-skeleton, aux-rate-floor, aux-transfer-converse}
+  The normalising sum is finite and non-zero by \ref{aux-rate-floor}, so the
+  display is a probability measure, and it is carried by $\Sspace$ because
+  $\muskel$ is.  Its product with the jump rate is $\muskel$ divided by that
+  sum, which the skeleton keeps; \ref{aux-transfer-converse} turns that into
+  invariance for every $P_t$.
 \end{proof}
 
 \paper{Theorem 1.2}
@@ -810,7 +834,56 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   and that appeal is discharged --- but the two events above are read off the
   jump counter directly, whether or not the jump times accumulate afterwards.
   Nor is any Chapman--Kolmogorov identity used: $P_s$ is never composed with
-  $P_t$.
+  $P_t$.  The other direction is \ref{aux-transfer-converse}, and it is the one
+  that needs \ref{thm1-1}.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The correspondence of p.~18, in the other direction]
+  \label{aux-transfer-converse}
+  \lean{SocialNetwork.survival, SocialNetwork.measurable_survival, SocialNetwork.exponentialPDF_totalRate, SocialNetwork.lintegral_expMeasure_totalRate, SocialNetwork.survival_add_lintegral, SocialNetwork.nJumpSet, SocialNetwork.nJumpGraph, SocialNetwork.measurableSet_nJumpGraph, SocialNetwork.measurableSet_nJumpSet, SocialNetwork.nJump, SocialNetwork.measurable_nJump, SocialNetwork.nJump_zero, SocialNetwork.jumpTime_succ_eq_shift, SocialNetwork.state_succ_eq_shift, SocialNetwork.nJumpPairs, SocialNetwork.nJumpSet_succ_eq_preimage, SocialNetwork.measurableSet_nJumpPairs, SocialNetwork.nJump_succ, SocialNetwork.firstStep, SocialNetwork.nJump_succ_eq_firstStep, SocialNetwork.lastStep, SocialNetwork.firstStep_lastStep, SocialNetwork.firstStep_nJump_zero, SocialNetwork.nJump_succ_eq_lastStep, SocialNetwork.mixJump, SocialNetwork.measurable_mixJump, SocialNetwork.mixJump_zero, SocialNetwork.mixJump_succ, SocialNetwork.sum_mixJump_le, SocialNetwork.bddAbove_of_explosionTime_eq_top, SocialNetwork.mem_nJumpSet_jumpCount, SocialNetwork.measurable_explosionTime, SocialNetwork.transitionKernel_le_tsum_nJump, SocialNetwork.invariantCts_of_bind_rateMeasure_le, SocialNetwork.isInvariantCts_iff}
+  \leanok
+  \uses{eq3, def3, aux-construction}
+  Let $\mu$ be a probability measure carried by $\Sspace$ such that
+  $\nu\kappa \le \nu$ for $\nu = \jumprate \cdot \mu$.  Then $\mu$ is invariant
+  for every $P_t$, $t \ge 0$.  With \ref{aux-transfer}: a probability measure
+  carried by $\Sspace$ is invariant for $(\Uproc{u}_t)_t$ if and only if
+  $\jumprate \cdot \mu$ is invariant for the skeleton.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{thm1-1, aux-restart}
+  \textbf{Supplies a step the paper cites}: the other direction of the
+  equivalence quoted at p.~18.  It suffices that $\mu P_t \le \mu$ at every
+  matrix, both sides being probability measures.
+
+  Write $P^{(n)}_t(v,w)$ for the chance, from $v$, of having made exactly $n$
+  expressions by time $t$ and sitting at $w$.  Restarting at the first
+  expression gives $P^{(n+1)} = \mathcal{B} P^{(n)}$, where $\mathcal{B}$
+  averages over the first step --- the pair drawn from $\kappa(v,\cdot)$, the
+  holding time from $\mathrm{Exp}(\jumprate(v))$, independently.  The induction
+  wants the other end instead, the decomposition along the \emph{last}
+  expression before $t$:
+  \[
+    (\mathcal{L}F)(v,w,t) = \sum_x \jumprate(x)\,\kappa(x,w)
+      \int_0^t e^{-\jumprate(w)r}\,F(v,x,t-r)\,dr .
+  \]
+  The two operators commute, by Tonelli alone: each averages over an
+  independent time, and the two shifts add in either order.  They agree on
+  $P^{(0)}$, by the reflection $r \mapsto t - r$.  So $P^{(n+1)} =
+  \mathcal{L}P^{(n)}$ for every $n$, and with it an induction on the number of
+  expressions: if $\sum_v \mu(v) \sum_{n < K} P^{(n)}_s(v, \cdot) \le \mu$ at
+  every $s \ge 0$, one more term costs
+  \[
+    \mu(w)e^{-\jumprate(w)t} + \jumprate(w)\mu(w)\int_0^t e^{-\jumprate(w)r}\,dr
+      = \mu(w) .
+  \]
+
+  \textbf{\ref{thm1-1} is used, and has to be.}  $P_t \le \sum_n P^{(n)}_t$
+  misses exactly the realisations that explode before $t$, and for an explosive
+  chain $\mu$ need not be invariant at all.  Neither direction uses a forward
+  equation for the semigroup or a Chapman--Kolmogorov identity: $\mathcal{L}$ is
+  obtained from $\mathcal{B}$ by Tonelli, not by differentiating $P_t$.
 \end{proof}
 
 \paper{Equation (13)}
@@ -1043,9 +1116,10 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{theorem}
 \begin{proof}
   \uses{prop9, eq13}
-  From \ref{prop9} and the transfer of \ref{eq13}. \textbf{Not formalised}: the
-  statement is about $\muinv$, and there is no $\muinv$ to be concentrated
-  until \ref{thm1-2-skeleton} supplies one.
+  From \ref{prop9} and the transfer of \ref{eq13}. \textbf{Not formalised}:
+  $\muinv$ exists, by \ref{thm1-2}, and \ref{eq13} is proved, but the route is
+  \ref{prop9}, which rests on \ref{lem19} and~\ref{lem20}, and the proof of
+  this theorem is not itself written.
 \end{proof}
 
 \paper{Theorem 2.2}
@@ -3041,21 +3115,22 @@ is the argument behind it.
 
 \subsection*{Blocked on Mathlib}
 
-\ref{lem14} and \ref{lem29}, and the existence half of \ref{thm1-2}.  Verified
+\ref{lem14} and \ref{lem29}.  Verified
 against the pinned revision
 (Mathlib \texttt{v4.33.0} = \texttt{db584cd6}), the following do not exist:
 
 \begin{itemize}
   \item \textbf{The invariance correspondence for a jump process}: nothing,
-    and \emph{half of it is now supplied here}.  That a probability measure is
-    invariant for the process exactly when its product with the jump rate is
-    invariant for the skeleton chain is what \ref{eq13} cites, and the paper
-    cites it rather than proving it.  \ref{aux-transfer} proves the direction
-    \ref{eq13} consumes, from a lower bound on $P_t$ read off the jump-hold
-    representation, and \ref{eq13} is proved with it; the converse, which
-    \ref{thm1-2} needs for existence, is not, and wants a forward equation for
-    the semigroup.  The entry stays: what is proved here is about this jump
-    process, not about jump processes.
+    and \emph{it is now supplied here, in both directions}.  That a probability
+    measure is invariant for the process exactly when its product with the jump
+    rate is invariant for the skeleton chain is what \ref{eq13} cites, and the
+    paper cites it rather than proving it.  \ref{aux-transfer} proves the
+    direction \ref{eq13} consumes, from a lower bound on $P_t$;
+    \ref{aux-transfer-converse} proves the other, which \ref{thm1-2} needs for
+    existence, from the decomposition of $P_t$ along the number of jumps and
+    \ref{thm1-1}.  Neither needs a forward equation for the semigroup.  The
+    entry stays, because this blocks nothing any more but is still absent: what
+    is proved here is about this jump process, not about jump processes.
   \item \textbf{Poisson point processes}: nothing --- Mathlib has the Poisson
     \emph{distribution} on $\mathbb{N}$ and the Poisson limit theorem --- and
     \emph{this list was wrong to say that \ref{thm1-1} and \ref{thm16} need
@@ -3153,15 +3228,15 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Sixty-four proofs
+\ref{note-green}: does it follow what the paper wrote?  Sixty-seven proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts sixty-five entries.  Every one of them is named, and
+own, so it counts sixty-eight entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (thirty-three). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (thirty-five). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
@@ -3171,7 +3246,8 @@ an unaudited proof, and it fails the build.
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
 \ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its own biased
 twin \ref{thm16}, the transfer \ref{eq13} and the uniqueness it settles,
-\ref{thm1-2-unique}, and \ref{rem1}, \ref{rem4}
+\ref{thm1-2-unique}, the existence \ref{thm1-2-exists} and with the two of them
+\ref{thm1-2}, and \ref{rem1}, \ref{rem4}
 and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -3326,16 +3402,17 @@ proof of a statement of the paper follows the written argument, and where the
 written argument is [GL24]'s rather than the paper's own, that is said at the
 node.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (fifteen).
+\medskip \noindent\textbf{Supply a step the paper asserts} (sixteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
 and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, \ref{aux-rate-floor} and
-\ref{aux-transfer}.  Each corresponds to a sentence in the paper of the
+N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, \ref{aux-rate-floor},
+\ref{aux-transfer} and \ref{aux-transfer-converse}.  Each corresponds to a
+sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All fifteen are true; what they are not is checks of
+N+1\}$''.  All sixteen are true; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
@@ -3438,18 +3515,12 @@ In rough order of cost.
     follows by assembling them with \ref{aux-consensus-ladder}, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1} with them.
-  \item \textbf{The converse of \ref{aux-transfer}}, for the existence half of
-    \ref{thm1-2}: that $\muskel/\jumprate$, normalised, \emph{is} invariant for
-    every $P_t$.  \ref{eq13} is now proved and with it the uniqueness half,
-    \ref{thm1-2-unique}, so existence is all that is left of Theorem~1.2.  The
-    direction already proved needs only a lower bound on $P_t$; this one wants a
-    forward equation for the semigroup, which is a different piece of work.
   \item \textbf{The quantitative convergence of Appendix~B}, for \ref{lem14}
     and~\ref{lem29}: a Kolmogorov-type bound on the distance to
     $\mathrm{Exp}(1)$, and a usable total-variation distance to state it with.
 \end{enumerate}
 
-Items 3 and 4 are contributions to Mathlib rather than to this repository, as
+Item 3 is a contribution to Mathlib rather than to this repository, as
 is \ref{aux-doeblin}, which is proved here and is the clearest thing to offer
 upstream; \ref{aux-noexplosion} is a second, being a criterion for a jump-hold
 chain rather than a statement about this model.  The engineering companion to this blueprint,

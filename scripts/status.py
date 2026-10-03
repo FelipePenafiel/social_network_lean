@@ -132,13 +132,6 @@ REASONS: dict[str, tuple[str, str]] = {
 
     "lem14": (BLOCKED_ON_MATHLIB, "the continuous-time analysis of Appendix B"),
     "lem29": (BLOCKED_ON_MATHLIB, "Appendix B, as Lemma 14"),
-    "thm1-2": (
-        BLOCKED_ON_MATHLIB,
-        "only its existence half.  Equation (13) is proved, and with it uniqueness; what is "
-        "missing is the converse of the correspondence — that `μ̃/q`, normalised, *is* "
-        "invariant for every `P_t` — which wants a forward equation for the semigroup "
-        "rather than the lower bound on `P_t` the other direction needs",
-    ),
 }
 
 
@@ -149,6 +142,7 @@ REASONS: dict[str, tuple[str, str]] = {
 PAPER_OVERRIDE: dict[str, str | None] = {
     "thm1-2-skeleton": "Theorem 1.2, skeleton half",
     "thm1-2-unique": "Theorem 1.2, uniqueness half",
+    "thm1-2-exists": "Theorem 1.2, existence half",
     "prop12-biased": "Proposition 12, biased twin",
     "aux-hitting-rate": None,
     "eq19": None,

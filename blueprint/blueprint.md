@@ -263,8 +263,8 @@ Mathlib provides, not of what this repository happens to want.
    which is the form p. 16 argues in; that identification turned out not to be needed, and
    what Theorem 1.1 borrows from that file are two integrals.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing in Mathlib, and **half of it is now supplied
-   here**.  Equation (13) is what carries `μ̃^β` to `μ^β`; its written proof opens *for a
+   the jump chain and of the process.  Nothing in Mathlib, and **it is now supplied here, in
+   both directions**.  Equation (13) is what carries `μ̃^β` to `μ^β`; its written proof opens *for a
    non-explosive process* — which Theorem 1.1 supplies — and then cites the equivalence
    rather than proving it.
 
@@ -281,10 +281,21 @@ Mathlib provides, not of what this repository happens to want.
    Non-explosion is not used: the jump counter is read off the first two holding times
    whatever the later ones do.
 
-   **The converse is what is still missing**, and Theorem 1.2 needs it for existence: that
-   `μ̃/q`, normalised, *is* invariant for every `P_t`.  A lower bound cannot give it.  That,
-   and the general statement for an arbitrary jump process rather than this one, are what a
-   Mathlib contribution here would be.
+   `SocialNetwork/Existence.lean` proves the converse, which Theorem 1.2 needs for existence:
+   that `μ̃/q`, normalised, *is* invariant for every `P_t`
+   (`SocialNetwork.ctsOfSkeleton_spec`, through
+   `SocialNetwork.invariantCts_of_bind_rateMeasure_le`), and Theorem 1.2 with it
+   (`SocialNetwork.existsUnique_invariantCts`).  A lower bound cannot give this direction,
+   and it does not take a forward equation for the semigroup either.  `P_t` is decomposed
+   along the number of jumps made by `t`, which is where Theorem 1.1 enters, and has to;
+   restarting at the first jump gives `P^{(n+1)} = 𝓑 P^{(n)}`, and the decomposition along
+   the *last* jump, `P^{(n+1)} = 𝓛 P^{(n)}`, follows because the two operators commute by
+   Tonelli and agree on `P^{(0)}` by a reflection of `[0, t]`.  An induction on the number of
+   jumps then gives `μ P_t ≤ μ`, and equal masses make it an equality.  Both directions
+   together are `SocialNetwork.isInvariantCts_iff`.
+
+   The general statement, for an arbitrary jump process rather than this one, is what a
+   Mathlib contribution here would be; nothing in this repository waits on it.
 8. **Quantitative convergence to `Exp(1)`.**  `TendstoInDistribution`
    (`Mathlib/MeasureTheory/Function/ConvergenceInDistribution.lean`) is new and makes the
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
@@ -296,9 +307,8 @@ Mathlib provides, not of what this repository happens to want.
 
 Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
 continuous-time versions follow from the discrete ones through the transfer (13) and the
-control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 is
-what item 7 blocks, and nothing else does — and now only its existence half, equation (13)
-and the uniqueness half being proved.
+control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 was
+what item 7 blocked, and nothing else did; with both directions supplied, it is proved.
 
 Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
 mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting
