@@ -14,6 +14,7 @@ import SocialNetwork.Consensus
 import SocialNetwork.ContinuousTime
 import SocialNetwork.Defs
 import SocialNetwork.Doeblin
+import SocialNetwork.Existence
 import SocialNetwork.Favouring
 import SocialNetwork.Frequencies
 import SocialNetwork.Graphical
