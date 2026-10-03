@@ -5,6 +5,8 @@ Released under the Apache 2.0 license.
 import SocialNetwork.Appendix
 import SocialNetwork.Bias
 import SocialNetwork.Clocks
+import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedMetastability
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedNonExplosion
 import SocialNetwork.BiasedResults
