@@ -12,7 +12,9 @@ import SocialNetwork.Greedy
 
 The statements of arXiv:2607.19651 about the model with communication bias: Theorem 4 of
 Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25,
-Proposition 26, Theorem 27, Lemmas 28, 29, Corollary 30 and Theorem 31 of Appendix C.
+Proposition 26, Theorem 27 and Lemma 28 of Appendix C.  Lemma 29 is in
+`SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 are in
+`SocialNetwork.BiasedMetastability`.
 
 The construction mirrors `SocialNetwork.Skeleton` and `SocialNetwork.ContinuousTime`, with the
 memory profile of `SocialNetwork.BiasedModel` as the state: it is countable and discrete, so
@@ -46,7 +48,7 @@ otherwise.
 ## Main statements
 
 Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25,
-Proposition 26, Theorem 27, Lemmas 28 and 29, Corollary 30 and Theorem 31 — all stated.
+Proposition 26, Theorem 27 and Lemma 28 — all stated.
 -/
 
 namespace SocialNetwork
@@ -1851,9 +1853,9 @@ the profile reached after `N` expressions is at most `N`.
 
 **Follows the paper's proof of Proposition 6**, which Section 5.4 invokes, in its two cases.
 Here the quantity that resets and grows by one per step is `nₐ`, and `u (a, p) ≤ nₐ` is what
-connects it to the entries.  Unlike Proposition 22, the chain closes: greediness is exact, so
-the maximum at the repeat time is the expressing actor's own entry, with no slack to
-absorb. -/
+connects it to the entries.  Proposition 22 is the same chain under the near-greedy event,
+which leaves a slack of `γ/2` at the repeat time; here greediness is exact, so the maximum at the
+repeat time is the expressing actor's own entry and there is no slack to absorb. -/
 theorem pressure_stateAfter_le_of_biasedGreedy (_hM : 2 ≤ M) (_hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
     {u : Profile N M} (hu : IsBiasedState u) {ω : ℕ → Jump N M}
     (hgreedy : ∀ k, k < N → IsBiasedGreedyAt γ u ω k) (a : Actor N) (p : Opinion M) :
@@ -2606,12 +2608,11 @@ transposed, on the two ingredients Appendix C names.
   prescribes here.
 * The **sweep** of equation (12) and the **step floor** transpose without change.
 
-Proposition 22 is unproved: its written proof does not close, and the obstruction is recorded
-at the blueprint's `note-prop22` rather than repaired.  So the minorisation and Theorem 25 are
-written out in full and inherit `sorryAx` from it, the way Proposition 7
-(`SocialNetwork.one_sub_le_pathMeasure_ladder`) inherits from Lemmas 19 and 20.  Proposition
-17 would give a box in this regime too, but by an argument Appendix C does not make, and this
-library formalises the paper's arguments rather than its statements.
+Proposition 22 is proved, by the paper's argument (`SocialNetwork.Bias.entry_mem_of_nearGreedy`),
+so the minorisation and Theorem 25 are proved as Appendix C prescribes.  An earlier version of
+this repository read the near-greedy slack as `1/(2γ)` rather than the paper's `½γ`, found the
+transported chain of Proposition 6 not to close, and left both resting on it; that finding was
+the repository's transcription error, not the paper's.
 
 ## Main results
 
@@ -3000,10 +3001,7 @@ with Propositions 6 and 8 replaced by Propositions 22 and 24, which is what Appe
 prescribes: Theorem 25 "follows exactly as the proof of Theorem 1".  The first `N` expressions
 are near-greedy, which by Proposition 22 confines the profile to a box and by Proposition 24
 costs at most `ζ_{α,β}^N`; the last `N` are the descending sweep of equation (12), which from a
-profile so confined lands on `l_α^o` and costs at most `biasedStepFloor ^ N`.
-
-It inherits `sorryAx` from Proposition 22 alone, whose written proof does not close; see the
-blueprint's `note-prop22`. -/
+profile so confined lands on `l_α^o` and costs at most `biasedStepFloor ^ N`. -/
 theorem minorisation_iterateKernel (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
     (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 ≤ β) (o : Opinion M) {P : Profile N M}
     (hP : IsBiasedState P) :
@@ -3051,16 +3049,12 @@ def IsCarriedByBiasedState (μ : Measure (Profile N M)) : Prop :=
 /-- **Theorem 25**, the invariant-measure half.  For `0 < α < 1/(M-1)` the biased skeleton has
 a unique invariant probability measure `μ_{β,α}` carried by `S^α`.
 
-**Not proved outright.**  The proof is the one Appendix C prescribes --- "follows exactly as
-the proof of Theorem 1" --- assembled from `SocialNetwork.Bias.minorisation_iterateKernel` and
-`SocialNetwork.existsUnique_invariant_of_iterate_minorisation`, and it inherits `sorryAx` from
-Proposition 22, whose written proof does not close.  See the blueprint's `note-prop22`: the
-transported chain of Proposition 6 reaches `N - 1 + γ/2`, which is below `N` only for
-`γ ≥ 1/2`, and Appendix C's regime gives `γ < 1/(M-1)`.  Repairing that is the authors' to
-write, so the statement is left resting on it rather than proved by another route.
+**Follows the paper's proof**, the one Appendix C prescribes --- "follows exactly as the proof
+of Theorem 1" --- assembled from `SocialNetwork.Bias.minorisation_iterateKernel` and
+`SocialNetwork.existsUnique_invariant_of_iterate_minorisation`.
 
-The hypothesis `γ < 1/(M-1)` is the paper's `0 < α`, carried here because Theorem 25 states it;
-no step below uses it.  Theorem 25 of the paper also asserts that the biased process does not
+The hypothesis `γ < 1/(M-1)` is the paper's `0 < α`; Proposition 22 uses it, for the lower
+bound of its box.  Theorem 25 of the paper also asserts that the biased process does not
 explode; that half is `SocialNetwork.Bias.biasedNonExplosion` and is not covered here. -/
 theorem existsUnique_biasedInvariant (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
     (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β) :

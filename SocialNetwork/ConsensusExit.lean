@@ -7,7 +7,50 @@ import SocialNetwork.Transfer
 /-!
 # Lemma 14: leaving a consensus set (Appendix B)
 
-Draft.
+Both parts of Lemma 14 of arXiv:2607.19651, with the paper's constant
+`2 N³ (M+1)³ e^{-β/(M-1)}`.
+
+## Main statements
+
+* `SocialNetwork.le_probHittingGT_consensusOther` — **Lemma 14.1**: from `L^o`, `C^{-o}` is not
+  reached before `t` with probability at least `exp (-2 t N³ (M+1)³ e^{-β/(M-1)})`.
+* `SocialNetwork.probHittingLE_consensusOther_le` — **Lemma 14.2**: from `C^o`, it is reached
+  before `t` with probability at most `(N² M + 2 t N³ (M+1)³) e^{-β/(M-1)}`.
+
+## The argument, and where it departs from Appendix B
+
+Appendix B's mechanism is kept, with its ingredients and its constants.  From `L^o` the
+process stays in `L̂^o` until an opinion `p ≠ o` is expressed; against a negative pressure that
+is a failure, at total rate at most `N M e^{-β/(M-1)}`, and by the actor with the null row it
+lands in the extended consensus set `Ĉ^o`, at rate at most `N M`.  From `Ĉ^o` a run of greedy
+expressions returns to `L^o`, and it fails with probability at most `1 - ζ_β^{len}` by
+Proposition 8 and Remark 4.
+
+**The composition is not the paper's, because the written one does not compose.**  Appendix B
+bounds `τ₁⁻ᵒ` and `τ₂⁻ᵒ` separately and multiplies the bounds.  The bound on `τ₂⁻ᵒ` is taken
+conditionally on `τ₁⁻ᵒ ≥ t`, and is reached through
+`P (T_{n_j} - T_{n_{j-1}} > t | τ₁⁻ᵒ ≥ T_{n_j}) ≥ P (E_j ≥ t)` and a geometric number of such
+exponentials taken independent of them.  The conditioning event depends on the interval it
+bounds — no negative expression before `T_{n_j}` favours short intervals — and neither step
+is argued.  Here the same rates are composed by a first-step comparison with an exponential
+clock, by induction on the number of jumps (`SocialNetwork.le_ctsPathMeasure_avoidBefore`):
+from a state of phase `j` (`SocialNetwork.ExitInv`) the target is avoided before
+`min (t, T_n)` with probability at least `ζ_β^j e^{-Λ t}`, and one step of the induction is
+`SocialNetwork.le_ctsPathMeasure_avoidBefore_of_score`.  This is recorded in
+`FOR-THE-AUTHORS.md`.
+
+Two smaller changes, neither of which costs anything.
+
+* **The block** is the `N` expressions of the last stage of Proposition 7
+  (`SocialNetwork.IsSweepable`), not the `(M+1) N` of all of it: the last stage is all a block
+  uses, it does not rest on Lemmas 19 and 20, and it only shortens the constant.  Remark 6
+  makes the same choice.
+* **Theorem 1.1 is not used.**  The event "not reached before `min (t, T_n)`" decreases to "not
+  reached before `t`" whether or not the jump times accumulate
+  (`SocialNetwork.le_ctsPathMeasure_lt_hittingTimeCts`).
+
+**Supplies a step the paper asserts**: that the expression of `p ≠ o` by the null row "leads the
+process to `Ĉ^o`" (`SocialNetwork.IsSteepLadder.express_isExtendedConsensus`).
 -/
 
 namespace SocialNetwork
@@ -1039,7 +1082,12 @@ theorem le_ctsPathMeasure_avoidBefore (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (
           · simp [hg]
 
 /-- **Lemma 14.1.** From a ladder supporting `o`, the consensus for another opinion is not
-reached before time `t` with probability at least `exp (-2 t N³ (M+1)³ e^{-β/(M-1)})`. -/
+reached before time `t` with probability at least `exp (-2 t N³ (M+1)³ e^{-β/(M-1)})`.
+
+**Supplies a step the paper asserts, and takes a different route through one of them.**  The
+mechanism, the rates and the constant are Appendix B's; the composition is a first-step
+comparison with an exponential clock in place of the paper's conditioning on `τ₁⁻ᵒ`, which does
+not compose as written.  See the module docstring. -/
 theorem le_probHittingGT_consensusOther (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {o : Opinion M} {l : Pressure N M} (hl : IsLadder o l) {t : ℝ} (ht : 0 < t) :
     ENNReal.ofReal (Real.exp
@@ -1057,7 +1105,11 @@ theorem le_probHittingGT_consensusOther (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ}
   exact key
 
 /-- **Lemma 14.2.** From a consensus state for `o`, the consensus for another opinion is
-reached before time `t` with probability at most `(N²M + 2 t N³ (M+1)³) e^{-β/(M-1)}`. -/
+reached before time `t` with probability at most `(N²M + 2 t N³ (M+1)³) e^{-β/(M-1)}`.
+
+**Follows the paper's proof**, through part 1's comparison: from `C^o` the first `N`
+expressions are a block, which returns to `L^o` with probability at least `ζ_β^N`, and the rest
+is Remark 4 and `1 - e^{-x} ≤ x`. -/
 theorem probHittingLE_consensusOther_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 ≤ β)
     {o : Opinion M} {u : Pressure N M} (hu : IsConsensus o u) {t : ℝ} (ht : 0 < t) :
     ctsPathMeasure β u {ω | hittingTimeCts u (consensusSetOther N o) ω ≤ ENNReal.ofReal t}
