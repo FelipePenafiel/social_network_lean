@@ -125,6 +125,7 @@ SocialNetwork/BiasedConsensusExit.lean  Lemma 29, the biased twin of Lemma 14
 SocialNetwork/BiasedMetastability.lean  Corollary 30 and Theorem 31
 
 blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
+blueprint/src/packages/papergraph.py   the dependency graph of the paper's results
 blueprint/blueprint.md        what Mathlib provides and what it does not, with line numbers
 scripts/status.py             generates STATUS.md and the CI axiom check from the blueprint
 ```
@@ -154,6 +155,12 @@ leanblueprint serve                # to read the web version locally
 
 Both the web version and the [pdf](https://FelipePenafiel.github.io/social_network_lean/blueprint.pdf)
 are published from every push to `main`.
+
+The web version draws two dependency graphs.  *Dependency graph* has one node per
+result of the paper: the parts of a theorem, and the steps the blueprint splits a proof
+into, are drawn as that theorem, and definitions, equations, remarks and the
+formalisation's own lemmas are drawn through.  *Full dependency graph* has every node of
+the blueprint.
 
 ## Contributing
 

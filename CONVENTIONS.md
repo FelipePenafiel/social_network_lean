@@ -184,11 +184,17 @@ same commit.
 
 Every node is named as the paper names it. `\paper{Proposition 9}` before a statement
 makes it print, and every reference to it read, *Proposition 9*; its label is `prop9`,
-which is the name the dependency graph draws. A statement the paper does not make
+which is the name the full dependency graph draws. A statement the paper does not make
 carries `\aux{Lemma}` instead, is numbered `A.1`, `A.2`, … in a sequence of its own, and
 is labelled `aux-…`. One of the two is mandatory: a statement carrying neither would
 silently inherit the name of the one above it, and `status.py --check` refuses the
 blueprint until it has one.
+
+The dependency graph proper is drawn from those names: one node per result of the
+paper, for every blueprint node that carries its name, the parts of a theorem (Theorem
+1.1 and 1.2 are Theorem 1) and the displays inside its proof; and no node for a
+definition, an equation, a remark or an `\aux` statement, which the arrows run through.
+`blueprint/src/packages/papergraph.py` is where that is decided.
 
 The blueprint is also the input to the tooling:
 
