@@ -12,6 +12,7 @@ import SocialNetwork.BiasedNonExplosion
 import SocialNetwork.BiasedResults
 import SocialNetwork.Band
 import SocialNetwork.BandCollapse
+import SocialNetwork.Concentration
 import SocialNetwork.Consensus
 import SocialNetwork.ConsensusExit
 import SocialNetwork.ContinuousTime

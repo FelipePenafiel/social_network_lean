@@ -322,7 +322,10 @@ missing for it, nor for Corollary 11 and the two displays below it; the blueprin
 `thm2-2` says so at length.  All four are written, and equation (19) is proved outright: what
 they want beyond the clock is the restart above, not anything from this list.
 
-Nothing on this list stands between Theorem 2.1 and a proof.  Proposition 9 is written from
+Nothing on this list stands between Theorem 2.1 and a proof, and it is written:
+`SocialNetwork/Concentration.lean` follows pp. 20–21 from equation (13), Propositions 7, 8
+and 9 and Corollary 10, and the finiteness it needs is `Set.Finite.pi` over a box of
+integers.  Proposition 9 is written from
 Proposition 7, Remark 5, the bound of Proposition 8
 (`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, with the one step
 its own proof asserts supplied (`SocialNetwork.skeleton_ne_of_greedy`); what it waits on is

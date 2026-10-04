@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-9 statements. They are unproved for two different reasons, and
+8 statements. They are unproved for two different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 The group that was only work is empty: every numbered statement of the paper is
@@ -27,14 +27,13 @@ absent.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (7)
+### Blocked on the paper (6)
 
 The written proof does not compose, or its route passes through one that does not.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Theorem 2.1 | `measure_ladderSet_ge` | its own proof is not written, and the route is Proposition 9 — hence Lemmas 19 and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits on Mathlib |
 | Lemma 19 | `isFavouring_state_firstRepeat` | the sequence of `⌊m⌋ + 1` distinct actors is asserted ("by (25)"), never constructed, and the degenerate case is ruled out through `τ(u) = 2` rather than through `m = 0` |
 | Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
@@ -57,9 +56,9 @@ Nothing in this library can discharge them, so no amount of work here will close
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
 | Proved | 31 | 27 | 58 |
-| Proof written, resting on an unproved statement | 9 | 2 | 11 |
+| Proof written, resting on an unproved statement | 10 | 2 | 12 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 7 | 0 | 7 |
+| Stated in Lean, unproved | 6 | 0 | 6 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | **Total** | **64** | **33** | **97** |
 
@@ -89,7 +88,7 @@ are covered, and all 58 of them are stated in Lean.
 | Remark 5 — Steep ladders are stable | `IsSteepLadder.express_of_pos` +3 | proved |
 | Remark 5 — the bound η | `eta` +9 | proved |
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
-| Theorem 2.1 | `measure_ladderSet_ge` | unproved — blocked on the paper |
+| Theorem 2.1 | `measure_ladderSet_ge` +6 | proof written, rests on Lemma 19, Lemma 20 |
 | Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on Lemma 19, Lemma 20 |
 | Theorem 3 | `metastability` | proof written, rests on Proposition 12, Lemma 19, Lemma 20 |
 | equation (5) | `Bias.Profile.express` +4 | stated |

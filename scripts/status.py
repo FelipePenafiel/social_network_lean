@@ -98,12 +98,6 @@ REASONS: dict[str, tuple[str, str]] = {
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "
         "on the biased Proposition 7",
     ),
-    "thm2-1": (
-        BLOCKED_ON_PAPER,
-        "its own proof is not written, and the route is Proposition 9 — hence Lemmas 19 "
-        "and 20 — together with equation (13).  `μ̃^β` now exists, so nothing here waits "
-        "on Mathlib",
-    ),
     "thm27": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
     # -- citations ----------------------------------------------------------
     "prop12": (

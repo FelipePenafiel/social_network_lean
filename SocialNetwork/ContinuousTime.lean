@@ -31,10 +31,12 @@ and appealing to `ProbabilityTheory.Kernel.traj` gives the law of the whole real
 which the jump times `Tₙ`, the process `U_t`, the hitting times `R^{β,u} (θ)` and the
 transition semigroup are all definable.  That is what this file does.
 
-What Mathlib does not have, and what this file therefore only *states*, is the analysis:
-non-explosion (Theorem 1.1), existence and uniqueness of the invariant measure (Theorem 1.2,
-which needs a Doeblin minorisation), the concentration of that measure (Theorem 2.1) and the
-metastability estimate (Theorem 3).  Those carry a `sorry`.  See `blueprint/blueprint.md`.
+What Mathlib does not have is the analysis, and it is carried out in later files: non-explosion
+(Theorem 1.1) in `SocialNetwork.Graphical`, existence and uniqueness of the invariant measure
+(Theorem 1.2, which needs a Doeblin minorisation) in `SocialNetwork.Existence`, the
+concentration of that measure (Theorem 2.1) in `SocialNetwork.Concentration`, and the
+metastability estimate (Theorem 3) in `SocialNetwork.Metastability`.  See
+`blueprint/blueprint.md`.
 
 Theorem 2.2 is **proved**, and so is the display inside its proof.  It says nothing about the
 invariant measure — it is a statement about the process started at a fixed `u` — so Doeblin
@@ -64,14 +66,14 @@ the other way round: `Appendix` used to import this file and never used anything
 * `SocialNetwork.nonExplosion` — **Theorem 1.1**, proved in `SocialNetwork.Graphical`.
 * `SocialNetwork.existsUnique_invariantCts` — **Theorem 1.2**, proved in
   `SocialNetwork.Existence`.
-* `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, unproved.
+* `SocialNetwork.measure_ladderSet_ge` — **Theorem 2.1**, in `SocialNetwork.Concentration`.
 * `SocialNetwork.tendsto_hittingTime_ladderSet` — **Theorem 2.2**, proved from the display
   below, modulo Proposition 7.
 * `SocialNetwork.probHittingGT_ladderSet_le_of_ne_zero` — the display inside the proof of
   Theorem 2.2, proved modulo Proposition 7.
 * `SocialNetwork.zeta_pow_le_ctsPathMeasure_greedyEvents` — **Proposition 8** on this sample
   space, proved.
-* `SocialNetwork.metastability` — **Theorem 3**, unproved.
+* `SocialNetwork.metastability` — **Theorem 3**, in `SocialNetwork.Metastability`.
 -/
 
 namespace SocialNetwork
@@ -1943,16 +1945,8 @@ section Theorem2
 
 variable [NeZero N] [NeZero M]
 
-/-- **Theorem 2.1.** There is a constant `C > 0` such that for every `β ≥ 0` the invariant
-probability measure satisfies `μ^β (L) ≥ 1 - C e^{-β/(M-1)}`.
-
-The paper proves it from Proposition 9 (the skeleton measure of a non-steep-ladder state is
-exponentially small) together with the transfer of equation (13). -/
-theorem measure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) :
-    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ μ : Measure (Pressure N M),
-      IsProbabilityMeasure μ → IsCarriedByState μ → IsInvariantCts β μ →
-        ENNReal.ofReal (1 - C * Real.exp (-β / ((M : ℝ) - 1))) ≤ μ (ladderSet N M) := by
-  sorry
+/-! **Theorem 2.1**, `SocialNetwork.measure_ladderSet_ge`, is in `SocialNetwork.Concentration`:
+its proof goes through equation (13), which `SocialNetwork.Transfer` proves after this file. -/
 
 /-- **The bound displayed inside the proof of part 2 of Theorem 2.**  For any `u ∈ S \ {0}`
 and any `t > 0`,
