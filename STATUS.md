@@ -86,7 +86,7 @@ are covered, and all 60 of them are stated in Lean.
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
 | Theorem 2.1 | `measure_ladderSet_ge` +6 | proof written, rests on Lemma 20 |
 | Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on Lemma 20 |
-| Theorem 3 | `metastability` | proof written, rests on Proposition 12, Lemma 20 |
+| Theorem 3 | `metastability` | proof written, rests on Proposition 12; Lemma 20 |
 | equation (5) | `Bias.Profile.express` +4 | stated |
 | equation (6) | `Bias.Profile` +7 | stated |
 | Remark 1 | `Bias.IsBiasedState.express` +7 | proved |
@@ -94,7 +94,7 @@ are covered, and all 60 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 20, Proposition 23, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 23; Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 20 |
@@ -125,13 +125,13 @@ are covered, and all 60 of them are stated in Lean.
 | Theorem 25.1 | `Bias.biasedNonExplosion_of_pos` | proved |
 | Theorem 25.2 — The invariant measure of the biased skeleton | `Bias.existsUnique_biasedInvariant` +3 | proved |
 | Theorem 25.2 — The invariant measure of the biased process | `Bias.existsUnique_biasedInvariantCts` +4 | proved |
-| Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` +10 | proof written, rests on Lemma 20, Proposition 23 |
-| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` +7 | proof written, rests on Lemma 20, Proposition 23 |
-| Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Lemma 20, Proposition 23 |
-| Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 20, Proposition 23 |
+| Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` +10 | proof written, rests on Proposition 23 |
+| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` +7 | proof written, rests on Proposition 23 |
+| Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Proposition 23 |
+| Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Proposition 23 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proved |
-| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 12, Lemma 20, Proposition 23, Proposition 12, biased twin |
+| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 23; Proposition 12, biased twin |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | axiom — cited from outside the paper |
 
 ### Auxiliary results, with no counterpart in the paper

@@ -16,7 +16,8 @@ lemmas still carry a ``sorry`` compiles, inherits ``sorryAx``, and turns green t
 moment they do.  So *proof written* and *proved* are different questions, and this
 script keeps them apart: a node is **proved** when its own proof is written and every
 node it uses is proved, which is the transitive closure ``leanblueprint`` itself draws
-the dependency graph with.
+the dependency graph with, less the edges of ``TRANSPOSED``: a biased proof citing the
+unbiased proof it is written as.
 
 Run ``python3 scripts/status.py`` to rewrite ``STATUS.md``, or
 ``python3 scripts/status.py --check`` to verify it is current — that is what CI runs.
@@ -129,6 +130,20 @@ NAME_OVERRIDE: dict[str, str] = {
     "lem20-opening": "the opening step",
     "lem20-closing": "the closing step",
 }
+
+# A biased proof that Appendix C gives "as the proof of" an unbiased one cites it in
+# ``\uses``, which draws the arrow in the dependency graph.  The Lean proof transposes the
+# argument to the biased process and does not reach Lemma 20 or Proposition 12 through it,
+# so the status of the biased result does not follow that edge.  Were a biased proof ever
+# to call the unbiased result, the axiom check would catch it once the biased result is
+# declared complete.
+TRANSPOSED: frozenset[tuple[str, str]] = frozenset({
+    ("prop26", "prop9"),
+    ("thm27-1", "thm2-1"),
+    ("thm27-2", "thm2-2"),
+    ("lem28", "lem13"),
+    ("thm31", "thm3"),
+})
 
 
 class Node:
@@ -350,6 +365,11 @@ def has_obligation(node: Node) -> bool:
     return node.kind != "definition" and node.has_proof or node.label in REASONS
 
 
+def proof_uses(node: Node) -> list[str]:
+    """``node.uses`` without the edges of ``TRANSPOSED``."""
+    return [u for u in node.uses if (node.label, u) not in TRANSPOSED]
+
+
 def resolve(nodes: list[Node], axioms: set[str], sorries: set[str]) -> dict[str, str]:
     """The status of every node, as a least fixed point over ``\\uses``.
 
@@ -382,7 +402,7 @@ def resolve(nodes: list[Node], axioms: set[str], sorries: set[str]) -> dict[str,
         for node in nodes:
             if status[node.label] != "pending":
                 continue
-            deps = [status[u] for u in node.uses if u in by_label]
+            deps = [status[u] for u in proof_uses(node) if u in by_label]
             if all(d in ("proved", "stated", "prose") for d in deps):
                 status[node.label] = "proved"
                 changed = True
@@ -396,7 +416,7 @@ def blockers(node: Node, by_label: dict[str, Node], status: dict[str, str]) -> l
     """The unproved nodes the proof of ``node`` ultimately rests on."""
     seen: set[str] = set()
     out: list[str] = []
-    stack = list(node.uses)
+    stack = proof_uses(node)
     while stack:
         label = stack.pop()
         if label in seen or label not in by_label:
@@ -405,7 +425,7 @@ def blockers(node: Node, by_label: dict[str, Node], status: dict[str, str]) -> l
         if status[label] in ("proved", "stated", "prose"):
             continue
         if status[label] == "rests on":
-            stack.extend(by_label[label].uses)
+            stack.extend(proof_uses(by_label[label]))
         else:
             out.append(label)
     return sorted(out, key=lambda l: by_label[l].order)
@@ -578,7 +598,8 @@ def status_cell(node: Node, by_label: dict[str, Node], status: dict[str, str],
                 shared: set[str]) -> str:
     state = status[node.label]
     if state == "rests on":
-        names = ", ".join(display(by_label[b], shared)
+        # A semicolon, since a name may carry a comma: "Proposition 12, biased twin".
+        names = "; ".join(display(by_label[b], shared)
                           for b in blockers(node, by_label, status))
         return f"proof written, rests on {names}"
     if state in ("unproved", "axiom", "not stated") and node.label in REASONS:
