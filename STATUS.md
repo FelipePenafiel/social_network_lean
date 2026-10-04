@@ -38,7 +38,7 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 | Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | the biased twin of Proposition 9: the proof would transpose that one, and rests on the biased Proposition 7 |
-| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Proposition 26, and its own proof is not written |
+| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` | Proposition 26, and its own proof is not written |
 
 ### Cited from outside the paper (2)
 
@@ -55,15 +55,15 @@ Nothing in this library can discharge them, so no amount of work here will close
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
 | Proved | 31 | 28 | 59 |
-| Proof written, resting on an unproved statement | 11 | 2 | 13 |
+| Proof written, resting on an unproved statement | 12 | 2 | 14 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 5 | 0 | 5 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **64** | **34** | **98** |
+| **Total** | **65** | **34** | **99** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
-the paper. Counted as the paper numbers them, 58 statements and displayed equations
-are covered, and all 58 of them are stated in Lean.
+the paper. Counted as the paper numbers them, 59 statements and displayed equations
+are covered, and all 59 of them are stated in Lean.
 
 ### The statements of the paper
 
@@ -97,7 +97,7 @@ are covered, and all 58 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Theorem 27, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Theorem 27.1, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
@@ -127,7 +127,8 @@ are covered, and all 58 of them are stated in Lean.
 | Proposition 24 | `Bias.biasedZeta` +1 | proved |
 | Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | proved |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | unproved — blocked on the paper |
-| Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on the paper |
+| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` | unproved — blocked on the paper |
+| Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proved |

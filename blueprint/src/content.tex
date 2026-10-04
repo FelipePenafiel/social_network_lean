@@ -744,7 +744,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \leanok
   \uses{aux-doeblin, aux-minorisation}
   This is the Doeblin step, and \ref{thm1-2}, \ref{thm2-1}, \ref{thm3},
-  \ref{thm25}, \ref{thm27} and \ref{thm31} all rest on it.
+  \ref{thm25}, \ref{thm27-1} and \ref{thm31} all rest on it.
 
   \ref{aux-minorisation} is the minorisation this chain satisfies and
   \ref{aux-doeblin} is the criterion, which delivers existence and uniqueness
@@ -1448,13 +1448,14 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
       \{A_n^{\alpha,\beta,u} = A_m^{\alpha,\beta,u}\} \bigr) = 1$: all but one
       actor eventually stop expressing.
     \item For $0 \le \alpha < \pressone$, adapted versions of Theorems~1, 2
-      and~3 hold; these are \ref{thm25}, \ref{thm27} and \ref{thm31}.
+      and~3 hold; these are \ref{thm25}, \ref{thm27-1} and~\ref{thm27-2},
+      and \ref{thm31}.
   \end{enumerate}
 \end{theorem}
 \begin{proof}
   \leanok
   \uses{prop17, prop18, thm25,
-    thm27, thm31}
+    thm27-1, thm27-2, thm31}
   \textbf{Part 1 follows the paper's proof, with its recursion run as a single
   fixed-point step.} \ref{prop17} puts the profile after $N$ expressions in
   $B_N^\alpha$ with probability at least $(NM)^{-N}$, and \ref{prop18} takes
@@ -1486,7 +1487,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   expressed pairs, and non-explosion is what makes the \emph{continuous-time}
   process well defined.
 
-  Part 2 is \ref{thm25}, \ref{thm27} and~\ref{thm31}, stated separately and
+  Part 2 is \ref{thm25}, \ref{thm27-1}, \ref{thm27-2} and~\ref{thm31}, stated separately and
   carrying their own status; Theorem~4 as a whole therefore rests on them.
 \end{proof}
 
@@ -2822,25 +2823,50 @@ process pointwise.
   Propositions~6 and~8.
 \end{proof}
 
-\paper{Theorem 27}
+\paper{Theorem 27.1}
 \begin{theorem}[Concentration of $\mu_{\alpha,\beta}$]
-  \label{thm27}
-  \lean{SocialNetwork.Bias.biasedMeasure_ladderSet_ge, SocialNetwork.Bias.tendsto_biasedHittingTime}
+  \label{thm27-1}
+  \lean{SocialNetwork.Bias.biasedMeasure_ladderSet_ge}
   \leanok
   \uses{eq8}
   For $0 < \alpha < \pressone$ there is $C > 0$ with
-  $\mu_{\alpha,\beta}(\ladder_\alpha) \ge 1 - C e^{-\beta(M-1)\alpha}$, and for
-  every fixed $\delta > 0$,
-  $\sup_{u \in \Salpha} \mathbb{P}\bigl( R^{\alpha,\beta,u}(\ladder_\alpha)
-   > e^{-\beta(M-1)\alpha(1-\delta)} \bigr) \to 0$.
+  $\mu_{\alpha,\beta}(\ladder_\alpha) \ge 1 - C e^{-\beta(M-1)\alpha}$.
 \end{theorem}
 \begin{proof}
-  \uses{thm2-1, thm2-2, prop26, rem8}
-  As \ref{thm2-1} and~\ref{thm2-2}, which it bundles the way Theorem~2 was
-  bundled here until those two were split: the lower bound for the jump rate of
-  a non-null state is
+  \uses{thm2-1, prop26, rem8}
+  As \ref{thm2-1}: the lower bound for the jump rate of a non-null state is
   $e^{\beta(M-1)\alpha}$ by \ref{rem8}, and the contribution of the zero matrix
   vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
+\end{proof}
+
+\paper{Theorem 27.2}
+\begin{theorem}[Reaching a biased ladder in time $e^{-\beta(M-1)\alpha}$]
+  \label{thm27-2}
+  \lean{SocialNetwork.Bias.tendsto_biasedHittingTime}
+  \leanok
+  \uses{eq8}
+  For $0 < \alpha < \pressone$ and every fixed $\delta > 0$,
+  $\sup_{u \in \Salpha} \mathbb{P}\bigl( R^{\alpha,\beta,u}(\ladder_\alpha)
+   > e^{-\beta(M-1)\alpha(1-\delta)} \bigr) \to 0$ as $\beta \to +\infty$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{thm2-2, aux-biased-hitting-rate, prop23, prop24, rem8, rem1}
+  Follows the paper's proof, which is ``as the proof of Theorem~2'' with the
+  rate floor of \ref{rem8}: \ref{aux-biased-hitting-rate} at $t =
+  e^{-\beta(M-1)\alpha(1-\delta)}$, with the horizon $K$ of \ref{prop23}.
+  There $e^{\beta(M-1)\alpha} t = e^{\beta(M-1)\alpha\delta} \to \infty$ kills
+  the race term, and Remark~4 for the biased model bounds the first term by
+  $K MN e^{-\beta\gamma/2} \to 0$.  The bound does not depend on $u$, so it
+  bounds the supremum.  Unlike \ref{thm2-2}, the zero matrix need not be
+  excluded: it is not in $\Salpha$ (\ref{rem1}).
+
+  Splitting this node from \ref{thm27-1} is what lets it be written: the two
+  parts of Theorem~27 were bundled the way Theorem~2 was until \ref{thm2-1} and
+  \ref{thm2-2} were split, and part~2 never mentions the invariant measure.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop23} and from nothing else.
 \end{proof}
 
 \aux{Lemma}
@@ -2870,7 +2896,7 @@ process pointwise.
   \leanok
   \uses{prop24, rem8, rem1, aux-biased-ladder-consensus}
   \textbf{Not a numbered statement of the paper}: it is \ref{aux-hitting-rate}
-  transposed, as Appendix~C prescribes for \ref{thm27} (``with the following
+  transposed, as Appendix~C prescribes for Theorem~27 (``with the following
   modifications: the lower bound for the jump rate of any non-null state is
   $e^{\beta(M-1)\alpha}$ by Remark~8'').  \textbf{Follows the paper's proof} of
   \ref{aux-hitting-rate}: split on the near-greedy event, whose complement
@@ -3324,7 +3350,7 @@ needs $\muinv$ to exist, and part~2 of Theorem~2 never mentions $\muinv$.
 
 \ref{lem19}, \ref{lem20} and \ref{aux-greedy-avoids}; through them
 \ref{prop7}, \ref{prop9}, \ref{prop23}, \ref{prop26}, \ref{thm2-1},
-\ref{thm27} and \ref{lem28}.  In each case the written proof does not compose,
+\ref{thm27-1}, \ref{thm27-2} and \ref{lem28}.  In each case the written proof does not compose,
 and the repair changes the argument rather than its presentation, so it is
 recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
 \ref{aux-greedy-avoids} --- rather than guessed at in Lean.
@@ -3332,7 +3358,7 @@ recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
 \ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem19} and~\ref{lem20},
-and \ref{lem28} from \ref{prop23}.  That is what
+and \ref{lem28} and \ref{thm27-2} from \ref{prop23}.  That is what
 makes an obstruction visible instead of absorbed.
 
 \ref{prop22} stood in this list, and \ref{thm25} through it, while this
@@ -3369,18 +3395,19 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Seventy-three proofs
+\ref{note-green}: does it follow what the paper wrote?  Seventy-four proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts seventy-four entries.  Every one of them is named, and
+own, so it counts seventy-five entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (forty-one). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (forty-two). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
-\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and the display
+\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and its biased
+twin \ref{thm27-2}, and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13} and its biased twin \ref{lem28}
 with the display \ref{aux-biased-hitting-rate} inside it, \ref{cor15}
@@ -3471,7 +3498,7 @@ same time and with the same constant, but run as the single fixed-point step $q
 the Markov property itself, which the paper calls strong but applies at what is
 for the skeleton a deterministic time, and the measurability of the failure
 events --- are written out at the node.  Only part~1 is formalised; part~2 is
-\ref{thm25}, \ref{thm27} and~\ref{thm31}, and Theorem~4 rests on them.
+\ref{thm25}, \ref{thm27-1}, \ref{thm27-2} and~\ref{thm31}, and Theorem~4 rests on them.
 
 The four around part~2 of Theorem~2 are the paper's own arguments: an
 exponential race among the holding times of a greedy run for \ref{thm2-2}, and
@@ -3503,7 +3530,9 @@ $(1+MN)^{-(M+1)N}$ is used instead.
 
 \ref{lem28} is \ref{lem13} transposed, as Appendix~C says, and the display
 \ref{aux-biased-hitting-rate} it rests on is \ref{aux-hitting-rate}
-transposed, as Appendix~C prescribes for \ref{thm27}.  \ref{eq19} has no
+transposed, as Appendix~C prescribes for Theorem~27; \ref{thm27-2} is the
+limit it gives, as \ref{thm2-2} is the limit of \ref{aux-hitting-rate}.
+\ref{eq19} has no
 counterpart, the zero matrix not being in $\Salpha$.  One step is supplied:
 the arithmetic that closes the proof.  \ref{lem13}'s step $e^{\beta/(M-1)} \ge
 1$ would give the exponent $2/K$, with $K$ the horizon of \ref{prop23}; the

@@ -120,10 +120,10 @@ SocialNetwork/Transfer.lean   equation (13), from the correspondence of p. 18 on
 SocialNetwork/Existence.lean  the correspondence the other way, and Theorem 1.2
 SocialNetwork/Concentration.lean   Theorem 2.1, from equation (13) and Propositions 7–9
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
-SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27
+SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27.1
 SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1
 SocialNetwork/BiasedConsensusExit.lean  Lemma 29, the biased twin of Lemma 14
-SocialNetwork/BiasedHitting.lean   Lemma 28, the biased twin of Lemma 13
+SocialNetwork/BiasedHitting.lean   Lemma 28 and Theorem 27.2, the biased twins of Lemma 13 and Theorem 2.2
 SocialNetwork/BiasedMetastability.lean  Corollary 30 and Theorem 31
 
 blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
