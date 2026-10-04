@@ -6,6 +6,7 @@ import SocialNetwork.Appendix
 import SocialNetwork.Bias
 import SocialNetwork.Clocks
 import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedHitting
 import SocialNetwork.BiasedMetastability
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedNonExplosion

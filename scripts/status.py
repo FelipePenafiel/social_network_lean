@@ -88,11 +88,6 @@ REASONS: dict[str, tuple[str, str]] = {
         BLOCKED_ON_PAPER,
         "assembles biased analogues of Lemmas 19 and 20, which the paper does not state",
     ),
-    "lem28": (
-        BLOCKED_ON_PAPER,
-        "the biased twin of Lemma 13, and its ingredients — the biased forms of the two "
-        "displays below — are not in the paper either",
-    ),
     "prop26": (
         BLOCKED_ON_PAPER,
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "

@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-8 statements. They are unproved for two different reasons, and
+7 statements. They are unproved for two different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 The group that was only work is empty: every numbered statement of the paper is
@@ -27,7 +27,7 @@ absent.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (6)
+### Blocked on the paper (5)
 
 The written proof does not compose, or its route passes through one that does not.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
@@ -39,7 +39,6 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | the biased twin of Proposition 9: the proof would transpose that one, and rests on the biased Proposition 7 |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | Proposition 26, and its own proof is not written |
-| Lemma 28 | `Bias.biasedProbHitting_le` | the biased twin of Lemma 13, and its ingredients — the biased forms of the two displays below — are not in the paper either |
 
 ### Cited from outside the paper (2)
 
@@ -55,12 +54,12 @@ Nothing in this library can discharge them, so no amount of work here will close
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 31 | 27 | 58 |
-| Proof written, resting on an unproved statement | 10 | 2 | 12 |
+| Proved | 31 | 28 | 59 |
+| Proof written, resting on an unproved statement | 11 | 2 | 13 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 6 | 0 | 6 |
+| Stated in Lean, unproved | 5 | 0 | 5 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **64** | **33** | **97** |
+| **Total** | **64** | **34** | **98** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 58 statements and displayed equations
@@ -98,7 +97,7 @@ are covered, and all 58 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Theorem 27, Lemma 28, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Theorem 27, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
@@ -129,10 +128,10 @@ are covered, and all 58 of them are stated in Lean.
 | Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | proved |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` | unproved — blocked on the paper |
 | Theorem 27 | `Bias.biasedMeasure_ladderSet_ge` +1 | unproved — blocked on the paper |
-| Lemma 28 | `Bias.biasedProbHitting_le` | unproved — blocked on the paper |
+| Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proved |
-| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Lemma 28, Proposition 12, biased twin |
+| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Proposition 12, biased twin |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | axiom — cited from outside the paper |
 
 ### Auxiliary results, with no counterpart in the paper
@@ -174,5 +173,6 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | equation (19) | `probHittingGT_ladderSet_zero_le` | proved |
 | the ladder set is inhabited | `ladderOf` +3 | proved |
 | The minorisation of the biased skeleton | `Bias.biasedDescendState` +19 | proved |
+| Inside the proof of Lemma 28 | `Bias.biasedProbHittingGT_le_of_horizon` +8 | proved |
 | the biased ladder set is inhabited | `Bias.biasedLadderOf` +4 | proved |
 
