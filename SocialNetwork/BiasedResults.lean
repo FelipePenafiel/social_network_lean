@@ -11,9 +11,9 @@ import SocialNetwork.Greedy
 # Section 3 and Appendix C: the results for the biased model
 
 The statements of arXiv:2607.19651 about the model with communication bias: Theorem 4 of
-Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25,
-Proposition 26 and Theorem 27.1 of Appendix C.  Theorem 27.2 and Lemma 28 are in
-`SocialNetwork.BiasedHitting`,
+Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25 and
+Theorem 27.1 of Appendix C.  Proposition 26 is in `SocialNetwork.BiasedConcentration`,
+Theorem 27.2 and Lemma 28 in `SocialNetwork.BiasedHitting`,
 Lemma 29 in `SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 in
 `SocialNetwork.BiasedMetastability`.
 
@@ -48,8 +48,8 @@ otherwise.
 
 ## Main statements
 
-Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25,
-Proposition 26 and Theorem 27.1 — all stated.
+Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25 and
+Theorem 27.1 — all stated.
 -/
 
 namespace SocialNetwork
@@ -3074,14 +3074,9 @@ theorem existsUnique_biasedInvariant (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
     (fun Q hQ => minorisation_iterateKernel hM hN hγ hγ' hβ.le
       ⟨0, Nat.pos_of_ne_zero (NeZero.ne M)⟩ hQ)
 
-/-- **Proposition 26.**  For `0 < α < 1/(M-1)`, `β > 0` and `u ∉ L̂_α`, the invariant measure
-of the biased skeleton satisfies `μ̃_{α,β} (u) ≤ C̃ e^{-β(N-1)}`. -/
-theorem biasedMeasure_le_of_notMem_steepLadder (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
-    (hγ : 0 < γ) (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β)
-    {μ : Measure (Profile N M)} (hμ : IsProbabilityMeasure μ) (hinv : IsBiasedInvariant γ β μ)
-    {u : Profile N M} (hu : u ∉ biasedSteepLadderSet N M γ) :
-    ∃ C : ℝ, 0 < C ∧ μ {u} ≤ ENNReal.ofReal (C * Real.exp (-β * ((N : ℝ) - 1))) := by
-  sorry
+/-! **Proposition 26**, `SocialNetwork.Bias.biasedMeasure_le_of_notMem_steepLadder`, is in
+`SocialNetwork.BiasedConcentration`: its proof uses Kac's inequality and the stability of `L̂_α`
+under the expressions of Remark 5, which are set up there. -/
 
 /-- **Theorem 27.1.**  For `0 < α < 1/(M-1)` there is a constant `C > 0` with
 `μ_{α,β} (L_α) ≥ 1 - C e^{-β (M-1) α}`.

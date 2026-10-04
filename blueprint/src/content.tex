@@ -2785,7 +2785,7 @@ process pointwise.
   \leanok
   \uses{aux-doeblin, aux-biased-minorisation}
   Theorem~25 of the paper bundles two claims: that the biased process does not
-  explode, which is \ref{thm16} and is blocked on Mathlib, and that the biased
+  explode, which is \ref{thm16} and is proved there, and that the biased
   skeleton has a unique invariant probability measure, which is this node.  The
   Lean statement covers the second only, and the statement above is narrowed
   to match it.
@@ -2804,23 +2804,129 @@ process pointwise.
   the one the paper prescribes.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[Remark~5 for the biased model]
+  \label{aux-biased-rem5}
+  \lean{SocialNetwork.Bias.eta_le_biasedJumpPMF_biasedPosFinset,
+    SocialNetwork.Bias.biasedPosFinset,
+    SocialNetwork.Bias.mem_biasedPosFinset,
+    SocialNetwork.Bias.IsBiasedSteepLadder.opinion_eq_of_pos,
+    SocialNetwork.Bias.IsBiasedSteepLadder.express_self,
+    SocialNetwork.Bias.isBiasedSteepLadder_stateAfter,
+    SocialNetwork.Bias.IsBiasedSteepLadder.sum_Ico_exp_le,
+    SocialNetwork.Bias.sum_biasedJumpRate_compl_le}
+  \leanok
+  \uses{eq7, eq8}
+  Let $\gamma > 0$.  On $\steep_\alpha^o$ a pair carrying strictly positive
+  pressure expresses $o$, and expressing $o$ keeps the state in
+  $\steep_\alpha^o$.  For $\hat{l} \in \steep_\alpha$ and $\beta \ge 0$,
+  $\mathbb{P}\bigl(U^{\alpha,\hat{l}}_0(A^\alpha_1, O^\alpha_1) > 0\bigr) \ge
+  \eta$, with the $\eta$ of \ref{rem5-eta}.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{aux-biased-ladder-steep}
+  On $\steep_\alpha^o$ every other opinion carries $-\gamma u(a,o) \le 0$, so a
+  positive entry lies in the $o$-column; expressing $o$ resets one actor to $0$
+  and adds $1$ to the others, which keeps the column distinct, integer-valued
+  and with minimum~$0$.  For the bound, the $N-1$ positive entries of the
+  $o$-column are distinct integers at least $1$, so their rates $e^{\beta
+  u(a,o)}$ sum to at least $\sum_{j=1}^{N-1} e^{\beta j}$, while every other
+  entry is non-positive and has rate at most~$1$.
+
+  \textbf{Supplies a step the paper asserts}: Appendix~C writes ``similarly as
+  discussed in Remark~5'' and states the inclusion and the bound with no
+  argument.  The argument is that of \ref{rem5-stable} and \ref{rem5-eta} with
+  the rate $e^{\beta u(a,o)}$ of \ref{eq7}; the elementary comparison it ends
+  with is the same lemma, \texttt{SocialNetwork.eta\_le\_div\_of\_le}.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The near-greedy run does not revisit $u$]
+  \label{aux-near-greedy-avoids}
+  \lean{SocialNetwork.Bias.stateAfter_ne_of_nearGreedy,
+    SocialNetwork.Bias.IsBiasedSteepLadder.opinion_eq_of_mem_nearArgmaxFinset}
+  \leanok
+  \uses{eq8}
+  Let $0 < \alpha < \pressone$, $u \in \Salpha \setminus \steep_\alpha$, and
+  let $K$ be a horizon at which the near-greedy run from $u$ is on
+  $\ladder_\alpha$, as \ref{prop23} provides.  On $\bigcap_{j=1}^{k}
+  \tilde{\xi}_j^{\alpha,u}$ with $k \ge 1$, one has $\tilde{U}^{\alpha,\beta,u}_k
+  \ne u$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{aux-biased-rem5, aux-biased-ladder-steep}
+  \ref{aux-greedy-avoids} transposed.  Suppose the run is back at $u$ at step
+  $k$, and repeat its first $k$ expressions for ever.  The near-greedy event at
+  a step reads only the state and the expression at that step, so the repeated
+  realisation is near-greedy at every step; at step $K$ it is on
+  $\ladder_\alpha \subseteq \steep_\alpha^o$.  A near-greedy expression there
+  expresses $o$: a steep ladder has an entry at least $1$, the slack is
+  $\tfrac{1}{2}\gamma < 1$, and every other opinion carries non-positive
+  pressure.  So \ref{aux-biased-rem5} keeps the repeated run on
+  $\steep_\alpha^o$, including at the multiple $kK$ of $k$, where it is at $u$.
+
+  \textbf{Supplies a step the paper asserts}, as \ref{aux-greedy-avoids} does:
+  Appendix~C sends Proposition~26 to the proof of Proposition~9, whose ``without
+  visiting $u$'' is read off a proposition that says where the run ends and not
+  where it passes.  The horizon is a hypothesis, so this is proved outright:
+  \ref{prop23} enters at \ref{prop26}, which supplies it.
+\end{proof}
+
 \paper{Proposition 26}
 \begin{proposition}[Concentration off the biased steep ladders]
   \label{prop26}
-  \lean{SocialNetwork.Bias.biasedMeasure_le_of_notMem_steepLadder}
+  \lean{SocialNetwork.Bias.biasedMeasure_le_of_notMem_steepLadder,
+    SocialNetwork.Bias.biasedAvoidSet,
+    SocialNetwork.Bias.measurableSet_biasedAvoidSet,
+    SocialNetwork.Bias.lintegral_biasedPathMeasure_avoidSet,
+    SocialNetwork.Bias.kacAvoid_biasedSkeletonKernel,
+    SocialNetwork.Bias.lintegral_kacAvoid_biasedSkeletonKernel,
+    SocialNetwork.Bias.biasedReturnStep,
+    SocialNetwork.Bias.biasedReturnBound,
+    SocialNetwork.Bias.stateAfter_mem_biasedSteepLadderSet_of_returnStep,
+    SocialNetwork.Bias.biasedReturnBound_prod_le,
+    SocialNetwork.Bias.one_div_biasedZeta_le}
   \leanok
   \uses{eq8, thm25}
-  For $0 < \alpha < \pressone$, $\beta > 0$ and $u \notin \steep_\alpha$,
+  For $0 < \alpha < \pressone$ there is $\tilde{C} > 0$, depending on $M$, $N$
+  and $\alpha$ only, such that for every $\beta \ge 0$ and every
+  $u \in \Salpha \setminus \steep_\alpha$,
   $\tilde{\mu}_{\alpha,\beta}(u) \le \tilde{C} e^{-\beta(N-1)}$.
 \end{proposition}
 \begin{proof}
-  \uses{prop9, prop23, prop24, rem8}
-  As \ref{prop9}, using \ref{rem8} and $0 \notin \Salpha$. \textbf{Not
-  formalised}.  Transporting \ref{prop9} transports what it rests on: where that
-  proof reaches a ladder by \ref{prop7} and prices the run by \ref{prop8}, this
-  one uses \ref{prop23} and~\ref{prop24}.  That is what \ref{prop23} exists for;
-  \ref{thm25} does not use it, the proof of Theorem~1 it transports naming only
-  Propositions~6 and~8.
+  \leanok
+  \uses{prop9, prop23, prop24, aux-biased-rem5, aux-near-greedy-avoids}
+  By Kac's inequality $\tilde{\mu}_{\alpha,\beta}(u)\,
+  \mathbb{E}[\tilde{R}^{\alpha,\beta,u}(u)] \le 1$.  A near-greedy run of $K$
+  steps, $K$ the horizon of \ref{prop23}, takes the process to $\ladder_\alpha$
+  without visiting $u$ (\ref{aux-near-greedy-avoids}) with probability at least
+  $\zeta_{\alpha,\beta}^K$ (\ref{prop24}), and \ref{aux-biased-rem5} then keeps
+  it in $\steep_\alpha$ with probability $\eta$ per step.  Summing the geometric
+  series and using $1 - \eta \le (1+MN) e^{-\beta(N-1)}$ and
+  $\zeta_{\alpha,\beta}^{-1} \le 1 + MN$ gives $\tilde{C} = (1+MN)^{K+1}$.
+
+  \textbf{Follows the paper's proof}, which is ``exactly'' that of \ref{prop9}:
+  Kac's inequality is \texttt{SocialNetwork.kac\_tsum\_le}, stated for any
+  Markov kernel on a countable space, and what is transposed is its bridge to
+  the law of a realisation.  \ref{prop23} and~\ref{prop24} stand where
+  \ref{prop7} and~\ref{prop8} stand there.  \ref{rem8} and $0 \notin \Salpha$,
+  which the paper names, are not used: they are what \ref{thm27-1} needs on top
+  of this proposition.  With no printed constant to reach, the case split of
+  \ref{prop9} is not needed, since $\zeta_{\alpha,\beta} \ge 1/(1+MN)$ for every
+  $\beta \ge 0$.
+
+  \textbf{Restated.}  The Lean statement chose $\tilde{C}$ after $\beta$, $\mu$
+  and $u$, and was then satisfied by $\tilde{C} = e^{\beta(N-1)}$, since
+  $\tilde{\mu}_{\alpha,\beta}$ is a probability measure; the constant now comes
+  first, as ``depending on $M$, $N$ and $\alpha$'' says.  The hypothesis $u \in
+  \Salpha$ is added, as at \ref{prop9}.  The statement holds for every invariant
+  probability measure, not only the one \ref{thm25} names, and for $\beta \ge
+  0$.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop23} and from nothing else.
 \end{proof}
 
 \paper{Theorem 27.1}
@@ -2837,6 +2943,17 @@ process pointwise.
   As \ref{thm2-1}: the lower bound for the jump rate of a non-null state is
   $e^{\beta(M-1)\alpha}$ by \ref{rem8}, and the contribution of the zero matrix
   vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
+
+  Two things stand in the way, and neither is the paper.  The Lean statement
+  is about an invariant measure of the biased \emph{skeleton}, while
+  $\mu_{\alpha,\beta}$ is the invariant measure of the process, the second half
+  of Theorem~25; the proof goes through \ref{eq13}, which relates the two, and
+  does not prove the statement as written.  And neither the biased \ref{eq13}
+  nor the existence of $\mu_{\alpha,\beta}$ is formalised: \ref{thm25} covers
+  the skeleton only.  Both are transpositions of what is proved for the
+  unbiased model (\ref{aux-transfer}, \ref{aux-transfer-converse},
+  \ref{thm1-2-exists}); after them, this proof is that of \ref{thm2-1} and
+  rests on \ref{prop26}.
 \end{proof}
 
 \paper{Theorem 27.2}
@@ -3257,7 +3374,7 @@ repository's own misreading and is kept below as withdrawn.
 \label{sec:missing}
 
 Every numbered statement of arXiv:2607.19651 is stated in Lean.  What is not
-proved is not proved for one of three reasons, and they are not
+proved is not proved for one of four reasons, and they are not
 interchangeable:
 
 \begin{itemize}
@@ -3266,10 +3383,12 @@ interchangeable:
   \item \textbf{blocked on the paper} --- the written proof does not compose,
     and the repair is new mathematics;
   \item \textbf{cited from outside the paper} --- the statement is not a result
-    of this paper at all.
+    of this paper at all;
+  \item \textbf{not formalised yet} --- nothing outside this repository stands in the
+    way.
 \end{itemize}
 
-There is no fourth group: nothing here is unproved merely for want of doing it.
+The fourth group has one entry, \ref{thm27-1}, and its node says what it needs.
 \texttt{STATUS.md} is the generated index, statement by statement; what follows
 is the argument behind it.
 
@@ -3358,7 +3477,7 @@ recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
 \ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem19} and~\ref{lem20},
-and \ref{lem28} and \ref{thm27-2} from \ref{prop23}.  That is what
+and \ref{prop26}, \ref{lem28} and \ref{thm27-2} from \ref{prop23}.  That is what
 makes an obstruction visible instead of absorbed.
 
 \ref{prop22} stood in this list, and \ref{thm25} through it, while this
@@ -3395,16 +3514,17 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Seventy-four proofs
+\ref{note-green}: does it follow what the paper wrote?  Seventy-seven proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts seventy-five entries.  Every one of them is named, and
+own, so it counts seventy-eight entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (forty-two). \ref{prop5},
-\ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
+\medskip \noindent\textbf{Follow the paper's proof} (forty-three). \ref{prop5},
+\ref{prop6}, \ref{prop7}, \ref{prop9} and its biased twin \ref{prop26},
+\ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and its biased
 twin \ref{thm27-2}, and the display
@@ -3539,6 +3659,17 @@ the arithmetic that closes the proof.  \ref{lem13}'s step $e^{\beta/(M-1)} \ge
 exponent $\gamma/2$ the lemma states needs the growth of $e^{\beta(M-1)\alpha}$,
 used through $e^x \ge 1 + x$.
 
+\ref{prop26} is \ref{prop9} transposed, as Appendix~C says, with \ref{prop23}
+and~\ref{prop24} where \ref{prop7} and~\ref{prop8} stand, and Kac's inequality
+unchanged, since it is proved for any Markov kernel on a countable space.  The two
+steps \ref{prop9} supplies are supplied again, as nodes of their own:
+\ref{aux-near-greedy-avoids} for ``without visiting $u$'', and
+\ref{aux-biased-rem5} for the transposed Remark~5.  The case split \ref{prop9}
+needs to reach its printed constant is not needed, there being no printed
+constant, and \ref{rem8} and $0 \notin \Salpha$, which the paper names, are not
+used.  The Lean statement is restated: it chose the constant after $\beta$ and
+$u$, and was satisfied by $e^{\beta(N-1)}$.
+
 \ref{thm1-2-skeleton} is the paper's own route --- a uniform minorisation, then
 Doeblin --- with both steps supplied rather than cited: \ref{aux-minorisation}
 for the first and \ref{aux-doeblin} for the second.  The paper's $N \ge 3$ is
@@ -3595,17 +3726,18 @@ and \ref{lem29} inherits the second.  Every other proof of a statement of the
 paper follows the written argument, and where the written argument is [GL24]'s
 rather than the paper's own, that is said at the node.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (sixteen).
+\medskip \noindent\textbf{Supply a step the paper asserts} (eighteen).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
-and~\ref{rem5-eta-iter}, \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids}
-and~\ref{aux-zero-predecessors}, the bound $\tau(u) \le
+and~\ref{rem5-eta-iter} with their biased twin \ref{aux-biased-rem5},
+\ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids} with its biased twin
+\ref{aux-near-greedy-avoids}, \ref{aux-zero-predecessors}, the bound $\tau(u) \le
 N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, \ref{aux-rate-floor},
 \ref{aux-transfer} and \ref{aux-transfer-converse}.  Each corresponds to a
 sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All sixteen are true; what they are not is checks of
+N+1\}$''.  All eighteen are true; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
@@ -3710,9 +3842,15 @@ In rough order of cost.
     written --- are proved outright, and \ref{thm2-1}, written from them, with
     them.
   \item \textbf{\ref{prop23}}, which assembles biased analogues of \ref{lem19}
-    and~\ref{lem20} that Appendix~C does not state.  \ref{lem28} is written
-    from it and is then proved, and with it \ref{thm31} rests on its axiom
-    alone.
+    and~\ref{lem20} that Appendix~C does not state.  \ref{prop26}, \ref{lem28}
+    and~\ref{thm27-2} are written from it and are then proved, and with
+    \ref{lem28} \ref{thm31} rests on its axiom alone.
+  \item \textbf{\ref{thm27-1}}, which needs the invariant measure of the biased
+    process rather than of its skeleton: the biased \ref{eq13} and the existence
+    half of Theorem~25, transposed from \ref{aux-transfer},
+    \ref{aux-transfer-converse} and~\ref{thm1-2-exists}, then the statement
+    restated for that measure and the proof of \ref{thm2-1} transposed.  It then
+    rests on \ref{prop23}, through \ref{prop26}.
 \end{enumerate}
 
 Nothing on this list waits on Mathlib.  \ref{aux-doeblin}, which is proved
