@@ -9,12 +9,11 @@ the code updates it in the same commit.
 
 Three files at the root divide the rest between them.
 [`STATUS.md`](../STATUS.md) is the generated index of every statement and its status;
-[`FOR-THE-AUTHORS.md`](../FOR-THE-AUTHORS.md) collects what formalising has not been able
-to close and what each item asks of the authors — the written proofs that do not compose,
-the statements that had to be changed, and the two axioms; and
-[`CONVENTIONS.md`](../CONVENTIONS.md) is how the translation is written.  What is blocked
-*there* is blocked on the paper.  Nothing in the repository is blocked on Mathlib any more:
-this file records what the library lacks, and where the repository supplies it.
+[`FOR-THE-AUTHORS.md`](../FOR-THE-AUTHORS.md) lists what formalising found in the paper —
+the statement that fails, the assumptions made, and the misprints and gaps; and
+[`CONVENTIONS.md`](../CONVENTIONS.md) is how the translation is written.  Nothing in the
+repository is blocked on Mathlib: this file records what the library lacks, and where the
+repository supplies it.
 
 What is in this file is the audit that has no place in a mathematical blueprint: exact
 declaration names, file paths and line numbers for what Mathlib does and does not provide.
@@ -23,10 +22,9 @@ Mathlib `v4.33.0` = `db584cd6`).  **Do not trust it against a different revision
 re-checking**; the fastest way to re-check is to clone Mathlib at the pinned tag and grep,
 which is how it was written in the first place.
 
-## Resolved: constructing the process, in discrete *and* continuous time
+## Constructing the process, in discrete *and* continuous time
 
-An early draft listed "construction of the process from a generator" as the principal gap.
-It is not one.
+Constructing the process from its generator is not a gap.
 
 **Discrete time.**  `ProbabilityTheory.Kernel.traj`
 (`Mathlib/Probability/Kernel/IonescuTulcea/Traj.lean:518`) is the Ionescu-Tulcea theorem, and
@@ -55,7 +53,7 @@ every function out of it is measurable; and the law of the next step depends on 
 only through the current matrix, so the one measurability obligation that survives the move to
 the uncountable sample space is discharged by factoring through that countable space.
 
-## Resolved: the strong law, and the infinite product measure
+## The strong law, and the infinite product measure
 
 Proposition 18 rewrites a sum over opinion words as an expectation over an i.i.d. uniform
 sequence and keeps only the words whose empirical frequencies have settled.  Both halves of
@@ -80,7 +78,7 @@ horizon `n`, the words of length `n` meeting the constraint up to `n` carry at l
 mass `P(E_ε^k)` of the uniform law on the `M^n` words.  That is `uniformSeq_freqGood_le`,
 and it is subadditivity plus `infinitePi_pi` on singleton boxes.
 
-## Resolved without Mathlib: the Markov property
+## The Markov property, without Mathlib
 
 **Mathlib has no strong Markov property.**  At the pinned revision there is not one
 occurrence of "strong Markov" in the library.  The only statement of a Markov property is the
@@ -110,7 +108,7 @@ formalism this project uses:
 * `Kernel.condExp_traj` (line 720) — `E[f | F_b] = ∫ f d(traj κ b …)`, which is the shape of
   the paper's display `E[1_{U_{T_N} ∈ B_N} P_{U_{T_N}}(…)]`.
 
-None of these was used in the end.  They decompose the *same* family of kernels, whereas the
+None of these is used.  They decompose the *same* family of kernels, whereas the
 argument needs the shifted trajectory to have the law of the chain **started afresh at the
 profile reached** — a statement about this particular kernel family, since
 `biasedDrivingKernel γ β u n h` depends on the past only through `stateAfterHistory u h (n+1)`.
@@ -141,7 +139,7 @@ it, and the proof here is that proof with the dependence on the prefix collapsed
 It is the clearest candidate for an upstream contribution this file's list has turned up, and
 the only one inside probability.
 
-## Resolved without Mathlib: Kac's lemma, and the skeleton's Markov property
+## Kac's lemma, and the skeleton's Markov property, without Mathlib
 
 **Mathlib has no Kac lemma.**  Every `Kac` in the library is a Kac–Moody algebra.  Nothing here
 waits on one, because what Proposition 9 uses is the inequality rather than the identity.
@@ -179,15 +177,15 @@ application of the Markov property at time `1`, and `SocialNetwork/Markov.lean` 
 `SocialNetwork.kacAvoid_skeletonKernel` (the bridge).  The first two are the transposition to
 the skeleton of the biased lemmas of the section above, proved the same way.
 
-## Still missing, in DISCRETE time
+## Missing from Mathlib, in discrete time
 
 **None of these blocks anything here**: Theorem 1.2 for the skeleton is proved outright, and
 items 1–5 are absent from Mathlib but not needed.  They are kept because the audit is of what
 Mathlib provides, not of what this repository happens to want.
 
 1. **Doeblin's condition ⇒ a unique invariant measure.**  Nothing in Mathlib: `grep` over the
-   whole tree still returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
-   *uniqueness* half is now supplied here instead, in `SocialNetwork/Doeblin.lean`
+   whole tree returns zero hits for `Doeblin`, `minorisation`, `minorization`.  The
+   *uniqueness* half is supplied here instead, in `SocialNetwork/Doeblin.lean`
    (`SocialNetwork.eq_of_invariant_of_iterate_minorisation`): if some iterate of a Markov
    kernel on a countable space is bounded below at one point by `c > 0`, uniformly over a set
    carrying the measures, then at most one invariant probability measure is carried by that
@@ -195,17 +193,16 @@ Mathlib provides, not of what this repository happens to want.
    upstream as much as the shift lemma above does.
 
    The *existence* half is supplied here too, in the same file
-   (`SocialNetwork.exists_invariant_of_iterate_minorisation`), and this is where the audit
-   had been wrong.  It read that existence would need the classical construction of an
-   invariant measure from one excursion of a positive recurrent chain, and hence items 4
-   and 5 below.  It does not.  On a **countable** state space the excursion measure
+   (`SocialNetwork.exists_invariant_of_iterate_minorisation`).  It does not need the
+   classical construction of an invariant measure from one excursion of a positive recurrent
+   chain, nor items 4 and 5 below.  On a **countable** state space the excursion measure
    `ν(y) = ∑ₘ P_l(Ũₘ = y, R_l > m)` is a sum in `[0,∞]`; the minorisation bounds
    `P_l(R_l > m) ≤ (1-c)^m` directly, with no recurrence theorem in between; and invariance
    is the last-exit decomposition written in coordinates, which is `νκ ≤ ν` with equal
    finite total mass.  No positive recurrence, no Kac identity, no compactness.  About sixty
    lines.
 
-   The *minorisation* this chain satisfies — which was never a Mathlib gap, only work — is
+   The *minorisation* this chain satisfies, which is not a Mathlib gap, is
    proved in `SocialNetwork/Minorisation.lean` (`SocialNetwork.minorisation_iterateKernel`).
    Together the two give `SocialNetwork.existsUnique_invariantSkeleton` outright.
 
@@ -231,7 +228,7 @@ Mathlib provides, not of what this repository happens to want.
    for signed and vector measures (Jordan decomposition), not as the distance that uniform
    ergodicity is stated in.
 
-## Still missing, in CONTINUOUS time
+## Missing from Mathlib, in continuous time
 
 6. **Non-explosion criteria.**  Nothing: no Poisson point process (what Mathlib has is the
    Poisson *distribution* on `ℕ`, `ProbabilityTheory.poissonMeasure` in
@@ -242,7 +239,7 @@ Mathlib provides, not of what this repository happens to want.
    smallest.
 
    **This blocks no theorem here, and no proof.**  Theorem 1.1 and Theorem 16 are proved, and
-   [GL24]'s written proof of the sandwich (pp. 12–14) is now verified, without a Poisson
+   [GL24]'s written proof of the sandwich (pp. 12–14) is verified, without a Poisson
    process anywhere.  The band of its Figure 2 is carried by the jump-hold form instead
    (`SocialNetwork/Band.lean`, written for an arbitrary state space so that both models
    instantiate it): draw a mark of the band, then hold for an exponential time of the band's
@@ -261,10 +258,10 @@ Mathlib provides, not of what this repository happens to want.
    one-mark recursion whose exact fixed point is the answer, and a two-sided induction pins
    it between that and that minus the chance that all `n` marks are discarded.
    `SocialNetwork/Clocks.lean` identifies one step with a race between exponential clocks,
-   which is the form p. 16 argues in; that identification turned out not to be needed, and
-   what Theorem 1.1 borrows from that file are two integrals.
+   which is the form p. 16 argues in; Theorem 1.1 does not need that identification, and
+   borrows two integrals from that file.
 7. **The transfer `μ ∝ μ̃ / q`** of equation (13), the bijection between the stationary laws of
-   the jump chain and of the process.  Nothing in Mathlib, and **it is now supplied here, in
+   the jump chain and of the process.  Nothing in Mathlib, and **it is supplied here, in
    both directions**.  Equation (13) is what carries `μ̃^β` to `μ^β`; its written proof opens *for a
    non-explosive process* — which Theorem 1.1 supplies — and then cites the equivalence
    rather than proving it.
@@ -302,35 +299,17 @@ Mathlib provides, not of what this repository happens to want.
    qualitative half of Theorem 3 expressible, with the continuous mapping theorem and
    Slutsky's theorem available; `Mathlib/MeasureTheory/Measure/LevyProkhorovMetric.lean`
    metrises weak convergence.  What is absent is the Kolmogorov-type *bound*, and the
-   criterion of [LM22] that Proposition 12 invokes.  Lemmas 14 and 29 were once filed as
-   waiting on this item; they do not — Appendix B compares exponential clocks, and nothing
-   more — and both are proved (`SocialNetwork/ConsensusExit.lean`,
+   criterion of [LM22] that Proposition 12 invokes.  Lemmas 14 and 29 do not need it —
+   Appendix B compares exponential clocks, and nothing more — and both are proved (`SocialNetwork/ConsensusExit.lean`,
    `SocialNetwork/BiasedConsensusExit.lean`).
 
 ## Which theorems depend on which
 
-Theorems 2 and 3 are, in the paper's own architecture, statements about the **skeleton**: the
-continuous-time versions follow from the discrete ones through the transfer (13) and the
-control of the holding times.  So they are blocked by items 1–3, not by 7.  Theorem 1.2 was
-what item 7 blocked, and nothing else did; with both directions supplied, it is proved.
-
-Theorem 2 is two statements, and only the first of them is blocked here at all.  Part 2 never
-mentions the invariant measure: it bounds the hitting time of `L` from a fixed starting
-matrix, and its proof is Proposition 7 together with an exponential race among the holding
-times, which `SocialNetwork.ctsPathMeasure` already supplies.  Nothing on the list above is
-missing for it, nor for Corollary 11 and the two displays below it; the blueprint node
-`thm2-2` says so at length.  All four are written, and equation (19) is proved outright: what
-they want beyond the clock is the restart above, not anything from this list.
-
-Nothing on this list stands between Theorem 2.1 and a proof, and it is written:
-`SocialNetwork/Concentration.lean` follows pp. 20–21 from equation (13), Propositions 7, 8
-and 9 and Corollary 10, and the finiteness it needs is `Set.Finite.pi` over a box of
-integers.  Proposition 9 is written from
-Proposition 7, Remark 5, the bound of Proposition 8
-(`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, with the one step
-its own proof asserts supplied (`SocialNetwork.skeleton_ne_of_greedy`); what it waits on is
-Lemma 20, which is blocked on the paper.  Equation (13) is the one place where a
-theorem of Section 5 meets this list, through items 6 and 7.
+Nothing on this list blocks a theorem: where the library lacks a theory the paper uses,
+the argument is carried out here.  Equation (13) is the one place where a theorem of
+Section 5 meets the list, through items 6 and 7.  What remains unproved is unproved for
+reasons outside Mathlib: Lemma 20 and Proposition 23 are blocked on the paper, and
+Proposition 12 is a citation (see [`STATUS.md`](../STATUS.md)).
 
 ## A smaller gap, outside probability — closed, but still a gap
 
@@ -347,7 +326,7 @@ entirely: induct on the largest element with `Finset.induction_on_max`
 and `#s` to the bound, and `a ≥ #s` because `s ⊆ range a`.
 `SocialNetwork.Bias.sum_ge_of_injective` is the image of `f` read through it.
 
-The Mathlib gap itself is unchanged: this belongs upstream, in `Mathlib/Data/Finset/Card.lean`
+The Mathlib gap itself remains: this belongs upstream, in `Mathlib/Data/Finset/Card.lean`
 or beside `Finset.sum_range_id_mul_two`, not in a paper formalisation.
 
 ## How to re-check this file

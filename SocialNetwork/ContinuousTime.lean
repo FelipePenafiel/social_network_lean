@@ -663,11 +663,8 @@ noncomputable def hittingTimeCts (u : Pressure N M) (θ : Set (Pressure N M))
 
 **No counterpart in the paper**, which does not address measurability.
 
-An earlier note here claimed this needed an almost-sure formulation, on the grounds that
-reducing the infimum over `{t : 0 ≤ t}` to a countable one needs `t ↦ U_t (ω)` to be
-right-continuous, which holds only where the holding times are positive.  **That was wrong**:
-right-continuity is one route to the reduction, not the only one, and the reduction holds for
-every `ω` — see `SocialNetwork.sInf_image_eq_hittingCandidates`.  What it uses instead is
+The reduction of the infimum over `{t : 0 ≤ t}` to a countable one holds for every `ω`, with
+no appeal to right-continuity — see `SocialNetwork.sInf_image_eq_hittingCandidates`.  It uses
 that the level sets of `jumpCount ω ·` are met by two countable families of times: below the
 explosion time the infimum of a level set is *attained*, at `max (T_k, 0)`, and on the
 explosion event the junk value of `sSup` persists to the right, so the rationals above a time
@@ -2165,11 +2162,7 @@ being the state it lands on; that is what equation (19) below decomposes.
 Read the other way — `τ` an independent copy, and independent of `R^{β,0}(L)` itself — the
 corollary is **false**: `R^{β,0}(L) = T₁ + o(1)` in probability, so the left-hand side tends to
 `P (T₁ > τ)` with `T₁` and `τ` independent and both exponential of rate `MN`, which is `1/2`.
-
-An earlier version of this statement rendered the independence as a supremum over `s ≥ 0`
-weighted by `e^{-MNs}`, which at `s = 0` leaves `P (R^{β,0} (L) > e^{-β(1-δ)/(M-1)})` standing
-alone and tends to `1`.  That was an error of this formalisation, not of the paper; see the
-blueprint node `cor11` and `FOR-THE-AUTHORS.md` §2.6. -/
+See the blueprint node `cor11` and `FOR-THE-AUTHORS.md` §2.6. -/
 theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
       (fun β : ℝ => probHittingGTAfterFirstJump β 0 (ladderSet N M)

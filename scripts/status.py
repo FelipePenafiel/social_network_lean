@@ -93,8 +93,7 @@ REASONS: dict[str, tuple[str, str]] = {
         "the same citation over `Profile N M`.  Two are needed because the abstract "
         "statement is inconsistent",
     ),
-    # -- Mathlib: nothing.  Lemmas 14 and 29 stood here; Appendix B compares
-    # exponential clocks and needs nothing Mathlib lacks, and both are proved.
+    # -- Mathlib: nothing.
 }
 
 
@@ -494,8 +493,8 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     w("the reasons are not comparable: one of these groups will never close here, and one")
     w("needs mathematics only the authors can supply.")
     if NOT_YET not in kinds:
-        w("The group that was only work is empty: every numbered statement of the paper is")
-        w("stated in Lean, and nothing unproved here is unproved for want of doing it.")
+        w("Every numbered statement of the paper is stated in Lean, and nothing unproved")
+        w("here is unproved for want of doing it.")
     if BLOCKED_ON_MATHLIB not in kinds:
         w("Nothing is blocked on Mathlib: where the library lacks a theory the paper uses,")
         w("the argument is carried out here, and `blueprint/blueprint.md` records what is")

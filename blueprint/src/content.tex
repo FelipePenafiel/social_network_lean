@@ -331,9 +331,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   process of rate $\lambda$ is the sequence of partial sums of independent
   $\mathrm{Exp}(\lambda)$ variables.
 
-  \textbf{A correction.}  This node was written to say that the upper bound
-  of~(11) ``is a statement the jump-hold form cannot even express'', and that is
-  too strong.  \ref{thm1-1} is now proved, and proved in the jump-hold form: what
+  \ref{thm1-1} is proved in the jump-hold form: what
   its argument needs of the low-pressure pairs is that they carry Gibbs mass
   $\lambda_<(u)/\jumprate(u)$ and that $\lambda_<(u) \le \lambda$, both of which the
   jump-hold form states directly.  What \ref{thm1-1} borrows from this node are two
@@ -1183,20 +1181,11 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   the proof is complete in Lean and inherits \texttt{sorryAx} from
   \ref{aux-hitting-rate} and from nothing else.
 
-  \textbf{This half does not wait on Doeblin}, and until this node was split
-  from \ref{thm2-1} the repository said it did.  Part~2 never mentions
+  \textbf{This half does not wait on Doeblin.}  Part~2 never mentions
   $\muinv$: it is a statement about the process started at a fixed $u$, and its
   proof is \ref{prop7} and \ref{prop8} by way of \ref{aux-hitting-rate}.  The
   $M = 2$ case is proved that way, in three lines and with no appeal to an
-  invariant measure, at p.~19 of [GL24].  The split moves part~2 --- and with
-  it \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and \ref{rem6} --- out of
-  the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
-  which is to say behind \ref{lem20}.  Writing this proof is
-  what showed the split was not only bookkeeping: nothing but
-  \ref{aux-hitting-rate} was in the way.  \ref{eq19} and~\ref{rem6} have since left that queue
-  too, and outright: neither goes through this node in the end --- \ref{eq19}
-  through \ref{aux-restart} and the clock, \ref{rem6} through the last stage of
-  \ref{prop7} alone --- and neither carries \texttt{sorryAx}.
+  invariant measure, at p.~19 of [GL24].
 \end{proof}
 
 \paper{Theorem 3}
@@ -2025,18 +2014,11 @@ process pointwise.
   left-hand side tends to $\mathbb{P}(T_1 > \tau)$ with $T_1$ and $\tau$
   independent and both exponential of rate $MN$, which is $\tfrac12$.
 
-  \textbf{The Lean statement was wrong, and is now restated.}  It rendered the
-  independence as a supremum over $s \ge 0$ of $e^{-MNs}\,
-  \mathbb{P}(\Rhit{0}(\ladder) > s + e^{-\frac{\beta}{M-1}(1-\delta)})$, whose
-  $s = 0$ term is $\mathbb{P}(\Rhit{0}(\ladder) >
-  e^{-\frac{\beta}{M-1}(1-\delta)})$ with weight $1$ --- at least
-  $e^{-MN e^{-\frac{\beta}{M-1}(1-\delta)}}$, which tends to $1$ and not to
-  $0$.  It now reads
+  The Lean statement reads
   $\mathbb{P}(\Rhit{0}(\ladder) > T_1 + e^{-\frac{\beta}{M-1}(1-\delta)})$,
-  which is the corollary, with $T_1$ exponential of mean $1/(MN)$ by
-  \ref{aux-construction}.  \textbf{A formalisation-side error, not an error of
-  the paper}; \texttt{FOR-THE-AUTHORS.md} §2.6.  The corollary is proved under
-  this reading, and only under it.
+  with $T_1$ exponential of mean $1/(MN)$ by \ref{aux-construction}
+  (\texttt{FOR-THE-AUTHORS.md} §2.6).  The corollary is proved under this
+  reading, and only under it.
 \end{proof}
 
 \paper{Remark 6}
@@ -2077,10 +2059,7 @@ process pointwise.
   stands.  What Remark~6 needs is the \emph{last} stage of \ref{prop7} on its
   own.
 
-  \textbf{Proved outright}, and this node claimed the opposite until it was
-  written.  The claim was that Remark~6 would rest on \ref{prop7}, hence on
-  \ref{lem19} and~\ref{lem20}, because its route is \ref{thm2-2} and
-  \ref{thm2-2} rests on them.  It does not: the route passes through the last
+  \textbf{Proved outright}: the route passes through the last
   stage of \ref{prop7} only, and that stage --- \ref{aux-consensus-ladder} ---
   is proved outright.  Starting inside $C^o$ is exactly what skips
   \ref{lem19} and~\ref{lem20}, whose work is to \emph{get} to $C^o$; neither
@@ -2219,9 +2198,8 @@ process pointwise.
 
   \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
   inherits \texttt{sorryAx} from \ref{prop7}, and so from \ref{lem20}, and
-  from nothing else.  It was filed as a citation from
-  outside the paper until [GL24] showed it is a step of the paper's own proof;
-  it is neither, now that it is proved.
+  from nothing else.  It is a step of the paper's own proof, which [GL24]
+  writes out at its p.~19.
 \end{proof}
 
 \paper{Equation (19)}
@@ -2783,11 +2761,6 @@ process pointwise.
   \ref{eq5}, and the rates of \ref{eq7} are exponentials of $\beta u(a,o)$, so
   each has probability at least $e^{-2\beta B}/MN$.
 
-  This node rested on \ref{prop22} for as long as this blueprint misread the
-  slack of \ref{rem7}; with the paper's $\tfrac{1}{2}\gamma$ it is proved, by the
-  route Appendix~C prescribes.  The route through \ref{prop17} that was
-  recorded here as an alternative is no longer needed.
-
   The two halves compose through the biased form of \ref{aux-nstep}, proved the
   same way.
 \end{proof}
@@ -2810,8 +2783,8 @@ process pointwise.
   pressure below $N$ are at most $NM$ of rate at most $e^{\beta N}$ each, and
   \ref{prop21} puts one of them in every $N$ expressions.  Neither fact sees the
   sign of $\alpha$, only $\gamma = \pressone - \alpha > 0$, so the Lean theorem
-  is stated for every $\gamma > 0$ and contains \ref{thm16}, which is now
-  derived from it.
+  is stated for every $\gamma > 0$ and contains \ref{thm16}, which is derived
+  from it.
 \end{proof}
 
 \paper{Theorem 25.2}
@@ -2839,13 +2812,6 @@ process pointwise.
   applies to the biased skeleton verbatim, it being a Markov kernel on a
   countable space, and \ref{aux-biased-minorisation} is the minorisation it
   consumes.  Existence and uniqueness come together, as there.
-
-  \textbf{Proved.}  This node was left resting on \ref{prop22} while this
-  blueprint misread the slack of \ref{rem7} as $\tfrac{1}{2\gamma}$, and before
-  that it was once marked proved through \ref{prop17}, an argument Appendix~C
-  does not make; neither filing stands.  With the paper's $\tfrac{1}{2}\gamma$,
-  \ref{prop22} follows from \ref{prop6} as Appendix~C says, and the proof here is
-  the one the paper prescribes.
 \end{proof}
 
 \aux{Lemma}
@@ -3122,10 +3088,9 @@ process pointwise.
   \ref{prop9} is not needed, since $\zeta_{\alpha,\beta} \ge 1/(1+MN)$ for every
   $\beta \ge 0$.
 
-  \textbf{Restated.}  The Lean statement chose $\tilde{C}$ after $\beta$, $\mu$
-  and $u$, and was then satisfied by $\tilde{C} = e^{\beta(N-1)}$, since
-  $\tilde{\mu}_{\alpha,\beta}$ is a probability measure; the constant now comes
-  first, as ``depending on $M$, $N$ and $\alpha$'' says.  The hypothesis $u \in
+  The constant comes before $\beta$, $\mu$ and $u$, as ``depending on $M$, $N$
+  and $\alpha$'' says; chosen after them, it could be $e^{\beta(N-1)}$ and the
+  statement would say nothing.  The hypothesis $u \in
   \Salpha$ is added, as at \ref{prop9}.  The statement holds for every invariant
   probability measure, not only the one \ref{thm25} names, and for $\beta \ge
   0$.
@@ -3179,10 +3144,6 @@ process pointwise.
   a pressure below $N$ bounds $n_a$, and with it every count.  The constant uses
   $\zeta_{\alpha,\beta} \ge 1/(1+MN)$, true for every $\beta \ge 0$; at $\beta =
   0$ the bound holds because $C \ge 1$.
-
-  \textbf{Restated.}  The Lean statement was about an invariant measure of the
-  biased \emph{skeleton}; $\mu_{\alpha,\beta}$ is the invariant measure of the
-  process, \ref{thm25-2}, and that is what it is now about.
 
   \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
   inherits \texttt{sorryAx} from \ref{prop23} and from nothing else.
@@ -3587,7 +3548,7 @@ for the authors.
   \texttt{SocialNetwork/Consensus.lean}.
 
   Nothing is wrong with the claim --- unlike \ref{lem20}, it is
-  true as written and now proved.  What is misleading is ``by definition'',
+  true as written, and proved.  What is misleading is ``by definition'',
   which invites a reader to check nothing.  This is the mechanism behind the
   paper's fast consensus formation, and it earns an argument.
 \end{remark}
