@@ -88,12 +88,14 @@ REASONS: dict[str, tuple[str, str]] = {
         BLOCKED_ON_PAPER,
         "assembles biased analogues of Lemmas 19 and 20, which the paper does not state",
     ),
-    "prop26": (
-        BLOCKED_ON_PAPER,
-        "the biased twin of Proposition 9: the proof would transpose that one, and rests "
-        "on the biased Proposition 7",
+    # -- not yet done: nothing outside this repository stands in the way ----
+    "thm27-1": (
+        NOT_YET,
+        "the statement names an invariant measure of the skeleton, where the paper's "
+        "`μ_{α,β}` is that of the process; the biased equation (13) and the existence of "
+        "that measure are not written.  After them the proof is Theorem 2.1's, resting "
+        "on Proposition 26",
     ),
-    "thm27-1": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,
