@@ -31,7 +31,6 @@ the requests below [GL24] has already answered.
 
 | | Statement | The problem | What we need from you |
 |---|---|---|---|
-| [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | the `⌊m⌋ + 1` distinct actors are asserted, never constructed, and the degenerate case is ruled out through the wrong hypothesis | the construction, and the corrected case split.  A proposal is in the blueprint, for you to check or reject |
 | [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
@@ -40,11 +39,12 @@ repository has already taken the only route available, and says so at the declar
 
 | | Statement | What was found |
 |---|---|---|
+| [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | **Proved**, along your proof.  This file asked you for the construction of the `⌊m⌋ + 1` distinct actors and for a corrected case split.  The construction is the one (25) points to — a first passage of the backward walk — and is written out; the case split was right, and **that objection is withdrawn**: `τ(u) ≥ 3` forces `m ≥ 1`.  One misprint in the last display |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | **Withdrawn.**  This file reported that it does not follow from Proposition 6; that came from reading your slack `½γ` as `1/(2γ)`.  With `½γ` it follows exactly as you say, and it is **proved** — and **Theorem 25** with it, by your route |
 | [§1.7](#1-proofs-that-do-not-survive-formalisation) | **Lemma 14** | Appendix B multiplies a bound on `τ₁⁻ᵒ` by one on `τ₂⁻ᵒ` conditioned on `τ₁⁻ᵒ ≥ t`, through a conditioning on an event that involves the interval being bounded.  Your rates compose without it, by a first-step induction, with your constant.  **Proved**, and **Lemma 29** with it, as Appendix C says |
-| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemmas 19 and 20 |
-| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemmas 19 and 20 |
-| [§2.12](#2-statements-that-had-to-be-changed) | **Theorem 2.1** | written out along your pp. 20–21, from equation (13), Propositions 7, 8 and 9 and Corollary 10, and **resting on Lemmas 19 and 20** through them.  One bound in it, `ζ_β^{(M+1)N} ≥ (MN)^{-(M+1)N}`, fails at `β = 0`; `(1+MN)^{-(M+1)N}` is used instead, and only `C` changes |
+| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemma 20 |
+| [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemma 20 |
+| [§2.12](#2-statements-that-had-to-be-changed) | **Theorem 2.1** | written out along your pp. 20–21, from equation (13), Propositions 7, 8 and 9 and Corollary 10, and **resting on Lemma 20** through them.  One bound in it, `ζ_β^{(M+1)N} ≥ (MN)^{-(M+1)N}`, fails at `β = 0`; `(1+MN)^{-(M+1)N}` is used instead, and only `C` changes |
 | [§2.13](#2-statements-that-had-to-be-changed) | **Proposition 26** | written out "exactly as the proofs of Proposition 9", and **resting on Proposition 23** alone.  The Lean statement chose `C̃` after `β` and `u`, and so was satisfied by `e^{β(N-1)}`; restated with `C̃` in front.  Remark 8 and `0 ∉ S^α`, which the paper names here, are not used: they are what Theorem 27.1 needs on top |
 | [§2.14](#2-statements-that-had-to-be-changed) | **Theorem 27.1** | written out "as the proof of Theorem 2" with your modifications, and **resting on Proposition 23** alone, through Proposition 26.  Its Lean statement was about the biased *skeleton*'s invariant measure; it is restated for your `μ_{α,β}`, and **Theorem 25 is now proved in full** — non-explosion, equation (13) for the biased process, and existence and uniqueness of `μ_{α,β}` |
 | [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | written out "as the proof of Lemma 13", and **resting on Proposition 23** alone.  Its display is proved in biased form; equation (19) has nothing to do, since `0 ∉ S^α`.  One step is not Lemma 13's: the exponent `γ/2` needs the growth of `e^{β(M-1)α}`, since `e^{β(M-1)α} ≥ 1` alone gives `2/K` |
@@ -68,10 +68,11 @@ repository has already taken the only route available, and says so at the declar
 
 ## 1. Proofs that do not survive formalisation
 
-Two written proofs do not compose — §§1.1–1.2.  Each is left unproved on
-purpose.  A repair is new mathematics and is yours to write, not the
-formalisation's to guess.  A third, Proposition 22 (§1.3), stood here because of
-this repository's own misreading, and is withdrawn.
+One written proof does not compose — §1.2.  It is left unproved on purpose.  A
+repair is new mathematics and is yours to write, not the formalisation's to
+guess.  Two more stood here because of this repository's own misreadings, and are
+withdrawn: Lemma 19 (§1.1), whose proof does close and is now formalised, and
+Proposition 22 (§1.3).
 
 Four more belong here for different reasons.  **Proposition 7** (§1.4) composes
 only along a different route; the missing step turned out to be avoidable, so it
@@ -83,18 +84,36 @@ form they are proved now, and it is written out, resting on Proposition 23.  And
 here as an item needing a decision, for one clause of one sentence; it does
 not any more, because [GL24] states that clause as its Corollary 8.
 
-### 1.1 Lemma 19 — the `⌊m⌋ + 1` distinct actors
+### 1.1 Lemma 19 — withdrawn: the proof closes
 
-*Blueprint:* `note-lem19`. *Lean:* `SocialNetwork.isFavouring_state_firstRepeat`.
+*Blueprint:* `lem19`, `note-lem19`. *Lean:* `SocialNetwork.isFavouring_state_firstRepeat`,
+**proved**.
 
-The written proof asserts, "by (25)", a sequence of `⌊m⌋ + 1` distinct actors
-without giving the construction, and rules out the degenerate case `m = 0` through
-`τ (u) = 2` rather than through `m = 0` itself.
+An earlier version of this file said that the written proof asserts the `⌊m⌋ + 1`
+distinct actors "by (25)" without constructing them, and that it rules out the
+degenerate case `m = 0` through `τ(u) = 2` rather than through `m = 0` itself, and it
+asked you for both.  **The second objection was this repository's error, and the
+first asked for less than it said.**
 
-**What is needed:** the construction, and the corrected case split.  The blueprint
-records a first-passage decomposition of the backward walk that does produce the
-actors, and the case split that works — but as a *proposal for you to check*, not
-as something the formalisation has adopted.
+* **The case split is right.**  Under `ξ_{τ(u)}` with `τ(u) ≥ 3`, the actor
+  `A_{τ(u)-2}` has heard exactly one expression, that of `A_{τ(u)-1}`, so it carries
+  `1` on `O_{τ(u)-1}`; since `m` is the maximal entry, `m ≥ 1`.  So `m < 1` forces
+  `τ(u) = 2`, which is the case your proof sets aside.  The one line missing is that
+  one.
+* **The construction is the one (25) points to.**  Read backwards from
+  `A_{τ(u)-1}`, the pressure for `O_{τ(u)}` starts at `0`, reaches `m` at the repeated
+  actor and, by (25), climbs at most `1` per step, so it skips none of the levels
+  `r, 1 + r, …, m`.  The first index at which it reaches each level overshoots by
+  less than `1`, so these indices name distinct actors, none of them `A_{τ(u)}`.  This
+  is how the Lean proof obtains them.
+
+The Lean proof follows yours, with your witnesses `n(u) = ⌊m⌋`, `r = m - ⌊m⌋`,
+`o = O_{τ(u)}`.  Besides the two points above it supplies `n(u) ≤ N - 1`, which holds
+because the witnesses avoid `A_{τ(u)}`.  **One misprint**: the last display bounds the
+other columns by `m + (m - ⌊m⌋) - 1/(M-1)`; Definition 5 needs
+`⌊m⌋ + (m - ⌊m⌋) - 1/(M-1) = m - 1/(M-1)`, which is what holds.
+
+**Nothing here needs a decision.**
 
 ### 1.2 Lemma 20 — the induction invariant is not preserved
 
@@ -136,7 +155,7 @@ with it.
 ### 1.4 Proposition 7 — the written route needs a step that is not there
 
 *Blueprint:* `prop7`. *Lean:* `SocialNetwork.isLadder_state_of_greedy`,
-**proved** (modulo Lemmas 19 and 20).
+**proved** (modulo Lemma 20).
 
 The written proof has three stages and its arithmetic is right.  What it does not
 have is the glue between the first two.
@@ -220,8 +239,7 @@ than of the paper; it is now restated in the paper's own form.  See §2.9.
 
 *Blueprint:* `aux-greedy-avoids`. *Lean:* `SocialNetwork.skeleton_ne_of_greedy`.
 *Proposition 9 itself:* `SocialNetwork.measure_le_of_notMem_steepLadderSet`,
-**proved** modulo this one step (and, through Proposition 7, modulo Lemmas 19
-and 20).
+**proved** modulo this one step (and, through Proposition 7, modulo Lemma 20).
 
 The proof of Proposition 9 bounds the return time below by
 
@@ -260,7 +278,7 @@ and the hypothesis is used exactly once, at that last step.
 
 The argument is deterministic, so it needed no restart and no Markov property,
 and it is stated on one realisation.  **Proved**; Proposition 9 now rests only on
-Lemmas 19 and 20, through Proposition 7.  [`GL24.md`](GL24.md) §2.1 records how
+Lemma 20, through Proposition 7.  [`GL24.md`](GL24.md) §2.1 records how
 it was found.
 
 ### 1.7 Lemma 14 — the conditioning of Appendix B

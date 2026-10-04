@@ -38,8 +38,7 @@ paper actually wrote.
 to be that the paper's route cannot be followed** — Mathlib lacks the theory, or the
 written proof does not compose. Convenience is not a reason: a shorter route that
 bypasses the paper's argument is a check not performed. A departure of the second kind
-is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemmas 19
-and 20.
+is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemma 20.
 
 There are two such departures in the repository at present: **Proposition 7** and
 **Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§1.4 and 1.7;
@@ -75,8 +74,8 @@ produces that a reader of the paper does not already have. So the proof is writt
 in full on the paper's own ingredients, it inherits `sorryAx` from the step that fails,
 and the alternative route is described in `FOR-THE-AUTHORS.md` for the authors to take
 or leave. Proposition 7 is the case to look at: it is written out in full on Lemmas 19
-and 20 and inherits `sorryAx` from them, and the repairs the blueprint records for those
-two are deliberately not adopted.
+and 20 and inherits `sorryAx` from Lemma 20, and the repair the blueprint records for it is
+deliberately not adopted.
 
 **A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
 same estimates, applied at the same places and with the same constants, but arranges them

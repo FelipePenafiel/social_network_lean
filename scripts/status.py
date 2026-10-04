@@ -73,12 +73,6 @@ HEADNOTE = {
 # is recorded rather than computed.
 REASONS: dict[str, tuple[str, str]] = {
     # -- the written proof does not compose ---------------------------------
-    "lem19": (
-        BLOCKED_ON_PAPER,
-        "the sequence of `⌊m⌋ + 1` distinct actors is asserted "
-        '("by (25)"), never constructed, and the degenerate case is ruled out '
-        "through `τ(u) = 2` rather than through `m = 0`",
-    ),
     "lem20": (
         BLOCKED_ON_PAPER,
         "the induction invariant is not preserved: the actor that expresses at step `k` "

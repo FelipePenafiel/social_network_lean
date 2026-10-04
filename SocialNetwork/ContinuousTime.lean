@@ -45,7 +45,7 @@ never enters, and what it needs instead is the analysis of the clock in
 past, each holding time is exponential of rate `q_β` at the matrix the history reaches, a
 greedy run never sits at the zero matrix where that rate is small, and Proposition 8
 transports from the skeleton to this sample space.  Both inherit `sorryAx` from Proposition 7,
-and so from Lemmas 19 and 20, and from nothing else.
+and so from Lemma 20, and from nothing else.
 
 That is why this file imports `SocialNetwork.Appendix`, where Proposition 7 lives, rather than
 the other way round: `Appendix` used to import this file and never used anything from it.

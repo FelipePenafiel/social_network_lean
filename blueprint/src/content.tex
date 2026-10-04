@@ -40,7 +40,7 @@ not proved --- which of four kinds of obstruction it has met.
   The rule this development works under is that a Lean proof \textbf{follows
   the paper's proof} wherever the paper gives one.  Reaching the conclusion
   another way checks nothing about what was written, and checking what was
-  written is how \ref{lem19} and~\ref{lem20} came to be flagged.  The exception
+  written is how \ref{lem20} came to be flagged.  The exception
   is what the paper leaves implicit --- a step asserted with ``note that'' or
   ``by definition'', and everything measure-theoretic --- which has to be
   supplied, and is then marked as supplied.
@@ -49,9 +49,10 @@ not proved --- which of four kinds of obstruction it has met.
   the statement is left resting on the step that fails, even when a different
   argument would establish it: closing it another way would record a theorem and
   lose the finding, which is the one thing this development produces that a
-  reader of the paper does not already have.  \ref{lem19} and~\ref{lem20} are
-  the cases to look at --- a repair of each is recorded at \ref{note-lem19}
-  and~\ref{note-lem20} and deliberately not adopted.
+  reader of the paper does not already have.  \ref{lem20} is the case to look
+  at --- a repair is recorded at \ref{note-lem20} and deliberately not adopted.
+  \ref{lem19} stood beside it, and is proved: its written proof does close, and
+  \ref{note-lem19} records what it leaves to the reader.
 
   So each proof environment below opens by saying which it is: it follows the
   paper's proof of such and such, it supplies a step the paper asserts, or it
@@ -1152,7 +1153,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 
   \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
   inherits \texttt{sorryAx} from \ref{prop7}, \ref{prop9} and \ref{cor10},
-  hence from \ref{lem19} and~\ref{lem20}, and from nothing else.
+  hence from \ref{lem20}, and from nothing else.
 \end{proof}
 
 \paper{Theorem 2.2}
@@ -1190,7 +1191,7 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   invariant measure, at p.~19 of [GL24].  The split moves part~2 --- and with
   it \ref{cor11}, \ref{aux-hitting-rate}, \ref{eq19} and \ref{rem6} --- out of
   the queue behind \ref{thm1-2-skeleton} and into the one behind \ref{prop7},
-  which is to say behind \ref{lem19} and~\ref{lem20}.  Writing this proof is
+  which is to say behind \ref{lem20}.  Writing this proof is
   what showed the split was not only bookkeeping: nothing but
   \ref{aux-hitting-rate} was in the way.  \ref{eq19} and~\ref{rem6} have since left that queue
   too, and outright: neither goes through this node in the end --- \ref{eq19}
@@ -1628,7 +1629,7 @@ process pointwise.
   of $(M+1)N$.  Composing the three requires restarting the realisation at an
   intermediate time, which is \ref{aux-shift}. \emph{Formalised, but not
   sorry-free}: the assembly is complete in Lean and inherits \texttt{sorryAx}
-  from \ref{lem19} and~\ref{lem20} alone.
+  from \ref{lem20} alone.
 
   \textbf{Supplies a step the paper asserts, and takes a different route
   through one of them.} The written proof carries the process to $\bigcup_o
@@ -1846,7 +1847,7 @@ process pointwise.
   throughout and which \ref{prop7} --- called here --- is stated with.
 
   \textbf{Rests on} \ref{aux-greedy-avoids}, and through \ref{prop7} on
-  \ref{lem19} and~\ref{lem20}.
+  \ref{lem20}.
 \end{proof}
 
 \aux{Lemma}
@@ -1922,8 +1923,8 @@ process pointwise.
   maximum is what the step costs is the normalisation of the rates of
   \ref{def3}, and that is part 3 of \ref{aux-zero-predecessors}.
 
-  \textbf{Rests on} \ref{prop9}, and through it on \ref{aux-greedy-avoids},
-  \ref{lem19} and~\ref{lem20}.
+  \textbf{Rests on} \ref{prop9}, and through it on \ref{aux-greedy-avoids}
+  and~\ref{lem20}.
 \end{proof}
 
 \aux{Lemma}
@@ -2004,7 +2005,7 @@ process pointwise.
   part~2, whose hypothesis --- every holding time positive --- is part~3 of
   \ref{aux-holding-times}.  \emph{Formalised, but not sorry-free}: the proof is
   complete in Lean and inherits \texttt{sorryAx} from \ref{thm2-2}, and so from
-  \ref{prop7}, \ref{lem19} and~\ref{lem20}, and from nothing else.  It never
+  \ref{prop7} and~\ref{lem20}, and from nothing else.  It never
   waited on Doeblin, since \ref{thm2-2} does not.
 
   \textbf{Which $\tau$.}  It is the process's own first jump time $T_1$, and
@@ -2214,8 +2215,8 @@ process pointwise.
   $\exp(-e^{\beta/(M-1)} t/((M+1)N))$ by part 2.  A union bound finishes.
 
   \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
-  inherits \texttt{sorryAx} from \ref{prop7}, and so from \ref{lem19}
-  and~\ref{lem20}, and from nothing else.  It was filed as a citation from
+  inherits \texttt{sorryAx} from \ref{prop7}, and so from \ref{lem20}, and
+  from nothing else.  It was filed as a citation from
   outside the paper until [GL24] showed it is a step of the paper's own proof;
   it is neither, now that it is proved.
 \end{proof}
@@ -2548,18 +2549,36 @@ process pointwise.
 \paper{Lemma 19}
 \begin{lemma}[The first repeat time reaches $\bigcup_o S^o$]
   \label{lem19}
-  \lean{SocialNetwork.isFavouring_state_firstRepeat}
+  \lean{SocialNetwork.isFavouring_state_firstRepeat, SocialNetwork.state_firstRepeat_actor_le, SocialNetwork.state_sub_state_of_silent}
   \leanok
   \uses{def5-favouring, def5-repeat, aux-greedy}
   For any $u \in \Sspace$, the event $\xi^u_{\tau(u)}$ implies
   $\Uskel{u}_{\tau(u)} \in \bigcup_{o} S^o$.
 \end{lemma}
 \begin{proof}
-  \textbf{Not formalised, and not blocked on Mathlib}: the written proof
-  asserts a sequence of $\lfloor m \rfloor + 1$ distinct actors ``by (25)''
-  without giving the construction, and rules out $m = 0$ through $\tau(u) = 2$
-  rather than through $m = 0$ itself.  See \ref{note-lem19} for a construction
-  that works and the corrected case split.
+  \leanok
+  \uses{aux-state-along, aux-trust}
+  \textbf{Follows the paper's proof}, with its witnesses $n(u) = \lfloor m
+  \rfloor$, $r = m - \lfloor m \rfloor$ and $o = O_{\tau(u)}$, where $m =
+  \Uskel{u}_{\tau(u)-1}(A_{\tau(u)}, O_{\tau(u)})$ is the maximal entry.  If
+  $\tau(u) = 2$, the repeated actor has just been reset, so the greedy maximum
+  is $0$, the row sums make $\Uskel{u}_1 = 0$, and $\Uskel{u}_2$ lies in
+  $S^{O_2}$ with $n = 1$, $r = 0$.
+
+  \textbf{Supplies three steps the paper asserts.}  First, the $\lfloor m
+  \rfloor$ distinct actors obtained ``by (25)'': reading $A_{\tau(u)-1},
+  A_{\tau(u)-2}, \dots$ backwards, the pressure for $O_{\tau(u)}$ starts at $0$,
+  reaches $m$ at the repeated actor, and by~(25) climbs at most $1$ per step.
+  For each level $j + r$ take the first index, read backwards, at which it is
+  reached: it overshoots by less than $1$, so these indices are distinct and none
+  is the repeated actor.  Second, $m \ge 1$ once $\tau(u) \ge 3$, which $n(u) \ge
+  1$ needs: $A_{\tau(u)-2}$ has heard exactly one expression and carries $1$ on
+  $O_{\tau(u)-1}$, and $m$ is the maximum --- which is why the paper's case split
+  on $\tau(u) = 2$ is the right one.  Third, $n(u) \le N - 1$, since the
+  witnesses avoid $A_{\tau(u)}$.  The proof's last display prints $m + (m -
+  \lfloor m \rfloor) - \pressone$ for the bound on the other columns;
+  Definition~5 needs $\lfloor m \rfloor + (m - \lfloor m \rfloor) - \pressone =
+  m - \pressone$, and that is the bound that holds.
 \end{proof}
 
 \paper{Lemma 20}
@@ -3450,21 +3469,25 @@ repository's own misreading and is kept below as withdrawn.
 \begin{remark}[Lemma~19: the $\lfloor m \rfloor + 1$ distinct actors]
   \label{note-lem19}
   The proof writes ``Therefore by (25), we obtain a sequence of
-  $\lfloor m \rfloor + 1$ distinct actors'' without giving the construction.  One
-  that works: read the actors $A_{\tau(u)-1}, A_{\tau(u)-2}, \dots$ backwards in
-  time.  By (25) consecutive rows differ by exactly one expression, so their
-  pressures for $O_{\tau(u)}$ form a walk that starts at $0$, ends at $m$, and
-  moves by $+1$ on an expression of $O_{\tau(u)}$ and by $-\pressone$ otherwise.
-  For each $j$ take the \emph{first} time the walk reaches level $\ge j + r$: a
-  first passage can only happen on an up-step, of size $1$, so the walk lands
-  strictly below $j+1+r$.  The $\lfloor m \rfloor + 1$ first-passage times are
-  therefore distinct and name $\lfloor m \rfloor + 1$ distinct actors.
+  $\lfloor m \rfloor + 1$ distinct actors'' without giving the construction.  It
+  is the one~(25) points to: read the actors $A_{\tau(u)-1}, A_{\tau(u)-2},
+  \dots$ backwards in time.  By~(25) consecutive rows differ by exactly one
+  expression, so their pressures for $O_{\tau(u)}$ form a walk that starts at
+  $0$, ends at $m$, and climbs at most $1$ per step.  For each $j$ take the
+  \emph{first} time the walk reaches level $\ge j + r$: it lands strictly below
+  $j+1+r$.  The first-passage times are therefore distinct, and they name
+  distinct actors.  \ref{lem19} is proved that way.
 
-  Separately, \ref{def5-favouring} requires $n(u) = \lfloor m \rfloor \ge 1$,
-  that is $m \ge 1$.  The proof rules out $m = 0$ only through the case
-  $\tau(u) = 2$, but $m = 0$ forces $\Uskel{u}_{\tau(u)-1} = 0$ for any
-  $\tau(u)$, so the degenerate branch has to be taken on $m = 0$ rather than on
-  $\tau(u) = 2$.  The argument given for $\tau(u) = 2$ covers it unchanged.
+  An earlier version of this remark also objected to the case split: that the
+  degenerate case should be taken on $m = 0$ rather than on $\tau(u) = 2$.
+  \textbf{The objection was wrong and is withdrawn.}  Under $\xi^u_{\tau(u)}$
+  with $\tau(u) \ge 3$, the actor $A_{\tau(u)-2}$ has heard the one expression
+  of $A_{\tau(u)-1}$ and carries $1$ on $O_{\tau(u)-1}$; since $m$ is the
+  maximal entry, $m \ge 1$.  So $m < 1$ forces $\tau(u) = 2$, and the paper's
+  split is the right one.  What the proof leaves unstated is that one line, the
+  bound $\lfloor m \rfloor \le N - 1$, and a misprint in its last display, which
+  reads $m + (m - \lfloor m \rfloor) - \pressone$ where Definition~5 needs
+  $\lfloor m \rfloor + (m - \lfloor m \rfloor) - \pressone = m - \pressone$.
 \end{remark}
 
 \aux{Remark}
@@ -3672,23 +3695,25 @@ Verified against the pinned revision
 
 \ref{thm2-1} and~\ref{thm3} are \emph{not} on this list.  In the paper's own
 architecture they live on the skeleton, and $\muskel$ is in hand: what
-\ref{thm2-1} waits on is \ref{prop9}, hence \ref{prop7}, hence \ref{lem19}
-and~\ref{lem20}, which are blocked on the paper.  \ref{thm2-2} and
+\ref{thm2-1} waits on is \ref{prop9}, hence \ref{prop7}, hence \ref{lem20},
+which is blocked on the paper.  \ref{thm2-2} and
 \ref{cor11} are not on it either: a statement blocked on Doeblin is one that
 needs $\muinv$ to exist, and part~2 of Theorem~2 never mentions $\muinv$.
 
 \subsection*{Blocked on the paper}
 
-\ref{lem19}, \ref{lem20} and \ref{aux-greedy-avoids}; through them
+\ref{lem20} and \ref{aux-greedy-avoids}; through them
 \ref{prop7}, \ref{prop9}, \ref{prop23}, \ref{prop26}, \ref{thm2-1},
 \ref{thm27-1}, \ref{thm27-2} and \ref{lem28}.  In each case the written proof does not compose,
 and the repair changes the argument rather than its presentation, so it is
-recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
-\ref{aux-greedy-avoids} --- rather than guessed at in Lean.
+recorded --- at \ref{note-lem20} and the node of
+\ref{aux-greedy-avoids} --- rather than guessed at in Lean.  \ref{lem19} stood
+in this list and is proved: its written proof closes, and \ref{note-lem19}
+withdraws the objection that put it here.
 
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
-\ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem19} and~\ref{lem20},
+\ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem20},
 and \ref{prop26}, \ref{thm27-1}, \ref{thm27-2} and \ref{lem28} from \ref{prop23}.  That is what
 makes an obstruction visible instead of absorbed.
 
@@ -3726,16 +3751,16 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Eighty-four proofs
+\ref{note-green}: does it follow what the paper wrote?  Eighty-five proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts eighty-five entries.  Every one of them is named, and
+own, so it counts eighty-six entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (forty-seven). \ref{prop5},
-\ref{prop6}, \ref{prop7}, \ref{prop9} and its biased twin \ref{prop26},
+\medskip \noindent\textbf{Follow the paper's proof} (forty-eight). \ref{prop5},
+\ref{prop6}, \ref{prop7}, \ref{lem19}, \ref{prop9} and its biased twin \ref{prop26},
 \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1} and its biased twin
@@ -3794,6 +3819,10 @@ $\tfrac{1}{2}\gamma$, which is all Appendix~C asks for; it names none of the
 constants, so the four they take here are supplied, and it rests on a
 \emph{second} axiom, the biased twin \ref{prop12-biased}, since one cannot serve
 both models.
+\ref{lem19} writes out the construction the paper attributes to~(25), a first
+passage of the backward walk, and supplies $m \ge 1$ for $\tau(u) \ge 3$ and
+$\lfloor m \rfloor \le N - 1$; the bound on the other columns is the one
+Definition~5 needs, where the last display misprints it (\ref{note-lem19}).
 \ref{prop7} is the paper's three-stage assembly with its arithmetic unchanged,
 but it applies \ref{lem20} at $\tau(u)$ rather than at $N+1$: the written route
 needs $\bigcup_o S^o$ to be stable under a greedy expression, which the paper
@@ -4008,7 +4037,7 @@ is being checked here except that they agree.
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the
 result of the audit, and the rule of \ref{note-green} is written to keep it
-that way.  Where the paper's route does not close --- Lemmas~19 and~20 ---
+that way.  Where the paper's route does not close --- Lemma~20 ---
 the statement is left unproved and the obstruction is recorded in
 Section~\ref{sec:corrections} above, rather than repaired by an argument the
 authors have not seen; the statements downstream of it, \ref{prop7} among
@@ -4017,8 +4046,8 @@ which is what makes the obstruction visible instead of absorbing it.  Where the 
 numbered statements --- Lemma~13, whose proof reaches into the proof of
 Theorem~2 and reads Corollary~11 quantitatively --- the two displays it uses
 are transcribed as statements of their own, \ref{aux-hitting-rate}
-and~\ref{eq19}; the first inherits \texttt{sorryAx} from \ref{lem19}
-and~\ref{lem20}, and the second is proved.  And where the route needs
+and~\ref{eq19}; the first inherits \texttt{sorryAx} from \ref{lem20}, and
+the second is proved.  And where the route needs
 a step the paper does not have but a shorter route through the same lemmas does
 not --- \ref{prop7} --- the shorter route is taken and the difference is
 written down, rather than the missing step being assumed.  And where the
@@ -4049,7 +4078,7 @@ the decisions they call for, in one place.
   \ref{def1} as a bijection.  In Lean this is a file of its own,
   \texttt{SocialNetwork/Consensus.lean}.
 
-  Nothing is wrong with the claim --- unlike \ref{lem19} and~\ref{lem20}, it is
+  Nothing is wrong with the claim --- unlike \ref{lem20}, it is
   true as written and now proved.  What is misleading is ``by definition'',
   which invites a reader to check nothing.  This is the mechanism behind the
   paper's fast consensus formation, and it earns an argument.
@@ -4060,10 +4089,10 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{\ref{lem19} and~\ref{lem20}}, with the repairs of
-    \ref{note-lem19} and~\ref{note-lem20}.  Worth settling with the authors
-    first, since the repairs change the written proofs.  \ref{prop7} then
-    follows by assembling them with \ref{aux-consensus-ladder}, and
+  \item \textbf{\ref{lem20}}, with the repair of \ref{note-lem20}.  Worth
+    settling with the authors first, since the repair changes the written
+    proof.  \ref{prop7} then follows by assembling it with \ref{lem19} and
+    \ref{aux-consensus-ladder}, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1}, written from them, with
     them.

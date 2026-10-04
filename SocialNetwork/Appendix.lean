@@ -17,11 +17,10 @@ Appendix A of arXiv:2607.19651 proves Proposition 7 in three moves:
    `(M-1) (n(u) + 1) - 1 ≤ (M-1) N` further steps;
 3. a final step takes `C^o` to a ladder `L^o` in `N` further steps.
 
-The third is `SocialNetwork.isLadder_state`, proved.  The first two are stated here and are
-**not** proved: the blueprint records, in the section "Two points in Appendix A that the
-formalisation has to fill in", exactly where the written proofs fail to compose, and what
-repairs appear to work.  Both repairs change the written arguments rather than their
-presentation, so they are recorded rather than guessed at.
+The third is `SocialNetwork.isLadder_state`, proved.  The first is proved here along the
+paper's own proof, with the construction it attributes to (25) written out.  The second is
+stated here and is **not** proved: the blueprint records, at `note-lem20`, where its written
+induction fails.
 
 This file also proves Remark 5 entire: the deterministic half — expressing a pair that carries
 positive pressure keeps a steep ladder steep — the probabilistic half, that such a pair is
@@ -54,9 +53,9 @@ costs `e^{-β/(M-1)}` — are proved here.
 
 ## Main statements
 
-* `SocialNetwork.isFavouring_state_firstRepeat` — **Lemma 19**, unproved.
+* `SocialNetwork.isFavouring_state_firstRepeat` — **Lemma 19**, proved.
 * `SocialNetwork.isConsensus_state_of_favouring` — **Lemma 20**, unproved.
-* `SocialNetwork.isLadder_state_of_greedy` — **Proposition 7**, unproved.
+* `SocialNetwork.isLadder_state_of_greedy` — **Proposition 7**, proved modulo Lemma 20.
 * `SocialNetwork.mem_steepLadderSet_of_positivePressure` — the deterministic half of
   Remark 5, proved.
 * `SocialNetwork.eta_le_pathMeasure_positivePressure` — the bound `η` of Remark 5, proved.
@@ -71,7 +70,7 @@ costs `e^{-β/(M-1)}` — are proved here.
 * `SocialNetwork.skeleton_ne_of_greedy` — the step the proof of Proposition 9 asserts,
   proved after Corollary 8 of [GL24].
 * `SocialNetwork.measure_le_of_notMem_steepLadderSet` — **Proposition 9**, proved modulo
-  Lemmas 19 and 20, through Proposition 7.
+  Lemma 20, through Proposition 7.
 * `SocialNetwork.eq_zeroPredecessor_of_express_eq_zero` — a matrix with a null row from which
   one expression reaches `0` is a `SocialNetwork.zeroPredecessor`, proved.
 * `SocialNetwork.measure_exists_zero_row_eq_one` — the invariant measure charges only the
@@ -119,6 +118,47 @@ section Lemma19
 
 variable (T : Trajectory N M) {u : Pressure N M}
 
+/-- Two rows that hear the same expressions move together: if neither `b` nor `c` expresses
+during the `k` steps after time `t`, the difference of their rows is unchanged.
+
+**Supplies a step the paper asserts**: it is what makes (25) hold, the rows of
+`A_j` and `A_{j-1}` differing only by the one expression `A_{j-1}` heard and `A_j` made. -/
+theorem state_sub_state_of_silent (u : Pressure N M) {b c : Actor N} (p : Opinion M) (t k : ℕ)
+    (h : ∀ i < k, T.actor (t + i) ≠ b ∧ T.actor (t + i) ≠ c) :
+    T.state u (t + k) b p - T.state u (t + k) c p = T.state u t b p - T.state u t c p := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    obtain ⟨hb, hc⟩ := h k (by omega)
+    rw [← add_assoc, T.state_succ, express_of_ne (Ne.symm hb), express_of_ne (Ne.symm hc),
+      ← ih fun i hi => h i (by omega)]
+    ring
+
+/-- (25) in the form the proof of Lemma 19 uses: before the first repeat, the actor that
+expressed at step `i` carries, on any column, at most one unit more than the actor that
+expressed at step `i + 1` — the expression it heard and the other made.  Read backwards from
+`τ(u) - 1`, the pressure for a fixed opinion is therefore a walk whose up-steps are at most `1`.
+
+**Supplies a step the paper asserts**: (25), which the proof states without argument. -/
+theorem state_firstRepeat_actor_le (u : Pressure N M) {i : ℕ} (hi : i + 1 < firstRepeat T)
+    (p : Opinion M) :
+    T.state u (firstRepeat T) (T.actor i) p
+      ≤ T.state u (firstRepeat T) (T.actor (i + 1)) p + ((M : ℤ) - 1) := by
+  have hne : T.actor i ≠ T.actor (i + 1) := actor_injOn_lt_firstRepeat T (by omega) hi
+  obtain ⟨k, hk⟩ : ∃ k, firstRepeat T = i + 1 + 1 + k := ⟨firstRepeat T - (i + 1 + 1), by omega⟩
+  have hsilent := state_sub_state_of_silent T u p (i + 1 + 1) k fun j hj =>
+    ⟨fun h => actor_injOn_lt_firstRepeat T (show i < i + 1 + 1 + j by omega) (by omega) h.symm,
+      fun h => actor_injOn_lt_firstRepeat T (show i + 1 < i + 1 + 1 + j by omega) (by omega)
+        h.symm⟩
+  have h1 : T.state u (i + 1 + 1) (T.actor i) p
+      = (if p = T.opinion (i + 1) then (M : ℤ) else 0) - 1 := by
+    rw [T.state_succ u (i + 1), express_of_ne hne, T.state_succ_actor, zero_add]
+  rw [T.state_succ_actor] at hsilent
+  have hδ : (if p = T.opinion (i + 1) then (M : ℤ) else 0) ≤ M := by
+    split_ifs <;> simp
+  rw [hk]
+  linarith
+
 /-- **Lemma 19.**  For any initial matrix `u ∈ S`, the event `ξ^u_{τ(u)}` implies that
 `Ũ_{τ(u)}^{β,u} ∈ ⋃_{o ∈ O} S^o`.
 
@@ -126,14 +166,189 @@ Recall the index convention of `SocialNetwork.Trajectory`: `firstRepeat T` is th
 `τ (u) - 1`, and `IsGreedyAt T u k` is the paper's `ξ_{k+1}^u`.  So the hypothesis below is
 `ξ_{τ(u)}^u` and the conclusion is about `Ũ_{τ(u)}`.
 
-**Unproved.**  The written proof asserts, "by (25)", a sequence of `⌊m⌋ + 1` distinct actors
-without giving the construction, and rules out the degenerate case `m = 0` through
-`τ (u) = 2` rather than through `m = 0` itself.  The blueprint gives a construction that
-works — a first-passage decomposition of the backward walk — and the corrected case split. -/
+**Follows the paper's proof**, with its witnesses `n(u) = ⌊m⌋`, `r = m - ⌊m⌋` and
+`o = O_{τ(u)}`, where `m = Ũ_{τ(u)-1}(A_{τ(u)}, O_{τ(u)})` is the maximal entry.
+
+**Supplies three steps the paper asserts.**
+* The `⌊m⌋` distinct actors, obtained "by (25)".  Reading `A_{τ(u)-1}, A_{τ(u)-2}, …`
+  backwards, the pressure for `O_{τ(u)}` starts at `0`, reaches `m` at the repeated actor, and
+  by (25) climbs at most `1` per step, so it skips none of the levels `r, 1 + r, …, m`.  The
+  last index at which it has reached level `j + r` — its first passage, read backwards —
+  overshoots by less than `1`, so these indices are distinct and none is the repeated actor.
+* `m ≥ 1` once `τ(u) ≥ 3`, which `n(u) ≥ 1` needs: the actor `A_{τ(u)-2}` has heard exactly
+  one expression, so it carries `1` on `O_{τ(u)-1}`, and `m` is the maximum.  This is why the
+  paper's case split on `τ(u) = 2` is the right one.
+* `n(u) ≤ N - 1`: the `⌊m⌋` witnesses avoid `A_{τ(u)}`.
+
+The proof's last display bounds the other columns by `m + (m - ⌊m⌋) - 1/(M-1)`; Definition 5
+asks for `⌊m⌋ + (m - ⌊m⌋) - 1/(M-1) = m - 1/(M-1)`, and that is the bound that holds, every
+entry of `Ũ_{τ(u)-1}` being at most `m`. -/
 theorem isFavouring_state_firstRepeat (hM : 2 ≤ M) (hN : 3 ≤ N) (hu : IsState u)
     (hgreedy : IsGreedyAt T u (firstRepeat T)) :
     T.state u (firstRepeat T + 1) ∈ favouringSet N M := by
-  sorry
+  have hM1 : (0 : ℤ) < (M : ℤ) - 1 := by
+    have : (2 : ℤ) ≤ M := by exact_mod_cast hM
+    linarith
+  obtain ⟨j₀, hj₀, hA⟩ := firstRepeat_spec T
+  have hinj : ∀ {i k}, i < firstRepeat T → k < firstRepeat T → T.actor i = T.actor k → i = k :=
+    fun {i k} hi hk h => by
+      rcases lt_trichotomy i k with hik | hik | hik
+      · exact absurd h (actor_injOn_lt_firstRepeat T hik hk)
+      · exact hik
+      · exact absurd h.symm (actor_injOn_lt_firstRepeat T hik hi)
+  have hstep : ∀ i, i + 1 < firstRepeat T → ∀ p,
+      T.state u (firstRepeat T) (T.actor i) p
+        ≤ T.state u (firstRepeat T) (T.actor (i + 1)) p + ((M : ℤ) - 1) :=
+    fun i hi p => state_firstRepeat_actor_le T u hi p
+  have hS : IsState (T.state u (firstRepeat T)) := T.isState_state hu _
+  rw [T.state_succ, mem_favouringSet]
+  generalize firstRepeat T = R at *
+  obtain ⟨r, rfl⟩ : ∃ r, R = r + 1 := ⟨R - 1, by omega⟩
+  -- `r + 1` is the paper's `τ(u) - 1`: `v = Ũ_{τ(u)-1}`, `(A, o) = (A_{τ(u)}, O_{τ(u)})`, and
+  -- `T.actor r = A_{τ(u)-1}` has just expressed.
+  set v := T.state u (r + 1) with hv
+  set A := T.actor (r + 1) with hAdef
+  set o := T.opinion (r + 1) with ho
+  have hmax : ∀ b p, v b p ≤ v A o := hgreedy
+  have hlast : ∀ p, v (T.actor r) p = 0 := T.state_succ_actor u r
+  by_cases hm : (M : ℤ) - 1 ≤ v A o
+  · -- The paper's `n(u) = ⌊m⌋` and `r = m - ⌊m⌋`, in scaled coordinates.
+    set m := v A o with hmdef
+    set q := m / ((M : ℤ) - 1) with hq
+    set ρ := m % ((M : ℤ) - 1) with hρ
+    have hdiv : ((M : ℤ) - 1) * q + ρ = m := Int.mul_ediv_add_emod m _
+    have hρ0 : 0 ≤ ρ := Int.emod_nonneg _ hM1.ne'
+    have hρlt : ρ < (M : ℤ) - 1 := Int.emod_lt_of_pos _ hM1
+    have hq1 : 1 ≤ q := (Int.le_ediv_iff_mul_le hM1).2 (by linarith)
+    obtain ⟨n, hnq⟩ : ∃ n : ℕ, (n : ℤ) = q := ⟨q.toNat, Int.toNat_of_nonneg (by omega)⟩
+    -- The level `j + r` of the paper, scaled.
+    set L : ℕ → ℤ := fun j => (j : ℤ) * ((M : ℤ) - 1) + ρ with hL
+    have hLm : ∀ j < n, L j + ((M : ℤ) - 1) ≤ m := by
+      intro j hj
+      have hj' : (j : ℤ) + 1 ≤ q := by rw [← hnq]; exact_mod_cast hj
+      have : ((j : ℤ) + 1) * ((M : ℤ) - 1) ≤ q * ((M : ℤ) - 1) :=
+        mul_le_mul_of_nonneg_right hj' hM1.le
+      simp only [hL]
+      linarith
+    have hWj₀ : v (T.actor j₀) o = m := by rw [hA]
+    -- First passage: for each level, the latest index before the repeat whose actor reaches
+    -- it.  Read backwards from `τ(u) - 1`, this is where the walk of (25) first gets there.
+    let F : ℕ → Finset ℕ := fun j => (Ico j₀ (r + 1)).filter fun i => L j ≤ v (T.actor i) o
+    have hFne : ∀ j < n, (F j).Nonempty := fun j hj =>
+      ⟨j₀, mem_filter.2 ⟨mem_Ico.2 ⟨le_rfl, hj₀⟩, by rw [hWj₀]; linarith [hLm j hj]⟩⟩
+    let f : Fin n → ℕ := fun j => (F j).max' (hFne j j.2)
+    have hf_mem : ∀ j : Fin n, j₀ ≤ f j ∧ f j < r + 1 ∧ L j ≤ v (T.actor (f j)) o := fun j => by
+      have := (F j).max'_mem (hFne j j.2)
+      rw [mem_filter, mem_Ico] at this
+      exact ⟨this.1.1, this.1.2, this.2⟩
+    have hf_max : ∀ (j : Fin n) i, j₀ ≤ i → i < r + 1 → L j ≤ v (T.actor i) o → i ≤ f j :=
+      fun j i h1 h2 h3 => (F j).le_max' i (mem_filter.2 ⟨mem_Ico.2 ⟨h1, h2⟩, h3⟩)
+    -- A first passage overshoots by less than one unit: it is made on a step of size `≤ 1`.
+    have hf_lt : ∀ j : Fin n, v (T.actor (f j)) o < L j + ((M : ℤ) - 1) := fun j => by
+      obtain ⟨h1, h2, -⟩ := hf_mem j
+      by_cases h : f j + 1 < r + 1
+      · have hnot : ¬ L j ≤ v (T.actor (f j + 1)) o := fun h' => by
+          have := hf_max j (f j + 1) (by omega) h h'
+          omega
+        have := hstep (f j) h o
+        linarith
+      · have hfr : f j = r := by omega
+        rw [hfr, hlast]
+        have : 0 ≤ (j : ℤ) * ((M : ℤ) - 1) := mul_nonneg (by positivity) hM1.le
+        simp only [hL]
+        linarith
+    have hf_ne : ∀ j : Fin n, f j ≠ j₀ := fun j h => by
+      have := hf_lt j
+      rw [h, hWj₀] at this
+      linarith [hLm j j.2]
+    have hf_inj : Function.Injective f := fun j j' h => by
+      by_contra hjj
+      have key : ∀ {j j' : Fin n}, (j : ℕ) < j' → f j ≠ f j' := fun {j j'} hlt h => by
+        have h1 := hf_lt j
+        have h2 := (hf_mem j').2.2
+        rw [← h] at h2
+        have : L j + ((M : ℤ) - 1) ≤ L j' := by
+          have : (j : ℤ) + 1 ≤ j' := by exact_mod_cast hlt
+          have := mul_le_mul_of_nonneg_right this hM1.le
+          simp only [hL]
+          linarith
+        linarith
+      rcases lt_or_gt_of_ne (Fin.val_ne_of_ne hjj) with hlt | hlt
+      · exact key hlt h
+      · exact key hlt h.symm
+    -- The witnesses: the actors of the first passages.
+    let a : Fin n → Actor N := fun j => T.actor (f j)
+    have ha_ne : ∀ j, a j ≠ A := fun j h =>
+      hf_ne j (hinj (hf_mem j).2.1 hj₀ (h.trans hA.symm))
+    have ha_inj : Function.Injective a := fun j j' h =>
+      hf_inj (hinj (hf_mem j).2.1 (hf_mem j').2.1 h)
+    refine ⟨o, n, ρ, a, ?_⟩
+    exact
+      { isState := hS.express A o
+        one_le := by exact_mod_cast hnq ▸ hq1
+        le_pred := by
+          have hsub : univ.image a ⊆ univ.erase A := fun b hb => by
+            obtain ⟨j, -, rfl⟩ := mem_image.1 hb
+            exact mem_erase.2 ⟨ha_ne j, mem_univ _⟩
+          have := card_le_card hsub
+          rwa [card_image_of_injective _ ha_inj, card_erase_of_mem (mem_univ _), card_univ,
+            card_univ, Fintype.card_fin, Fintype.card_fin] at this
+        rho_nonneg := hρ0
+        rho_lt := hρlt
+        injective := ha_inj
+        column := fun j => by
+          rw [express_of_ne_of_eq (ha_ne j)]
+          have := (hf_mem j).2.2
+          simp only [hL] at this
+          linarith
+        other := fun b p hp => by
+          rw [hnq]
+          by_cases hb : b = A
+          · rw [hb, express_self]
+            linarith
+          · rw [express_of_ne_of_ne hb hp]
+            linarith [hmax b p] }
+  · -- The degenerate case, `τ(u) = 2`: the repeat is immediate and the matrix is null.
+    have hr : r = 0 := by
+      by_contra hr
+      obtain ⟨s, rfl⟩ : ∃ s, r = s + 1 := ⟨r - 1, by omega⟩
+      have hne : T.actor s ≠ T.actor (s + 1) := fun h => by
+        have := hinj (by omega) (by omega) h
+        omega
+      -- The actor that expressed just before the last one has heard one expression since.
+      have h1 : v (T.actor s) (T.opinion (s + 1)) = (M : ℤ) - 1 := by
+        rw [hv, T.state_succ u (s + 1), express_of_ne_of_eq hne, T.state_succ_actor, zero_add]
+      exact hm (h1 ▸ hmax _ _)
+    subst hr
+    obtain rfl : j₀ = 0 := by omega
+    have hm0 : v A o = 0 := by rw [← hA]; exact hlast o
+    have hnp : ∀ b p, v b p ≤ 0 := fun b p => (hmax b p).trans hm0.le
+    have hcol : ∀ b, v b o = 0 := fun b => by
+      have htrust := hS.trust_eq_zero b
+      unfold trust at htrust
+      exact (sum_eq_zero_iff_of_nonpos fun p _ => hnp b p).1 htrust o (mem_univ _)
+    have : Nontrivial (Actor N) := Fin.nontrivial_iff_two_le.2 (by omega)
+    obtain ⟨b, hb⟩ := exists_ne A
+    refine ⟨o, 1, 0, fun _ => b, ?_⟩
+    exact
+      { isState := hS.express A o
+        one_le := le_rfl
+        le_pred := by omega
+        rho_nonneg := le_rfl
+        rho_lt := hM1
+        injective := fun i j _ => Subsingleton.elim i j
+        column := fun j => by
+          obtain rfl : j = 0 := Subsingleton.elim j 0
+          rw [express_of_ne_of_eq hb, hcol]
+          simp
+        other := fun b' p hp => by
+          by_cases hb' : b' = A
+          · rw [hb', express_self]
+            push_cast
+            omega
+          · rw [express_of_ne_of_ne hb' hp]
+            push_cast
+            linarith [hnp b' p] }
 
 end Lemma19
 
@@ -176,7 +391,7 @@ The three stages are Lemma 19 (which needs `τ (u) ≤ N + 1` steps), Lemma 20 (
 `SocialNetwork.isLadder_state` (`N` further steps).  The total is `(M+1) N`.
 
 **Formalised, but not sorry-free**: the assembly is complete and inherits `sorryAx` from
-Lemmas 19 and 20 alone.
+Lemma 20 alone.
 
 **Supplies a step the paper asserts, and takes a different route through one of them.**  The
 written proof reaches `⋃_o S^o` at time `N + 1` --- "so by Lemma 19 we have
@@ -1179,7 +1394,7 @@ printed constant, which needs the regime `MN e^{-β/(M-1)} > 1` to be treated se
 there the constant already exceeds `e^{β(N-1)}` and `μ̃^β (u) ≤ 1` suffices.
 
 **Rests on** `SocialNetwork.skeleton_ne_of_greedy`, the assertion that the greedy run reaches
-`L` without visiting `u`, and through Proposition 7 on Lemmas 19 and 20.
+`L` without visiting `u`, and through Proposition 7 on Lemma 20.
 
 **Stated for an arbitrary invariant probability measure** of the skeleton rather than for a
 named `μ̃^β`, since its existence is itself Theorem 1.2, and with `IsState u` added: the paper
@@ -1486,7 +1701,7 @@ one; each is bounded by Proposition 9, since none of them is a steep ladder; and
 into `0` costs `e^{-β/(M-1)}`, which is the extra exponent.
 
 **Rests on** Proposition 9, and through it on `SocialNetwork.skeleton_ne_of_greedy` and
-Lemmas 19 and 20. -/
+Lemma 20. -/
 theorem measure_zero_le (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} (hβ : 0 < β)
     {μ : Measure (Pressure N M)} (hμ : IsProbabilityMeasure μ)
     (hinv : Kernel.Invariant (skeletonKernel β) μ) :

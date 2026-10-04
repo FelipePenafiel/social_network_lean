@@ -329,7 +329,7 @@ integers.  Proposition 9 is written from
 Proposition 7, Remark 5, the bound of Proposition 8
 (`SocialNetwork.zeta_pow_le_pathMeasure_greedyEvents`) and Kac's inequality, with the one step
 its own proof asserts supplied (`SocialNetwork.skeleton_ne_of_greedy`); what it waits on is
-Lemmas 19 and 20, which are blocked on the paper.  Equation (13) is the one place where a
+Lemma 20, which is blocked on the paper.  Equation (13) is the one place where a
 theorem of Section 5 meets this list, through items 6 and 7.
 
 ## A smaller gap, outside probability — closed, but still a gap

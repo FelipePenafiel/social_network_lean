@@ -40,6 +40,8 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
 * the discrete-time probabilistic layer — the jump rates of equation (3), the skeleton
   kernel of Definition 3, the law of a realisation via Mathlib's Ionescu–Tulcea
   theorem, Propositions 5, 6 and 8 with Remarks 4 and 5;
+* **Lemma 19**, the first stage of Appendix A, along the paper's own proof: the distinct
+  actors it obtains "by (25)" are the first passages of a backward walk;
 * **Doeblin's criterion**, both halves, for an arbitrary Markov kernel on a countable
   space (`SocialNetwork/Doeblin.lean`), and with it **Theorem 1.2 for the skeleton**:
   `μ̃^β` exists and is unique;
@@ -76,8 +78,8 @@ two, one per process; [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) §3 says why a 
 abstract axiom would be inconsistent.
 
 **Written out and resting on an obstruction.** Proposition 7 is assembled from its three
-stages and waits on Lemmas 19 and 20, the two written proofs of Appendix A that do not
-compose; Proposition 9 and Theorem 2.1 wait behind it. In the biased model, Proposition
+stages and waits on Lemma 20, the written proof of Appendix A that does not compose;
+Proposition 9 and Theorem 2.1 wait behind it. In the biased model, Proposition
 26, Theorem 27 and Lemma 28 wait on Proposition 23, which assembles biased analogues of
 Lemmas 19 and 20 that the paper does not state. Each inherits `sorryAx` from its
 obstruction and from nothing else, so it turns green the moment that one does.
@@ -90,7 +92,7 @@ statement is a citation from outside the paper.  Nothing waits on Mathlib any mo
 the paper's proof; where the written argument does not close, the statement is left
 unproved and the obstruction is written down, rather than repaired by an argument the
 authors have not seen. That holds even when another argument would close the statement —
-Lemmas 19 and 20 are the cases to look at. The rule is stated in full in
+Lemma 20 is the case to look at. The rule is stated in full in
 [`CONVENTIONS.md`](CONVENTIONS.md), and [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) is
 what it reports to.
 
