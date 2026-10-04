@@ -50,7 +50,8 @@ not proved --- which of four kinds of obstruction it has met.
   argument would establish it: closing it another way would record a theorem and
   lose the finding, which is the one thing this development produces that a
   reader of the paper does not already have.  \ref{lem20} is the case to look
-  at --- a repair is recorded at \ref{note-lem20} and deliberately not adopted.
+  at: the repair this blueprint once proposed for it would not have worked,
+  because for $M \ge 4$ its statement is false (\ref{note-lem20}).
   \ref{lem19} stood beside it, and is proved: its written proof does close, and
   \ref{note-lem19} records what it leaves to the reader.
 
@@ -1629,7 +1630,9 @@ process pointwise.
   of $(M+1)N$.  Composing the three requires restarting the realisation at an
   intermediate time, which is \ref{aux-shift}. \emph{Formalised, but not
   sorry-free}: the assembly is complete in Lean and inherits \texttt{sorryAx}
-  from \ref{lem20} alone.
+  from \ref{lem20} alone --- whose statement, as printed, is false for $M \ge
+  4$ (\ref{note-lem20}), so the assembly will have to be adapted to its
+  restatement.
 
   \textbf{Supplies a step the paper asserts, and takes a different route
   through one of them.} The written proof carries the process to $\bigcup_o
@@ -1643,7 +1646,8 @@ process pointwise.
   expresses, and that actor may be one of the very witnesses $a_1(u), \dots,
   a_{n(u)}(u)$; new witnesses have to be produced, and the bound on the other
   columns then has to be re-established, which is precisely the bookkeeping of
-  \ref{lem20} whose written invariant does not survive (\ref{note-lem20}).
+  \ref{lem20}.  For $M \ge 4$ it cannot be done: $\bigcup_o S^o$ is not stable
+  under a greedy expression (\ref{note-lem20}).
 
   \ref{lem20} is therefore applied here at $\tau(u)$ itself, where \ref{lem19}
   leaves the process, and no stability of $S^o$ is needed.  The arithmetic is
@@ -2593,8 +2597,9 @@ process pointwise.
 \begin{proof}
   \uses{lem20-opening, lem20-closing}
   The proof opens with \ref{lem20-opening} and closes with \ref{lem20-closing};
-  its induction is the part that fails, see \ref{note-lem20}. \textbf{Not
-  formalised, and not blocked on Mathlib}.
+  its induction is the part that fails, and for $M \ge 4$ the statement fails
+  with it (\ref{note-lem20}).  \textbf{Not formalised, and not formalisable as
+  printed}: the Lean statement is the paper's and carries a \texttt{sorry}.
 \end{proof}
 
 \paper{Lemma 20}
@@ -3462,8 +3467,10 @@ process pointwise.
 \label{sec:corrections}
 
 Formalising surfaced five places where the written text needs correcting.
-None of them affects the results.  A sixth, at Proposition~22, was this
-repository's own misreading and is kept below as withdrawn.
+One of them reaches a statement: Lemma~20 is false as printed for $M \ge 4$
+(\ref{note-lem20}), though the theorems it serves appear to survive.  The others
+affect no result.  A sixth, at Proposition~22, was this repository's own
+misreading and is kept below as withdrawn.
 
 \aux{Remark}
 \begin{remark}[Lemma~19: the $\lfloor m \rfloor + 1$ distinct actors]
@@ -3491,27 +3498,68 @@ repository's own misreading and is kept below as withdrawn.
 \end{remark}
 
 \aux{Remark}
-\begin{remark}[Lemma~20: the induction invariant is not preserved]
+\begin{remark}[Lemma~20: the statement fails for $M \ge 4$]
   \label{note-lem20}
-  The induction carries, for every $k$,
-  $\Uskel{}_k(a,p) \le n(u) + r - \tfrac{k+1}{M-1}$ for all $a$ and all
-  $p \ne o$.  The actor that expresses at step $k$ has its whole row reset to
-  $0$, so its entries for $p \ne o$ are exactly $0$.  At the terminal
-  $k = (M-1)(n(u)+1) - 1$ the right-hand side is $r - 1 \in [-1, 0)$, so the
-  invariant asserts $0 \le r - 1 < 0$ for that actor.
+  An earlier version of this remark said that the induction invariant of the
+  written proof is not preserved, that the conclusion survives nonetheless, and
+  proposed a repair.  The first point stands.  \textbf{The other two were wrong
+  and are withdrawn}: for $M \ge 4$ the statement itself is false.
 
-  The conclusion survives: membership in $C^o$ only needs the off-columns to be
-  $\le 0$, and $0$ qualifies.  Replacing the bound by
-  $\max(0,\, n(u) + r - \tfrac{k+1}{M-1})$ gives an invariant that \emph{is}
-  preserved — a reset row satisfies it outright, a listening row decreases by
-  $\pressone$ — and still yields $\le 0$ at the terminal $k$.
+  \emph{A counterexample.}  Take $N = 3$, $M = 5$, $o$ the first opinion, $p$ the
+  second, and the rows
+  \[
+    u(a,\cdot) = \bigl(\tfrac74, -\tfrac12, -\tfrac12, -\tfrac12, -\tfrac14\bigr),
+    \qquad u(b,\cdot) = 0, \qquad
+    u(c,\cdot) = \bigl(0, \tfrac32, -\tfrac12, -\tfrac12, -\tfrac12\bigr).
+  \]
+  The rows sum to zero and $b$'s is null, so $u \in \Sspace$; and $u \in S^o$
+  with $n(u) = 1$, $r = \tfrac34$ and witness $a$: $u(a,o) = \tfrac74 = 1 + r$,
+  and no entry off column $o$ exceeds $\tfrac32 = n(u) + r - \tfrac14$.  The
+  greedy pair is $(a, o)$.  After it column $o$ reads $(0, 1, 1)$, while $c$
+  carries $\tfrac32 - \tfrac14 = \tfrac54$ on $p$, so $\xi_2^u$ forces $O_2 = p$.
+  The greedy run is unique throughout, and at time $(M-1)(n(u)+1) - 1 = 7$ it is
+  in $C^p$, not in $C^o$.
 
-  A second point in the same induction: it also asserts that $n(u)$ witness
-  actors exist at every $k$.  When the maximising actor is itself a witness —
-  the typical case — expressing resets it and only $n(u)-1$ survive.  The
-  missing witness is replenished by the actors that have just expressed, which
-  accumulate pressure for $o$ and form a staircase; that is the mechanism of
-  \ref{aux-consensus-ladder}, but it is not the argument written in the proof.
+  \emph{The mechanism.}  Definition~5 bounds the other columns by $n(u) + r -
+  \pressone$, and a greedy expression of $o$ lowers that bound by only
+  $\pressone$; nothing in $S^o$ keeps column $o$ above it once the witnesses
+  have been reset.  With a single witness and the null row as the only other
+  support of column $o$, the second step can already leave column $o$ once $r
+  \ge 2/(M-1)$: at equality the two columns can tie, and $\xi_2^u$ allows the
+  tie to be broken away from $o$; above it the failure can be strict.  Since $r \le (M-2)/(M-1)$, this
+  needs $M \ge 4$.
+
+  The same mechanism shows that $\bigcup_o S^o$ is not stable under a greedy
+  expression, which bears on \ref{prop7}.  With $N = 3$, $M = 4$ and rows $0$,
+  $(-\tfrac53, 0, 0, \tfrac53)$ and $(-\tfrac43, 0, \tfrac43, 0)$, the matrix is
+  in $S^{o}$ for $o$ the fourth opinion, with $n = 1$ and $r = \tfrac23$; the
+  greedy pair is unique, and its successor, with rows $(-\tfrac13, -\tfrac13,
+  -\tfrac13, 1)$, $0$ and $(-\tfrac53, -\tfrac13, 1, 1)$, lies in no $S^{p}$.
+
+  \emph{The written proof} fails on the way, twice.  Its invariant
+  $\Uskel{}_k(a,p) \le n(u) + r - \tfrac{k+1}{M-1}$ for $p \ne o$ is not
+  preserved: the actor that expresses at step $k$ is reset to $0$, and at the
+  terminal $k$ the right-hand side is $r - 1 < 0$.  And it asserts $n(u)$
+  witnesses at every $k$: when the maximising actor is a witness, expressing
+  resets it, and for $r > 0$ the actor reset one step earlier reaches only
+  $1 < 1 + r$, so nothing replaces it.  The repair once proposed here --- the
+  bound $\max(0, n(u) + r - \tfrac{k+1}{M-1})$, with a staircase replenishing
+  the witnesses --- does not help: the counterexample satisfies it, and it is
+  column $o$, not the bound, that gives way.
+
+  \emph{What appears to survive.}  A computer search over small cases ($N \le 5$,
+  $M \le 6$, bounded entries; not part of this repository) found no
+  counterexample for $M = 2$ or $3$; found Lemma~20's conclusion holding on
+  every state that \ref{lem19} actually produces, whatever the witness; and
+  found \ref{prop7} holding from every sampled start, under every tie-break.  So
+  the defect appears to lie in the interface: $S^o$ forgets structure that the
+  proof of \ref{lem19} delivers --- the actors that have expressed carry the
+  partial sums of the expressions after them, a staircase on column $o$ --- and
+  Lemma~20 needs it.  Restating Lemma~20 with a hypothesis \ref{lem19}
+  delivers is for the authors.  Meanwhile the Lean statement is the paper's,
+  unproved, and \ref{prop7} with everything downstream is written from it: they
+  inherit \texttt{sorryAx} from a statement that is false for $M \ge 4$, and
+  will turn green only once Lemma~20 is restated and the assembly adapted.
 \end{remark}
 
 \aux{Remark}
@@ -3707,7 +3755,9 @@ needs $\muinv$ to exist, and part~2 of Theorem~2 never mentions $\muinv$.
 \ref{thm27-1}, \ref{thm27-2} and \ref{lem28}.  In each case the written proof does not compose,
 and the repair changes the argument rather than its presentation, so it is
 recorded --- at \ref{note-lem20} and the node of
-\ref{aux-greedy-avoids} --- rather than guessed at in Lean.  \ref{lem19} stood
+\ref{aux-greedy-avoids} --- rather than guessed at in Lean.  For \ref{lem20} it
+is the statement, not only the proof: as printed it is false for $M \ge 4$, and
+restating it is the authors' to do.  \ref{lem19} stood
 in this list and is proved: its written proof closes, and \ref{note-lem19}
 withdraws the objection that put it here.
 
@@ -3715,7 +3765,9 @@ The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
 \ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem20},
 and \ref{prop26}, \ref{thm27-1}, \ref{thm27-2} and \ref{lem28} from \ref{prop23}.  That is what
-makes an obstruction visible instead of absorbed.
+makes an obstruction visible instead of absorbed.  Since \ref{lem20} is false as
+printed for $M \ge 4$, the assembly of \ref{prop7} will have to be adapted to its
+restatement; what lies beyond \ref{prop7} uses only its conclusion.
 
 \ref{prop22} stood in this list, and \ref{thm25} through it, while this
 blueprint misread the slack of Remark~7 (\ref{note-prop22}); both are proved.
@@ -4037,7 +4089,8 @@ is being checked here except that they agree.
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.} That is the
 result of the audit, and the rule of \ref{note-green} is written to keep it
-that way.  Where the paper's route does not close --- Lemma~20 ---
+that way.  Where the paper's route does not close --- Lemma~20, which for
+$M \ge 4$ is false as printed ---
 the statement is left unproved and the obstruction is recorded in
 Section~\ref{sec:corrections} above, rather than repaired by an argument the
 authors have not seen; the statements downstream of it, \ref{prop7} among
@@ -4089,15 +4142,17 @@ the decisions they call for, in one place.
 In rough order of cost.
 
 \begin{enumerate}
-  \item \textbf{\ref{lem20}}, with the repair of \ref{note-lem20}.  Worth
-    settling with the authors first, since the repair changes the written
-    proof.  \ref{prop7} then follows by assembling it with \ref{lem19} and
-    \ref{aux-consensus-ladder}, and
+  \item \textbf{\ref{lem20}}, which has to be restated before it can be
+    proved: for $M \ge 4$ it is false as printed (\ref{note-lem20}).  The
+    restatement is the authors'; the evidence points to a hypothesis that
+    \ref{lem19} delivers.  \ref{prop7} then follows by adapting its assembly
+    with \ref{lem19} and \ref{aux-consensus-ladder} to it, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1}, written from them, with
     them.
   \item \textbf{\ref{prop23}}, which assembles biased analogues of \ref{lem19}
-    and~\ref{lem20} that Appendix~C does not state.  \ref{prop26},
+    and~\ref{lem20} that Appendix~C does not state; the second will have to
+    avoid the failure of \ref{note-lem20}.  \ref{prop26},
     \ref{thm27-1}, \ref{thm27-2} and~\ref{lem28} are written from it and are
     then proved, and with \ref{lem28} \ref{thm31} rests on its axiom alone.
 \end{enumerate}

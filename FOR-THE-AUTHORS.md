@@ -31,7 +31,7 @@ the requests below [GL24] has already answered.
 
 | | Statement | The problem | What we need from you |
 |---|---|---|---|
-| [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | the induction invariant is not preserved: the expressing actor's row is reset, and at the last step the bound is negative | an invariant that survives.  A proposal is in the blueprint |
+| [§1.2](#1-proofs-that-do-not-survive-formalisation) | **Lemma 20** | **false as printed for `M ≥ 4`**: a state of `S^o` whose greedy run leaves column `o` at the second step and ends in another consensus set.  The written invariant is not preserved either | a restated Lemma 20, and its proof.  The evidence points to a hypothesis that Lemma 19 delivers.  The repair this file used to propose does not work and is withdrawn |
 | [§2.7](#2-statements-that-had-to-be-changed) | **Lemma 13** | rests on two inequalities displayed inside proofs and never stated; the numbered statements they are attributed to are limits, which have thrown the rate away | whether either display should become a numbered statement.  Only that: both are steps of your own proofs, [GL24] writes both out, and both are now proved here |
 
 **These are recorded, and need nothing.**  Formalising turned each one up; the
@@ -42,7 +42,7 @@ repository has already taken the only route available, and says so at the declar
 | [§1.1](#1-proofs-that-do-not-survive-formalisation) | **Lemma 19** | **Proved**, along your proof.  This file asked you for the construction of the `⌊m⌋ + 1` distinct actors and for a corrected case split.  The construction is the one (25) points to — a first passage of the backward walk — and is written out; the case split was right, and **that objection is withdrawn**: `τ(u) ≥ 3` forces `m ≥ 1`.  One misprint in the last display |
 | [§1.3](#1-proofs-that-do-not-survive-formalisation) | **Proposition 22** | **Withdrawn.**  This file reported that it does not follow from Proposition 6; that came from reading your slack `½γ` as `1/(2γ)`.  With `½γ` it follows exactly as you say, and it is **proved** — and **Theorem 25** with it, by your route |
 | [§1.7](#1-proofs-that-do-not-survive-formalisation) | **Lemma 14** | Appendix B multiplies a bound on `τ₁⁻ᵒ` by one on `τ₂⁻ᵒ` conditioned on `τ₁⁻ᵒ ≥ t`, through a conditioning on an event that involves the interval being bounded.  Your rates compose without it, by a first-step induction, with your constant.  **Proved**, and **Lemma 29** with it, as Appendix C says |
-| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemma 20 |
+| [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves, and which fails for `M ≥ 4`.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemma 20 as printed (§1.2) |
 | [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemma 20 |
 | [§2.12](#2-statements-that-had-to-be-changed) | **Theorem 2.1** | written out along your pp. 20–21, from equation (13), Propositions 7, 8 and 9 and Corollary 10, and **resting on Lemma 20** through them.  One bound in it, `ζ_β^{(M+1)N} ≥ (MN)^{-(M+1)N}`, fails at `β = 0`; `(1+MN)^{-(M+1)N}` is used instead, and only `C` changes |
 | [§2.13](#2-statements-that-had-to-be-changed) | **Proposition 26** | written out "exactly as the proofs of Proposition 9", and **resting on Proposition 23** alone.  The Lean statement chose `C̃` after `β` and `u`, and so was satisfied by `e^{β(N-1)}`; restated with `C̃` in front.  Remark 8 and `0 ∉ S^α`, which the paper names here, are not used: they are what Theorem 27.1 needs on top |
@@ -68,15 +68,17 @@ repository has already taken the only route available, and says so at the declar
 
 ## 1. Proofs that do not survive formalisation
 
-One written proof does not compose — §1.2.  It is left unproved on purpose.  A
-repair is new mathematics and is yours to write, not the formalisation's to
-guess.  Two more stood here because of this repository's own misreadings, and are
+One numbered statement does not hold as printed — Lemma 20 (§1.2), which is
+false for `M ≥ 4`; its written proof fails with it.  It is left unproved on
+purpose: restating it is new mathematics and is yours to write, not the
+formalisation's to guess.  Two more stood here because of this repository's own misreadings, and are
 withdrawn: Lemma 19 (§1.1), whose proof does close and is now formalised, and
 Proposition 22 (§1.3).
 
 Four more belong here for different reasons.  **Proposition 7** (§1.4) composes
-only along a different route; the missing step turned out to be avoidable, so it
-is proved, but you should know the written route does not run.  **Lemma 14**
+only along a different route; the missing step turned out to be avoidable — and,
+for `M ≥ 4`, false — so it is written out along that route, resting on Lemma 20,
+but you should know the written route does not run.  **Lemma 14**
 (§1.7) is of the same kind: its estimates are right and their written
 composition is not, so it is proved along another, with your constant.  **Lemma 28**
 (§1.5) stood here because the displays Lemma 13 needs are not stated; in biased
@@ -115,17 +117,64 @@ other columns by `m + (m - ⌊m⌋) - 1/(M-1)`; Definition 5 needs
 
 **Nothing here needs a decision.**
 
-### 1.2 Lemma 20 — the induction invariant is not preserved
+### 1.2 Lemma 20 — the statement is false for `M ≥ 4`
 
-*Blueprint:* `note-lem20`. *Lean:* `SocialNetwork.isConsensus_state_of_favouring`.
+*Blueprint:* `lem20`, `note-lem20`. *Lean:* `SocialNetwork.isConsensus_state_of_favouring`,
+stated as printed, **unproved**.
 
-The invariant of the written proof, `Ũₖ (a, p) ≤ n(u) + r - (k+1)/(M-1)` for
-`p ≠ o`, is not preserved: the actor that expresses at step `k` has its row reset
-to `0`, and at the terminal `k` the bound is negative.
+An earlier version of this file said only that the written induction invariant is
+not preserved, and pointed you to a repaired invariant in the blueprint.  **That
+understated it, and the repair is withdrawn: for `M ≥ 4` the statement itself is
+false.**
 
-**What is needed:** a preserved invariant.  The blueprint proposes
-`max (0, n(u) + r - (k+1)/(M-1))` together with a staircase mechanism that
-replenishes the witnesses, again as a proposal to check.
+**A counterexample.**  Take `N = 3`, `M = 5`, `o` the first opinion, `p` the second,
+and the rows
+
+```
+a : ( 7/4, -1/2, -1/2, -1/2, -1/4)     the witness:  n(u) = 1,  r = 3/4
+b : (   0,    0,    0,    0,    0)     the null row
+c : (   0,  3/2, -1/2, -1/2, -1/2)     3/2 = n(u) + r - 1/(M-1), the bound allowed
+```
+
+This is a matrix of `S^o`.  The greedy pair is `(a, o)`.  After it, column `o` reads
+`(0, 1, 1)` while `c` carries `3/2 - 1/4 = 5/4` on `p`: the maximum lies off column
+`o`, so `ξ_2` forces `O_2 = p`.  The greedy run is unique throughout, and at
+`(M-1)(n(u)+1) - 1 = 7` it is in `C^p`, not `C^o`.
+
+**Why.**  Definition 5 bounds the other columns by `n(u) + r - 1/(M-1)`, a bound that
+each greedy expression of `o` lowers by only `1/(M-1)`, and nothing in `S^o` keeps
+column `o` above it once the witnesses have been reset.  With one witness and the
+null row as the only other support of column `o`, the second step can already leave
+column `o` once `r ≥ 2/(M-1)` — by a tie at equality, which `ξ_2` may break away from
+`o`, strictly above — and that needs `M ≥ 4`.  The same mechanism shows that `⋃_o S^o` is not
+stable under a greedy expression (§1.4): with `N = 3`, `M = 4` and rows `0`,
+`(-5/3, 0, 0, 5/3)`, `(-4/3, 0, 4/3, 0)`, the matrix is in `S^o` for `o` the fourth
+opinion (`n = 1`, `r = 2/3`), the greedy pair is unique, and its successor, with rows
+`(-1/3, -1/3, -1/3, 1)`, `0`, `(-5/3, -1/3, 1, 1)`, lies in no `S^p`.
+
+**The written proof** fails on the way.  Its invariant `Ũₖ (a, p) ≤ n(u) + r - (k+1)/(M-1)`
+for `p ≠ o` is not preserved: the actor that expresses at step `k` has its row reset
+to `0`, and at the terminal `k` the bound is negative.  And its `n(u)` witnesses are
+not replenished: when the expressing actor is a witness, with `r > 0` the actor
+reset one step earlier reaches only `1 < 1 + r`.  The repair the blueprint used to
+propose — the bound `max (0, n(u) + r - (k+1)/(M-1))` with a staircase of witnesses —
+does not help: the counterexample satisfies it, and it is column `o`, not the bound,
+that gives way.
+
+**What appears to survive.**  A computer search over small cases (`N ≤ 5`, `M ≤ 6`,
+bounded entries; not part of this repository) found no counterexample for `M = 2`
+or `3`; found the conclusion of Lemma 20 holding on every state that Lemma 19
+actually produces, whatever the witness; and found Proposition 7 holding from
+every sampled start, under every tie-break.  So the theorems look safe, and the
+defect looks like one of interface: `S^o` forgets what the proof of Lemma 19
+delivers — the actors that have expressed carry the partial sums of the
+expressions after them, a staircase on column `o` — and Lemma 20 needs it.
+
+**What is needed:** Lemma 20 restated, most likely with a hypothesis Lemma 19
+delivers, and its proof.  Until then the Lean statement is yours as printed,
+carrying its `sorry`, and Proposition 7 and everything downstream are written from
+it: they will turn green once Lemma 20 is restated and the assembly of
+Proposition 7 adapted to it.
 
 ### 1.3 Proposition 22 — withdrawn
 
@@ -155,7 +204,7 @@ with it.
 ### 1.4 Proposition 7 — the written route needs a step that is not there
 
 *Blueprint:* `prop7`. *Lean:* `SocialNetwork.isLadder_state_of_greedy`,
-**proved** (modulo Lemma 20).
+**written out**, resting on Lemma 20 as printed (§1.2).
 
 The written proof has three stages and its arithmetic is right.  What it does not
 have is the glue between the first two.
@@ -175,8 +224,9 @@ but it resets the row of the expressing actor, and that actor may be one of the
 witnesses `a₁(u), …, a_{n(u)}(u)`.  New witnesses have to be produced from the
 actors that just gained a unit on column `o`, and the bound
 `u(a,p) ≤ n(u) + r - 1/(M-1)` on the other columns then has to be re-established
-with the *new* `n` and `r`.  That is exactly the bookkeeping of Lemma 20, whose
-written invariant does not survive either (§1.2).
+with the *new* `n` and `r`.  That is exactly the bookkeeping of Lemma 20, and for
+`M ≥ 4` it cannot be done: `⋃_o S^o` is not stable (§1.2 gives a matrix whose
+greedy successor lies in no `S^p`).
 
 **What was done, and why it is not a repair you have to check.**  Lemma 20 is
 applied where Lemma 19 actually lands — at `τ(u)` — instead of at `N+1`.  Then no
@@ -193,9 +243,10 @@ own observation from the last stage of this same proof, that a greedy expression
 in `C^o` expresses `o` and that `C^o` is stable under it.  So the formalisation
 keeps that carry and drops the other.
 
-**Nothing here needs a decision.**  It is recorded because the paper as printed
-asserts a step that does not follow, and you may want either to add the `S^o`
-stability lemma or to restate Proposition 7's proof along the shorter route.
+**The route needs no decision; Lemma 20 does.**  It is recorded because the paper
+as printed asserts a step that does not follow, and for `M ≥ 4` one that is false,
+so the stability lemma is not an option.  The shorter route is the one to take,
+and it closes once Lemma 20 is restated (§1.2).
 
 ### 1.5 Lemma 28 — written out, resting on Proposition 23
 

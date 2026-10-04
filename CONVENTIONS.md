@@ -74,8 +74,9 @@ produces that a reader of the paper does not already have. So the proof is writt
 in full on the paper's own ingredients, it inherits `sorryAx` from the step that fails,
 and the alternative route is described in `FOR-THE-AUTHORS.md` for the authors to take
 or leave. Proposition 7 is the case to look at: it is written out in full on Lemmas 19
-and 20 and inherits `sorryAx` from Lemma 20, and the repair the blueprint records for it is
-deliberately not adopted.
+and 20 and inherits `sorryAx` from Lemma 20. The repair the blueprint once proposed for
+Lemma 20 was not adopted, and it would not have worked: for `M ≥ 4` the statement itself
+turned out to be false.
 
 **A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
 same estimates, applied at the same places and with the same constants, but arranges them
@@ -171,7 +172,9 @@ compiles, inherits `sorryAx` from them, and turns green the moment they do — w
 edit. Writing the downstream proof first is deliberate, and it is the only test of
 whether the upstream *statements* are strong enough: Theorem 3 was proved this way, and
 doing so is what exposed that the previous statement of Proposition 12 could never be
-instantiated.
+instantiated. It does not test whether they are *true*: Lemma 20, from which Proposition 7
+is written, turned out to be false as printed for `M ≥ 4`, so what rests on it waits on a
+restatement, and Proposition 7's assembly will need an edit when that comes.
 
 `STATUS.md` keeps the two apart, as **proved** and **proof written, rests on …**.
 

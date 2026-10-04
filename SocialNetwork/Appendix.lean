@@ -19,8 +19,9 @@ Appendix A of arXiv:2607.19651 proves Proposition 7 in three moves:
 
 The third is `SocialNetwork.isLadder_state`, proved.  The first is proved here along the
 paper's own proof, with the construction it attributes to (25) written out.  The second is
-stated here and is **not** proved: the blueprint records, at `note-lem20`, where its written
-induction fails.
+stated here as the paper prints it and is **not** proved: for `M ≥ 4` that statement is false,
+and the blueprint records the counterexample, and where the written induction fails, at
+`note-lem20`.
 
 This file also proves Remark 5 entire: the deterministic half — expressing a pair that carries
 positive pressure keeps a steep ladder steep — the probabilistic half, that such a pair is
@@ -361,11 +362,20 @@ variable (T : Trajectory N M) {o : Opinion M} {u : Pressure N M}
 /-- **Lemma 20.**  For any matrix `u ∈ S^o` with witness `n (u)`, the event
 `⋂_{j=1}^{(M-1)(n(u)+1)-1} ξ_j^u` implies `Ũ_{(M-1)(n(u)+1)-1}^{β,u} ∈ C^o`.
 
-**Unproved.**  The induction invariant of the written proof,
-`Ũₖ (a, p) ≤ n(u) + r - (k+1)/(M-1)` for `p ≠ o`, is not preserved: the actor that expresses
-at step `k` has its row reset to `0`, and at the terminal `k` the bound is negative.  The
-blueprint gives the repaired invariant, `max (0, n(u) + r - (k+1)/(M-1))`, together with the
-staircase mechanism that replenishes the witnesses. -/
+**Unproved, and false as stated for `M ≥ 4`.**  With `N = 3`, `M = 5` and `o = 0`, the matrix
+with rows `(7, -2, -2, -2, -1)`, `0` and `(0, 6, -2, -2, -2)` (scaled) favours `o` with
+`n = 1`, `ρ = 3`.  The first greedy expression is `(0, 0)`; after it, column `0` reads
+`(0, 4, 4)` while actor `2` carries `5` on opinion `1`, so the second greedy expression is of
+opinion `1`, and the (unique) greedy run ends in `C^1`.  Definition 5 bounds the other
+columns by `n + r - 1/(M-1)`, a bound that falls by only `1/(M-1)` per step, and nothing in
+`S^o` keeps column `o` above it once the witnesses have been reset.
+
+The written induction fails as well: its invariant `Ũₖ (a, p) ≤ n(u) + r - (k+1)/(M-1)` for
+`p ≠ o` is not preserved, the actor that expresses at step `k` having its row reset to `0`.
+
+The statement is kept as the paper prints it, carrying its `sorry`, and Proposition 7 is
+written from it.  Closing either needs Lemma 20 restated, with a hypothesis that Lemma 19
+delivers; see `note-lem20`. -/
 theorem isConsensus_state_of_favouring (hM : 2 ≤ M) (hN : 3 ≤ N) {n : ℕ} {ρ : ℤ}
     {a : Fin n → Actor N} (hu : IsFavouringWith o u n ρ a)
     (hgreedy : ∀ k < (M - 1) * (n + 1) - 1, IsGreedyAt T u k) :
@@ -391,7 +401,8 @@ The three stages are Lemma 19 (which needs `τ (u) ≤ N + 1` steps), Lemma 20 (
 `SocialNetwork.isLadder_state` (`N` further steps).  The total is `(M+1) N`.
 
 **Formalised, but not sorry-free**: the assembly is complete and inherits `sorryAx` from
-Lemma 20 alone.
+Lemma 20 alone — whose statement, as printed, is false for `M ≥ 4`, so this assembly will have
+to be adapted to its restatement.
 
 **Supplies a step the paper asserts, and takes a different route through one of them.**  The
 written proof reaches `⋃_o S^o` at time `N + 1` --- "so by Lemma 19 we have
@@ -399,7 +410,7 @@ written proof reaches `⋃_o S^o` at time `N + 1` --- "so by Lemma 19 we have
 the first repeat `τ (u)`, which is only `≤ N + 1`.  Carrying it from `τ (u)` to `N + 1` needs
 `⋃_o S^o` to be stable under a greedy expression, and the paper never establishes that; it is
 not obvious either, since expressing resets the row of one of the very actors that witness
-`S^o`.  Lemma 20 is therefore applied here at `τ (u)` itself, where Lemma 19 leaves the
+`S^o`, and for `M ≥ 4` it is false (`note-lem20`).  Lemma 20 is therefore applied here at `τ (u)` itself, where Lemma 19 leaves the
 process, and no stability of `S^o` is needed.  The arithmetic is unchanged:
 `τ (u) + (M-1)(n(u)+1) - 1 ≤ (N+1) + (M-1)N - 1 = MN`.
 

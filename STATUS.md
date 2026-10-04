@@ -34,7 +34,7 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 
 | Statement | Lean | Why |
 |---|---|---|
-| Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
+| Lemma 20 | `isConsensus_state_of_favouring` | false as printed for `M ≥ 4`: a state of `S^o` (`N = 3`, `M = 5`, `n(u) = 1`, `r = 3/4`) whose greedy run leaves column `o` at the second step and ends in another consensus set.  The written induction invariant is not preserved either |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
 
 ### Cited from outside the paper (2)
