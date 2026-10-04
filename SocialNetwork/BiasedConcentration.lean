@@ -597,9 +597,9 @@ visit `u` (`SocialNetwork.Bias.stateAfter_ne_of_nearGreedy`).
 
 **Rests on** Proposition 23.
 
-**Restated.**  The constant comes before `β`, `μ` and `u`, as "a positive constant depending on
-`M`, `N` and `α`" says; with the constant chosen after them the statement was satisfied by
-`C̃ = e^{β(N-1)}`, since `μ̃_{α,β}` is a probability measure.  The hypothesis `u ∈ S^α` is added,
+The constant comes before `β`, `μ` and `u`, as "a positive constant depending on `M`, `N` and
+`α`" says; chosen after them, it could be `e^{β(N-1)}` and the statement would say nothing.  The
+hypothesis `u ∈ S^α` is added,
 as in Proposition 9: the paper works in `S^α` throughout.  Two things are stronger than the
 paper's statement and cost nothing: it holds for every invariant probability measure, not only
 for the one Theorem 25 names, and for `β ≥ 0` rather than `β > 0`. -/
@@ -874,9 +874,8 @@ profile off `L_α` with pressures below `N` is off `L̂_α`, and that there are 
 constant uses `ζ_{α,β} ≥ 1/(1+MN)`, true for every `β ≥ 0`; at `β = 0` the bound holds because
 `C ≥ 1`.
 
-**Restated.**  The Lean statement was about an invariant measure of the biased *skeleton*;
 `μ_{α,β}` is the invariant measure of the process, Theorem 25.2
-(`SocialNetwork.Bias.existsUnique_biasedInvariantCts`).
+(`SocialNetwork.Bias.existsUnique_biasedInvariantCts`), not of its skeleton.
 
 **Rests on** Proposition 23, through Proposition 26 and the bound on `μ̃_{α,β} (L_α)`. -/
 theorem biasedMeasure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (hγ : 0 < γ)

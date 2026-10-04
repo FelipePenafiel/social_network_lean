@@ -465,10 +465,6 @@ sums, which equation (6) makes `(M-1) α nₐ ≥ 0` rather than `0`.
 The hypothesis `γ < 1/(M-1)` is Appendix C's regime `0 < α`: it makes the row sums
 non-negative, and gives `½γ < 1`.
 
-**An earlier version of this repository recorded this proposition as false as transported**,
-having read the paper's slack `½γ` as `1/(2γ)`; the chain then reaches `N - 1 + 1/(2γ)`, which
-is not below `N`.  The paper writes `½γ`.
-
 `u ∈ S^α` is the paper's hypothesis and is kept, but the proof does not use it: the row sums of
 equation (6) are non-negative for every profile. -/
 theorem entry_mem_of_nearGreedy (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
@@ -2609,10 +2605,7 @@ transposed, on the two ingredients Appendix C names.
 * The **sweep** of equation (12) and the **step floor** transpose without change.
 
 Proposition 22 is proved, by the paper's argument (`SocialNetwork.Bias.entry_mem_of_nearGreedy`),
-so the minorisation and Theorem 25 are proved as Appendix C prescribes.  An earlier version of
-this repository read the near-greedy slack as `1/(2γ)` rather than the paper's `½γ`, found the
-transported chain of Proposition 6 not to close, and left both resting on it; that finding was
-the repository's transcription error, not the paper's.
+so the minorisation and Theorem 25 are proved as Appendix C prescribes.
 
 ## Main results
 

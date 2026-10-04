@@ -250,7 +250,7 @@ with an empty ladder set satisfies the four assumptions vacuously and falsifies 
 at `t = 0`.  What rules that out is the strong Markov property, which is the content of [LM22]
 and is not expressible here, so the statement has to be attached to a concrete process.  The
 unbiased axiom is attached to the unbiased one, and this is the price: a second thing to
-trust.  See `FOR-THE-AUTHORS.md` §3.
+trust.  See `FOR-THE-AUTHORS.md` §1.3.
 
 The hypotheses are named after the equations of the paper, and `ε₁ ε₂ s₁ s₂` are functions of
 `β` for the reason recorded at the unbiased axiom. -/

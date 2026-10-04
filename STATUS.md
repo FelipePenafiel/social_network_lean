@@ -19,8 +19,8 @@ Three words are used throughout, and they mean different things.
 4 statements. They are unproved for two different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
-The group that was only work is empty: every numbered statement of the paper is
-stated in Lean, and nothing unproved here is unproved for want of doing it.
+Every numbered statement of the paper is stated in Lean, and nothing unproved
+here is unproved for want of doing it.
 Nothing is blocked on Mathlib: where the library lacks a theory the paper uses,
 the argument is carried out here, and `blueprint/blueprint.md` records what is
 absent.

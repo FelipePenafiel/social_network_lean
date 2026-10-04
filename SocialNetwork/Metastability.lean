@@ -343,8 +343,8 @@ The hypotheses are named after the equations of the paper: `h15` is (15), `h16` 
 `h17` is (17) and `h18` is (18).  Unlike the paper's numbered display, `ε₁`, `ε₂`, `s₁` and
 `s₂` are *functions of* `β`: the proof of Theorem 3 instantiates them at `s₂ = 2β` and
 `ε₂ = (M+1)² N² e^{-β/((M+1)N)}`, and the constraint `ε₁ + ε₂ ≤ 1/2` holds, in the paper's
-words, only "for `β` sufficiently big".  Binding them as constants ahead of `β`, as an earlier
-version of this statement did, makes the hypotheses unsatisfiable. -/
+words, only "for `β` sufficiently big".  Bound as constants ahead of `β`, as the paper's
+display reads, the hypotheses are unsatisfiable. -/
 axiom exitTime_approx_exponential (hM : 2 ≤ M) (hN : 3 ≤ N) (o : Opinion M)
     (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ}
     (hC : 0 < C) (hδ : 0 < δ) (hK : 0 < K) (hθ : 0 < θ)

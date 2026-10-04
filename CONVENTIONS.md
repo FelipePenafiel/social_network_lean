@@ -41,29 +41,15 @@ bypasses the paper's argument is a check not performed. A departure of the secon
 is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemma 20.
 
 There are two such departures in the repository at present: **Proposition 7** and
-**Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§1.4 and 1.7;
+**Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§2.2 and 2.10;
 **Lemma 29**, which Appendix C proves "as Lemma 14", inherits the second.  Both keep the
 paper's own estimates, at the places the paper applies them and with its constants; what
 changes is how they are put together, because the written composition does not hold.
 
-**Theorem 1.1 and Theorem 16 are no longer among them.** arXiv:2607.19651 asserts the
-sandwich (11) rather than constructing it, but [GL24] pp. 12–14 constructs it in full,
-and that construction is now formalised: `SocialNetwork/Band.lean` builds the band of its
-Figure 2 and `SocialNetwork/BandCollapse.lean` identifies the realisation the band carries
-with the process the rates define.  Both are written for an arbitrary
-`SocialNetwork.Band` — a state space, a rate per pair per state, the state each pair leads
-to, a distinguished family, and a bound `λ` on the rate it carries — so
-`SocialNetwork/Graphical.lean` instantiates them for the model of equation (3) and
-`SocialNetwork/BiasedNonExplosion.lean` for the biased model of Section 3, which is
-exactly Appendix C's "as Theorem 1.1, with Proposition 21 in place of Proposition 5".
-
-Two substitutions are made and neither changes a step of the argument.  Mathlib has no
-Poisson point process, so the marks are carried by the jump-hold form — draw a mark, then
-hold for an exponential time of the band's height — which is the same law; and [GL24]'s
-"`T^λ` is a rate-`λ` Poisson process, so `sup T^λ_n = ∞`" becomes the supermartingale
-criterion `SocialNetwork.measure_holdBlowUp_eq_one`, which proves exactly that conclusion.
-The identification of the constructed process with the one (3) defines is stated in neither
-source and is supplied here, as rule 3 asks.
+Where the paper's proof follows [GL24] and [GL24] writes out a step the paper only
+asserts, the Lean proof follows [GL24]. Theorem 1.1 is the main case: the paper asserts the
+sandwich (11), [GL24] pp. 12–14 constructs it, and that construction is what is formalised
+([`GL24.md`](GL24.md) §2.7).
 
 **Where the paper's proof does not close, the statement is left resting on the step that
 fails — even when a different argument would establish it.** This is the sharp end of
@@ -74,9 +60,8 @@ produces that a reader of the paper does not already have. So the proof is writt
 in full on the paper's own ingredients, it inherits `sorryAx` from the step that fails,
 and the alternative route is described in `FOR-THE-AUTHORS.md` for the authors to take
 or leave. Proposition 7 is the case to look at: it is written out in full on Lemmas 19
-and 20 and inherits `sorryAx` from Lemma 20. The repair the blueprint once proposed for
-Lemma 20 was not adopted, and it would not have worked: for `M ≥ 4` the statement itself
-turned out to be false.
+and 20 and inherits `sorryAx` from Lemma 20, which is moreover false as printed for
+`M ≥ 4` (`FOR-THE-AUTHORS.md` §1.1).
 
 **A reorganisation is not a departure, and is marked anyway.** Where the Lean proof uses the
 same estimates, applied at the same places and with the same constants, but arranges them
@@ -155,7 +140,7 @@ A `sorry` says *this is work someone could do*. Where that is false — the stat
 cited from outside the paper and nothing in this library could ever discharge it — the
 declaration is an `axiom` instead, so that it does not sit in the inventory of
 outstanding work pretending to be pickable. There are two, both Theorem 5.3 of [LM22];
-`FOR-THE-AUTHORS.md` §3 says why there have to be two.
+`FOR-THE-AUTHORS.md` §1.3 says why there have to be two.
 
 CI gates both: no declaration claimed complete may reach `sorryAx` or either axiom.
 
@@ -170,11 +155,11 @@ turns this red on its own.
 A result whose own proof is written but whose upstream lemmas are still `sorry`
 compiles, inherits `sorryAx` from them, and turns green the moment they do — with no
 edit. Writing the downstream proof first is deliberate, and it is the only test of
-whether the upstream *statements* are strong enough: Theorem 3 was proved this way, and
-doing so is what exposed that the previous statement of Proposition 12 could never be
-instantiated. It does not test whether they are *true*: Lemma 20, from which Proposition 7
-is written, turned out to be false as printed for `M ≥ 4`, so what rests on it waits on a
-restatement, and Proposition 7's assembly will need an edit when that comes.
+whether the upstream *statements* are strong enough: writing Theorem 3 this way is what
+showed that Proposition 12, with its constants fixed before `β`, cannot be instantiated.
+It does not test whether they are *true*: Lemma 20, from which Proposition 7 is written, is
+false as printed for `M ≥ 4`, so what rests on it waits on a restatement, and
+Proposition 7's assembly will need an edit then.
 
 `STATUS.md` keeps the two apart, as **proved** and **proof written, rests on …**.
 
