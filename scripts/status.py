@@ -93,7 +93,7 @@ REASONS: dict[str, tuple[str, str]] = {
         "the biased twin of Proposition 9: the proof would transpose that one, and rests "
         "on the biased Proposition 7",
     ),
-    "thm27": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
+    "thm27-1": (BLOCKED_ON_PAPER, "Proposition 26, and its own proof is not written"),
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,

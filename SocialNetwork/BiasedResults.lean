@@ -12,7 +12,8 @@ import SocialNetwork.Greedy
 
 The statements of arXiv:2607.19651 about the model with communication bias: Theorem 4 of
 Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25,
-Proposition 26 and Theorem 27 of Appendix C.  Lemma 28 is in `SocialNetwork.BiasedHitting`,
+Proposition 26 and Theorem 27.1 of Appendix C.  Theorem 27.2 and Lemma 28 are in
+`SocialNetwork.BiasedHitting`,
 Lemma 29 in `SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 in
 `SocialNetwork.BiasedMetastability`.
 
@@ -48,7 +49,7 @@ otherwise.
 ## Main statements
 
 Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25,
-Proposition 26 and Theorem 27 — all stated.
+Proposition 26 and Theorem 27.1 — all stated.
 -/
 
 namespace SocialNetwork
@@ -3095,18 +3096,8 @@ theorem biasedMeasure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (
           ≤ μ (biasedLadderSet N M γ) := by
   sorry
 
-/-- **Theorem 27.2.**  For every fixed `δ > 0`,
-`sup_{u ∈ S^α} P (R^{α,β,u} (L_α) > e^{-β (M-1) α (1-δ)}) → 0` as `β → +∞`.
-
-The zero matrix does not have to be excluded here: by Remark 1 it is not in `S^α`. -/
-theorem tendsto_biasedHittingTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (hγ : 0 < γ)
-    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) {δ : ℝ} (hδ : 0 < δ) :
-    Filter.Tendsto
-      (fun β : ℝ => ⨆ u ∈ biasedStateSet N M,
-        biasedProbHittingGT γ β u (biasedLadderSet N M γ)
-          (ENNReal.ofReal (Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ)))))
-      Filter.atTop (nhds 0) := by
-  sorry
+/-! **Theorem 27.2**, `SocialNetwork.Bias.tendsto_biasedHittingTime`, is in
+`SocialNetwork.BiasedHitting`, after the display its proof takes the limit of. -/
 
 /-! **Lemma 28**, `SocialNetwork.Bias.biasedProbHitting_le`, is in `SocialNetwork.BiasedHitting`:
 its proof restarts the biased process at its first jump, which `SocialNetwork.BiasedConsensusExit`

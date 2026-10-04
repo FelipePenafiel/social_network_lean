@@ -195,7 +195,10 @@ displays the paper does not state (§2.7).  It can, and it is:
 
 Lemma 28 is then the display at `t = 2β`, with the horizon of Proposition 23,
 and inherits `sorryAx` from Proposition 23 alone, which waits on biased
-analogues of Lemmas 19 and 20.
+analogues of Lemmas 19 and 20.  Part 2 of Theorem 27 is the limit of
+the same display at `t = e^{-β(M-1)α(1-δ)}`, as part 2 of Theorem 2 is of the
+unbiased one, and it is written too, resting on Proposition 23 in the same way;
+part 1, about the invariant measure, waits on Proposition 26.
 
 **One step is not Lemma 13's, and needs no decision.**  Lemma 13 bounds its race
 term with `e^{β/(M-1)} ≥ 1`, which is why its exponent is `1/((M+1)N)`, the

@@ -41,6 +41,8 @@ exponential dominates.  That is the one step supplied here beyond the transposit
 * `SocialNetwork.Bias.biasedProbHittingGT_le_of_horizon` — the display, for any horizon at which
   the near-greedy run is on `L_α`.
 * `SocialNetwork.Bias.biasedProbHitting_le` — **Lemma 28**.
+* `SocialNetwork.Bias.tendsto_biasedHittingTime` — **Theorem 27.2**, the limit of the display, as
+  Theorem 2.2 is the limit of the unbiased one.
 -/
 
 namespace SocialNetwork
@@ -437,6 +439,99 @@ theorem biasedProbHitting_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 <
     _ = C * Real.exp (-β * γ / 2) := by rw [hC]; ring
 
 end Lemma28
+
+/-! ### Theorem 27.2 -/
+
+section Theorem272
+
+variable [NeZero N] [NeZero M]
+
+/-- **Theorem 27.2.**  For every fixed `δ > 0`,
+`sup_{u ∈ S^α} P (R^{α,β,u} (L_α) > e^{-β (M-1) α (1-δ)}) → 0` as `β → +∞`.
+
+The zero matrix does not have to be excluded here: by Remark 1 it is not in `S^α`.
+
+**Follows the paper's proof**, which is "as the proof of Theorem 2" with the rate floor
+`e^{β(M-1)α}` of Remark 8: the display `SocialNetwork.Bias.biasedProbHittingGT_le_of_horizon`
+at `t = e^{-β(M-1)α(1-δ)}`, with the horizon `K` of Proposition 23.  There
+`e^{β(M-1)α} t = e^{β(M-1)αδ} → ∞` kills the race term, and Remark 4 for the biased model kills
+`1 - ζ_{α,β}^K ≤ K MN e^{-βγ/2}`.  The bound does not depend on `u`, so it bounds the supremum.
+This is `SocialNetwork.tendsto_hittingTime_ladderSet` transposed.
+
+**Rests on** Proposition 23, which supplies the horizon. -/
+theorem tendsto_biasedHittingTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (hγ : 0 < γ)
+    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) {δ : ℝ} (hδ : 0 < δ) :
+    Filter.Tendsto
+      (fun β : ℝ => ⨆ u ∈ biasedStateSet N M,
+        biasedProbHittingGT γ β u (biasedLadderSet N M γ)
+          (ENNReal.ofReal (Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ)))))
+      Filter.atTop (nhds 0) := by
+  obtain ⟨K, hK, hlad⟩ := exists_horizon_isBiasedLadder hM hN hγ
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hc : 0 < ((M : ℝ) - 1) * α := mul_pos hM1 hα
+  have hKr : (0 : ℝ) < (K : ℝ) := by exact_mod_cast hK
+  -- The display, uniformly in `u`.
+  have key : ∀ β : ℝ, 0 ≤ β →
+      (⨆ u ∈ biasedStateSet N M,
+        biasedProbHittingGT γ β u (biasedLadderSet N M γ)
+          (ENNReal.ofReal (Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ)))))
+        ≤ ENNReal.ofReal (1 - biasedZeta N M γ β ^ K
+          + (K : ℝ) * Real.exp (-(Real.exp (β * (((M : ℝ) - 1) * α))
+              * Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ))) / (K : ℝ))) := by
+    intro β hβ
+    refine iSup₂_le fun u hu => ?_
+    exact biasedProbHittingGT_le_of_horizon hM hN hγ h hα hβ hK (hlad u hu) hu (Real.exp_pos _)
+  -- Remark 4 for the biased model kills the first term.
+  have h1 : Filter.Tendsto (fun β : ℝ => 1 - biasedZeta N M γ β ^ K)
+      Filter.atTop (nhds 0) := by
+    have hle : ∀ β : ℝ, 1 - biasedZeta N M γ β ^ K
+        ≤ (K : ℝ) * (((M * N : ℕ) : ℝ) * Real.exp (-(β * γ / 2))) := fun β => by
+      have := one_sub_le_biasedZeta_pow N M γ β K
+      linarith
+    have hnn : ∀ β : ℝ, 0 ≤ 1 - biasedZeta N M γ β ^ K := fun β => by
+      have := pow_le_one₀ (biasedZeta_pos N M γ β).le (biasedZeta_le_one N M γ β) (n := K)
+      linarith
+    have hlin : Filter.Tendsto (fun β : ℝ => -(β * γ / 2)) Filter.atTop Filter.atBot :=
+      Filter.tendsto_neg_atTop_atBot.comp
+        ((Filter.tendsto_id.atTop_mul_const hγ).atTop_div_const two_pos)
+    have hright := (Real.tendsto_exp_atBot.comp hlin).const_mul ((K : ℝ) * ((M * N : ℕ) : ℝ))
+    rw [mul_zero] at hright
+    refine squeeze_zero hnn hle (Filter.Tendsto.congr (fun β => ?_) hright)
+    simp only [Function.comp_apply]
+    ring
+  -- The rate floor grows, and kills the race term.
+  have h2 : Filter.Tendsto
+      (fun β : ℝ => (K : ℝ) * Real.exp (-(Real.exp (β * (((M : ℝ) - 1) * α))
+          * Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ))) / (K : ℝ)))
+      Filter.atTop (nhds 0) := by
+    have hin : ∀ β : ℝ, Real.exp (β * (((M : ℝ) - 1) * α))
+        * Real.exp (-β * (((M : ℝ) - 1) * α) * (1 - δ))
+        = Real.exp (β * (((M : ℝ) - 1) * α) * δ) := fun β => by
+      rw [← Real.exp_add]
+      congr 1
+      ring
+    have hgrow : Filter.Tendsto (fun β : ℝ => Real.exp (β * (((M : ℝ) - 1) * α) * δ))
+        Filter.atTop Filter.atTop :=
+      Real.tendsto_exp_atTop.comp ((Filter.tendsto_id.atTop_mul_const hc).atTop_mul_const hδ)
+    have hneg : Filter.Tendsto
+        (fun β : ℝ => -Real.exp (β * (((M : ℝ) - 1) * α) * δ) / (K : ℝ))
+        Filter.atTop Filter.atBot :=
+      (Filter.tendsto_neg_atTop_atBot.comp hgrow).atBot_div_const hKr
+    have h3 := (Real.tendsto_exp_atBot.comp hneg).const_mul (K : ℝ)
+    rw [mul_zero] at h3
+    refine Filter.Tendsto.congr (fun β => ?_) h3
+    simp only [Function.comp_apply]
+    rw [hin β]
+  have hsum := h1.add h2
+  rw [add_zero] at hsum
+  have hbE := (ENNReal.continuous_ofReal.tendsto 0).comp hsum
+  rw [ENNReal.ofReal_zero] at hbE
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hbE
+    (Filter.Eventually.of_forall fun _ => zero_le) ?_
+  filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with β hβ using key β hβ
+
+end Theorem272
 
 end Bias
 
