@@ -12,8 +12,8 @@ import SocialNetwork.Greedy
 
 The statements of arXiv:2607.19651 about the model with communication bias: Theorem 4 of
 Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25,
-Proposition 26, Theorem 27 and Lemma 28 of Appendix C.  Lemma 29 is in
-`SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 are in
+Proposition 26 and Theorem 27 of Appendix C.  Lemma 28 is in `SocialNetwork.BiasedHitting`,
+Lemma 29 in `SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 in
 `SocialNetwork.BiasedMetastability`.
 
 The construction mirrors `SocialNetwork.Skeleton` and `SocialNetwork.ContinuousTime`, with the
@@ -48,7 +48,7 @@ otherwise.
 ## Main statements
 
 Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25,
-Proposition 26, Theorem 27 and Lemma 28 — all stated.
+Proposition 26 and Theorem 27 — all stated.
 -/
 
 namespace SocialNetwork
@@ -3108,22 +3108,9 @@ theorem tendsto_biasedHittingTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (h
       Filter.atTop (nhds 0) := by
   sorry
 
-/-- **Lemma 28.**  `P (R^{α,β,u} (L_α) > 2β) ≤ C e^{-βγ/2}`, with `C` depending only on
-`α`, `M` and `N`.
-
-**Restated.**  The earlier Lean statement of this lemma was about the skeleton path measure
-and the discrete steps `k ≤ ⌈2β⌉` rather than about the continuous-time hitting time
-`R^{α,β,u}`, and it bound `C` *after* `β` and `u`, so the constant was free to depend on both.
-Neither matches the paper's display, and neither can serve as assumption (16) of the biased
-Proposition 12, which is what Lemma 28 exists for.  This is the shape of the unbiased
-Lemma 13, `SocialNetwork.probHittingGT_ladderSet_le`, with `1/((M+1)N)` replaced by `γ/2`;
-see `FOR-THE-AUTHORS.md`. -/
-theorem biasedProbHitting_le (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
-    (hγ' : γ < 1 / ((M : ℝ) - 1)) :
-    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ u : Profile N M, IsBiasedState u →
-      biasedProbHittingGT γ β u (biasedLadderSet N M γ) (ENNReal.ofReal (2 * β))
-        ≤ ENNReal.ofReal (C * Real.exp (-β * γ / 2)) := by
-  sorry
+/-! **Lemma 28**, `SocialNetwork.Bias.biasedProbHitting_le`, is in `SocialNetwork.BiasedHitting`:
+its proof restarts the biased process at its first jump, which `SocialNetwork.BiasedConsensusExit`
+sets up after this file. -/
 
 /-! **Lemma 29** is proved in `SocialNetwork.BiasedConsensusExit`, and **Corollary 30** and
 **Theorem 31** are in `SocialNetwork.BiasedMetastability`: the proof of Lemma 29 restarts the

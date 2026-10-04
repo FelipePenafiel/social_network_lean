@@ -2,7 +2,7 @@
 Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
-import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedHitting
 
 /-!
 # Corollary 30 and Theorem 31: metastability of the biased model

@@ -2843,6 +2843,53 @@ process pointwise.
   vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
 \end{proof}
 
+\aux{Lemma}
+\begin{lemma}[Inside the proof of Lemma~28]
+  \label{aux-biased-hitting-rate}
+  \lean{SocialNetwork.Bias.biasedProbHittingGT_le_of_horizon,
+    SocialNetwork.Bias.exp_le_biasedTotalRate,
+    SocialNetwork.Bias.biasedCtsPathMeasure_holdingTime_gt,
+    SocialNetwork.Bias.ctsNearGreedyEvents,
+    SocialNetwork.Bias.measurableSet_ctsNearGreedyEvents,
+    SocialNetwork.Bias.mem_ctsNearGreedyEvents_succ,
+    SocialNetwork.Bias.measurable_jumps,
+    SocialNetwork.Bias.biasedZeta_pow_le_ctsNearGreedyEvents,
+    SocialNetwork.Bias.biasedHittingTimeCts_le_jumpTime}
+  \leanok
+  \uses{eq8}
+  Let $0 < \alpha < \pressone$, and let $K \ge 1$ be a horizon at which the
+  near-greedy run from $u \in \Salpha$ is on $\ladder_\alpha$, as
+  \ref{prop23} provides.  For any $t > 0$,
+  \[
+    \mathbb{P}(R^{\alpha,\beta,u}(\ladder_\alpha) > t)
+      \;\le\; 1 - \zeta_{\alpha,\beta}^{K}
+        + K \exp\!\left(-\frac{e^{\beta(M-1)\alpha}\, t}{K}\right).
+  \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{prop24, rem8, rem1, aux-biased-ladder-consensus}
+  \textbf{Not a numbered statement of the paper}: it is \ref{aux-hitting-rate}
+  transposed, as Appendix~C prescribes for \ref{thm27} (``with the following
+  modifications: the lower bound for the jump rate of any non-null state is
+  $e^{\beta(M-1)\alpha}$ by Remark~8'').  \textbf{Follows the paper's proof} of
+  \ref{aux-hitting-rate}: split on the near-greedy event, whose complement
+  costs $1 - \zeta_{\alpha,\beta}^K$ by \ref{prop24}; on it the process is on
+  $\ladder_\alpha$ at the $K$-th jump, so $R > t$ forces one of the $K$
+  holding times above $t/K$, and each of those is dominated by an exponential
+  of rate $e^{\beta(M-1)\alpha}$ by \ref{rem8}.  A union bound finishes.
+
+  Two things are simpler than in the unbiased model.  Nothing has to keep the
+  run away from the zero matrix, since $0 \notin \Salpha$ (\ref{rem1}): every
+  profile the run visits jumps at rate at least $e^{\beta(M-1)\alpha}$.  And the
+  holding times and \ref{prop24} are read off the restart at the first jump,
+  which the biased process comes with, rather than off the finite-horizon
+  kernels.
+
+  The horizon is a hypothesis, so this is proved outright, with no
+  \texttt{sorryAx}: \ref{prop23} enters at \ref{lem28}, which supplies it.
+\end{proof}
+
 \paper{Lemma 28}
 \begin{lemma}[Hitting a biased ladder within $2\beta$]
   \label{lem28}
@@ -2854,14 +2901,32 @@ process pointwise.
   with $C$ depending only on $\alpha$, $M$ and $N$.
 \end{lemma}
 \begin{proof}
-  \uses{lem13}
-  \textbf{Not formalised.}  The Lean statement has the shape of \ref{lem13}
-  with $\pressone$ replaced by $\tfrac{1}{2}\gamma$, which is what this lemma
-  exists for: it has to serve as \eqref{eq:h16} for \ref{prop12-biased}.  That
-  fixes two things about it.  It is about the continuous-time hitting time
-  $R^{\alpha,\beta,u}$, not about the skeleton path measure and the discrete
-  steps $k \le \lceil 2\beta \rceil$; and $C$ is bound before $\beta$ and $u$,
-  so it may depend on neither.
+  \leanok
+  \uses{lem13, prop23, aux-biased-hitting-rate, prop24, rem1}
+  Follows the paper's proof, which is ``as the proof of \ref{lem13}'':
+  \ref{aux-biased-hitting-rate} at $t = 2\beta$, with the horizon of
+  \ref{prop23}, and Remark~4 for the biased model to bound
+  $1 - \zeta_{\alpha,\beta}^K \le K MN e^{-\beta\gamma/2}$.  The other
+  ingredient of \ref{lem13}, \ref{eq19}, restarts the process from the zero
+  matrix, and has nothing to do here: $0 \notin \Salpha$ (\ref{rem1}).
+
+  \textbf{Supplies the arithmetic of ``putting the inequalities together''},
+  which is not \ref{lem13}'s.  \ref{lem13} bounds its race term with
+  $e^{\beta/(M-1)} \ge 1$, which is why its exponent is $1/((M+1)N)$, the
+  inverse of the horizon.  The same step here gives $e^{-2\beta/K}$, with $K$
+  the horizon of \ref{prop23}, which the paper does not compare with
+  $\gamma/2$.  The exponent $\gamma/2$ holds because the rate floor grows: with
+  $e^x \ge 1 + x$, the race term $K \exp(-2\beta e^{\beta(M-1)\alpha}/K)$ is at
+  most $K \exp(-2(M-1)\alpha\beta^2/K)$, and completing the square bounds it by
+  $K e^{\gamma^2 K / (32 (M-1)\alpha)} e^{-\beta\gamma/2}$.
+
+  The Lean statement has the shape of \ref{lem13} with $\pressone$ replaced by
+  $\tfrac{1}{2}\gamma$, which is what this lemma exists for: it has to serve as
+  \eqref{eq:h16} for \ref{prop12-biased}.  It is about the continuous-time
+  hitting time, and $C$ is bound before $\beta$ and $u$.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop23} and from nothing else.
 \end{proof}
 
 \paper{Lemma 29}
@@ -2961,8 +3026,8 @@ process pointwise.
     lem28, lem29, aux-biased-ladder-consensus}
   As \ref{thm3}, which is all Appendix~C says. \emph{Formalised, but neither
   sorry-free nor axiom-free}: the assembly is complete in Lean, and inherits
-  \texttt{sorryAx} from \ref{lem28} alone together with the second [LM22]
-  axiom, the biased twin \ref{prop12-biased}.
+  \texttt{sorryAx} from \ref{prop23} alone, through \ref{lem28}, together with
+  the second [LM22] axiom, the biased twin \ref{prop12-biased}.
 
   The four assumptions are checked as in Section~5.3, with $\pressone$ replaced
   by $\tfrac{1}{2}\gamma$ throughout:
@@ -3266,7 +3331,8 @@ recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
 
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
-\ref{prop7} and \ref{prop9} from \ref{lem19} and~\ref{lem20}.  That is what
+\ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem19} and~\ref{lem20},
+and \ref{lem28} from \ref{prop23}.  That is what
 makes an obstruction visible instead of absorbed.
 
 \ref{prop22} stood in this list, and \ref{thm25} through it, while this
@@ -3303,20 +3369,22 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Seventy-one proofs
+\ref{note-green}: does it follow what the paper wrote?  Seventy-three proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts seventy-two entries.  Every one of them is named, and
+own, so it counts seventy-four entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (thirty-nine). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (forty-one). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
 \ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
-\ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
+\ref{eq19} inside its own, \ref{rem6}, \ref{lem13} and its biased twin \ref{lem28}
+with the display \ref{aux-biased-hitting-rate} inside it, \ref{cor15}
+and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, \ref{lem14} and its biased twin \ref{lem29},
 \ref{prop22}, the minorisation \ref{aux-minorisation} of p.~17
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
@@ -3432,6 +3500,15 @@ $\hat{\ladder}$, which needs the sign condition of \ref{def4}; and that there
 are finitely many such states.  One constant is changed: the paper's
 $\zeta_\beta^{(M+1)N} \ge (MN)^{-(M+1)N}$ fails at $\beta = 0$, and
 $(1+MN)^{-(M+1)N}$ is used instead.
+
+\ref{lem28} is \ref{lem13} transposed, as Appendix~C says, and the display
+\ref{aux-biased-hitting-rate} it rests on is \ref{aux-hitting-rate}
+transposed, as Appendix~C prescribes for \ref{thm27}.  \ref{eq19} has no
+counterpart, the zero matrix not being in $\Salpha$.  One step is supplied:
+the arithmetic that closes the proof.  \ref{lem13}'s step $e^{\beta/(M-1)} \ge
+1$ would give the exponent $2/K$, with $K$ the horizon of \ref{prop23}; the
+exponent $\gamma/2$ the lemma states needs the growth of $e^{\beta(M-1)\alpha}$,
+used through $e^x \ge 1 + x$.
 
 \ref{thm1-2-skeleton} is the paper's own route --- a uniform minorisation, then
 Doeblin --- with both steps supplied rather than cited: \ref{aux-minorisation}
@@ -3603,9 +3680,10 @@ In rough order of cost.
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
     written --- are proved outright, and \ref{thm2-1}, written from them, with
     them.
-  \item \textbf{\ref{lem28}}, the biased twin of \ref{lem13}, which waits on the
-    biased forms of \ref{aux-hitting-rate} and~\ref{eq19}; Appendix~C does not
-    state them.  With it, \ref{thm31} rests on its axiom alone.
+  \item \textbf{\ref{prop23}}, which assembles biased analogues of \ref{lem19}
+    and~\ref{lem20} that Appendix~C does not state.  \ref{lem28} is written
+    from it and is then proved, and with it \ref{thm31} rests on its axiom
+    alone.
 \end{enumerate}
 
 Nothing on this list waits on Mathlib.  \ref{aux-doeblin}, which is proved

@@ -45,7 +45,7 @@ repository has already taken the only route available, and says so at the declar
 | [§1.4](#1-proofs-that-do-not-survive-formalisation) | **Proposition 7** | the written route carries `⋃_o S^o` from `τ(u)` to `N+1`, which needs a stability the paper never proves.  Applying Lemma 20 where Lemma 19 lands removes the need, with your arithmetic unchanged.  **Written out**, resting on Lemmas 19 and 20 |
 | [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemmas 19 and 20 |
 | [§2.12](#2-statements-that-had-to-be-changed) | **Theorem 2.1** | written out along your pp. 20–21, from equation (13), Propositions 7, 8 and 9 and Corollary 10, and **resting on Lemmas 19 and 20** through them.  One bound in it, `ζ_β^{(M+1)N} ≥ (MN)^{-(M+1)N}`, fails at `β = 0`; `(1+MN)^{-(M+1)N}` is used instead, and only `C` changes |
-| [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | the biased twin of Lemma 13, so it inherits Lemma 13's two missing displays in biased form |
+| [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | written out "as the proof of Lemma 13", and **resting on Proposition 23** alone.  Its display is proved in biased form; equation (19) has nothing to do, since `0 ∉ S^α`.  One step is not Lemma 13's: the exponent `γ/2` needs the growth of `e^{β(M-1)α}`, since `e^{β(M-1)α} ≥ 1` alone gives `2/K` |
 | [§2.1](#2-statements-that-had-to-be-changed) | **Proposition 12** | with `ε₁ ε₂ s₁ s₂` bound ahead of `β`, the hypotheses are unsatisfiable and Theorem 3 could never have followed.  Made functions of `β` |
 | [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
 | [§2.3](#2-statements-that-had-to-be-changed) | **Equation (6)** | the second condition is not stable under `π_α^{a,o}`, though your justification for it proves a stronger one that is |
@@ -76,8 +76,8 @@ only along a different route; the missing step turned out to be avoidable, so it
 is proved, but you should know the written route does not run.  **Lemma 14**
 (§1.7) is of the same kind: its estimates are right and their written
 composition is not, so it is proved along another, with your constant.  **Lemma 28**
-(§1.5) is blocked one level up, on ingredients Lemma 13 needs that the paper
-displays inside proofs rather than states.  And **Proposition 9** (§1.6) stood
+(§1.5) stood here because the displays Lemma 13 needs are not stated; in biased
+form they are proved now, and it is written out, resting on Proposition 23.  And **Proposition 9** (§1.6) stood
 here as an item needing a decision, for one clause of one sentence; it does
 not any more, because [GL24] states that clause as its Corollary 8.
 
@@ -176,20 +176,36 @@ keeps that carry and drops the other.
 asserts a step that does not follow, and you may want either to add the `S^o`
 stability lemma or to restate Proposition 7's proof along the shorter route.
 
-### 1.5 Lemma 28 — inherits Lemma 13's missing displays
+### 1.5 Lemma 28 — written out, resting on Proposition 23
 
-*Blueprint:* `lem28`. *Lean:* `SocialNetwork.Bias.biasedProbHitting_le`.
+*Blueprint:* `lem28`, and `aux-biased-hitting-rate` for its display.  *Lean:*
+`SocialNetwork.Bias.biasedProbHitting_le`, in `SocialNetwork/BiasedHitting.lean`.
 
 Lemma 28 is Lemma 13 with `1/((M+1)N)` replaced by `½γ`, and Appendix C gives
-it no proof of its own.  Lemma 13's proof runs on two inequalities the paper
-displays inside proofs and never states (§2.7); the biased proof needs those two
-in biased form, and they are not in the paper either.
+it no proof of its own beyond "as the proof of Lemma 13".  This item used to say
+that the transposition could not be made, because Lemma 13 rests on two
+displays the paper does not state (§2.7).  It can, and it is:
 
-So Lemma 28 is unproved not because its own argument fails but because the
-argument it is told to copy rests on statements that do not exist.  Once §2.7 is
-settled the same two transcriptions serve here.  Of its remaining ingredients,
-Proposition 22 is proved (§1.3) and Proposition 23 waits on biased analogues of
-Lemmas 19 and 20.
+* the display inside the proof of part 2 of Theorem 2, transposed as Appendix C
+  prescribes for Theorem 27 — Proposition 23 for 7, Proposition 24 for 8, and
+  the rate floor `e^{β(M-1)α}` of Remark 8 — is **proved**, for any horizon at
+  which the near-greedy run is on `L_α`;
+* equation (19) has **nothing to do**: it restarts the process from the zero
+  matrix, and by Remark 1 the zero matrix is not in `S^α`.
+
+Lemma 28 is then the display at `t = 2β`, with the horizon of Proposition 23,
+and inherits `sorryAx` from Proposition 23 alone, which waits on biased
+analogues of Lemmas 19 and 20.
+
+**One step is not Lemma 13's, and needs no decision.**  Lemma 13 bounds its race
+term with `e^{β/(M-1)} ≥ 1`, which is why its exponent is `1/((M+1)N)`, the
+inverse of the horizon.  The same step here gives the exponent `2/K`, with `K` the
+horizon of Proposition 23, which the paper never compares with `γ/2`.  The
+exponent `γ/2` holds all the same, because the rate floor grows with `β`: with
+`e^x ≥ 1 + x` the race term `K exp (-2β e^{β(M-1)α}/K)` is at most
+`K exp (-2(M-1)αβ²/K)`, and completing the square bounds it by
+`K e^{γ²K/(32(M-1)α)} e^{-βγ/2}`.  So the constant `C` depends on the horizon `K`
+of Proposition 23 as well, which is still a function of `α`, `M` and `N` only.
 
 The Lean statement was also wrong, and that was a fault of this repository rather
 than of the paper; it is now restated in the paper's own form.  See §2.9.
@@ -426,6 +442,7 @@ blueprint's audit section classifies every formalised proof this way.
   process to `Ĉ^o`": the others lose `1/(M-1)` towards `o`, which keeps them
   non-negative, and gain `1` towards `p`, which keeps them below `1`; with
   `N ≥ 3` one of them still carries at least `1` for `o`.
+* **Lemma 28.**  The arithmetic that closes the proof, which in the transposition is not Lemma 13's (§1.5); and the rate floor of Remark 8 as a bound on the total rate, which Remark 8 asserts in its last sentence: the actor that has heard something is any actor other than the one with the null row, the `nₐ` of `S^α` being distinct.
 * **Lemma 29.**  The two steps the slack changes, at §1.7.
 * **Proposition 22.**  As at Proposition 6, the passage from the repeat time to
   the bound at step `N` is carried out explicitly.
