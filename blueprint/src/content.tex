@@ -1559,12 +1559,13 @@ process pointwise.
   \label{prop6}
   \lean{SocialNetwork.entry_mem_of_greedy, SocialNetwork.entry_mem_of_mem_greedyEvents, SocialNetwork.entry_le_of_greedy, SocialNetwork.neg_le_of_forall_le}
   \leanok
-  \uses{aux-greedy, prop5}
+  \uses{aux-greedy}
   For any $u \in \Sspace$,
   $\bigcap_{j=1}^{N} \xi_j^u \subset \{ -MN < \Uskel{u}_N < N \}$, entrywise.
 \end{proposition}
 \begin{proof}
   \leanok
+  \uses{prop5}
   \textbf{Follows the paper's proof of Proposition~6}, in its two cases.  One
   step is supplied: where the paper passes from the bound at the repeat time
   $m$ to ``this implies $\max \Uskel{u}_N < N$'', the Lean proof carries the
@@ -3060,7 +3061,7 @@ process pointwise.
     SocialNetwork.Bias.biasedReturnBound_prod_le,
     SocialNetwork.Bias.one_div_biasedZeta_le}
   \leanok
-  \uses{eq8, thm25}
+  \uses{eq8}
   For $0 < \alpha < \pressone$ there is $\tilde{C} > 0$, depending on $M$, $N$
   and $\alpha$ only, such that for every $\beta \ge 0$ and every
   $u \in \Salpha \setminus \steep_\alpha$,

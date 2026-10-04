@@ -61,6 +61,61 @@ DISPLAYED_IN = {
 FULL_TARGET = 'dep_graph_full.html'
 
 
+# What the arrows mean, in both graphs.  plastexdepgraph draws an arrow dashed when the
+# statement uses the node it comes from, and reduces the graph transitively.
+ARROWS = [
+    ('Solid arrow', 'the <em>proof</em> of the result it points to uses the one it '
+     'comes from'),
+    ('Dashed arrow', 'the <em>statement</em> of the result it points to uses the one it '
+     'comes from'),
+    ('Implied arrows', 'are not drawn: when a path of arrows already leads from one '
+     'result to another, the direct arrow is left out'),
+]
+
+
+def colour_entries(colors: dict) -> list:
+    """The colour entries leanblueprint adds to the legend, in the order they are shown.
+
+    Each is its title, the attribute and colour it describes, and the text it reads with
+    here, or ``None`` for leanblueprint's own.  leanblueprint colours a formalized
+    definition without saying so in its legend.  Every statement of the paper is stated in
+    Lean, so a blue background marks a proof that is not formalized, and a green one a
+    proof that is, resting on one that is not.
+    """
+    return [
+        (f"{colors['proved'][1]} border", ('color', colors['stated'][0]), None),
+        (f"{colors['mathlib'][1]} border", ('color', colors['mathlib'][0]), None),
+        (f"{colors['can_state'][1]} border", ('color', colors['can_state'][0]), None),
+        (f"{colors['not_ready'][1]} border", ('color', colors['not_ready'][0]), None),
+        (f"{colors['fully_proved'][1]} background",
+         ('fillcolor', colors['fully_proved'][0]), None),
+        (f"{colors['proved'][1]} background", ('fillcolor', colors['proved'][0]),
+         'the <em>proof</em> of this result is formalized, and rests on a result whose '
+         'proof is not'),
+        (f"{colors['can_state'][1]} background", ('fillcolor', colors['can_prove'][0]),
+         'the <em>proof</em> of this result is not formalized; <code>STATUS.md</code> '
+         'says why'),
+        (f"{colors['defined'][1]} background", ('fillcolor', colors['defined'][0]),
+         'a definition, formalized'),
+    ]
+
+
+def coloured_legend(legend: list, used: set, colors: dict) -> list:
+    """``legend`` with its colour entries kept only for the colours the graph uses.
+
+    The shapes come first, then the colours in the order of ``colour_entries``, then the
+    rest of ``legend`` in its own order.
+    """
+    texts = dict(legend)
+    entries = colour_entries(colors)
+    titles = {title for title, _, _ in entries}
+    shapes = [entry for entry in legend if entry[0] in ('Boxes', 'Ellipses')]
+    kept = [(title, text or texts[title]) for title, key, text in entries
+            if (text or title in texts) and key in used]
+    rest = [entry for entry in legend if entry[0] not in titles and entry not in shapes]
+    return shapes + kept + rest
+
+
 def paper_name(node) -> str:
     """The name ``\\paper`` or ``\\aux`` gave the node, as its reference prints it."""
     return ' '.join(node.ref.textContent.split())
@@ -285,17 +340,21 @@ def ProcessOptions(options, document):
         graphs[document] = graph
 
         legend = data['legend']
-        data['full_legend'] = legend + [
+        data['full_legend'] = legend + ARROWS + [
             ('This graph', 'every node of the blueprint.  The '
              '<a href="dep_graph_document.html">dependency graph</a> draws the '
              "paper's results only.")]
+        used = ({('color', result.colors[0]) for result in graph.nodes}
+                | {('fillcolor', result.colors[1]) for result in graph.nodes})
         legend[:] = [
             ('Ellipses', "the results of the paper, one per result: a theorem's parts "
              'and the steps its proof is split into are drawn as the theorem'),
             ('Not drawn', 'definitions, equations, remarks, and the lemmas the '
              'formalisation adds; an arrow runs through them.  The '
              f'<a href="{FULL_TARGET}">full graph</a> draws every node'),
-        ] + [entry for entry in legend if entry[0] not in ('Boxes', 'Ellipses')]
+        ] + coloured_legend([entry for entry in legend
+                             if entry[0] not in ('Boxes', 'Ellipses')],
+                            used, colors) + ARROWS
 
         document.rendererdata['html5']['extra_toc_items'].append(
             {'text': 'Full dependency graph', 'url': FULL_TARGET})
@@ -307,12 +366,14 @@ def ProcessOptions(options, document):
     def write_full_graph(document) -> list:
         full = data['full_graph']
         dot = full.to_dot(data.get('shapes', {'definition': 'box'})).tred()
+        used = {(attr, node.attr.get(attr)) for node in dot.nodes()
+                for attr in ('color', 'fillcolor')}
         Template(template.read_text()).stream(
             graph=full,
             dot=dot.to_string(),
             context=document.context,
             title='Dependencies, every node of the blueprint',
-            legend=data['full_legend'],
+            legend=coloured_legend(data['full_legend'], used, data['colors']),
             extra_modal_links=data.get('extra_modal_links_tpl', []),
             document=document,
             config=document.config).dump(FULL_TARGET)
