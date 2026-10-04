@@ -16,7 +16,7 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-5 statements. They are unproved for two different reasons, and
+4 statements. They are unproved for two different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
 The group that was only work is empty: every numbered statement of the paper is
@@ -27,15 +27,14 @@ absent.
 [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) carries the detail and what each item
 asks for.
 
-### Blocked on the paper (3)
+### Blocked on the paper (2)
 
 The written proof does not compose, or its route passes through one that does not.
 A repair is new mathematics and is the authors' to write, not the formalisation's to guess: each of these is left carrying a `sorry` on purpose.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Lemma 19 | `isFavouring_state_firstRepeat` | the sequence of `⌊m⌋ + 1` distinct actors is asserted ("by (25)"), never constructed, and the degenerate case is ruled out through `τ(u) = 2` rather than through `m = 0` |
-| Lemma 20 | `isConsensus_state_of_favouring` | the induction invariant is not preserved: the actor that expresses at step `k` has its row reset, and at the terminal `k` the bound is negative |
+| Lemma 20 | `isConsensus_state_of_favouring` | false as printed for `M ≥ 4`: a state of `S^o` (`N = 3`, `M = 5`, `n(u) = 1`, `r = 3/4`) whose greedy run leaves column `o` at the second step and ends in another consensus set.  The written induction invariant is not preserved either |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | assembles biased analogues of Lemmas 19 and 20, which the paper does not state |
 
 ### Cited from outside the paper (2)
@@ -52,10 +51,10 @@ Nothing in this library can discharge them, so no amount of work here will close
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 33 | 34 | 67 |
+| Proved | 34 | 34 | 68 |
 | Proof written, resting on an unproved statement | 14 | 2 | 16 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 3 | 0 | 3 |
+| Stated in Lean, unproved | 2 | 0 | 2 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
 | **Total** | **67** | **40** | **107** |
 
@@ -85,9 +84,9 @@ are covered, and all 60 of them are stated in Lean.
 | Remark 5 — Steep ladders are stable | `IsSteepLadder.express_of_pos` +3 | proved |
 | Remark 5 — the bound η | `eta` +9 | proved |
 | Remark 5 — the bound η, iterated | `eta_pow_le_pathMeasure_steepLadder` +7 | proved |
-| Theorem 2.1 | `measure_ladderSet_ge` +6 | proof written, rests on Lemma 19, Lemma 20 |
-| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on Lemma 19, Lemma 20 |
-| Theorem 3 | `metastability` | proof written, rests on Proposition 12, Lemma 19, Lemma 20 |
+| Theorem 2.1 | `measure_ladderSet_ge` +6 | proof written, rests on Lemma 20 |
+| Theorem 2.2 | `tendsto_hittingTime_ladderSet` | proof written, rests on Lemma 20 |
+| Theorem 3 | `metastability` | proof written, rests on Proposition 12, Lemma 20 |
 | equation (5) | `Bias.Profile.express` +4 | stated |
 | equation (6) | `Bias.Profile` +7 | stated |
 | Remark 1 | `Bias.IsBiasedState.express` +7 | proved |
@@ -95,18 +94,18 @@ are covered, and all 60 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 20, Proposition 23, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
-| Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
+| Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 20 |
 | Proposition 8 | `zeta` +5 | proved |
 | Remark 4 | `one_sub_le_zeta_pow` +4 | proved |
-| Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 19, Lemma 20 |
-| Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 19, Lemma 20 |
-| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | proof written, rests on Lemma 19, Lemma 20 |
+| Proposition 9 | `measure_le_of_notMem_steepLadderSet` +15 | proof written, rests on Lemma 20 |
+| Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 20 |
+| Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | proof written, rests on Lemma 20 |
 | Remark 6 | `probHittingLadderFirst` +7 | proved |
 | Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
-| Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 19, Lemma 20 |
+| Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 20 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +13 | proved |
 | Corollary 15 | `le_characteristicTime` | proved |
 | Theorem 16 | `Bias.biasedNonExplosion` +11 | proved |
@@ -114,7 +113,7 @@ are covered, and all 60 of them are stated in Lean.
 | Proposition 18 | `Bias.inf_measure_forall_eq_first_pos` +14 | proved |
 | Definition 5 — Matrices favouring an opinion | `IsFavouring` +2 | stated |
 | Definition 5 — The first repeat time | `firstRepeat` +3 | stated |
-| Lemma 19 | `isFavouring_state_firstRepeat` | unproved — blocked on the paper |
+| Lemma 19 | `isFavouring_state_firstRepeat` +2 | proved |
 | Lemma 20 | `isConsensus_state_of_favouring` | unproved — blocked on the paper |
 | Lemma 20 — the opening step | `opinion_eq_of_isMax_of_favouring` | proved |
 | Lemma 20 — the closing step | `isConsensus_of_nonpos` | proved |
@@ -126,13 +125,13 @@ are covered, and all 60 of them are stated in Lean.
 | Theorem 25.1 | `Bias.biasedNonExplosion_of_pos` | proved |
 | Theorem 25.2 — The invariant measure of the biased skeleton | `Bias.existsUnique_biasedInvariant` +3 | proved |
 | Theorem 25.2 — The invariant measure of the biased process | `Bias.existsUnique_biasedInvariantCts` +4 | proved |
-| Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` +10 | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
-| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` +7 | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
-| Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
-| Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
+| Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` +10 | proof written, rests on Lemma 20, Proposition 23 |
+| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` +7 | proof written, rests on Lemma 20, Proposition 23 |
+| Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Lemma 20, Proposition 23 |
+| Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 20, Proposition 23 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proved |
-| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Proposition 12, biased twin |
+| Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 12, Lemma 20, Proposition 23, Proposition 12, biased twin |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | axiom — cited from outside the paper |
 
 ### Auxiliary results, with no counterpart in the paper
@@ -166,11 +165,11 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | from a consensus state to a ladder | `isLadder_state` +9 | proved |
 | Restarting a realisation | `Trajectory.shift` +2 | proved |
 | the gap estimate | `entrySup` +3 | proved |
-| the greedy run does not revisit `u` | `skeleton_ne_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
+| the greedy run does not revisit `u` | `skeleton_ne_of_greedy` +3 | proof written, rests on Lemma 20 |
 | The predecessors of the zero matrix | `zeroPredecessor` +7 | proved |
 | Restarting the process at the first jump | `shiftStepPath` +7 | proved |
 | The clock of a greedy run | `exp_le_totalRate` +7 | proved |
-| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | proof written, rests on Lemma 19, Lemma 20 |
+| the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | proof written, rests on Lemma 20 |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | proved |
 | the ladder set is inhabited | `ladderOf` +3 | proved |
 | The minorisation of the biased skeleton | `Bias.biasedDescendState` +19 | proved |

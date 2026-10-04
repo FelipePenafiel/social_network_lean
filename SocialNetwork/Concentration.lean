@@ -25,7 +25,7 @@ Everything the proof calls is in the library: equation (13) and `μ̃^β` in
 `SocialNetwork.Transfer` and `SocialNetwork.ContinuousTime`, Propositions 7 and 9 and
 Corollary 10 in `SocialNetwork.Appendix`, Proposition 8 in `SocialNetwork.Greedy`.  The proof
 therefore inherits `sorryAx` from Propositions 7 and 9 and Corollary 10, which is to say from
-Lemmas 19 and 20, and from nothing else.
+Lemma 20, and from nothing else.
 
 The statement lived in `SocialNetwork.ContinuousTime`, which comes before equation (13) in the
 import order; it is proved here, after it.
@@ -260,7 +260,7 @@ entries below `N` is off `L̂`, and that there are finitely many of them.
 `β ≥ 0`; only the value of `C` changes.  At `β = 0` itself, where Proposition 9 and Corollary 10
 are not stated, the inequality holds because `C ≥ 1`.
 
-**Rests on** Propositions 7 and 9 and Corollary 10, and so on Lemmas 19 and 20. -/
+**Rests on** Propositions 7 and 9 and Corollary 10, and so on Lemma 20. -/
 theorem measure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) :
     ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ μ : Measure (Pressure N M),
       IsProbabilityMeasure μ → IsCarriedByState μ → IsInvariantCts β μ →
