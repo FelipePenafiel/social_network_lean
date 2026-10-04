@@ -41,7 +41,7 @@ bypasses the paper's argument is a check not performed. A departure of the secon
 is a finding about the paper and belongs in `FOR-THE-AUTHORS.md`, next to Lemma 20.
 
 There are two such departures in the repository at present: **Proposition 7** and
-**Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§1.4 and 1.7;
+**Lemma 14**, written out at the declarations and in `FOR-THE-AUTHORS.md` §§2.2 and 2.10;
 **Lemma 29**, which Appendix C proves "as Lemma 14", inherits the second.  Both keep the
 paper's own estimates, at the places the paper applies them and with its constants; what
 changes is how they are put together, because the written composition does not hold.
@@ -155,7 +155,7 @@ A `sorry` says *this is work someone could do*. Where that is false — the stat
 cited from outside the paper and nothing in this library could ever discharge it — the
 declaration is an `axiom` instead, so that it does not sit in the inventory of
 outstanding work pretending to be pickable. There are two, both Theorem 5.3 of [LM22];
-`FOR-THE-AUTHORS.md` §3 says why there have to be two.
+`FOR-THE-AUTHORS.md` §1.3 says why there have to be two.
 
 CI gates both: no declaration claimed complete may reach `sorryAx` or either axiom.
 

@@ -2169,7 +2169,7 @@ corollary is **false**: `R^{β,0}(L) = T₁ + o(1)` in probability, so the left-
 An earlier version of this statement rendered the independence as a supremum over `s ≥ 0`
 weighted by `e^{-MNs}`, which at `s = 0` leaves `P (R^{β,0} (L) > e^{-β(1-δ)/(M-1)})` standing
 alone and tends to `1`.  That was an error of this formalisation, not of the paper; see the
-blueprint node `cor11` and `FOR-THE-AUTHORS.md` §2.11. -/
+blueprint node `cor11` and `FOR-THE-AUTHORS.md` §2.6. -/
 theorem tendsto_hittingTime_ladderSet_zero (hM : 2 ≤ M) (hN : 3 ≤ N) {δ : ℝ} (hδ : 0 < δ) :
     Filter.Tendsto
       (fun β : ℝ => probHittingGTAfterFirstJump β 0 (ladderSet N M)
