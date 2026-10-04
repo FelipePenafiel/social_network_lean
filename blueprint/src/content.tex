@@ -1108,18 +1108,51 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \paper{Theorem 2.1}
 \begin{theorem}[Concentration of $\muinv$]
   \label{thm2-1}
-  \lean{SocialNetwork.measure_ladderSet_ge}
+  \lean{SocialNetwork.measure_ladderSet_ge,
+    SocialNetwork.zeta_pow_le_measure_ladderSet,
+    SocialNetwork.totalRate_le_of_mem_ladderSet,
+    SocialNetwork.exp_mul_exp_le_totalRate,
+    SocialNetwork.IsSteepLadder.isLadder_of_lt,
+    SocialNetwork.notMem_steepLadderSet_of_lt,
+    SocialNetwork.IsState.mem_boundedSet_of_lt}
   \leanok
   \uses{def1, thm1-2}
   There is $C > 0$ such that $\muinv(\ladder) \ge 1 - C e^{-\beta/(M-1)}$ for
   every $\beta \ge 0$.
 \end{theorem}
 \begin{proof}
-  \uses{prop9, eq13}
-  From \ref{prop9} and the transfer of \ref{eq13}. \textbf{Not formalised}:
-  $\muinv$ exists, by \ref{thm1-2}, and \ref{eq13} is proved, but the route is
-  \ref{prop9}, which rests on \ref{lem19} and~\ref{lem20}, and the proof of
-  this theorem is not itself written.
+  \leanok
+  \uses{eq13, prop7, prop8, prop9, cor10, def4, rem3}
+  Follows the paper's proof of Theorem 2.1 (pp.~20--21).  By \ref{eq13},
+  $\muinv(\ladder) = A/(A+B)$, where $A$ and $B$ are the sums of
+  $\muskel(u)/q_\beta(u)$ over $u \in \ladder$ and $u \notin \ladder$.  On
+  $\ladder$ every rate is at most $e^{\beta(N-1)}$, so $A \ge \muskel(\ladder)
+  / (MN e^{\beta(N-1)})$, and $\muskel(\ladder) \ge \zeta_\beta^{(M+1)N}$ by
+  \ref{prop7} and~\ref{prop8}.  Off $\ladder$, a state whose entries are all
+  below $N$ is off $\hat{\ladder}$ as well, so \ref{prop9} (with $q_\beta(u)
+  \ge e^{\beta/(M-1)}$ for $u \ne 0$) and \ref{cor10} (at $u = 0$) bound its
+  term by $C'' e^{-\beta(N-1+\frac{1}{M-1})}$, and there are at most
+  $K(N,M)$ such states.  A state with an entry of at least $N$ has $q_\beta(u)
+  \ge e^{\beta N}$.  The paper's last step, $1/(1+x) \ge 1-x$, is taken on the
+  complement, as $\muinv(\ladder^c) = B/(A+B) \le B/A$.
+
+  Four steps the paper asserts are supplied:
+  \begin{itemize}
+    \item the bound $q_\beta(l) \le MN e^{\beta(N-1)}$ on $\ladder$;
+    \item the invariance under the $(M+1)N$-step kernel that turns \ref{prop7}
+      and~\ref{prop8} into a bound on $\muskel(\ladder)$;
+    \item that a state off $\ladder$ with entries below $N$ is off
+      $\hat{\ladder}$, which uses the sign condition of \ref{def4};
+    \item that there are finitely many such states, by the row sums of
+      \ref{rem3}.
+  \end{itemize}
+  One constant is changed.  The paper bounds $\zeta_\beta^{(M+1)N} \ge
+  (MN)^{-(M+1)N}$, which fails at $\beta = 0$, where $\zeta_0 = 1/(1+MN)$; the
+  bound used is $\zeta_\beta \ge 1/(1+MN)$, and only the value of $C$ changes.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop7}, \ref{prop9} and \ref{cor10},
+  hence from \ref{lem19} and~\ref{lem20}, and from nothing else.
 \end{proof}
 
 \paper{Theorem 2.2}
@@ -3270,18 +3303,18 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Seventy proofs
+\ref{note-green}: does it follow what the paper wrote?  Seventy-one proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts seventy-one entries.  Every one of them is named, and
+own, so it counts seventy-two entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (thirty-eight). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (thirty-nine). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9}, \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
-\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-2} and the display
+\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13}, \ref{cor15} and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, \ref{lem14} and its biased twin \ref{lem29},
@@ -3388,6 +3421,17 @@ predecessors of $0$, which is \ref{aux-zero-predecessors}. \ref{rem6} is
 ``the same steps'' the paper prescribes, at the horizon $N$ rather than
 $(M+1)N$, with one supplied step of its own: that $C^o$ and $C^{-o}$ are
 disjoint, which the paper uses without remarking on it.
+
+\ref{thm2-1} is the paper's own proof at pp.~20--21: \ref{eq13}, then the sum
+over $\ladder$ bounded below through \ref{prop7} and~\ref{prop8}, and the sum
+off it bounded above through \ref{prop9} and~\ref{cor10}.  Four steps are
+supplied, each at its declaration: the bound on the rate over $\ladder$; the
+invariance that turns \ref{prop7} and~\ref{prop8} into a bound on
+$\muskel(\ladder)$; that a state off $\ladder$ with entries below $N$ is off
+$\hat{\ladder}$, which needs the sign condition of \ref{def4}; and that there
+are finitely many such states.  One constant is changed: the paper's
+$\zeta_\beta^{(M+1)N} \ge (MN)^{-(M+1)N}$ fails at $\beta = 0$, and
+$(1+MN)^{-(M+1)N}$ is used instead.
 
 \ref{thm1-2-skeleton} is the paper's own route --- a uniform minorisation, then
 Doeblin --- with both steps supplied rather than cited: \ref{aux-minorisation}
@@ -3557,7 +3601,8 @@ In rough order of cost.
     first, since the repairs change the written proofs.  \ref{prop7} then
     follows by assembling them with \ref{aux-consensus-ladder}, and
     \ref{prop9}, \ref{cor10} and~\ref{aux-greedy-avoids} --- all three already
-    written --- are proved outright, and \ref{thm2-1} with them.
+    written --- are proved outright, and \ref{thm2-1}, written from them, with
+    them.
   \item \textbf{\ref{lem28}}, the biased twin of \ref{lem13}, which waits on the
     biased forms of \ref{aux-hitting-rate} and~\ref{eq19}; Appendix~C does not
     state them.  With it, \ref{thm31} rests on its axiom alone.

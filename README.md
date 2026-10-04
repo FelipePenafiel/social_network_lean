@@ -108,7 +108,7 @@ SocialNetwork/Doeblin.lean    Doeblin's criterion, both halves, for any countabl
 SocialNetwork/Markov.lean     the law of a cylinder, and the Markov property of the skeleton
 SocialNetwork/Minorisation.lean    the minorisation of the skeleton chain (the paper's p. 17)
 SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remark 5, Prop 9
-SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, Theorems 1 and 2
+SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, μ̃^β, Theorem 2.2
 SocialNetwork/ConsensusExit.lean   Lemma 14: leaving a consensus set (Appendix B)
 SocialNetwork/Metastability.lean   Corollary 15 and Theorem 3
 SocialNetwork/JumpHold.lean   non-explosion for a jump-hold chain with a slow sub-family
@@ -118,6 +118,7 @@ SocialNetwork/BandCollapse.lean    the band is the process
 SocialNetwork/Graphical.lean  the band of equation (3)'s model, and Theorem 1.1
 SocialNetwork/Transfer.lean   equation (13), from the correspondence of p. 18 one way
 SocialNetwork/Existence.lean  the correspondence the other way, and Theorem 1.2
+SocialNetwork/Concentration.lean   Theorem 2.1, from equation (13) and Propositions 7–9
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
 SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27, Lemma 28
 SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1
