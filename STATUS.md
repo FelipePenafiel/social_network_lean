@@ -16,9 +16,11 @@ Three words are used throughout, and they mean different things.
 
 ## 1. What resists formalisation
 
-6 statements. They are unproved for three different reasons, and
+5 statements. They are unproved for two different reasons, and
 the reasons are not comparable: one of these groups will never close here, and one
 needs mathematics only the authors can supply.
+The group that was only work is empty: every numbered statement of the paper is
+stated in Lean, and nothing unproved here is unproved for want of doing it.
 Nothing is blocked on Mathlib: where the library lacks a theory the paper uses,
 the argument is carried out here, and `blueprint/blueprint.md` records what is
 absent.
@@ -46,29 +48,20 @@ Nothing in this library can discharge them, so no amount of work here will close
 | Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
 | Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
 
-### Not formalised yet (1)
-
-Nothing here waits on Mathlib or on the authors.
-Whatever stands in the way can be removed from this repository, and the work is simply not done.
-
-| Statement | Lean | Why |
-|---|---|---|
-| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` | the statement names an invariant measure of the skeleton, where the paper's `μ_{α,β}` is that of the process; the biased equation (13) and the existence of that measure are not written.  After them the proof is Theorem 2.1's, resting on Proposition 26 |
-
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 31 | 30 | 61 |
-| Proof written, resting on an unproved statement | 13 | 2 | 15 |
+| Proved | 33 | 34 | 67 |
+| Proof written, resting on an unproved statement | 14 | 2 | 16 |
 | Definitions and constructions | 15 | 4 | 19 |
-| Stated in Lean, unproved | 4 | 0 | 4 |
+| Stated in Lean, unproved | 3 | 0 | 3 |
 | Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **65** | **36** | **101** |
+| **Total** | **67** | **40** | **107** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
-the paper. Counted as the paper numbers them, 59 statements and displayed equations
-are covered, and all 59 of them are stated in Lean.
+the paper. Counted as the paper numbers them, 60 statements and displayed equations
+are covered, and all 60 of them are stated in Lean.
 
 ### The statements of the paper
 
@@ -102,7 +95,7 @@ are covered, and all 59 of them are stated in Lean.
 | equation (7) | `Bias.biasedGenerator` +8 | stated |
 | equations (8) and (9) | `Bias.IsBiasedConsensus` +6 | stated |
 | Remark 8 | `Bias.le_max_pressure` +2 | proved |
-| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Theorem 27.1, Proposition 12, biased twin |
+| Theorem 4 | `Bias.biasedAbsorption` +11 | proof written, rests on Proposition 12, Lemma 19, Lemma 20, Proposition 23, Proposition 12, biased twin |
 | Proposition 5 | `exists_rowSup_actor_lt` +4 | proved |
 | Proposition 6 | `entry_mem_of_greedy` +3 | proved |
 | Proposition 7 | `isLadder_state_of_greedy` +3 | proof written, rests on Lemma 19, Lemma 20 |
@@ -130,9 +123,11 @@ are covered, and all 59 of them are stated in Lean.
 | Proposition 22 | `Bias.entry_mem_of_nearGreedy` | proved |
 | Proposition 23 | `Bias.exists_horizon_isBiasedLadder` | unproved — blocked on the paper |
 | Proposition 24 | `Bias.biasedZeta` +1 | proved |
-| Theorem 25 | `Bias.existsUnique_biasedInvariant` +2 | proved |
+| Theorem 25.1 | `Bias.biasedNonExplosion_of_pos` | proved |
+| Theorem 25.2 — The invariant measure of the biased skeleton | `Bias.existsUnique_biasedInvariant` +3 | proved |
+| Theorem 25.2 — The invariant measure of the biased process | `Bias.existsUnique_biasedInvariantCts` +4 | proved |
 | Proposition 26 | `Bias.biasedMeasure_le_of_notMem_steepLadder` +10 | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
-| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` | unproved — not formalised yet |
+| Theorem 27.1 | `Bias.biasedMeasure_ladderSet_ge` +7 | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Theorem 27.2 | `Bias.tendsto_biasedHittingTime` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Lemma 28 | `Bias.biasedProbHitting_le` | proof written, rests on Lemma 19, Lemma 20, Proposition 23 |
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
@@ -179,6 +174,10 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | equation (19) | `probHittingGT_ladderSet_zero_le` | proved |
 | the ladder set is inhabited | `ladderOf` +3 | proved |
 | The minorisation of the biased skeleton | `Bias.biasedDescendState` +19 | proved |
+| The biased jump rate, and the sum of (13) | `Bias.IsBiasedState.le_biasedTotalRate` +1 | proved |
+| The correspondence of p. 18 for the biased process | `Bias.measurable_biasedProcess` +20 | proved |
+| Equation (13) for the biased process | `Bias.biasedInvariantCts_eq` | proved |
+| The correspondence of p. 18 for the biased process, the other way | `Bias.biasedSurvival` +31 | proved |
 | Remark 5 for the biased model | `Bias.eta_le_biasedJumpPMF_biasedPosFinset` +7 | proved |
 | The near-greedy run does not revisit | `Bias.stateAfter_ne_of_nearGreedy` +1 | proved |
 | Inside the proof of Lemma 28 | `Bias.biasedProbHittingGT_le_of_horizon` +8 | proved |

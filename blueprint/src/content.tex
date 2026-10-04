@@ -2405,7 +2405,9 @@ process pointwise.
   entries of the matrix, which is the only line of the argument that is not shared:
   \ref{aux-graphical} is stated for an arbitrary chain with a slow distinguished family, so the
   band, the summing away of the discarded marks, and the identification of the band with the
-  process are the same theorem applied twice.
+  process are the same theorem applied twice.  The argument uses $\gamma > 0$ and not the sign
+  of $\alpha$, so it is stated once, for every $\gamma > 0$, as \ref{thm25-1}, and this
+  theorem is its case $\alpha < 0$.
 \end{proof}
 
 \paper{Proposition 17}
@@ -2772,23 +2774,47 @@ process pointwise.
   same way.
 \end{proof}
 
-\paper{Theorem 25}
+\paper{Theorem 25.1}
+\begin{theorem}[The biased process does not explode]
+  \label{thm25-1}
+  \lean{SocialNetwork.Bias.biasedNonExplosion_of_pos}
+  \leanok
+  \uses{eq7}
+  For $\beta \ge 0$, $0 < \alpha < \pressone$ and $u \in \Salpha$, the jump
+  times of the biased process satisfy $\mathbb{P}(\sup\{T_m : m \ge 1\} =
+  \infty) = 1$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{prop21, aux-graphical}
+  \textbf{Follows Appendix~C's prescription}, ``exactly as the proof of
+  Theorem~1'', which for this part is \ref{thm16}'s argument: the pairs carrying
+  pressure below $N$ are at most $NM$ of rate at most $e^{\beta N}$ each, and
+  \ref{prop21} puts one of them in every $N$ expressions.  Neither fact sees the
+  sign of $\alpha$, only $\gamma = \pressone - \alpha > 0$, so the Lean theorem
+  is stated for every $\gamma > 0$ and contains \ref{thm16}, which is now
+  derived from it.
+\end{proof}
+
+\paper{Theorem 25.2}
 \begin{theorem}[The invariant measure of the biased skeleton]
   \label{thm25}
-  \lean{SocialNetwork.Bias.existsUnique_biasedInvariant, SocialNetwork.Bias.IsBiasedInvariant, SocialNetwork.Bias.IsCarriedByBiasedState}
+  \lean{SocialNetwork.Bias.existsUnique_biasedInvariant, SocialNetwork.Bias.IsBiasedInvariant, SocialNetwork.Bias.IsCarriedByBiasedState, SocialNetwork.Bias.eq_of_biasedInvariant}
   \leanok
   \uses{eq7}
   For $\beta > 0$ and $0 < \alpha < \pressone$, the biased skeleton has a unique
-  invariant probability measure $\mu_{\beta,\alpha}$ carried by $\Salpha$.
+  invariant probability measure $\tilde{\mu}_{\alpha,\beta}$ carried by $\Salpha$.
 \end{theorem}
 \begin{proof}
   \leanok
   \uses{aux-doeblin, aux-biased-minorisation}
-  Theorem~25 of the paper bundles two claims: that the biased process does not
-  explode, which is \ref{thm16} and is proved there, and that the biased
-  skeleton has a unique invariant probability measure, which is this node.  The
-  Lean statement covers the second only, and the statement above is narrowed
-  to match it.
+  Theorem~25 of the paper bundles three claims, as Theorem~1 does: that the
+  biased process does not explode, which is \ref{thm25-1}; that its skeleton
+  has a unique invariant probability measure, which is this node, the twin of
+  \ref{thm1-2-skeleton}; and that the process itself has one, which is
+  \ref{thm25-2}, transferred from this one by \ref{aux-biased-eq13}.  The
+  uniqueness half holds for every $\beta \ge 0$
+  (\texttt{SocialNetwork.Bias.eq\_of\_biasedInvariant}).
 
   \textbf{Written out, by the route the paper prescribes}: ``the proof of
   Theorem~25 follows exactly as the proof of Theorem~1''. \ref{aux-doeblin}
@@ -2802,6 +2828,167 @@ process pointwise.
   does not make; neither filing stands.  With the paper's $\tfrac{1}{2}\gamma$,
   \ref{prop22} follows from \ref{prop6} as Appendix~C says, and the proof here is
   the one the paper prescribes.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The biased jump rate, and the sum of~(13)]
+  \label{aux-biased-rate-floor}
+  \lean{SocialNetwork.Bias.IsBiasedState.le_biasedTotalRate,
+    SocialNetwork.Bias.tsum_div_biasedTotalRate_le}
+  \leanok
+  \uses{eq6, eq7}
+  For every $u \in \Salpha$ the biased jump rate is at least $M$; and for every
+  probability measure $\mu$ carried by $\Salpha$, $\sum_v \mu(v)/q(v) \le 1/M$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper asserts}, as \ref{aux-rate-floor} does: the
+  actor that has heard nothing carries a null row, and its $M$ pairs have rate
+  $e^0 = 1$ each.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The correspondence of p.~18 for the biased process]
+  \label{aux-biased-transfer}
+  \lean{SocialNetwork.Bias.measurable_biasedProcess,
+    SocialNetwork.Bias.biasedTransitionKernel,
+    SocialNetwork.Bias.biasedTransitionKernel_apply,
+    SocialNetwork.Bias.IsBiasedInvariantCts,
+    SocialNetwork.Bias.biasedProcess_eq_of_lt_holdingTime,
+    SocialNetwork.Bias.biasedProcess_eq_of_one_jump,
+    SocialNetwork.Bias.biasedSkeletonKernel_singleton,
+    SocialNetwork.Bias.biasedOneJumpSet,
+    SocialNetwork.Bias.biasedOneJumpPairs,
+    SocialNetwork.Bias.biasedOneJumpSet_eq_preimage,
+    SocialNetwork.Bias.measurableSet_biasedOneJumpPairs,
+    SocialNetwork.Bias.le_biasedCtsPathMeasure_oneJumpSet,
+    SocialNetwork.Bias.le_biasedTransitionKernel_singleton,
+    SocialNetwork.Bias.finsetSum_le_of_biasedInvariantCts,
+    SocialNetwork.Bias.finsetSum_biasedRate_le,
+    SocialNetwork.Bias.biasedRateMeasure,
+    SocialNetwork.Bias.biasedRateMeasure_singleton,
+    SocialNetwork.Bias.biasedRateMeasure_compl_biasedStateSet,
+    SocialNetwork.Bias.bind_biasedSkeletonKernel_le_biasedRateMeasure,
+    SocialNetwork.Bias.biasedRateMeasure_univ_ne_top,
+    SocialNetwork.Bias.invariant_biasedRateMeasure}
+  \leanok
+  \uses{eq7, aux-biased-minorisation}
+  If a probability measure $\mu$ carried by $\Salpha$ is invariant for every
+  $P_t$ of the biased process, then $q \cdot \mu$ is a finite measure, and it is
+  invariant for the biased skeleton.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \textbf{Supplies a step the paper cites}, as \ref{aux-transfer} does, by the
+  same argument: the lower bound on $P_t$ read off the first two holding times,
+  which gives $\nu\kappa \le \nu$ for $\nu = q \cdot \mu$ as $t \to 0$, and the
+  minorisation \ref{aux-biased-minorisation}, which makes $\nu$ finite and the
+  inequality an equality.  The state is the memory profile and the rate that of
+  \ref{eq7}; the lemmas about the jump counter and about measures on a
+  countable space are those of \ref{aux-transfer}, used as they stand.  Like
+  that one, it does not use non-explosion.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[Equation~(13) for the biased process]
+  \label{aux-biased-eq13}
+  \lean{SocialNetwork.Bias.biasedInvariantCts_eq}
+  \leanok
+  \uses{eq7}
+  For $0 < \alpha < \pressone$, $\beta \ge 0$, every invariant probability
+  measure $\mu$ of the biased process carried by $\Salpha$, and every invariant
+  probability measure $\tilde{\mu}$ of its skeleton carried by $\Salpha$,
+  \[
+    \mu(u) = \frac{\tilde{\mu}(u)/q(u)}{\sum_{v} \tilde{\mu}(v)/q(v)} .
+  \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{thm25, aux-biased-transfer}
+  \textbf{Follows the paper's proof} of \ref{eq13}, which Appendix~C prescribes
+  for Theorem~25 (``exactly as the proof of Theorem~1'') and uses for
+  Theorem~27: $q \cdot \mu$ is a finite invariant measure of the skeleton by
+  \ref{aux-biased-transfer}, and normalising it identifies it with
+  $\tilde{\mu}$ by the uniqueness of \ref{thm25}.  Not a numbered statement of
+  the paper, which displays~(13) for the unbiased model only.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The correspondence of p.~18 for the biased process, the other way]
+  \label{aux-biased-transfer-converse}
+  \lean{SocialNetwork.Bias.biasedSurvival,
+    SocialNetwork.Bias.measurable_biasedSurvival,
+    SocialNetwork.Bias.exponentialPDF_biasedTotalRate,
+    SocialNetwork.Bias.lintegral_expMeasure_biasedTotalRate,
+    SocialNetwork.Bias.biasedSurvival_add_lintegral,
+    SocialNetwork.Bias.biasedNJumpSet,
+    SocialNetwork.Bias.biasedNJumpGraph,
+    SocialNetwork.Bias.measurableSet_biasedNJumpGraph,
+    SocialNetwork.Bias.measurableSet_biasedNJumpSet,
+    SocialNetwork.Bias.biasedNJump,
+    SocialNetwork.Bias.measurable_biasedNJump,
+    SocialNetwork.Bias.biasedNJump_zero,
+    SocialNetwork.Bias.stateAfter_succ_eq_shiftStepPath,
+    SocialNetwork.Bias.biasedNJumpPairs,
+    SocialNetwork.Bias.biasedNJumpSet_succ_eq_preimage,
+    SocialNetwork.Bias.measurableSet_biasedNJumpPairs,
+    SocialNetwork.Bias.biasedNJump_succ,
+    SocialNetwork.Bias.biasedFirstStep,
+    SocialNetwork.Bias.biasedNJump_succ_eq_firstStep,
+    SocialNetwork.Bias.biasedLastStep,
+    SocialNetwork.Bias.biasedFirstStep_lastStep,
+    SocialNetwork.Bias.biasedFirstStep_nJump_zero,
+    SocialNetwork.Bias.biasedNJump_succ_eq_lastStep,
+    SocialNetwork.Bias.biasedMixJump,
+    SocialNetwork.Bias.measurable_biasedMixJump,
+    SocialNetwork.Bias.biasedMixJump_zero,
+    SocialNetwork.Bias.biasedMixJump_succ,
+    SocialNetwork.Bias.sum_biasedMixJump_le,
+    SocialNetwork.Bias.mem_biasedNJumpSet_jumpCount,
+    SocialNetwork.Bias.biasedTransitionKernel_le_tsum_nJump,
+    SocialNetwork.Bias.biasedInvariantCts_of_bind_le,
+    SocialNetwork.Bias.isBiasedInvariantCts_iff}
+  \leanok
+  \uses{eq7}
+  Let $\mu$ be a probability measure carried by $\Salpha$ such that $\nu\kappa
+  \le \nu$ for $\nu = q \cdot \mu$ and $\kappa$ the biased skeleton kernel.
+  Then $\mu$ is invariant for every $P_t$ of the biased process.  With
+  \ref{aux-biased-transfer}: $\mu$ is invariant for the biased process if and
+  only if $q \cdot \mu$ is invariant for its skeleton.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{thm25-1}
+  \textbf{Supplies a step the paper cites}, as \ref{aux-transfer-converse}
+  does, by the same argument: $P_t \le \sum_n P^{(n)}_t$, which is where
+  \ref{thm25-1} enters; the first-step and last-step operators, which commute
+  by Tonelli and agree on $P^{(0)}$; and the induction on the number of
+  expressions.  The operators are written again for profiles, with the rate of
+  \ref{eq7}.
+\end{proof}
+
+\paper{Theorem 25.2}
+\begin{theorem}[The invariant measure of the biased process]
+  \label{thm25-2}
+  \lean{SocialNetwork.Bias.existsUnique_biasedInvariantCts,
+    SocialNetwork.Bias.eq_of_biasedInvariantCts,
+    SocialNetwork.Bias.biasedCtsOfSkeleton,
+    SocialNetwork.Bias.biasedCtsOfSkeleton_singleton,
+    SocialNetwork.Bias.biasedCtsOfSkeleton_spec}
+  \leanok
+  \uses{eq7}
+  For $\beta > 0$ and $0 < \alpha < \pressone$, the biased process has a unique
+  invariant probability measure $\mu_{\alpha,\beta}$ carried by $\Salpha$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{thm25, aux-biased-eq13, aux-biased-transfer-converse, aux-biased-rate-floor}
+  \textbf{Follows the paper's proof}, ``exactly as the proof of Theorem~1'',
+  that is as \ref{thm1-2}.  Uniqueness is \ref{aux-biased-eq13}: it writes every
+  such measure as the same function of $\tilde{\mu}_{\alpha,\beta}$, which is
+  unique by \ref{thm25}.  Existence is the right-hand side of that display,
+  which is a probability measure by \ref{aux-biased-rate-floor} and invariant by
+  \ref{aux-biased-transfer-converse}, hence through \ref{thm25-1}.
 \end{proof}
 
 \aux{Lemma}
@@ -2932,28 +3119,55 @@ process pointwise.
 \paper{Theorem 27.1}
 \begin{theorem}[Concentration of $\mu_{\alpha,\beta}$]
   \label{thm27-1}
-  \lean{SocialNetwork.Bias.biasedMeasure_ladderSet_ge}
+  \lean{SocialNetwork.Bias.biasedMeasure_ladderSet_ge,
+    SocialNetwork.Bias.biasedLowSet,
+    SocialNetwork.Bias.biasedLowSet_finite,
+    SocialNetwork.Bias.IsBiasedSteepLadder.isBiasedLadder_of_lt,
+    SocialNetwork.Bias.notMem_biasedSteepLadderSet_of_lt,
+    SocialNetwork.Bias.biasedTotalRate_le_of_mem_biasedLadderSet,
+    SocialNetwork.Bias.exp_le_biasedTotalRate_of_le,
+    SocialNetwork.Bias.biasedZeta_pow_le_measure_ladderSet}
   \leanok
-  \uses{eq8}
-  For $0 < \alpha < \pressone$ there is $C > 0$ with
+  \uses{eq8, thm25-2}
+  For $0 < \alpha < \pressone$ there is $C > 0$, depending on $M$, $N$ and
+  $\alpha$ only, such that for every $\beta \ge 0$,
   $\mu_{\alpha,\beta}(\ladder_\alpha) \ge 1 - C e^{-\beta(M-1)\alpha}$.
 \end{theorem}
 \begin{proof}
-  \uses{thm2-1, prop26, rem8}
-  As \ref{thm2-1}: the lower bound for the jump rate of a non-null state is
-  $e^{\beta(M-1)\alpha}$ by \ref{rem8}, and the contribution of the zero matrix
-  vanishes because $0 \notin \Salpha$. \textbf{Not formalised}.
+  \leanok
+  \uses{thm2-1, aux-biased-eq13, prop23, prop24, prop26, rem8, rem1}
+  As \ref{thm2-1}: by \ref{aux-biased-eq13}, $\mu_{\alpha,\beta}(\ladder_\alpha)
+  = A/(A+B)$ with $A$ and $B$ the sums of $\tilde{\mu}_{\alpha,\beta}/q$ on and
+  off $\ladder_\alpha$.  On $\ladder_\alpha$ the rate is at most
+  $MNe^{\beta(N-1)}$ and $\tilde{\mu}_{\alpha,\beta}(\ladder_\alpha) \ge
+  \zeta_{\alpha,\beta}^K$ by \ref{prop23} and~\ref{prop24}.  Off
+  $\ladder_\alpha$, a profile whose pressures are below $N$ is off
+  $\steep_\alpha$, so \ref{prop26} bounds its mass by $\tilde{C}
+  e^{-\beta(N-1)}$ and \ref{rem8} its rate below by $e^{\beta(M-1)\alpha}$;
+  there are finitely many such profiles.  A profile with a pressure of at least
+  $N$ has rate at least $e^{\beta N} \ge e^{\beta(N-1)} e^{\beta(M-1)\alpha}$,
+  since $(M-1)\alpha < 1$.
 
-  Two things stand in the way, and neither is the paper.  The Lean statement
-  is about an invariant measure of the biased \emph{skeleton}, while
-  $\mu_{\alpha,\beta}$ is the invariant measure of the process, the second half
-  of Theorem~25; the proof goes through \ref{eq13}, which relates the two, and
-  does not prove the statement as written.  And neither the biased \ref{eq13}
-  nor the existence of $\mu_{\alpha,\beta}$ is formalised: \ref{thm25} covers
-  the skeleton only.  Both are transpositions of what is proved for the
-  unbiased model (\ref{aux-transfer}, \ref{aux-transfer-converse},
-  \ref{thm1-2-exists}); after them, this proof is that of \ref{thm2-1} and
-  rests on \ref{prop26}.
+  \textbf{Follows the paper's proof}, which is \ref{thm2-1}'s ``with the
+  following modifications: the lower bound for the jump rate of any non-null
+  state is $e^{\beta(M-1)\alpha}$ by Remark~8, and the contribution of the zero
+  matrix vanishes by Remark~1''.  Both are what the Lean proof does: \ref{rem8}
+  is used for every profile of $\Salpha$, and nothing stands where \ref{cor10}
+  stood.  It supplies the four steps \ref{thm2-1} supplies, in biased form: the
+  rate on $\ladder_\alpha$, the invariance step behind
+  $\tilde{\mu}_{\alpha,\beta}(\ladder_\alpha) \ge \zeta_{\alpha,\beta}^K$, that a
+  profile off $\ladder_\alpha$ with pressures below $N$ is off $\steep_\alpha$,
+  and the finiteness of those profiles, which is \ref{rem8} read the other way:
+  a pressure below $N$ bounds $n_a$, and with it every count.  The constant uses
+  $\zeta_{\alpha,\beta} \ge 1/(1+MN)$, true for every $\beta \ge 0$; at $\beta =
+  0$ the bound holds because $C \ge 1$.
+
+  \textbf{Restated.}  The Lean statement was about an invariant measure of the
+  biased \emph{skeleton}; $\mu_{\alpha,\beta}$ is the invariant measure of the
+  process, \ref{thm25-2}, and that is what it is now about.
+
+  \emph{Formalised, but not sorry-free}: the proof is complete in Lean and
+  inherits \texttt{sorryAx} from \ref{prop23} and from nothing else.
 \end{proof}
 
 \paper{Theorem 27.2}
@@ -3374,7 +3588,7 @@ repository's own misreading and is kept below as withdrawn.
 \label{sec:missing}
 
 Every numbered statement of arXiv:2607.19651 is stated in Lean.  What is not
-proved is not proved for one of four reasons, and they are not
+proved is not proved for one of three reasons, and they are not
 interchangeable:
 
 \begin{itemize}
@@ -3383,12 +3597,10 @@ interchangeable:
   \item \textbf{blocked on the paper} --- the written proof does not compose,
     and the repair is new mathematics;
   \item \textbf{cited from outside the paper} --- the statement is not a result
-    of this paper at all;
-  \item \textbf{not formalised yet} --- nothing outside this repository stands in the
-    way.
+    of this paper at all.
 \end{itemize}
 
-The fourth group has one entry, \ref{thm27-1}, and its node says what it needs.
+There is no fourth group: nothing here is unproved merely for want of doing it.
 \texttt{STATUS.md} is the generated index, statement by statement; what follows
 is the argument behind it.
 
@@ -3477,7 +3689,7 @@ recorded --- at \ref{note-lem19}, \ref{note-lem20} and the node of
 The proofs downstream are written out in full all the same, so that each
 inherits \texttt{sorryAx} from the obstruction and from nothing else:
 \ref{prop7}, \ref{prop9} and \ref{thm2-1} from \ref{lem19} and~\ref{lem20},
-and \ref{prop26}, \ref{lem28} and \ref{thm27-2} from \ref{prop23}.  That is what
+and \ref{prop26}, \ref{thm27-1}, \ref{thm27-2} and \ref{lem28} from \ref{prop23}.  That is what
 makes an obstruction visible instead of absorbed.
 
 \ref{prop22} stood in this list, and \ref{thm25} through it, while this
@@ -3514,20 +3726,20 @@ the limits the numbered statements give.  \ref{eq19} is proved outright.
 \label{sec:audit}
 
 Every proof currently formalised, audited against the paper on the question of
-\ref{note-green}: does it follow what the paper wrote?  Seventy-seven proofs
+\ref{note-green}: does it follow what the paper wrote?  Eighty-four proofs
 carry \texttt{\textbackslash leanok}; the audit below also covers the bound
 $\tau(u) \le N+1$, which lives inside a definition rather than at a node of its
-own, so it counts seventy-eight entries.  Every one of them is named, and
+own, so it counts eighty-five entries.  Every one of them is named, and
 \texttt{scripts/status.py} checks that: a proof that carries
 \texttt{\textbackslash leanok} and appears in none of the three groups below is
 an unaudited proof, and it fails the build.
 
-\medskip \noindent\textbf{Follow the paper's proof} (forty-three). \ref{prop5},
+\medskip \noindent\textbf{Follow the paper's proof} (forty-seven). \ref{prop5},
 \ref{prop6}, \ref{prop7}, \ref{prop9} and its biased twin \ref{prop26},
 \ref{cor10}, \ref{prop21}, \ref{prop17},
 \ref{prop24} and~\ref{prop18}, part~1 of \ref{thm4}, the gap estimate of
-\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1}, \ref{thm2-2} and its biased
-twin \ref{thm27-2}, and the display
+\ref{aux-gap}, the bound of \ref{prop8}, \ref{thm2-1} and its biased twin
+\ref{thm27-1}, \ref{thm2-2} and its biased twin \ref{thm27-2}, and the display
 \ref{aux-hitting-rate} inside its proof, \ref{cor11} and the display
 \ref{eq19} inside its own, \ref{rem6}, \ref{lem13} and its biased twin \ref{lem28}
 with the display \ref{aux-biased-hitting-rate} inside it, \ref{cor15}
@@ -3535,10 +3747,11 @@ and~\ref{cor30},
 \ref{thm3} and~\ref{thm31}, \ref{lem14} and its biased twin \ref{lem29},
 \ref{prop22}, the minorisation \ref{aux-minorisation} of p.~17
 and the theorem it settles, \ref{thm1-2-skeleton}, their biased twins
-\ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its own biased
-twin \ref{thm16}, the transfer \ref{eq13} and the uniqueness it settles,
-\ref{thm1-2-unique}, the existence \ref{thm1-2-exists} and with the two of them
-\ref{thm1-2}, and \ref{rem1}, \ref{rem4}
+\ref{aux-biased-minorisation} and~\ref{thm25}, \ref{thm1-1} and its biased
+twins \ref{thm16} and~\ref{thm25-1}, the transfer \ref{eq13} and its biased twin
+\ref{aux-biased-eq13}, the uniqueness it settles, \ref{thm1-2-unique}, the
+existence \ref{thm1-2-exists} and with the two of them \ref{thm1-2}, whose biased
+twin is \ref{thm25-2}, and \ref{rem1}, \ref{rem4}
 and~\ref{rem8}.  These
 are the statements in the paper whose proofs are both given there and
 formalised here, and each Lean proof reproduces the written argument.  Four
@@ -3683,6 +3896,17 @@ are \ref{prop6} and \ref{prop8}; transported, they are \ref{prop22} and
 \ref{prop24}, and those are what the minorisation here consumes.  Both are
 proved, so both nodes are.
 
+\ref{thm25-1}, \ref{aux-biased-eq13} and~\ref{thm25-2} complete Theorem~25 the
+same way: they are \ref{thm1-1}, \ref{eq13} and~\ref{thm1-2} for the biased
+process, with the two directions of the correspondence of p.~18 transposed as
+\ref{aux-biased-transfer} and~\ref{aux-biased-transfer-converse}.
+\ref{thm25-1} is \ref{thm16}'s argument, which never uses the sign of $\alpha$.
+\ref{thm27-1} is \ref{thm2-1} with the modifications Appendix~C lists:
+\ref{prop23}, \ref{prop24} and~\ref{prop26} for \ref{prop7}, \ref{prop8}
+and~\ref{prop9}, the rate floor of \ref{rem8}, and nothing for \ref{cor10}.
+Its Lean statement is restated, from the skeleton's invariant measure to the
+process's.
+
 \ref{aux-minorisation} is the argument at p.~17: a greedy run to bound the
 matrix, then the sweep of~(12) to the canonical ladder, with the constants the
 paper does not print worked out.  Three steps are supplied, and each is at the
@@ -3726,18 +3950,20 @@ and \ref{lem29} inherits the second.  Every other proof of a statement of the
 paper follows the written argument, and where the written argument is [GL24]'s
 rather than the paper's own, that is said at the node.
 
-\medskip \noindent\textbf{Supply a step the paper asserts} (eighteen).
+\medskip \noindent\textbf{Supply a step the paper asserts} (twenty-one).
 \ref{aux-state-stable}, \ref{aux-consensus-pos}, \ref{rem5-stable},
 \ref{lem20-opening}, \ref{lem20-closing}, \ref{rem5-eta}
 and~\ref{rem5-eta-iter} with their biased twin \ref{aux-biased-rem5},
 \ref{rem5} and~\ref{rem2}, \ref{aux-greedy-avoids} with its biased twin
 \ref{aux-near-greedy-avoids}, \ref{aux-zero-predecessors}, the bound $\tau(u) \le
-N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, \ref{aux-rate-floor},
-\ref{aux-transfer} and \ref{aux-transfer-converse}.  Each corresponds to a
+N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, and \ref{aux-rate-floor},
+\ref{aux-transfer} and \ref{aux-transfer-converse} with their biased twins
+\ref{aux-biased-rate-floor}, \ref{aux-biased-transfer}
+and~\ref{aux-biased-transfer-converse}.  Each corresponds to a
 sentence in the paper of the
 form ``note that'', ``indeed'', or an unremarked clause inside a proof ---
 ``Note that $\ladder \subset \steep$'', ``Note that $\tau(u) \in \{2, \dots,
-N+1\}$''.  All eighteen are true; what they are not is checks of
+N+1\}$''.  All twenty-one are true; what they are not is checks of
 anything the paper argued. \ref{rem5-eta} and~\ref{rem5-eta-iter} are the
 substantial ones: the paper writes the two inequalities defining $\eta$ in a
 single line and argues neither, and uses the $m$-step bound in the sketch of
@@ -3842,15 +4068,9 @@ In rough order of cost.
     written --- are proved outright, and \ref{thm2-1}, written from them, with
     them.
   \item \textbf{\ref{prop23}}, which assembles biased analogues of \ref{lem19}
-    and~\ref{lem20} that Appendix~C does not state.  \ref{prop26}, \ref{lem28}
-    and~\ref{thm27-2} are written from it and are then proved, and with
-    \ref{lem28} \ref{thm31} rests on its axiom alone.
-  \item \textbf{\ref{thm27-1}}, which needs the invariant measure of the biased
-    process rather than of its skeleton: the biased \ref{eq13} and the existence
-    half of Theorem~25, transposed from \ref{aux-transfer},
-    \ref{aux-transfer-converse} and~\ref{thm1-2-exists}, then the statement
-    restated for that measure and the proof of \ref{thm2-1} transposed.  It then
-    rests on \ref{prop23}, through \ref{prop26}.
+    and~\ref{lem20} that Appendix~C does not state.  \ref{prop26},
+    \ref{thm27-1}, \ref{thm27-2} and~\ref{lem28} are written from it and are
+    then proved, and with \ref{lem28} \ref{thm31} rests on its axiom alone.
 \end{enumerate}
 
 Nothing on this list waits on Mathlib.  \ref{aux-doeblin}, which is proved

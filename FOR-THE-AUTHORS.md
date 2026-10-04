@@ -46,7 +46,7 @@ repository has already taken the only route available, and says so at the declar
 | [§1.6](#1-proofs-that-do-not-survive-formalisation) | **Proposition 9** | "without visiting `u`" does not come from Proposition 7.  It is Corollary 8 of [GL24], and the argument is written out and machine-checked here.  **Written out**, resting on Lemmas 19 and 20 |
 | [§2.12](#2-statements-that-had-to-be-changed) | **Theorem 2.1** | written out along your pp. 20–21, from equation (13), Propositions 7, 8 and 9 and Corollary 10, and **resting on Lemmas 19 and 20** through them.  One bound in it, `ζ_β^{(M+1)N} ≥ (MN)^{-(M+1)N}`, fails at `β = 0`; `(1+MN)^{-(M+1)N}` is used instead, and only `C` changes |
 | [§2.13](#2-statements-that-had-to-be-changed) | **Proposition 26** | written out "exactly as the proofs of Proposition 9", and **resting on Proposition 23** alone.  The Lean statement chose `C̃` after `β` and `u`, and so was satisfied by `e^{β(N-1)}`; restated with `C̃` in front.  Remark 8 and `0 ∉ S^α`, which the paper names here, are not used: they are what Theorem 27.1 needs on top |
-| [§2.14](#2-statements-that-had-to-be-changed) | **Theorem 27.1** | its Lean statement is about an invariant measure of the biased *skeleton*, where your `μ_{α,β}` is that of the process.  Not a fault of the paper, and no decision needed: the biased equation (13) and the existence of `μ_{α,β}` are simply not written yet |
+| [§2.14](#2-statements-that-had-to-be-changed) | **Theorem 27.1** | written out "as the proof of Theorem 2" with your modifications, and **resting on Proposition 23** alone, through Proposition 26.  Its Lean statement was about the biased *skeleton*'s invariant measure; it is restated for your `μ_{α,β}`, and **Theorem 25 is now proved in full** — non-explosion, equation (13) for the biased process, and existence and uniqueness of `μ_{α,β}` |
 | [§1.5](#1-proofs-that-do-not-survive-formalisation) | **Lemma 28** | written out "as the proof of Lemma 13", and **resting on Proposition 23** alone.  Its display is proved in biased form; equation (19) has nothing to do, since `0 ∉ S^α`.  One step is not Lemma 13's: the exponent `γ/2` needs the growth of `e^{β(M-1)α}`, since `e^{β(M-1)α} ≥ 1` alone gives `2/K` |
 | [§2.1](#2-statements-that-had-to-be-changed) | **Proposition 12** | with `ε₁ ε₂ s₁ s₂` bound ahead of `β`, the hypotheses are unsatisfiable and Theorem 3 could never have followed.  Made functions of `β` |
 | [§2.2](#2-statements-that-had-to-be-changed) | **Corollaries 15 and 30** | vacuous unless `L^o ≠ ∅`, which is nowhere recorded.  Witnesses supplied; both now proved |
@@ -200,8 +200,8 @@ and inherits `sorryAx` from Proposition 23 alone, which waits on biased
 analogues of Lemmas 19 and 20.  Part 2 of Theorem 27 is the limit of
 the same display at `t = e^{-β(M-1)α(1-δ)}`, as part 2 of Theorem 2 is of the
 unbiased one, and it is written too, resting on Proposition 23 in the same way.
-So is Proposition 26 (§2.13).  Part 1, about the invariant measure, waits on work
-on this side, not on you (§2.14).
+So are Proposition 26 (§2.13) and part 1 of Theorem 27, about the invariant
+measure (§2.14).
 
 **One step is not Lemma 13's, and needs no decision.**  Lemma 13 bounds its race
 term with `e^{β/(M-1)} ≥ 1`, which is why its exponent is `1/((M+1)N)`, the
@@ -340,7 +340,7 @@ cannot be used, and the Lean statement differs from the paper's display.
 | 2.11 | **Corollary 11**, as formalised | The Lean statement rendered "`τ` exponential of mean `1/(MN)`, independent from `(U_t^{β,u})_t`" as a supremum over `s ≥ 0` of `e^{-MNs} · P(R^{β,0}(L) > s + ε_β)`.  Its `s = 0` term is `P(R^{β,0}(L) > ε_β)` at weight `1`, which tends to **one**, so the statement was **false**. | Restated as `P(R^{β,0}(L) > T₁ + ε_β) → 0` with `T₁` the process's own first jump time — `probHittingGTAfterFirstJump` — which from `0` is exponential of mean `1/(MN)` (`totalRate_zero`, now proved).  **A formalisation-side correction, not a correction to the paper.**  But see the reading below: your `τ` has to be `T₁`, and the sentence can be read otherwise. |
 | 2.12 | **Proof of Theorem 2.1**, the bound on `μ̃^β (L)` | The proof writes `μ̃^β (L) ≥ ζ_β^{(M+1)N} = (e^{β/(M-1)} / (e^{β/(M-1)} + MN))^{(M+1)N} ≥ (MN)^{-(M+1)N}`.  The last inequality fails for small `β`: at `β = 0`, `ζ_0 = 1/(1+MN) < 1/(MN)`. | Harmless, and no decision needed: `ζ_β ≥ 1/(1+MN)` for every `β ≥ 0`, and any constant independent of `β` serves, so the Lean proof uses `(1+MN)^{-(M+1)N}` and only the value of `C` changes.  At `β = 0` itself, where Proposition 9 and Corollary 10 are stated only for `β > 0`, the theorem holds because `C ≥ 1`. |
 | 2.13 | **Proposition 26**, as formalised | The Lean statement chose `C̃` *after* `β`, `μ` and `u`, so `C̃ = e^{β(N-1)}` satisfied it, `μ̃_{α,β}` being a probability measure; it proved nothing.  The same defect as Lemma 28 (§2.9). | Restated with `C̃` in front, depending on `M`, `N` and `α` only, as your "a positive constant depending on M, N and α" says, and `u ∈ S^α` added as for Proposition 9 (§2.10).  Then **written out** "exactly as the proofs of Proposition 9": Kac's inequality, a near-greedy run to `L_α` (Propositions 23 and 24) that does not visit `u`, then positive expressions (Remark 5 in its biased form), and the geometric series.  The constant is `C̃ = (1+MN)^{K+1}`, with `K` the horizon of Proposition 23, and the bound holds for every `β ≥ 0`.  It rests on Proposition 23 alone.  **Remark 8 and `0 ∉ S^α` are not used**: they are what Theorem 27.1 needs on top, the first for the rate floor and the second to remove the zero matrix, which Corollary 10 handles in the unbiased model.  **A formalisation-side correction, not a correction to the paper.** |
-| 2.14 | **Theorem 27.1**, as formalised | The Lean statement is about an invariant probability measure of the biased *skeleton*.  Your `μ_{α,β}` is the invariant measure of the process — the second half of Theorem 25 — and the proof "as Theorem 2" goes through equation (13), which relates the two; it does not prove the statement as written. | **Not yet changed.**  Lean's Theorem 25 covers the skeleton only, and neither the biased equation (13) nor the existence of `μ_{α,β}` is written.  Both are transpositions of what is proved for the unbiased model (§2.5), so this is work on this side and needs nothing from you.  Once they are written, the statement is restated for `μ_{α,β}` and the proof is that of Theorem 2.1, resting on Proposition 26. |
+| 2.14 | **Theorem 27.1**, as formalised | The Lean statement was about an invariant probability measure of the biased *skeleton*.  Your `μ_{α,β}` is the invariant measure of the process — the second half of Theorem 25 — and the proof "as Theorem 2" goes through equation (13), which relates the two; it did not prove the statement as written. | Restated for the invariant measure of the process.  What that needed is now proved, by your route ("exactly as the proof of Theorem 1"): equation (13) for the biased process, and Theorem 25 in full — non-explosion for `0 < α < 1/(M-1)`, which is Theorem 16's argument (it never uses the sign of `α`), and existence and uniqueness of `μ_{α,β}`.  Theorem 27.1 is then **written out** as Theorem 2.1, with your modifications: Propositions 23, 24 and 26 for 7, 8 and 9, the rate floor of Remark 8, and nothing for the zero matrix.  It rests on Proposition 23 alone.  **A formalisation-side correction, not a correction to the paper.** |
 
 ---
 
@@ -449,6 +449,7 @@ blueprint's audit section classifies every formalised proof this way.
   while Theorem 3 quantifies over it, so the constants are taken uniform over the
   finitely many opinions.
 * **Theorem 2.1.**  Four steps of pp. 20–21 are asserted and supplied: the bound `q_β(l) ≤ MN e^{β(N-1)}` on `L`; the invariance under the `(M+1)N`-step kernel that turns Propositions 7 and 8 into `μ̃^β(L) ≥ ζ_β^{(M+1)N}`; that a state off `L` whose entries are all below `N` is off `L̂` — `N` distinct integers in `{0, …, N-1}` are all of them, which needs the sign condition of §2.4; and that there are finitely many such states, `K(N, M) < ∞`, which follows from the row sums of Remark 3.  The last step, `1/(1+x) ≥ 1 - x`, is taken on the complement, as `μ^β(Lᶜ) = B/(A+B) ≤ B/A`.
+* **Theorem 27.1.**  The four steps of Theorem 2.1, in biased form: the rate on `L_α`, at most `MN e^{β(N-1)}`; the invariance under the `K`-step kernel behind `μ̃_{α,β}(L_α) ≥ ζ_{α,β}^K`; that a profile off `L_α` with pressures below `N` is off `L̂_α`; and that there are finitely many such profiles, which is Remark 8 read the other way — a pressure below `N` bounds `nₐ`, and with it every count.  And one comparison your modification implies: a profile with a pressure of at least `N` has rate at least `e^{βN} ≥ e^{β(N-1)} e^{β(M-1)α}`, since `(M-1)α < 1`.
 * **Lemma 13.**  "Putting the inequalities above together" is the comparison of
   each of the three terms with `e^{-β/((M+1)N)}` — using `MN ≤ (M+1)N`,
   `M - 1 ≤ (M+1)N` and `e^{β/(M-1)} ≥ 1` — which leaves the integer inequality
@@ -627,8 +628,12 @@ that way if you revise.
 
 Your Appendix C says the proof "follows exactly as the proof of Theorem 1", and
 the proof of Theorem 1 part 2 puts together Propositions 6 and 8; transported,
-those are Propositions 22 and 24.  Both are proved here, so Theorem 25 is, along
-exactly that route.
+those are Propositions 22 and 24.  Both are proved here, so the invariant measure
+of the biased skeleton is, along exactly that route.  So are the other two claims
+of Theorem 25, the same way: part 1, non-explosion, is the argument of Theorem 16,
+which uses `γ > 0` and never the sign of `α`, so a single Lean theorem covers both;
+and part 2 for the process is equation (13) and the correspondence of p. 18 for
+the biased process, transposed from Theorem 1.2.
 
 An earlier version of this file proposed avoiding Proposition 22 by weakening
 Proposition 17, whose proof uses only `γ > 0`.  That is no longer needed.  The

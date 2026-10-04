@@ -11,8 +11,8 @@ import SocialNetwork.Greedy
 # Section 3 and Appendix C: the results for the biased model
 
 The statements of arXiv:2607.19651 about the model with communication bias: Theorem 4 of
-Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24, Theorem 25 and
-Theorem 27.1 of Appendix C.  Proposition 26 is in `SocialNetwork.BiasedConcentration`,
+Section 3, Theorems 16, 17, 18 of Section 5.4, and Propositions 21–24 and Theorem 25 of
+Appendix C.  Proposition 26 and Theorem 27.1 are in `SocialNetwork.BiasedConcentration`,
 Theorem 27.2 and Lemma 28 in `SocialNetwork.BiasedHitting`,
 Lemma 29 in `SocialNetwork.BiasedConsensusExit`, and Corollary 30 and Theorem 31 in
 `SocialNetwork.BiasedMetastability`.
@@ -48,8 +48,7 @@ otherwise.
 
 ## Main statements
 
-Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, Theorem 25 and
-Theorem 27.1 — all stated.
+Theorem 4, Theorem 16, Propositions 17, 18, 21, 22, 23 and 24, and Theorem 25 — all stated.
 -/
 
 namespace SocialNetwork
@@ -3047,16 +3046,18 @@ def IsBiasedInvariant (γ β : ℝ) (μ : Measure (Profile N M)) : Prop :=
 def IsCarriedByBiasedState (μ : Measure (Profile N M)) : Prop :=
   μ (biasedStateSet N M)ᶜ = 0
 
-/-- **Theorem 25**, the invariant-measure half.  For `0 < α < 1/(M-1)` the biased skeleton has
-a unique invariant probability measure `μ_{β,α}` carried by `S^α`.
+/-- **Theorem 25.2, for the skeleton.**  For `0 < α < 1/(M-1)` the biased skeleton has a
+unique invariant probability measure `μ̃_{α,β}` carried by `S^α`.
 
 **Follows the paper's proof**, the one Appendix C prescribes --- "follows exactly as the proof
 of Theorem 1" --- assembled from `SocialNetwork.Bias.minorisation_iterateKernel` and
 `SocialNetwork.existsUnique_invariant_of_iterate_minorisation`.
 
 The hypothesis `γ < 1/(M-1)` is the paper's `0 < α`; Proposition 22 uses it, for the lower
-bound of its box.  Theorem 25 of the paper also asserts that the biased process does not
-explode; that half is `SocialNetwork.Bias.biasedNonExplosion` and is not covered here. -/
+bound of its box.  The rest of Theorem 25 is proved after this file: the process does not
+explode (`SocialNetwork.Bias.biasedNonExplosion_of_pos`, Theorem 25.1), and its invariant
+measure `μ_{α,β}` is unique and exists (`SocialNetwork.Bias.existsUnique_biasedInvariantCts`),
+transferred from this one by equation (13). -/
 theorem existsUnique_biasedInvariant (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
     (hγ' : γ < 1 / ((M : ℝ) - 1)) (hβ : 0 < β) :
     ∃! μ : Measure (Profile N M),
@@ -3078,18 +3079,10 @@ theorem existsUnique_biasedInvariant (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ}
 `SocialNetwork.BiasedConcentration`: its proof uses Kac's inequality and the stability of `L̂_α`
 under the expressions of Remark 5, which are set up there. -/
 
-/-- **Theorem 27.1.**  For `0 < α < 1/(M-1)` there is a constant `C > 0` with
-`μ_{α,β} (L_α) ≥ 1 - C e^{-β (M-1) α}`.
-
-The exponent is `(M-1) α` rather than `1/(M-1)`, by Remark 8: that is the smallest maximum a
-non-null row of `S^α` can have, hence the smallest jump rate exponent. -/
-theorem biasedMeasure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (hγ : 0 < γ)
-    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) :
-    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ μ : Measure (Profile N M),
-      IsProbabilityMeasure μ → IsCarriedByBiasedState μ → IsBiasedInvariant γ β μ →
-        ENNReal.ofReal (1 - C * Real.exp (-β * (((M : ℝ) - 1) * α)))
-          ≤ μ (biasedLadderSet N M γ) := by
-  sorry
+/-! **Theorem 27.1**, `SocialNetwork.Bias.biasedMeasure_ladderSet_ge`, is in
+`SocialNetwork.BiasedConcentration`, after Proposition 26: it is about the invariant measure of
+the process, which equation (13) for the biased process, in `SocialNetwork.BiasedTransfer`,
+relates to the skeleton's. -/
 
 /-! **Theorem 27.2**, `SocialNetwork.Bias.tendsto_biasedHittingTime`, is in
 `SocialNetwork.BiasedHitting`, after the display its proof takes the limit of. -/

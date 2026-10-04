@@ -6,10 +6,12 @@ import SocialNetwork.BiasedResults
 import SocialNetwork.Graphical
 
 /-!
-# Theorem 16: the biased process does not explode
+# Theorems 16 and 25.1: the biased process does not explode
 
 `SocialNetwork.Bias.biasedNonExplosion` is Theorem 16 of arXiv:2607.19651, the twin of
-Theorem 1.1 for the biased model.
+Theorem 1.1 for the biased model with `α < 0`, and
+`SocialNetwork.Bias.biasedNonExplosion_of_pos` is the same statement for every `γ > 0`, which
+contains Theorem 25.1, the case `0 < α < 1/(M-1)`.  The argument does not see the sign of `α`.
 
 Appendix C says the proof is that of Theorem 1 with Proposition 21 in place of Proposition 5,
 and that is what this file is.  Theorem 1.1 goes through [GL24]'s band, which
@@ -188,16 +190,33 @@ theorem exists_isLambdaAt_block (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 
     rw [mem_lowFinset, markState_add_of_jumps γ hβ hstep k hkN.le]
     exact hk _
 
-/-! ### Theorem 16 -/
+/-! ### Theorems 16 and 25.1 -/
+
+/-- **The biased process does not explode, for any `γ > 0`**: for any `β ≥ 0` and any starting
+profile `u ∈ S^α`, the jump times satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`.
+
+This is **Theorem 25.1**, the regime `0 < α < 1/(M-1)` of Appendix C, and it contains
+**Theorem 16**, the regime `α < 0` of Section 5.4: `γ = 1/(M-1) - α` is positive in both, and
+nothing else about `α` is used.
+
+**Follows Appendix C's prescription** for both, "as Theorem 1.1, with Proposition 21 in place of
+Proposition 5", and hence [GL24] pp. 12–14: the pairs carrying pressure below `N` are again at
+most `NM` of rate at most `e^{βN}` each, so again `λ = NMe^{βN}`; Proposition 21 puts one of
+them in every `N` expressions; and the band of `SocialNetwork.Band`, which knows nothing about
+which model it came from, does the rest. -/
+theorem biasedNonExplosion_of_pos (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
+    (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
+    biasedCtsPathMeasure γ β u {ω | explosionTime ω = ⊤} = 1 := by
+  have h := measure_ctsPath_blowUp (profileBand γ hβ) (b := N)
+    (exists_isLambdaAt_block hM hN hγ hβ hu)
+  rwa [profileBand_ctsPath] at h
 
 /-- **Theorem 16.**  For any `β ≥ 0`, any `α < 0` and any starting profile `u ∈ S^α`, the jump
 times of the biased process satisfy `P (sup {Tₘ : m ≥ 1} = ∞) = 1`.
 
 **Follows Appendix C's prescription**, "as Theorem 1.1, with Proposition 21 in place of
-Proposition 5", and hence [GL24] pp. 12–14: the pairs carrying pressure below `N` are again at
-most `NM` of rate at most `e^{βN}` each, so again `λ = NMe^{βN}`; Proposition 21 puts one of
-them in every `N` expressions; and the band of `SocialNetwork.Band`, which knows nothing about
-which model it came from, does the rest. -/
+Proposition 5": it is `SocialNetwork.Bias.biasedNonExplosion_of_pos`, since `α < 0` makes
+`γ = 1/(M-1) - α` positive. -/
 theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 / ((M : ℝ) - 1) < γ)
     (hβ : 0 ≤ β) {u : Profile N M} (hu : IsBiasedState u) :
     biasedCtsPathMeasure γ β u {ω | explosionTime ω = ⊤} = 1 := by
@@ -205,9 +224,7 @@ theorem biasedNonExplosion (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 1 
     refine lt_trans (one_div_pos.2 ?_) hγ
     have h2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
     linarith
-  have h := measure_ctsPath_blowUp (profileBand γ hβ) (b := N)
-    (exists_isLambdaAt_block hM hN hγ0 hβ hu)
-  rwa [profileBand_ctsPath] at h
+  exact biasedNonExplosion_of_pos hM hN hγ0 hβ hu
 
 end Bias
 

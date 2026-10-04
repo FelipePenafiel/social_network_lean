@@ -7,11 +7,13 @@ import SocialNetwork.Bias
 import SocialNetwork.Clocks
 import SocialNetwork.BiasedConcentration
 import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedExistence
 import SocialNetwork.BiasedHitting
 import SocialNetwork.BiasedMetastability
 import SocialNetwork.BiasedModel
 import SocialNetwork.BiasedNonExplosion
 import SocialNetwork.BiasedResults
+import SocialNetwork.BiasedTransfer
 import SocialNetwork.Band
 import SocialNetwork.BandCollapse
 import SocialNetwork.Concentration
