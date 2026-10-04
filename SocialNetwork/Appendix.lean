@@ -171,11 +171,13 @@ Recall the index convention of `SocialNetwork.Trajectory`: `firstRepeat T` is th
 `o = O_{τ(u)}`, where `m = Ũ_{τ(u)-1}(A_{τ(u)}, O_{τ(u)})` is the maximal entry.
 
 **Supplies three steps the paper asserts.**
-* The `⌊m⌋` distinct actors, obtained "by (25)".  Reading `A_{τ(u)-1}, A_{τ(u)-2}, …`
-  backwards, the pressure for `O_{τ(u)}` starts at `0`, reaches `m` at the repeated actor, and
-  by (25) climbs at most `1` per step, so it skips none of the levels `r, 1 + r, …, m`.  The
-  last index at which it has reached level `j + r` — its first passage, read backwards —
-  overshoots by less than `1`, so these indices are distinct and none is the repeated actor.
+* The `⌊m⌋ + 1` distinct actors obtained "by (25)", the last of them `A_{τ(u)}`.  Reading
+  `A_{τ(u)-1}, A_{τ(u)-2}, …` backwards, the pressure for `O_{τ(u)}` starts at `0`, reaches
+  `m` at the repeated actor, and by (25) climbs at most `1` per step, so it skips none of the
+  levels `r, 1 + r, …, m`.  For `j < ⌊m⌋`, the last index at which it has reached level
+  `j + r` — its first passage, read backwards — overshoots by less than `1`, so these indices
+  are distinct and none is the repeated actor, which carries `m`.  They are the `⌊m⌋`
+  witnesses; the repeated actor is reset at step `τ(u)`.
 * `m ≥ 1` once `τ(u) ≥ 3`, which `n(u) ≥ 1` needs: the actor `A_{τ(u)-2}` has heard exactly
   one expression, so it carries `1` on `O_{τ(u)-1}`, and `m` is the maximum.  This is why the
   paper's case split on `τ(u) = 2` is the right one.

@@ -11,7 +11,7 @@ every statement.  Each entry names the blueprint node that holds the mathematics
 
 | | Statement | What was found |
 |---|---|---|
-| [§1.1](#11-lemma-20-is-false-as-printed-for-m--4) | **Lemma 20** | false as printed for `M ≥ 4`; Proposition 7 and everything after it are written from it |
+| [§1.1](#11-lemma-20-is-false-as-printed-for-m--4) | **Lemma 20** | false as printed for `M ≥ 4`; Proposition 7, and through it Theorems 2 and 3, are written from it |
 | [§1.2](#12-proposition-23-rests-on-statements-the-paper-does-not-give) | **Proposition 23** | its proof goes through biased analogues of Lemmas 19 and 20 that the paper does not state |
 | [§1.3](#13-proposition-12-is-assumed-twice) | **Proposition 12** | a citation of [LM22], declared as an axiom — once for each model |
 | [§2.1](#21-equation-6) | Equation (6) | the second condition is not stable under `π_α^{a,o}` |
@@ -83,9 +83,10 @@ staircase.
 
 **What is needed:** Lemma 20 restated, most likely with a hypothesis that Lemma 19
 delivers, and its proof.  Until then the Lean statement is the one printed, carrying
-its `sorry`, and Proposition 7 and everything after it are written from it.  They
-become proofs once Lemma 20 is restated and the assembly of Proposition 7 is adapted
-to it.
+its `sorry`.  Proposition 7 is written from it, and through Proposition 7 so are
+Proposition 9, Corollaries 10 and 11, Lemma 13 and Theorems 2 and 3, but none of the
+biased results.  These become proofs once Lemma 20 is restated and the assembly of
+Proposition 7 is adapted to it.
 
 ### 1.2 Proposition 23 rests on statements the paper does not give
 
@@ -160,7 +161,7 @@ carries distinctness.
 
 ### 2.4 Equation (13)
 
-*Blueprint:* `eq13`, `aux-transfer`, `aux-transfer-converse`.
+*Blueprint:* `eq13`, `aux-transfer`, `aux-transfer-converse`, `aux-rate-floor`.
 
 * (13) takes both `μ^β` and `μ̃^β` as given.  With uniqueness for the skeleton it gives
   the uniqueness half of Theorem 1.2, but not existence.  Existence needs the converse,
@@ -241,9 +242,10 @@ non-empty, which the paper never records.  The witnesses are supplied:
 *Blueprint:* `lem19`, `note-lem19`.  Proved along your proof, with three steps written
 out:
 
-* the `⌊m⌋` distinct actors obtained "by (25)" are first passages.  Read backwards from
-  `A_{τ(u)-1}`, the pressure for `O_{τ(u)}` climbs at most `1` per step, so the first
-  index reaching each level `j + r` overshoots by less than `1`;
+* the `⌊m⌋ + 1` distinct actors obtained "by (25)", the last of them `A_{τ(u)}`, are
+  first passages.  Read backwards from `A_{τ(u)-1}`, the pressure for `O_{τ(u)}` climbs
+  at most `1` per step, so for `j < ⌊m⌋` the first index reaching level `j + r`
+  overshoots by less than `1`, and is not `A_{τ(u)}`, which carries `m`;
 * `m ≥ 1` once `τ(u) ≥ 3`, since `A_{τ(u)-2}` carries `1` on `O_{τ(u)-1}`;
 * `n(u) ≤ N - 1`, since the witnesses avoid `A_{τ(u)}`.
 

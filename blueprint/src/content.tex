@@ -2548,12 +2548,14 @@ process pointwise.
   $S^{O_2}$ with $n = 1$, $r = 0$.
 
   \textbf{Supplies three steps the paper asserts.}  First, the $\lfloor m
-  \rfloor$ distinct actors obtained ``by (25)'': reading $A_{\tau(u)-1},
-  A_{\tau(u)-2}, \dots$ backwards, the pressure for $O_{\tau(u)}$ starts at $0$,
-  reaches $m$ at the repeated actor, and by~(25) climbs at most $1$ per step.
-  For each level $j + r$ take the first index, read backwards, at which it is
+  \rfloor + 1$ distinct actors obtained ``by (25)'', the last of them
+  $A_{\tau(u)}$: reading $A_{\tau(u)-1}, A_{\tau(u)-2}, \dots$ backwards, the
+  pressure for $O_{\tau(u)}$ starts at $0$, reaches $m$ at the repeated actor,
+  and by~(25) climbs at most $1$ per step.  For each level $j + r$ with $j <
+  \lfloor m \rfloor$ take the first index, read backwards, at which it is
   reached: it overshoots by less than $1$, so these indices are distinct and none
-  is the repeated actor.  Second, $m \ge 1$ once $\tau(u) \ge 3$, which $n(u) \ge
+  is the repeated actor, which carries $m$.  These $\lfloor m \rfloor$ actors are
+  the witnesses; the repeated actor is reset at step $\tau(u)$.  Second, $m \ge 1$ once $\tau(u) \ge 3$, which $n(u) \ge
   1$ needs: $A_{\tau(u)-2}$ has heard exactly one expression and carries $1$ on
   $O_{\tau(u)-1}$, and $m$ is the maximum --- which is why the paper's case split
   on $\tau(u) = 2$ is the right one.  Third, $n(u) \le N - 1$, since the
@@ -3431,7 +3433,10 @@ written out below.  The others are recorded at their nodes:
     (it is Corollary~8 of [GL24], \ref{aux-greedy-avoids}), and the hypothesis
     $u \in \Sspace$ is missing;
   \item \ref{eq13}: as stated it gives the uniqueness half of \ref{thm1-2}, not
-    existence, which needs the converse \ref{aux-transfer-converse};
+    existence, which needs the converse \ref{aux-transfer-converse}; and the
+    rate floor $\jumprate(u) \ge M$ is asserted, while the finiteness of
+    $\sum_v \muskel(v)/\jumprate(v)$, without which the right-hand side is not a
+    probability measure, is not stated (\ref{aux-rate-floor});
   \item \ref{thm2-1}: the proof's $\zeta_\beta^{(M+1)N} \ge (MN)^{-(M+1)N}$ fails
     for small $\beta$;
   \item \ref{cor11}: read with $\tau$ independent of the whole process, the
@@ -3504,9 +3509,10 @@ for the authors.
   partial sums of the expressions after them, a staircase on column $o$ --- and
   Lemma~20 needs it.  Restating Lemma~20 with a hypothesis \ref{lem19}
   delivers is for the authors.  Meanwhile the Lean statement is the paper's,
-  unproved, and \ref{prop7} with everything downstream is written from it: they
-  inherit \texttt{sorryAx} from a statement that is false for $M \ge 4$, and
-  will turn green only once Lemma~20 is restated and the assembly adapted.
+  unproved, and \ref{prop7} and the results written from it
+  (Section~\ref{sec:missing}) inherit \texttt{sorryAx} from a statement that is
+  false for $M \ge 4$; they will turn green only once Lemma~20 is restated and
+  the assembly adapted.
 \end{remark}
 
 \aux{Remark}
@@ -3529,8 +3535,18 @@ for the authors.
 \end{remark}
 
 \aux{Remark}
-\begin{remark}[``By definition'' at the end of Proposition~7]
+\begin{remark}[Proposition~7: the time $N+1$, and ``by definition'']
   \label{note-prop7}
+  The proof carries the process to $\bigcup_o S^o$ at time $N+1$: ``so by
+  Lemma~19 we have $\bigcap_{j=1}^{N+1}\xi_j^u \subset \{\Uskel{u}_{N+1} \in
+  \bigcup_o S^o\}$''.  \ref{lem19} delivers that membership at $\tau(u)$, which
+  is only $\le N+1$, and carrying it on to $N+1$ needs $\bigcup_o S^o$ to be
+  stable under a greedy expression.  The paper does not prove that, and for $M
+  \ge 4$ it is false (\ref{note-lem20}).  The Lean assembly applies \ref{lem20}
+  at $\tau(u)$ instead.  The arithmetic is the paper's, $\tau(u) +
+  (M-1)(n(u)+1) - 1 \le MN$, and the consensus is carried up to $MN$ by the
+  paper's own observation that $C^o$ is stable under a greedy expression.
+
   The proof of Proposition~7 ends:
 
   \begin{quote}
@@ -3548,7 +3564,7 @@ for the authors.
   \ref{def1} as a bijection.  In Lean this is a file of its own,
   \texttt{SocialNetwork/Consensus.lean}.
 
-  Nothing is wrong with the claim --- unlike \ref{lem20}, it is
+  Nothing is wrong with this last claim --- unlike \ref{lem20}, it is
   true as written, and proved.  What is misleading is ``by definition'',
   which invites a reader to check nothing.  This is the mechanism behind the
   paper's fast consensus formation, and it earns an argument.
@@ -3634,11 +3650,17 @@ Every numbered statement of arXiv:2607.19651 is stated in Lean, and
 \end{itemize}
 
 The proofs that go through them are written out in full all the same, and
-inherit \texttt{sorryAx} from them and from nothing else: \ref{prop7} and
-everything written from it from \ref{lem20}, and \ref{prop26}, \ref{thm27-1},
-\ref{thm27-2} and~\ref{lem28} from \ref{prop23}; \ref{thm3} and~\ref{thm31} use
-the axioms besides.  Since
-\ref{lem20} is false as printed, the assembly of \ref{prop7} will have to be
+inherit \texttt{sorryAx} or an axiom from them and from nothing else.
+\begin{itemize}
+  \item From \ref{lem20}: \ref{prop7}, and through it \ref{prop9}, \ref{cor10},
+    \ref{cor11}, \ref{lem13}, \ref{thm2-1}, \ref{thm2-2} and~\ref{thm3}.
+  \item From \ref{prop23}: \ref{prop26}, \ref{thm27-1}, \ref{thm27-2},
+    \ref{lem28}, \ref{thm31} and part~2 of \ref{thm4}.  The paper writes their
+    proofs ``as the proof of'' unbiased results; the Lean proofs transpose those
+    arguments and do not reach \ref{lem20}.
+  \item From the axioms: \ref{thm3} and~\ref{thm31}.
+\end{itemize}
+Since \ref{lem20} is false as printed, the assembly of \ref{prop7} will have to be
 adapted to its restatement.  Nothing waits on Mathlib;
 \texttt{blueprint/blueprint.md} records what the library lacks and what was built
 here instead.
@@ -3707,6 +3729,6 @@ no proof of a statement of the paper has been invented here.}
     and with it everything written from it.
   \item \textbf{\ref{prop23}}, from biased analogues of \ref{lem19}
     and~\ref{lem20}; the second will have to avoid the failure of
-    \ref{note-lem20}.  \ref{prop26}, \ref{thm27-1}, \ref{thm27-2}
-    and~\ref{lem28} are written from it.
+    \ref{note-lem20}.  \ref{prop26}, \ref{thm27-1}, \ref{thm27-2},
+    \ref{lem28}, \ref{thm31} and part~2 of \ref{thm4} are written from it.
 \end{enumerate}
