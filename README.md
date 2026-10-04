@@ -62,8 +62,11 @@ stated in Lean, and [`STATUS.md`](STATUS.md) says of each one whether it is prov
 * the biased model of Section 3, with Propositions 21, 17, 22 and 24, and **Proposition 18
   and part 1 of Theorem 4** — the negative-bias half of the phase transition: almost
   surely all but one actor eventually stop expressing;
-* **Theorem 25**, the invariant measure of the biased skeleton, by Appendix C's route,
-  and **Lemma 29** with Corollary 30, the biased twins of Lemma 14 and Corollary 15.
+* **Theorem 25**, all of it, by Appendix C's route: the biased process does not explode,
+  and it and its skeleton have unique invariant measures, related by equation (13) for
+  the biased process (`SocialNetwork/BiasedTransfer.lean`,
+  `SocialNetwork/BiasedExistence.lean`); and **Lemma 29** with Corollary 30, the biased
+  twins of Lemma 14 and Corollary 15.
 
 **Written out modulo one citation**, Theorem 5.3 of [LM22], which the paper invokes as
 Proposition 12 and nothing in this library can discharge: **both metastability theorems,
@@ -75,14 +78,13 @@ abstract axiom would be inconsistent.
 **Written out and resting on an obstruction.** Proposition 7 is assembled from its three
 stages and waits on Lemmas 19 and 20, the two written proofs of Appendix A that do not
 compose; Proposition 9 and Theorem 2.1 wait behind it. In the biased model, Proposition
-26, Theorem 27.2 and Lemma 28 wait on Proposition 23, which assembles biased analogues of
+26, Theorem 27 and Lemma 28 wait on Proposition 23, which assembles biased analogues of
 Lemmas 19 and 20 that the paper does not state. Each inherits `sorryAx` from its
 obstruction and from nothing else, so it turns green the moment that one does.
 
-What is unproved is unproved for three reasons, which [`STATUS.md`](STATUS.md) keeps
-apart because they are not comparable: the paper's own proof does not compose, the
-statement is a citation from outside the paper, or — for Theorem 27.1 alone — the work
-is not done yet.  Nothing waits on Mathlib any more.
+What is unproved is unproved for two reasons, which [`STATUS.md`](STATUS.md) keeps
+apart because they are not comparable: the paper's own proof does not compose, or the
+statement is a citation from outside the paper.  Nothing waits on Mathlib any more.
 
 **Lean checks the paper's arguments, not only its statements.** A Lean proof here follows
 the paper's proof; where the written argument does not close, the statement is left
@@ -123,9 +125,11 @@ SocialNetwork/Transfer.lean   equation (13), from the correspondence of p. 18 on
 SocialNetwork/Existence.lean  the correspondence the other way, and Theorem 1.2
 SocialNetwork/Concentration.lean   Theorem 2.1, from equation (13) and Propositions 7–9
 SocialNetwork/BiasedModel.lean     §3 assembled: S^α, C_α^o, L_α^o, Remarks 1, 2, 8
-SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorems 4, 25, 27.1
-SocialNetwork/BiasedConcentration.lean  Proposition 26, the biased twin of Proposition 9
-SocialNetwork/BiasedNonExplosion.lean   Theorem 16, the biased twin of Theorem 1.1
+SocialNetwork/BiasedResults.lean   §3 and Appendix C: Theorem 4, Theorem 25 for the skeleton
+SocialNetwork/BiasedNonExplosion.lean   Theorems 16 and 25.1, the biased twins of Theorem 1.1
+SocialNetwork/BiasedTransfer.lean  equation (13) for the biased process
+SocialNetwork/BiasedExistence.lean  Theorem 25.2, the invariant measure of the biased process
+SocialNetwork/BiasedConcentration.lean  Proposition 26 and Theorem 27.1, after Proposition 9 and Theorem 2.1
 SocialNetwork/BiasedConsensusExit.lean  Lemma 29, the biased twin of Lemma 14
 SocialNetwork/BiasedHitting.lean   Lemma 28 and Theorem 27.2, the biased twins of Lemma 13 and Theorem 2.2
 SocialNetwork/BiasedMetastability.lean  Corollary 30 and Theorem 31

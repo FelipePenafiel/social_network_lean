@@ -3,11 +3,12 @@ Copyright (c) 2026 Felipe Penafiel, Kádmo Laxa. All rights reserved.
 Released under the Apache 2.0 license.
 -/
 import SocialNetwork.Appendix
-import SocialNetwork.BiasedConsensusExit
+import SocialNetwork.BiasedHitting
+import SocialNetwork.BiasedTransfer
 import SocialNetwork.Kac
 
 /-!
-# Proposition 26: the biased skeleton off the biased steep ladders
+# Proposition 26 and Theorem 27.1: the biased invariant measures concentrate on the ladders
 
 Appendix C of arXiv:2607.19651 states Proposition 26 and says that its proof "follows exactly
 as the proofs of Proposition 9, taking into account Remark 8 and recalling that `0 ∉ S^α`".
@@ -59,6 +60,19 @@ it prints; with no printed constant to reach, there is no split here.
 * `SocialNetwork.Bias.biasedReturnBound_prod_le` — the lower bound on the return time to `u`.
 * `SocialNetwork.Bias.biasedMeasure_le_of_notMem_steepLadder` — **Proposition 26**, resting on
   Proposition 23.
+* `SocialNetwork.Bias.biasedLowSet_finite` — the profiles of `S^α` with pressures below `N` are
+  finitely many.
+* `SocialNetwork.Bias.biasedZeta_pow_le_measure_ladderSet` — `μ̃_{α,β} (L_α) ≥ ζ_{α,β}^K`.
+* `SocialNetwork.Bias.biasedMeasure_ladderSet_ge` — **Theorem 27.1**, resting on Proposition 23.
+
+## Theorem 27.1
+
+The last section is the proof of Theorem 2.1 (`SocialNetwork.Concentration`) with the
+modifications Appendix C lists for Theorem 27: Propositions 23, 24 and 26 for 7, 8 and 9, the
+rate floor `e^{β(M-1)α}` of Remark 8 for `e^{β/(M-1)}`, and nothing for Corollary 10, the zero
+matrix not being in `S^α`.  It is stated for the invariant measure of the process, which
+equation (13) for the biased process (`SocialNetwork.BiasedTransfer`) relates to the skeleton's,
+and which exists by Theorem 25.2 (`SocialNetwork.BiasedExistence`).
 -/
 
 namespace SocialNetwork
@@ -663,6 +677,388 @@ theorem biasedMeasure_le_of_notMem_steepLadder (hM : 2 ≤ M) (hN : 3 ≤ N) {γ
     _ = c ^ (K + 1) * Real.exp (-(β * ((N : ℝ) - 1))) := by ring
 
 end Proposition26
+
+/-! ### Theorem 27.1
+
+The proof of Theorem 2.1 (`SocialNetwork.measure_ladderSet_ge`), with the modifications
+Appendix C lists for Theorem 27: equation (13) for the biased process
+(`SocialNetwork.Bias.biasedInvariantCts_eq`) writes `μ_{α,β}` as `μ̃_{α,β} / q` normalised;
+Propositions 23 and 24 bound `μ̃_{α,β} (L_α)` below; Proposition 26 bounds each state off
+`L̂_α`; and "the lower bound for the jump rate of any non-null state is `e^{β(M-1)α}` by
+Remark 8" (`SocialNetwork.Bias.exp_le_biasedTotalRate`), while "the contribution of the zero
+matrix vanishes", there being no zero matrix in `S^α`. -/
+
+section Theorem271
+
+/-- The profiles of `S^α` whose pressures are all below `N`: those Proposition 26 is applied
+to in the proof of Theorem 27.1. -/
+def biasedLowSet (N M : ℕ) (γ : ℝ) : Set (Profile N M) :=
+  {P | IsBiasedState P ∧ ∀ a p, P.pressure γ a p < (N : ℝ)}
+
+/-- **There are finitely many of them**, and how many does not depend on `β`.
+
+**Supplies a step the paper asserts**, the biased form of the finiteness of `K(N, M)` in the
+proof of Theorem 2.1.  It is Remark 8 read the other way: an actor that has heard `nₐ`
+expressions carries at least `⌈nₐ/M⌉ (M-1) α` for some opinion, so pressures below `N` bound
+`nₐ`, and with it every count. -/
+theorem biasedLowSet_finite (hM : 2 ≤ M) {γ α : ℝ} (hγ : 0 < γ)
+    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) :
+    (biasedLowSet N M γ).Finite := by
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by
+    have : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+    linarith
+  have hMα : 0 < ((M : ℝ) - 1) * α := mul_pos hM1 hα
+  set B : ℕ := ⌈(M : ℝ) * (N : ℝ) / (((M : ℝ) - 1) * α)⌉₊ with hB
+  -- every count of a profile of the set is at most `B`
+  have hbound : ∀ P ∈ biasedLowSet N M γ, ∀ a q, (P a).count q ≤ B := by
+    rintro P ⟨-, hlt⟩ a q
+    obtain ⟨p, hp⟩ := exists_count_ge (by omega : 0 < M) (P a)
+    have hpr := pressure_eq_of_bias h (P a) p
+    have hc : ((P a).count p : ℝ) * (((M : ℝ) - 1) * α) < (N : ℝ) := by
+      have hrem : 0 ≤ γ * ((M : ℝ) * ((P a).count p : ℝ) - ((P a).heard : ℝ)) := by
+        have : ((P a).heard : ℝ) ≤ (M : ℝ) * ((P a).count p : ℝ) := by exact_mod_cast hp
+        exact mul_nonneg hγ.le (by linarith)
+      have := hlt a p
+      simp only [Profile.pressure] at this
+      linarith
+    have hheard : ((P a).heard : ℝ) ≤ (M : ℝ) * (N : ℝ) / (((M : ℝ) - 1) * α) := by
+      have h1 : ((P a).heard : ℝ) ≤ (M : ℝ) * ((P a).count p : ℝ) := by exact_mod_cast hp
+      rw [le_div_iff₀ hMα]
+      have hM0 : (0 : ℝ) ≤ (M : ℝ) := Nat.cast_nonneg _
+      nlinarith
+    have hcount : (P a).count q ≤ (P a).heard :=
+      Finset.single_le_sum (f := fun r => (P a).count r) (fun _ _ => Nat.zero_le _)
+        (Finset.mem_univ q)
+    have hheardB : (P a).heard ≤ B := by
+      have h2 : ((P a).heard : ℝ) ≤ (B : ℝ) := hheard.trans (Nat.le_ceil _)
+      exact_mod_cast h2
+    exact hcount.trans hheardB
+  -- and the profiles with bounded counts are finitely many
+  set f : Profile N M → Actor N → Opinion M → ℕ := fun P a q => (P a).count q with hf
+  have hinj : Function.Injective f := by
+    intro P Q hPQ
+    funext a
+    have h1 : (P a).count = (Q a).count := congrFun hPQ a
+    cases hP : P a
+    cases hQ : Q a
+    rw [hP, hQ] at h1
+    simp only at h1
+    rw [h1]
+  have hbox : (Set.univ.pi fun _ : Actor N => Set.univ.pi fun _ : Opinion M => Set.Iic B).Finite :=
+    Set.Finite.pi fun _ => Set.Finite.pi fun _ => Set.finite_Iic B
+  refine (hbox.preimage hinj.injOn).subset fun P hP => ?_
+  simp only [Set.mem_preimage, Set.mem_univ_pi, Set.mem_Iic, hf]
+  exact fun a q => hbound P hP a q
+
+/-- A profile of `L̂_α^o` whose `o`-column stays below `N` is in `L_α^o`: `N` distinct integers
+in `{0, …, N-1}` are all of them.  `SocialNetwork.IsSteepLadder.isLadder_of_lt`, for the biased
+model. -/
+theorem IsBiasedSteepLadder.isBiasedLadder_of_lt {γ : ℝ} {o : Opinion M} {v : Profile N M}
+    (hv : IsBiasedSteepLadder γ o v) (hlt : ∀ a, v.pressure γ a o < (N : ℝ)) :
+    IsBiasedLadder γ o v := by
+  refine ⟨hv.isBiasedState, ?_, hv.other⟩
+  apply Finset.eq_of_subset_of_card_le
+  · intro z hz
+    obtain ⟨a, -, rfl⟩ := Finset.mem_image.1 hz
+    obtain ⟨k, hk⟩ := hv.isInt a
+    have h0 := hv.nonneg a
+    have hl := hlt a
+    rw [hk] at h0 hl
+    have hk0 : 0 ≤ k := by exact_mod_cast h0
+    have hkN : k < N := by exact_mod_cast hl
+    refine Finset.mem_image.2 ⟨⟨k.toNat, by omega⟩, Finset.mem_univ _, ?_⟩
+    rw [hk]
+    have : ((k.toNat : ℕ) : ℤ) = k := Int.toNat_of_nonneg hk0
+    simp only
+    exact_mod_cast this
+  · rw [Finset.card_image_of_injective _ hv.injective, Finset.card_univ, Fintype.card_fin]
+    exact Finset.card_image_le.trans (by simp)
+
+/-- **Supplies a step the paper asserts**: the contrapositive the proof of Theorem 27.1 uses,
+as that of Theorem 2.1 does. -/
+theorem notMem_biasedSteepLadderSet_of_lt {γ : ℝ} {v : Profile N M}
+    (hv : v ∉ biasedLadderSet N M γ) (hlt : ∀ a p, v.pressure γ a p < (N : ℝ)) :
+    v ∉ biasedSteepLadderSet N M γ := by
+  rintro ⟨o, ho⟩
+  exact hv ⟨o, ho.isBiasedLadder_of_lt fun a => hlt a o⟩
+
+/-- On `L_α` every rate is at most `e^{β(N-1)}`, so the total rate is at most `MN e^{β(N-1)}`:
+the supported column takes the values `0, …, N-1`, and every other entry is non-positive. -/
+theorem biasedTotalRate_le_of_mem_biasedLadderSet {γ β : ℝ} (hγ : 0 ≤ γ) (hβ : 0 ≤ β)
+    {v : Profile N M} (hv : v ∈ biasedLadderSet N M γ) :
+    biasedTotalRate γ β v ≤ ((M * N : ℕ) : ℝ) * Real.exp (β * ((N : ℝ) - 1)) := by
+  obtain ⟨o, hvo⟩ := hv
+  have hle : ∀ a p, v.pressure γ a p ≤ (N : ℝ) - 1 := by
+    intro a p
+    obtain ⟨k, hk⟩ := hvo.exists_eq_natCast a
+    have hkN : ((k : ℕ) : ℝ) ≤ (N : ℝ) - 1 := by
+      have : (k : ℕ) + 1 ≤ N := k.isLt
+      have : ((k : ℕ) : ℝ) + 1 ≤ (N : ℝ) := by exact_mod_cast this
+      linarith
+    by_cases hp : p = o
+    · subst hp
+      rw [hk]
+      exact hkN
+    · rw [hvo.other a p hp, hk]
+      have hk0 : (0 : ℝ) ≤ ((k : ℕ) : ℝ) := Nat.cast_nonneg _
+      have hN1 : (0 : ℝ) ≤ (N : ℝ) - 1 := le_trans hk0 hkN
+      nlinarith
+  have hterm : ∀ q : Jump N M, biasedJumpRate γ β v q.1 q.2 ≤ Real.exp (β * ((N : ℝ) - 1)) :=
+    fun q => Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left (hle q.1 q.2) hβ)
+  calc biasedTotalRate γ β v ≤ ∑ _q : Jump N M, Real.exp (β * ((N : ℝ) - 1)) :=
+        Finset.sum_le_sum fun q _ => hterm q
+    _ = ((M * N : ℕ) : ℝ) * Real.exp (β * ((N : ℝ) - 1)) := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_prod, Fintype.card_fin,
+          Fintype.card_fin, nsmul_eq_mul, Nat.mul_comm]
+
+/-- A profile with an entry of at least `N` jumps at total rate at least `e^{βN}`. -/
+theorem exp_le_biasedTotalRate_of_le {γ β : ℝ} (hβ : 0 ≤ β) {v : Profile N M} {a : Actor N}
+    {p : Opinion M} (hap : (N : ℝ) ≤ v.pressure γ a p) :
+    Real.exp (β * (N : ℝ)) ≤ biasedTotalRate γ β v := by
+  refine le_trans (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hap hβ)) ?_
+  rw [biasedTotalRate]
+  exact Finset.single_le_sum (f := fun q : Jump N M => biasedJumpRate γ β v q.1 q.2)
+    (fun q _ => (biasedJumpRate_pos γ β v q.1 q.2).le) (Finset.mem_univ (a, p))
+
+variable [NeZero N] [NeZero M]
+
+/-- `μ̃_{α,β} (L_α) ≥ ζ_{α,β}^K` for any invariant probability measure of the biased skeleton
+carried by `S^α`, `K` a horizon at which the near-greedy run is on `L_α`.
+
+**Supplies a step the paper asserts**, as `SocialNetwork.zeta_pow_le_measure_ladderSet` does for
+Theorem 2.1: the invariance under the `K`-step kernel, through which Propositions 23 and 24
+bound the measure of `L_α`. -/
+theorem biasedZeta_pow_le_measure_ladderSet (hM : 2 ≤ M) (hN : 3 ≤ N) {γ β : ℝ} (hγ : 0 < γ)
+    (hβ : 0 ≤ β) {K : ℕ}
+    (hK : ∀ u : Profile N M, IsBiasedState u →
+      nearGreedyEvents γ u K ⊆ {ω | stateAfter u ω K ∈ biasedLadderSet N M γ})
+    {μ : Measure (Profile N M)} [IsProbabilityMeasure μ] (hμS : IsCarriedByBiasedState μ)
+    (hinv : IsBiasedInvariant γ β μ) :
+    ENNReal.ofReal (biasedZeta N M γ β) ^ K ≤ μ (biasedLadderSet N M γ) := by
+  have hn := invariant_iterateKernel (biasedSkeletonKernel γ β) hinv K
+  have hae : ∀ᵐ v ∂μ, v ∉ (biasedStateSet N M)ᶜ := measure_eq_zero_iff_ae_notMem.1 hμS
+  calc ENNReal.ofReal (biasedZeta N M γ β) ^ K
+      = ∫⁻ _v, ENNReal.ofReal (biasedZeta N M γ β) ^ K ∂μ := by
+        rw [lintegral_const, measure_univ, mul_one]
+    _ ≤ ∫⁻ v, iterateKernel (biasedSkeletonKernel γ β) K v (biasedLadderSet N M γ) ∂μ := by
+        refine lintegral_mono_ae ?_
+        filter_upwards [hae] with v hv
+        have hvS : IsBiasedState v := by
+          simpa [biasedStateSet] using hv
+        rw [iterateKernel_biasedSkeletonKernel]
+        exact (biasedZeta_pow_le hM hN hγ hβ v K).trans (measure_mono (hK v hvS))
+    _ = (μ.bind (iterateKernel (biasedSkeletonKernel γ β) K)) (biasedLadderSet N M γ) :=
+        (Measure.bind_apply (measurableSet_profile _) (Kernel.aemeasurable _)).symm
+    _ = μ (biasedLadderSet N M γ) := by
+        rw [show μ.bind (iterateKernel (biasedSkeletonKernel γ β) K) = μ from hn]
+
+/-- **Theorem 27.1.**  For `0 < α < 1/(M-1)` there is a constant `C > 0`, depending on `M`, `N`
+and `α` only, such that for every `β ≥ 0` the invariant probability measure of the biased
+process satisfies `μ_{α,β} (L_α) ≥ 1 - C e^{-β(M-1)α}`.
+
+**Follows the paper's proof**, which is that of Theorem 2.1 (`SocialNetwork.measure_ladderSet_ge`)
+with the modifications Appendix C lists.  Equation (13) for the biased process writes `μ_{α,β}`
+as `μ̃_{α,β} / q` normalised, so `μ_{α,β} (L_α) = A / (A + B)` with `A` the sum over `L_α` and
+`B` the sum off it.  On `L_α` the rate is at most `MN e^{β(N-1)}` and
+`μ̃_{α,β} (L_α) ≥ ζ_{α,β}^K` by Propositions 23 and 24, which bounds `A` below.  Off `L_α`, a
+profile whose pressures are below `N` is off `L̂_α`, so Proposition 26 bounds its mass by
+`C̃ e^{-β(N-1)}`, and Remark 8 bounds its rate below by `e^{β(M-1)α}`; there are finitely many
+such profiles.  A profile with a pressure of at least `N` has rate at least
+`e^{βN} ≥ e^{β(N-1)} e^{β(M-1)α}`, since `(M-1)α < 1`.  No term needs Corollary 10, the zero
+matrix not being in `S^α`.  So the deficit is at most `C e^{β(N-1)} e^{-β(N-1+(M-1)α)}`, as the
+paper says.
+
+**Supplies the steps the paper asserts**, as Theorem 2.1 does, each at its declaration above:
+the bound on the rate over `L_α`, the invariance step behind `μ̃_{α,β} (L_α) ≥ ζ_{α,β}^K`, that a
+profile off `L_α` with pressures below `N` is off `L̂_α`, and that there are finitely many.  The
+constant uses `ζ_{α,β} ≥ 1/(1+MN)`, true for every `β ≥ 0`; at `β = 0` the bound holds because
+`C ≥ 1`.
+
+**Restated.**  The Lean statement was about an invariant measure of the biased *skeleton*;
+`μ_{α,β}` is the invariant measure of the process, Theorem 25.2
+(`SocialNetwork.Bias.existsUnique_biasedInvariantCts`).
+
+**Rests on** Proposition 23, through Proposition 26 and the bound on `μ̃_{α,β} (L_α)`. -/
+theorem biasedMeasure_ladderSet_ge (hM : 2 ≤ M) (hN : 3 ≤ N) {γ α : ℝ} (hγ : 0 < γ)
+    (h : ((M : ℝ) - 1) * γ = 1 - ((M : ℝ) - 1) * α) (hα : 0 < α) :
+    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 0 ≤ β → ∀ μ : Measure (Profile N M),
+      IsProbabilityMeasure μ → IsCarriedByBiasedState μ → IsBiasedInvariantCts γ β μ →
+        ENNReal.ofReal (1 - C * Real.exp (-β * (((M : ℝ) - 1) * α)))
+          ≤ μ (biasedLadderSet N M γ) := by
+  classical
+  have hM2 : (2 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) - 1 := by linarith
+  have hγ' : γ < 1 / ((M : ℝ) - 1) := by
+    rw [lt_div_iff₀ hM1]
+    nlinarith [mul_pos hM1 hα]
+  have hMα1 : ((M : ℝ) - 1) * α ≤ 1 := by nlinarith [mul_pos hM1 hγ]
+  -- The constants, none of which depends on `β`.
+  obtain ⟨K, -, hK⟩ := exists_horizon_isBiasedLadder hM hN hγ
+  obtain ⟨Ct, hCt, h26⟩ := biasedMeasure_le_of_notMem_steepLadder hM hN hγ hγ'
+  set F : Set (Profile N M) := biasedLowSet N M γ
+  have hFfin : F.Finite := biasedLowSet_finite hM hγ h hα
+  set KF : ℕ := hFfin.toFinset.card
+  set mn : ℝ := ((M * N : ℕ) : ℝ) with hmn
+  set C : ℝ := mn * (1 + mn) ^ K * ((KF : ℝ) * Ct + 1) with hC
+  have hmn1 : 1 ≤ mn := by
+    rw [hmn]
+    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (NeZero.ne M) (NeZero.ne N))
+  have hC1 : 1 ≤ C := by
+    have h1 : 1 ≤ (1 + mn) ^ K := one_le_pow₀ (by linarith)
+    have h2 : 1 ≤ (KF : ℝ) * Ct + 1 := by
+      have : 0 ≤ (KF : ℝ) * Ct := mul_nonneg (Nat.cast_nonneg _) hCt.le
+      linarith
+    calc (1 : ℝ) = 1 * 1 * 1 := by ring
+      _ ≤ mn * (1 + mn) ^ K * ((KF : ℝ) * Ct + 1) := by
+        gcongr
+  refine ⟨C, by linarith, fun β hβ μ hμ hμS hμinv => ?_⟩
+  have := hμ
+  rcases hβ.eq_or_lt with hβ0 | hβpos
+  · -- At `β = 0` the bound says nothing, since `C ≥ 1`.
+    subst hβ0
+    have h0 : 1 - C * Real.exp (-0 * (((M : ℝ) - 1) * α)) ≤ 0 := by
+      rw [neg_zero, zero_mul, Real.exp_zero, mul_one]
+      linarith
+    rw [ENNReal.ofReal_of_nonpos h0]
+    exact zero_le
+  obtain ⟨μs, ⟨hsprob, hsS, hsinv⟩, -⟩ := existsUnique_biasedInvariant hM hN hγ hγ' hβpos
+  have := hsprob
+  set y : ℝ := Real.exp (β * ((N : ℝ) - 1)) with hy
+  set z : ℝ := Real.exp (β * (((M : ℝ) - 1) * α)) with hz
+  have hy0 : 0 < y := Real.exp_pos _
+  have hz0 : 0 < z := Real.exp_pos _
+  set L : Set (Profile N M) := biasedLadderSet N M γ
+  -- The terms `μ̃ (u) / q (u)` of equation (13), and their sums on and off `L_α`.
+  obtain ⟨w, hw⟩ : ∃ w : Profile N M → ℝ≥0∞,
+      w = fun v => μs {v} / ENNReal.ofReal (biasedTotalRate γ β v) := ⟨_, rfl⟩
+  obtain ⟨A, hA⟩ : ∃ A : ℝ≥0∞, A = ∑' v, L.indicator w v := ⟨_, rfl⟩
+  obtain ⟨B, hB⟩ : ∃ B : ℝ≥0∞, B = ∑' v, Lᶜ.indicator w v := ⟨_, rfl⟩
+  -- Equation (13).
+  have h13 : ∀ v, μ {v} = w v / (A + B) := by
+    intro v
+    rw [biasedInvariantCts_eq hM hN hγ hγ' hβ hμ hμS hμinv hsprob hsS hsinv v, hA, hB,
+      ← ENNReal.tsum_add, hw]
+    congr 1
+    exact tsum_congr fun v => (Set.indicator_self_add_compl_apply L
+      (fun v => μs {v} / ENNReal.ofReal (biasedTotalRate γ β v)) v).symm
+  -- `μ (L_αᶜ) = B / (A + B) ≤ B / A`.
+  have hLc : μ Lᶜ ≤ B / A := by
+    have hsum : ∑' v, Lᶜ.indicator (fun v => μ {v}) v
+        = (∑' v, Lᶜ.indicator w v) * (A + B)⁻¹ := by
+      rw [← ENNReal.tsum_mul_right]
+      refine tsum_congr fun v => ?_
+      by_cases hv : v ∈ Lᶜ
+      · rw [Set.indicator_of_mem hv, Set.indicator_of_mem hv, h13 v, div_eq_mul_inv]
+      · rw [Set.indicator_of_notMem hv, Set.indicator_of_notMem hv, zero_mul]
+    rw [← Measure.tsum_indicator_apply_singleton μ Lᶜ (measurableSet_profile _), hsum, ← hB,
+      ← div_eq_mul_inv]
+    exact ENNReal.div_le_div_left le_self_add B
+  -- The sum over `L_α`: the rate there is at most `MN e^{β(N-1)}`, and
+  -- `μ̃ (L_α) ≥ ζ_{α,β}^K ≥ (1 + MN)^{-K}`.
+  have hζ0 : 1 / (1 + mn) ≤ biasedZeta N M γ β := by
+    have hz := one_div_biasedZeta_le N M hγ.le hβ
+    have hzpos := biasedZeta_pos N M γ β
+    rw [one_div_le (by linarith) hzpos]
+    rw [one_div] at hz ⊢
+    exact hz
+  have hμsL : ENNReal.ofReal ((1 / (1 + mn)) ^ K) ≤ μs L := by
+    rw [ENNReal.ofReal_pow (by positivity)]
+    exact (pow_le_pow_left₀ zero_le (ENNReal.ofReal_le_ofReal hζ0) K).trans
+      (biasedZeta_pow_le_measure_ladderSet hM hN hγ hβ hK hsS hsinv)
+  have hAlow : ENNReal.ofReal ((1 / (1 + mn)) ^ K / (mn * y)) ≤ A := by
+    rw [ENNReal.ofReal_div_of_pos (by positivity)]
+    refine (ENNReal.div_le_div_right hμsL _).trans ?_
+    rw [← Measure.tsum_indicator_apply_singleton μs L (measurableSet_profile _), div_eq_mul_inv,
+      ← ENNReal.tsum_mul_right, hA]
+    refine ENNReal.tsum_le_tsum fun v => ?_
+    by_cases hv : v ∈ L
+    · rw [Set.indicator_of_mem hv, Set.indicator_of_mem hv, hw, ← div_eq_mul_inv]
+      exact ENNReal.div_le_div_left
+        (ENNReal.ofReal_le_ofReal (biasedTotalRate_le_of_mem_biasedLadderSet hγ.le hβ hv)) _
+    · rw [Set.indicator_of_notMem hv, Set.indicator_of_notMem hv, zero_mul]
+  -- The sum off `L_α`, split by the size of the largest pressure.
+  have hyz : y * z ≤ Real.exp (β * (N : ℝ)) := by
+    rw [hy, hz, ← Real.exp_add]
+    refine Real.exp_le_exp.2 ?_
+    nlinarith
+  have hpt : ∀ v, Lᶜ.indicator w v
+      ≤ F.indicator (fun _ => ENNReal.ofReal (Ct / (y * z))) v
+        + μs {v} * ENNReal.ofReal (1 / (y * z)) := by
+    intro v
+    by_cases hvL : v ∈ L
+    · rw [Set.indicator_of_notMem (Set.notMem_compl_iff.2 hvL)]
+      exact zero_le
+    rw [Set.indicator_of_mem (Set.mem_compl hvL), hw]
+    beta_reduce
+    by_cases hvS : IsBiasedState v
+    swap
+    · -- Off `S^α`, `μ̃_{α,β}` puts no mass.
+      have h0 : μs {v} = 0 :=
+        measure_mono_null (Set.singleton_subset_iff.2 (by simpa [biasedStateSet] using hvS)) hsS
+      rw [h0, ENNReal.zero_div]
+      exact zero_le
+    by_cases hbig : ∃ a p, (N : ℝ) ≤ v.pressure γ a p
+    · -- A pressure of at least `N`: the rate is at least `e^{βN} ≥ e^{β(N-1)} e^{β(M-1)α}`.
+      obtain ⟨a, p, hap⟩ := hbig
+      have hqv : ENNReal.ofReal (y * z) ≤ ENNReal.ofReal (biasedTotalRate γ β v) :=
+        ENNReal.ofReal_le_ofReal (hyz.trans (exp_le_biasedTotalRate_of_le hβ hap))
+      refine le_trans ?_ le_add_self
+      rw [one_div, ENNReal.ofReal_inv_of_pos (mul_pos hy0 hz0), div_eq_mul_inv]
+      exact mul_le_mul' le_rfl (ENNReal.inv_le_inv.2 hqv)
+    simp only [not_exists, not_le] at hbig
+    -- Pressures below `N`: the profile is off `L̂_α`, and in the finite set `F`.
+    have hvF : v ∈ F := ⟨hvS, hbig⟩
+    have hvhat : v ∉ biasedSteepLadderSet N M γ := notMem_biasedSteepLadderSet_of_lt hvL hbig
+    refine le_trans ?_ le_self_add
+    rw [Set.indicator_of_mem hvF]
+    -- Proposition 26, and Remark 8: `q ≥ e^{β(M-1)α}` on `S^α`.
+    have h26v := h26 β hβ μs hsprob hsinv v hvS hvhat
+    have hexp : Real.exp (-β * ((N : ℝ) - 1)) = 1 / y := by
+      rw [hy, one_div (Real.exp _), ← Real.exp_neg]
+      congr 1
+      ring
+    rw [hexp] at h26v
+    have hqv : ENNReal.ofReal z ≤ ENNReal.ofReal (biasedTotalRate γ β v) :=
+      ENNReal.ofReal_le_ofReal (exp_le_biasedTotalRate hM (by omega) hγ h hα hβ hvS)
+    calc μs {v} / ENNReal.ofReal (biasedTotalRate γ β v)
+        ≤ ENNReal.ofReal (Ct * (1 / y)) / ENNReal.ofReal z := ENNReal.div_le_div h26v hqv
+      _ = ENNReal.ofReal (Ct * (1 / y) / z) := (ENNReal.ofReal_div_of_pos hz0).symm
+      _ = ENNReal.ofReal (Ct / (y * z)) := by
+          congr 1
+          rw [mul_one_div, div_div]
+  have hBup : B ≤ ENNReal.ofReal (((KF : ℝ) * Ct + 1) / (y * z)) := by
+    calc B ≤ ∑' v, (F.indicator (fun _ => ENNReal.ofReal (Ct / (y * z))) v
+            + μs {v} * ENNReal.ofReal (1 / (y * z))) := by
+          rw [hB]
+          exact ENNReal.tsum_le_tsum hpt
+      _ = KF * ENNReal.ofReal (Ct / (y * z)) + ENNReal.ofReal (1 / (y * z)) := by
+          rw [ENNReal.tsum_add, ENNReal.tsum_mul_right, tsum_measure_singleton μs, one_mul,
+            tsum_eq_sum (s := hFfin.toFinset)
+              (fun v hv => Set.indicator_of_notMem (by simpa using hv) _),
+            Finset.sum_congr rfl fun v hv =>
+              Set.indicator_of_mem ((Set.Finite.mem_toFinset hFfin).1 hv) _,
+            Finset.sum_const, nsmul_eq_mul]
+      _ = ENNReal.ofReal (((KF : ℝ) * Ct + 1) / (y * z)) := by
+          rw [add_div, ENNReal.ofReal_add (by positivity) (by positivity), mul_div_assoc,
+            ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_natCast]
+  -- Putting the two together.
+  have hfinal : μ Lᶜ ≤ ENNReal.ofReal (C * Real.exp (-β * (((M : ℝ) - 1) * α))) := by
+    calc μ Lᶜ ≤ B / A := hLc
+      _ ≤ ENNReal.ofReal (((KF : ℝ) * Ct + 1) / (y * z))
+            / ENNReal.ofReal ((1 / (1 + mn)) ^ K / (mn * y)) := ENNReal.div_le_div hBup hAlow
+      _ = ENNReal.ofReal ((((KF : ℝ) * Ct + 1) / (y * z)) / ((1 / (1 + mn)) ^ K / (mn * y))) :=
+          (ENNReal.ofReal_div_of_pos (by positivity)).symm
+      _ = ENNReal.ofReal (C * Real.exp (-β * (((M : ℝ) - 1) * α))) := by
+          congr 1
+          rw [neg_mul, Real.exp_neg, ← hz, hC, one_div_pow]
+          field_simp
+  have hcompl := prob_compl_eq_one_sub (μ := μ) (measurableSet_profile Lᶜ)
+  rw [compl_compl] at hcompl
+  rw [hcompl, ENNReal.ofReal_sub _ (mul_nonneg (by linarith) (Real.exp_pos _).le),
+    ENNReal.ofReal_one]
+  exact tsub_le_tsub_left hfinal 1
+
+end Theorem271
 
 end Bias
 
