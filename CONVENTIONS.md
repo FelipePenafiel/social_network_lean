@@ -130,19 +130,26 @@ need them and keep them anyway, written `_hM` and `_hN`: the paper states them u
 hypotheses, so the Lean statement does too, and the underscore records that this particular
 proof did not have to use them.
 
-## 5. `sorry` and `axiom`
+## 5. `sorry`, and citations as hypotheses
 
 The library is **not** `sorry`-free, by design: it states every numbered result of the
 paper, and the ones whose proofs are not formalised carry a `sorry`. What is not
 allowed is a `sorry` leaking into a result claimed complete, and CI enforces that.
 
 A `sorry` says *this is work someone could do*. Where that is false — the statement is
-cited from outside the paper and nothing in this library could ever discharge it — the
-declaration is an `axiom` instead, so that it does not sit in the inventory of
-outstanding work pretending to be pickable. There are two, both Theorem 5.3 of [LM22];
-`FOR-THE-AUTHORS.md` §1.3 says why there have to be two.
+cited from outside the paper and nothing in this library proves it — it is stated as a
+`Prop`, and the theorems that need it take it as a hypothesis, so that it does not sit
+in the inventory of outstanding work pretending to be pickable. There are two, both
+Theorem 5.3 of [LM22], taken by Theorems 3 and 31 as `hLM22`; `FOR-THE-AUTHORS.md` §1.3
+says why there have to be two.
 
-CI gates both: no declaration claimed complete may reach `sorryAx` or either axiom.
+**The library declares no `axiom`.** An axiom is assumed by every result that reaches
+it, and its statement appears in none of theirs; a hypothesis is part of the statement
+of every result that uses it. `scripts/status.py` refuses an `axiom` in the sources, and
+a result counted as proved whose statement takes one of the two citations.
+
+CI gates the rest: no declaration claimed complete may reach `sorryAx`, or any axiom
+beyond Lean's own three.
 
 It also gates the *other* warnings: a `sorry` is the only warning the build may emit.
 A deprecation, an unused hypothesis, a section variable that no longer belongs — each is
@@ -193,10 +200,25 @@ python3 blueprint/check_decls.py   # the same name check against plasTeX's own l
 
 `scripts/status.py` refuses a `sorry` that no blueprint node accounts for, a Lean name
 the blueprint cites that the library does not declare, an unproved statement with
-no recorded reason, and a formalised proof that the blueprint's audit section does not
-classify. The CI axiom check is generated from the same source, so a
-`\leanok` that has not been earned fails the build rather than going unnoticed.
+no recorded reason, a formalised proof that the blueprint's audit section does not
+classify, an `axiom`, and a result that takes a citation as a hypothesis while its
+node does not rest on that citation. The CI axiom check is generated from the same
+source, so a `\leanok` that has not been earned fails the build rather than going
+unnoticed.
 
 `blueprint/blueprint.md` is the engineering companion and carries no statement tables —
 only the audit of what Mathlib does and does not provide, with exact names, files and
 line numbers, checked against the pinned revision.
+
+## 8. The main results, and the examples
+
+`SocialNetwork/MainResults.lean` restates the main theorems of the paper in one place, each
+proved by the library declaration that formalises it, so that a reader can check the
+statements against the paper without the rest of the library. A change to the statement of
+a main theorem has to be made there too, or the file stops compiling.
+
+`SocialNetwork/Examples.lean` evaluates the definitions on small cases and exhibits what the
+hypotheses of the main theorems ask for. Lean checks proofs, not definitions, and a theorem
+whose hypotheses nothing satisfies is true and says nothing; a new definition, or a new
+hypothesis on a main theorem, gets an example there. What the file does not yet check is
+listed in its header.

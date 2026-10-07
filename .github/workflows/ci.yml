@@ -74,7 +74,8 @@ jobs:
 
       - name: Check axioms of the completed results
         # Every declaration checked here is claimed to be fully proved.  If one of them
-        # starts depending on `sorryAx`, the claim is false and the build must fail.
+        # starts depending on `sorryAx`, or on any axiom beyond Lean's own three, the claim
+        # is false and the build must fail.
         #
         # The list is GENERATED from the blueprint: it is exactly the declarations cited
         # by a node the dependency graph resolves to proved or stated.  So a `\leanok`
@@ -83,7 +84,8 @@ jobs:
         # by hand.  Declarations no node cites are listed in `scripts/status.py`.
         run: |
           python3 scripts/status.py --axioms CheckAxioms.lean
-          echo "checking $(grep -c '^#print axioms' CheckAxioms.lean) declarations"
+          checked=$(grep -c '^#print axioms' CheckAxioms.lean)
+          echo "checking $checked declarations"
           # `set -o pipefail` matters: without it the pipe into `tee` masks a non-zero
           # exit from `lean`, and a name that no longer resolves is then not checked.
           set -o pipefail
@@ -92,27 +94,21 @@ jobs:
             echo "::error::a result declared complete depends on sorryAx"
             exit 1
           fi
-          # `exitTime_approx_exponential`, and its biased twin, are Theorem 5.3 of
-          # [LM22], declared as axioms because nothing in this library can discharge
-          # them.  Results checked above claim to be proved outright, so none may reach
-          # either.
-          if grep -q 'exitTime_approx_exponential' axioms.txt; then
-            echo "::error::a result declared complete depends on an [LM22] axiom"
+          # The library declares no axiom: the two citations of [LM22] are hypotheses of
+          # the theorems that use them (CONVENTIONS.md §5).  So Lean's own three are the
+          # only axioms a complete result may reach.  A long list wraps over several
+          # lines, so the output is read flattened, and every declaration has to be
+          # accounted for, or a change of format would pass the check unread.
+          flat=$(tr '\n' ' ' < axioms.txt | tr -s ' ')
+          reported=$(echo "$flat" | grep -o 'depends on axioms\|does not depend on any axioms' | wc -l)
+          if [ "$reported" -ne "$checked" ]; then
+            echo "::error::$checked declarations checked, and $reported reported by #print axioms"
             exit 1
           fi
-          echo "every completed result is sorry-free, and free of the [LM22] axioms"
-
-      - name: Inventory of the results that rest on the [LM22] axiom
-        # Not a gate: this records which statements are complete *modulo* the one external
-        # citation, so that the trust surface stays visible in the build log.
-        run: |
-          cat > CheckCited.lean <<'EOF'
-          import SocialNetwork
-          #print axioms SocialNetwork.metastability
-          #print axioms SocialNetwork.Bias.biasedMetastability
-          EOF
-          echo "### Proved modulo Theorem 5.3 of [LM22]" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          set -o pipefail
-          lake env lean CheckCited.lean | tee -a "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if echo "$flat" | grep -o 'depends on axioms: \[[^]]*\]' | sed 's/.*\[//; s/\]//' \
+              | tr ',' '\n' | tr -d ' ' | sort -u | grep -vxE 'propext|Classical\.choice|Quot\.sound'
+          then
+            echo "::error::a result declared complete depends on an axiom beyond Lean's own"
+            exit 1
+          fi
+          echo "every completed result is sorry-free, and depends on no axiom beyond Lean's own"

@@ -7,7 +7,8 @@ this file is current, and refuses an obstruction that is not documented below.*
 Three words are used throughout, and they mean different things.
 
 - **proved** — the proof is written in Lean *and* everything it rests on is
-  proved. This is what the build checks: no `sorryAx`, and neither [LM22] axiom.
+  proved. This is what the build checks: no `sorryAx`, no axiom beyond Lean's
+  own, and no hypothesis standing for a citation of [LM22].
 - **rests on** — the proof is written, but an upstream statement is not. It
   compiles, inherits `sorryAx`, and turns green the moment its ancestors do,
   with no edit. Writing a proof before its ancestors is deliberate here: it is
@@ -39,24 +40,24 @@ A repair is new mathematics and is the authors' to write, not the formalisation'
 
 ### Cited from outside the paper (2)
 
-Not results of arXiv:2607.19651 at all.
-Nothing in this library can discharge them, so no amount of work here will close them.
+Not results of arXiv:2607.19651 at all, and nothing in this library proves them.
+Each is stated as a `Prop`, and the results that need it take it as a hypothesis, so the citation is part of their statement.
 
 | Statement | Lean | Why |
 |---|---|---|
-| Proposition 12 | `exitTime_approx_exponential` +1 | Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry` |
-| Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is inconsistent |
+| Proposition 12 | `ExitTimeApproxExponential` +1 | Theorem 5.3 of [LM22].  A `Prop` that Theorem 3 takes as a hypothesis |
+| Proposition 12, biased twin | `Bias.BiasedExitTimeApproxExponential` | the same citation over `Profile N M`.  Two are needed because the abstract statement is false |
 
 ## 2. How far the formalisation has got
 
 | | statements of the paper | auxiliary | total |
 |---|---:|---:|---:|
-| Proved | 34 | 34 | 68 |
+| Proved | 34 | 36 | 70 |
 | Proof written, resting on an unproved statement | 14 | 2 | 16 |
 | Definitions and constructions | 15 | 4 | 19 |
 | Stated in Lean, unproved | 2 | 0 | 2 |
-| Axioms ([LM22]) | 2 | 0 | 2 |
-| **Total** | **67** | **40** | **107** |
+| Assumed ([LM22]) | 2 | 0 | 2 |
+| **Total** | **67** | **42** | **109** |
 
 The rows above are blueprint nodes, and several of them decompose a single statement of
 the paper. Counted as the paper numbers them, 60 statements and displayed equations
@@ -104,7 +105,7 @@ are covered, and all 60 of them are stated in Lean.
 | Corollary 10 | `measure_zero_le` | proof written, rests on Lemma 20 |
 | Corollary 11 | `tendsto_hittingTime_ladderSet_zero` +1 | proof written, rests on Lemma 20 |
 | Remark 6 | `probHittingLadderFirst` +7 | proved |
-| Proposition 12 | `exitTime_approx_exponential` +1 | axiom — cited from outside the paper |
+| Proposition 12 | `ExitTimeApproxExponential` +1 | assumed — cited from outside the paper |
 | Lemma 13 | `probHittingGT_ladderSet_le` | proof written, rests on Lemma 20 |
 | Lemma 14 | `le_probHittingGT_consensusOther` +13 | proved |
 | Corollary 15 | `le_characteristicTime` | proved |
@@ -132,7 +133,7 @@ are covered, and all 60 of them are stated in Lean.
 | Lemma 29 | `Bias.le_biasedProbHittingGT` +11 | proved |
 | Corollary 30 | `Bias.le_biasedCharacteristicTime` +1 | proved |
 | Theorem 31 | `Bias.biasedMetastability` | proof written, rests on Proposition 23; Proposition 12, biased twin |
-| Proposition 12, biased twin | `Bias.biasedExitTime_approx_exponential` | axiom — cited from outside the paper |
+| Proposition 12, biased twin | `Bias.BiasedExitTimeApproxExponential` | assumed — cited from outside the paper |
 
 ### Auxiliary results, with no counterpart in the paper
 
@@ -145,6 +146,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | S is stable under expression | `IsState.express` | proved |
 | Public opinion and trust, Section 4 | `publicOpinion` +1 | stated |
 | How the process is built in Lean | `ctsPathMeasure` +10 | stated |
+| The skeleton is the jump chain of the process | `map_ctsPathMeasure_jumps` +5 | proved |
 | Measurability of the hitting times | `measurable_hittingTimeCts` +8 | proved |
 | The race between the clocks | `clockSplit` +24 | proved |
 | A jump-hold chain with a slow sub-family does not explode | `jumpHoldMeasure` +28 | proved |
@@ -168,6 +170,7 @@ witnesses that keep a vacuous statement from passing for a theorem.
 | the greedy run does not revisit `u` | `skeleton_ne_of_greedy` +3 | proof written, rests on Lemma 20 |
 | The predecessors of the zero matrix | `zeroPredecessor` +7 | proved |
 | Restarting the process at the first jump | `shiftStepPath` +7 | proved |
+| The mean exit time is positive and finite | `expHittingTimeCts_consensusSetOther_lt_top` +9 | proved |
 | The clock of a greedy run | `exp_le_totalRate` +7 | proved |
 | the display inside the proof of Theorem 2.2 | `probHittingGT_ladderSet_le_of_ne_zero` | proof written, rests on Lemma 20 |
 | equation (19) | `probHittingGT_ladderSet_zero_le` | proved |

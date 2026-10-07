@@ -57,8 +57,9 @@ HEADNOTE = {
         "not.  A repair is new mathematics and is the authors' to write, not the "
         "formalisation's to guess: each of these is left carrying a `sorry` on purpose.",
     CITED:
-        "Not results of arXiv:2607.19651 at all.  Nothing in this library can discharge "
-        "them, so no amount of work here will close them.",
+        "Not results of arXiv:2607.19651 at all, and nothing in this library proves them.  "
+        "Each is stated as a `Prop`, and the results that need it take it as a hypothesis, "
+        "so the citation is part of their statement.",
     BLOCKED_ON_MATHLIB:
         "The paper's proof is fine; Mathlib has no theory of the object it uses.  "
         "Closing these means contributing to Mathlib, and `blueprint/blueprint.md` is "
@@ -87,12 +88,12 @@ REASONS: dict[str, tuple[str, str]] = {
     # -- citations ----------------------------------------------------------
     "prop12": (
         CITED,
-        "Theorem 5.3 of [LM22].  Declared as an `axiom`, not a `sorry`",
+        "Theorem 5.3 of [LM22].  A `Prop` that Theorem 3 takes as a hypothesis",
     ),
     "prop12-biased": (
         CITED,
         "the same citation over `Profile N M`.  Two are needed because the abstract "
-        "statement is inconsistent",
+        "statement is false",
     ),
     # -- Mathlib: nothing.
 }
@@ -129,6 +130,15 @@ NAME_OVERRIDE: dict[str, str] = {
     "aux-consensus-ladder": "from a consensus state to a ladder",
     "lem20-opening": "the opening step",
     "lem20-closing": "the closing step",
+}
+
+# The citations, each stated as a ``Prop`` that the results needing it take as a hypothesis.
+# A declaration whose statement mentions one assumes it, and the node citing that
+# declaration has to rest on the citation's node: ``--check`` fails otherwise, so a result
+# cannot be counted as proved while its statement assumes [LM22].
+ASSUMED: dict[str, str] = {
+    "prop12": "SocialNetwork.ExitTimeApproxExponential",
+    "prop12-biased": "SocialNetwork.Bias.BiasedExitTimeApproxExponential",
 }
 
 # A biased proof that Appendix C gives "as the proof of" an unbiased one cites it in
@@ -281,6 +291,19 @@ AXIOM = re.compile(r"^\s*axiom\s+([A-Za-z_][A-Za-z0-9_.'!?]*)")
 SORRY = re.compile(r"^\s*sorry\s*$")
 
 
+NAMED_ARG = re.compile(r"\(\s*[A-Za-z_][A-Za-z0-9_.']*\s*:=")
+
+
+def statement_part(line: str) -> tuple[str, bool]:
+    """The part of a line before the ``:=`` that ends a statement, and whether it ends there.
+
+    A named argument ``(N := N)`` is not the end of the statement."""
+    plain = NAMED_ARG.sub("(", line)
+    if ":=" in plain:
+        return plain.split(":=")[0], True
+    return plain, plain.rstrip().endswith(" where")
+
+
 AUDIT_OPEN = "\\textbf{Follow the paper's proof}"
 AUDIT_CLOSE = "\\textbf{No proof departs from the paper"
 
@@ -300,21 +323,30 @@ def audit_groups() -> str:
     return text[start:end]
 
 
-def declarations() -> tuple[set[str], set[str], set[str]]:
-    """Every declaration in the library, those that are axioms, those with a bare ``sorry``.
+def declarations() -> tuple[set[str], set[str], set[str], dict[str, str]]:
+    """Every declaration in the library, those that are axioms, those with a bare ``sorry``,
+    and the statement of each.
 
     A ``sorry`` is attributed to the declaration whose block it falls in, which is the
     last one opened before it.  That is exact for this library, where every ``sorry`` is
-    the whole proof of the declaration above it.
+    the whole proof of the declaration above it.  The statement is the text from the
+    declaration's name to its first ``:=``.
     """
     found: set[str] = set()
     axioms: set[str] = set()
     sorries: set[str] = set()
+    statements: dict[str, str] = {}
     for path in sorted(SOURCES.glob("*.lean")):
         stack: list[str] = []
         structure: str | None = None
         current: str | None = None
+        reading: str | None = None
         for line in path.read_text(encoding="utf-8").splitlines():
+            if reading is not None:
+                text, ends = statement_part(line)
+                statements[reading] += "\n" + text
+                if ends:
+                    reading = None
             if structure is not None:
                 if line.strip() and not line[0].isspace():
                     structure = None
@@ -342,11 +374,15 @@ def declarations() -> tuple[set[str], set[str], set[str]]:
                 full = ".".join(stack + [name]) if stack else name
                 found.add(full)
                 current = full
+                text, ends = statement_part(line[m.end():])
+                statements[full] = text
+                if not ends:
+                    reading = full
                 if AXIOM.match(line):
                     axioms.add(full)
                 if STRUCTURE.match(line) and line.rstrip().endswith("where"):
                     structure = full
-    return found, axioms, sorries
+    return found, axioms, sorries, statements
 
 
 def is_prose(node: Node) -> bool:
@@ -370,7 +406,7 @@ def proof_uses(node: Node) -> list[str]:
     return [u for u in node.uses if (node.label, u) not in TRANSPOSED]
 
 
-def resolve(nodes: list[Node], axioms: set[str], sorries: set[str]) -> dict[str, str]:
+def resolve(nodes: list[Node], sorries: set[str]) -> dict[str, str]:
     """The status of every node, as a least fixed point over ``\\uses``.
 
     ``proved`` means the proof is written *and* everything it uses is proved, which is
@@ -378,13 +414,14 @@ def resolve(nodes: list[Node], axioms: set[str], sorries: set[str]) -> dict[str,
     does not have to wait for its ancestors: a written proof whose upstream lemmas still
     carry a ``sorry`` compiles and inherits ``sorryAx``, so the two questions are kept
     apart.  A cycle in ``\\uses`` would be a circular argument and resolves to *not*
-    proved rather than to a false green.
+    proved rather than to a false green.  A citation of ``ASSUMED`` is *assumed*: it is
+    not proved, and what rests on it rests on an assumption.
     """
     by_label = {n.label: n for n in nodes}
     status: dict[str, str] = {}
     for node in nodes:
-        if any(name in axioms for name in node.lean):
-            status[node.label] = "axiom"
+        if node.label in ASSUMED:
+            status[node.label] = "assumed"
         elif any(name in sorries for name in node.lean):
             status[node.label] = "unproved"
         elif is_prose(node):
@@ -410,6 +447,19 @@ def resolve(nodes: list[Node], axioms: set[str], sorries: set[str]) -> dict[str,
         if status[node.label] == "pending":
             status[node.label] = "rests on"
     return status
+
+
+def reaches(node: Node, by_label: dict[str, Node]) -> set[str]:
+    """Every node the proof of ``node`` rests on, at any distance."""
+    seen: set[str] = set()
+    stack = proof_uses(node)
+    while stack:
+        label = stack.pop()
+        if label in seen or label not in by_label:
+            continue
+        seen.add(label)
+        stack.extend(proof_uses(by_label[label]))
+    return seen
 
 
 def blockers(node: Node, by_label: dict[str, Node], status: dict[str, str]) -> list[str]:
@@ -495,7 +545,8 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     w("Three words are used throughout, and they mean different things.")
     w("")
     w("- **proved** — the proof is written in Lean *and* everything it rests on is")
-    w("  proved. This is what the build checks: no `sorryAx`, and neither [LM22] axiom.")
+    w("  proved. This is what the build checks: no `sorryAx`, no axiom beyond Lean's")
+    w("  own, and no hypothesis standing for a citation of [LM22].")
     w("- **rests on** — the proof is written, but an upstream statement is not. It")
     w("  compiles, inherits `sorryAx`, and turns green the moment its ancestors do,")
     w("  with no edit. Writing a proof before its ancestors is deliberate here: it is")
@@ -540,7 +591,7 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
     # --- how far it has got ------------------------------------------------
     w("## 2. How far the formalisation has got")
     w("")
-    counts = {k: 0 for k in ("proved", "rests on", "unproved", "axiom", "stated", "not stated")}
+    counts = {k: 0 for k in ("proved", "rests on", "unproved", "assumed", "stated", "not stated")}
     for node in paper + auxiliary:
         counts[status[node.label]] += 1
     w("| | statements of the paper | auxiliary | total |")
@@ -550,7 +601,7 @@ def render(nodes: list[Node], status: dict[str, str]) -> str:
         ("rests on", "Proof written, resting on an unproved statement"),
         ("stated", "Definitions and constructions"),
         ("unproved", "Stated in Lean, unproved"),
-        ("axiom", "Axioms ([LM22])"),
+        ("assumed", "Assumed ([LM22])"),
         ("not stated", "Not stated in Lean"),
     ):
         a = sum(1 for n in paper if status[n.label] == key)
@@ -602,7 +653,7 @@ def status_cell(node: Node, by_label: dict[str, Node], status: dict[str, str],
         names = "; ".join(display(by_label[b], shared)
                           for b in blockers(node, by_label, status))
         return f"proof written, rests on {names}"
-    if state in ("unproved", "axiom", "not stated") and node.label in REASONS:
+    if state in ("unproved", "assumed", "not stated") and node.label in REASONS:
         category = REASONS[node.label][0]
         return f"{state} — {category[0].lower()}{category[1:]}"
     return state
@@ -759,7 +810,7 @@ def main() -> int:
     args = parser.parse_args()
 
     nodes = parse_blueprint()
-    known, axioms, sorries = declarations()
+    known, axioms, sorries, statements = declarations()
 
     problems: list[str] = []
     # Every statement has to be named, or it silently inherits the name of the one above.
@@ -780,13 +831,38 @@ def main() -> int:
             problems.append(f"{node.label}: its proof is formalised, and the audit of "
                             f"Section \"What the formalised proofs check\" does not name it")
 
-    status = resolve(nodes, axioms, sorries)
+    # A citation is a hypothesis, never an axiom: an axiom is assumed by every result that
+    # happens to reach it, and its statement is nowhere in theirs.
+    for name in sorted(axioms):
+        problems.append(f"{name} is declared as an axiom; state it as a Prop and take it as "
+                        f"a hypothesis (CONVENTIONS.md §5)")
+    by_label = {n.label: n for n in nodes}
+    for label, assumption in ASSUMED.items():
+        if label not in by_label or assumption not in by_label[label].lean:
+            problems.append(f"{label}: ASSUMED names {assumption}, which the node does not cite")
+    for node in nodes:
+        if node.label in ASSUMED:
+            continue
+        for cited in node.lean:
+            for label, assumption in ASSUMED.items():
+                short = assumption.rsplit(".", 1)[-1]
+                if (re.search(rf"\b{short}\b", statements.get(cited, ""))
+                        and label not in reaches(node, by_label)):
+                    problems.append(f"{node.label}: {cited} takes {short} as a hypothesis, "
+                                    f"and the node does not rest on {label}")
+    for cited in INTERNAL:
+        for assumption in ASSUMED.values():
+            short = assumption.rsplit(".", 1)[-1]
+            if re.search(rf"\b{short}\b", statements.get(cited, "")):
+                problems.append(f"{cited} is claimed complete and takes {short} as a hypothesis")
+
+    status = resolve(nodes, sorries)
     if args.axioms:
         Path(args.axioms).write_text(axiom_check(nodes, status), encoding="utf-8")
         print(f"wrote {args.axioms}")
         return 0
     for node in nodes:
-        if status[node.label] in ("unproved", "axiom", "not stated") and node.label not in REASONS:
+        if status[node.label] in ("unproved", "assumed", "not stated") and node.label not in REASONS:
             problems.append(f"{node.label} is {status[node.label]} and scripts/status.py "
                             f"records no reason for it")
 

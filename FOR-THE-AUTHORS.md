@@ -13,7 +13,7 @@ every statement.  Each entry names the blueprint node that holds the mathematics
 |---|---|---|
 | [§1.1](#11-lemma-20-is-false-as-printed-for-m--4) | **Lemma 20** | false as printed for `M ≥ 4`; Proposition 7, and through it Theorems 2 and 3, are written from it |
 | [§1.2](#12-proposition-23-rests-on-statements-the-paper-does-not-give) | **Proposition 23** | its proof goes through biased analogues of Lemmas 19 and 20 that the paper does not state |
-| [§1.3](#13-proposition-12-is-assumed-twice) | **Proposition 12** | a citation of [LM22], declared as an axiom — once for each model |
+| [§1.3](#13-proposition-12-is-assumed-twice) | **Proposition 12** | a citation of [LM22], taken as a hypothesis — once for each model |
 | [§2.1](#21-equation-6) | Equation (6) | the second condition is not stable under `π_α^{a,o}` |
 | [§2.2](#22-proposition-7) | Proposition 7 | the written route needs `⋃_o S^o` to be stable, which fails for `M ≥ 4`; the final "by definition" hides an argument |
 | [§2.3](#23-proposition-9) | Proposition 9 | "without visiting `u`" does not follow from Proposition 7; the hypothesis `u ∈ S` is missing |
@@ -101,21 +101,23 @@ from Proposition 23.
 
 ### 1.3 Proposition 12 is assumed, twice
 
-*Blueprint:* `prop12`, `prop12-biased`. *Lean:* `SocialNetwork.exitTime_approx_exponential`,
-`SocialNetwork.Bias.biasedExitTime_approx_exponential`, both `axiom`s.
+*Blueprint:* `prop12`, `prop12-biased`. *Lean:* `SocialNetwork.ExitTimeApproxExponential`,
+`SocialNetwork.Bias.BiasedExitTimeApproxExponential`, both `Prop`s.
 
 Proposition 12 is Theorem 5.3 of [LM22], a metastability estimate for a general strong
-Markov process, and nothing in this repository can prove it.  It is declared as an
-`axiom` rather than left as a `sorry`, so that it is not mistaken for open work.
+Markov process, and nothing in this repository proves it.  It is stated as a
+proposition, and Theorems 3 and 31 take it as the hypothesis `hLM22`, rather than
+leaving a `sorry` that would be mistaken for open work: in Lean, Theorem 3 reads
+"Proposition 12 implies Theorem 3".
 
-It has to be declared twice, once for each process.  Stated abstractly, over an
-arbitrary family of measures and hitting time, it would be inconsistent: the zero
-measure with an empty ladder set satisfies (15)–(18) vacuously and falsifies the
-conclusion at `t = 0`.  The strong Markov property is what excludes this, and it
-cannot be expressed here.  Theorem 31 therefore needs a biased Proposition 12, which
-Appendix C does not state ("the proof of Theorem 31 follows exactly as the proof of
-Theorem 3").  The two axioms are the same citation, applied to two processes.  CI
-fails if any result declared complete depends on either.
+It has to be stated twice, once for each process.  Stated abstractly, over an
+arbitrary family of measures and hitting time, it would be false: the zero measure
+with an empty ladder set satisfies (15)–(18) vacuously and falsifies the conclusion at
+`t = 0`, so a theorem assuming it would prove nothing.  The strong Markov property is
+what excludes this, and it cannot be expressed here.  Theorem 31 therefore needs a
+biased Proposition 12, which Appendix C does not state ("the proof of Theorem 31
+follows exactly as the proof of Theorem 3").  The two statements are the same
+citation, applied to two processes.
 
 ---
 
