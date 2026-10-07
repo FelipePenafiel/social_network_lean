@@ -154,4 +154,11 @@ lake build
 
 ## Licence
 
-Apache 2.0; see [`LICENSE`](LICENSE).
+Apache 2.0, which covers the code and the documentation; see [`LICENSE`](LICENSE).
+
+The two papers are included for reference and are not covered by it.
+[`2607.19651v1.pdf`](2607.19651v1.pdf) (F. Penafiel and K. Laxa,
+[arXiv:2607.19651v1](https://arxiv.org/abs/2607.19651v1)) and [`GL24.pdf`](GL24.pdf)
+(A. Galves and K. Laxa, [arXiv:2202.12871v4](https://arxiv.org/abs/2202.12871v4)) are
+distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), the licence of
+their arXiv deposits.
