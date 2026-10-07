@@ -247,6 +247,32 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
 \end{definition}
 
 \aux{Lemma}
+\begin{lemma}[The skeleton is the jump chain of the process]
+  \label{aux-jump-chain}
+  \lean{SocialNetwork.map_ctsPathMeasure_jumps,
+    SocialNetwork.ctsHistoryMeasure_jumps_singleton,
+    SocialNetwork.ctsHistoryMeasure_map_jumps, SocialNetwork.eq_of_map_frestrictLe,
+    SocialNetwork.Bias.map_biasedCtsPathMeasure_jumps,
+    SocialNetwork.Bias.biasedCtsHistoryMeasure_jumps_singleton}
+  \leanok
+  \uses{def3, aux-construction}
+  The sequence $(A_n, O_n)_n$ of pairs expressed by the process
+  $\Uproc{u}$ has the law of the skeleton $\Uskel{u}$ of Definition~3; and
+  likewise for the biased process and the biased skeleton.
+\end{lemma}
+\begin{proof}
+  \leanok
+  On the first $n + 1$ steps, both laws give a prescribed sequence of pairs the
+  product of the one-step probabilities along it: the holding times integrate
+  out, each being drawn independently of the pair it follows.  Two laws on
+  sequences that agree on every initial segment are equal, by the uniqueness of
+  a projective limit.  \textbf{No counterpart in the paper}, where the skeleton
+  is defined as $\Uskel{u}_n = \Uproc{u}_{T_n}$; here the two are constructed
+  separately, by two applications of the Ionescu--Tulcea theorem, and this is
+  where they meet.
+\end{proof}
+
+\aux{Lemma}
 \begin{lemma}[Measurability of the hitting times]
   \label{aux-measurable-hitting}
   \lean{SocialNetwork.measurable_hittingTimeCts,
@@ -1211,9 +1237,9 @@ $u = (u(a,o))_{a \in \actors, o \in \opinions}$ of social pressures.
   \uses{prop12, lem13, lem14, cor15,
     aux-ladder-nonempty}
   Apply \ref{prop12} with the bounds of \ref{lem13} and~\ref{lem14} and
-  \ref{cor15}. \emph{Formalised, but neither sorry-free nor axiom-free}: the
-  assembly below is complete in Lean, and what it inherits is \texttt{sorryAx}
-  from \ref{lem13} alone together with the [LM22] axiom of \ref{prop12}.
+  \ref{cor15}. \emph{Formalised, assuming \ref{prop12}, and not sorry-free}:
+  the assembly below is complete in Lean, takes \ref{prop12} as a hypothesis,
+  and inherits \texttt{sorryAx} from \ref{lem13} alone.
 
   Section~5.3 checks the four assumptions in half a page; each is one lemma:
   \begin{itemize}
@@ -2075,7 +2101,7 @@ process pointwise.
 \paper{Proposition 12}
 \begin{proposition}[The exponential-approximation criterion]
   \label{prop12}
-  \lean{SocialNetwork.exitTime_approx_exponential, SocialNetwork.IsCharacteristicTime}
+  \lean{SocialNetwork.ExitTimeApproxExponential, SocialNetwork.IsCharacteristicTime}
   \leanok
   \uses{def2, def1}
   Fix $o$.  Let $c_\beta$ be the positive real with
@@ -2097,12 +2123,13 @@ process pointwise.
   from two states of $C^o$ agree to the same order.
 \end{proposition}
 \begin{proof}
-  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Declared as an
-  axiom}, not proved.  It is not a result of this paper: its content is a
-  metastability estimate for a general time-homogeneous strong Markov
-  process, and nothing inside this library can discharge it.  Making it an
-  \texttt{axiom} rather than a \texttt{sorry} states that plainly, and the CI
-  fails if any result claimed complete reaches it.
+  This is a consequence of Theorem~5.3 of [LM22].  \textbf{Assumed}, not
+  proved.  It is not a result of this paper: its content is a metastability
+  estimate for a general time-homogeneous strong Markov process, and nothing
+  in this library proves it.  It is stated in Lean as a proposition, and
+  \ref{thm3} takes it as a hypothesis: the citation is part of the statement
+  of every result that uses it, and \texttt{scripts/status.py} fails if a
+  result counted as proved takes it.
 
   The Lean statement is not the paper's display verbatim.  In the paper
   $\varepsilon_1, \varepsilon_2, s_1, s_2$ are introduced before $\beta$, but
@@ -2114,13 +2141,62 @@ process pointwise.
   \eqref{eq:h15}--\eqref{eq:h18} are required only above a threshold
   $\beta_1$.
 
-  The axiom is also attached to \emph{this} process on purpose.  Stated for
-  an arbitrary family of measures and an arbitrary hitting time it would be
-  \textbf{inconsistent}: the zero measure with $\ladder^o = \emptyset$
-  satisfies \eqref{eq:h15}--\eqref{eq:h18} vacuously and falsifies the
-  conclusion at $t = 0$.  What excludes that is the strong Markov property,
-  which is the content of [LM22] and is not expressible here.  Theorem~31
-  therefore needs its own twin; one axiom cannot serve both models.
+  The statement is also attached to \emph{this} process on purpose.  Stated
+  for an arbitrary family of measures and an arbitrary hitting time it would
+  be \textbf{false}: the zero measure with $\ladder^o = \emptyset$ satisfies
+  \eqref{eq:h15}--\eqref{eq:h18} vacuously and falsifies the conclusion at
+  $t = 0$, and a theorem assuming it would assume nothing it could use.  What
+  excludes that is the strong Markov property, which is the content of [LM22]
+  and is not expressible here.  Theorem~31 therefore needs its own twin; one
+  statement cannot serve both models.
+
+  The conclusion divides one mean exit time by another.  Both are positive and
+  finite (\ref{aux-exit-time-finite}), so the ratio is one of two positive
+  reals, as the paper reads it.
+\end{proof}
+
+\aux{Lemma}
+\begin{lemma}[The mean exit time is positive and finite]
+  \label{aux-exit-time-finite}
+  \lean{SocialNetwork.expHittingTimeCts_consensusSetOther_lt_top,
+    SocialNetwork.expHittingTimeCts_consensusSetOther_pos,
+    SocialNetwork.expHittingTimeCts_lt_top, SocialNetwork.kacAvoid_le_pow,
+    SocialNetwork.tsum_kacAvoid_ne_top,
+    SocialNetwork.ctsPathMeasure_history_holdingTime_le_mul,
+    SocialNetwork.hittingTimeCts_le_tsum,
+    SocialNetwork.Bias.biasedExpHittingTimeCts_consensusSetOther_lt_top,
+    SocialNetwork.Bias.biasedExpHittingTimeCts_consensusSetOther_pos,
+    SocialNetwork.Bias.biasedExpHittingTimeCts_lt_top}
+  \leanok
+  \uses{def2, eq8}
+  For every $\beta \ge 0$, every $o \in O$ and every $u \in C^o$,
+  $0 < \mathbb{E}(\Rhit{u}(C^{-o})) < \infty$; finiteness holds from every
+  $u \in \Sspace$.  The same holds for the biased process, for
+  $0 < \alpha < \pressone$, from $C_\alpha^o$ and from $S^\alpha$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  \uses{aux-minorisation, aux-biased-minorisation, aux-jump-chain,
+    aux-rate-floor, aux-biased-rate-floor}
+  The exit time is at most the jump time at which the jump chain first enters
+  $C^{-o}$, a sum of holding times.  Fix $o' \ne o$.  By the minorisation of
+  p.~17 (\ref{aux-minorisation}), from every state of $\Sspace$ the skeleton
+  stands on the staircase ladder of $o'$, which lies in $C^{-o}$, after $2N$
+  steps with probability at least some $c > 0$; so it avoids that ladder for
+  $1 + 2Nk$ steps with probability at most $(1 - c)^k$, and by
+  \ref{aux-jump-chain} so does the jump chain of the process.  Whatever the
+  past, a holding time exceeds $k$ with probability at most $e^{-k}$, the rate
+  being at least $M$ on $\Sspace$ (\ref{aux-rate-floor}).  Summing gives a
+  finite mean.  It is positive because from $u \in C^o$ the process sits at
+  $u \notin C^{-o}$ until its first jump.  The biased statement has the same
+  proof, from \ref{aux-biased-minorisation} and \ref{aux-biased-rate-floor}.
+
+  \textbf{No counterpart in the paper}, which divides by the mean exit time
+  in \ref{prop12} and \ref{thm3} without remarking that it is finite.  The
+  Lean statements read it through \texttt{ENNReal.toReal}, which sends
+  $\infty$ to $0$; were it infinite, both statements would be false for large
+  $\beta$, and \ref{thm3}, which takes \ref{prop12} as a hypothesis, would
+  hold vacuously.
 \end{proof}
 
 \aux{Lemma}
@@ -3363,10 +3439,10 @@ process pointwise.
   \leanok
   \uses{prop12-biased, thm3, cor30,
     lem28, lem29, aux-biased-ladder-consensus}
-  As \ref{thm3}, which is all Appendix~C says. \emph{Formalised, but neither
-  sorry-free nor axiom-free}: the assembly is complete in Lean, and inherits
-  \texttt{sorryAx} from \ref{prop23} alone, through \ref{lem28}, together with
-  the second [LM22] axiom, the biased twin \ref{prop12-biased}.
+  As \ref{thm3}, which is all Appendix~C says. \emph{Formalised, assuming
+  \ref{prop12-biased}, and not sorry-free}: the assembly is complete in Lean,
+  takes the biased twin \ref{prop12-biased} as a hypothesis, and inherits
+  \texttt{sorryAx} from \ref{prop23} alone, through \ref{lem28}.
 
   The four assumptions are checked as in Section~5.3, with $\pressone$ replaced
   by $\tfrac{1}{2}\gamma$ throughout:
@@ -3396,7 +3472,7 @@ process pointwise.
 \paper{Proposition 12}
 \begin{proposition}[For the biased process]
   \label{prop12-biased}
-  \lean{SocialNetwork.Bias.biasedExitTime_approx_exponential}
+  \lean{SocialNetwork.Bias.BiasedExitTimeApproxExponential}
   \leanok
   \uses{eq8}
   Under \eqref{eq:h15}--\eqref{eq:h18} read for the biased process, the
@@ -3406,16 +3482,16 @@ process pointwise.
 \end{proposition}
 \begin{proof}
   \uses{prop12}
-  \textbf{An axiom, not a theorem, and the second one this development asks the
-  reader to trust.} Appendix~C never states it: it says only that ``the proof
-  of Theorem~31 follows exactly as the proof of Theorem~3'', and that proof
-  runs through \ref{prop12}, which is stated for the unbiased process alone.
+  \textbf{Assumed, not proved, and the second citation this development
+  assumes}: \ref{thm31} takes it as a hypothesis.  Appendix~C never states it:
+  it says only that ``the proof of Theorem~31 follows exactly as the proof of
+  Theorem~3'', and that proof runs through \ref{prop12}, which is stated for
+  the unbiased process alone.
 
-  One axiom cannot serve both models, for the reason recorded at \ref{prop12}:
-  stated abstractly the assertion is \textbf{inconsistent}, so it has to be
-  attached to a concrete process, and the unbiased axiom is attached to the
-  unbiased one.  Everything resting on this one is listed separately in the CI
-  axiom inventory.
+  One statement cannot serve both models, for the reason recorded at
+  \ref{prop12}: stated abstractly the assertion is \textbf{false}, so it has
+  to be attached to a concrete process, and the unbiased statement is attached
+  to the unbiased one.
 \end{proof}
 
 \chapter{Notes on the formalisation}
@@ -3642,15 +3718,17 @@ Every numbered statement of arXiv:2607.19651 is stated in Lean, and
     through biased analogues of \ref{lem19} and~\ref{lem20} that it does not
     state.
   \item \ref{prop12} and its twin \ref{prop12-biased} are Theorem~5.3 of
-    [LM22], not results of the paper, and are declared as \texttt{axiom}s.  Two
-    are needed because the statement, made abstractly over an arbitrary family
-    of measures, is inconsistent: the zero measure with an empty ladder set
-    satisfies the hypotheses and falsifies the conclusion.  So it is attached to
-    each of the two processes; they are the same citation applied twice.
+    [LM22], not results of the paper.  They are stated as propositions, which
+    the results that need them take as hypotheses.  Two are needed because the
+    statement, made abstractly over an arbitrary family of measures, is false:
+    the zero measure with an empty ladder set satisfies the hypotheses and
+    falsifies the conclusion.  So it is attached to each of the two processes;
+    they are the same citation applied twice.
 \end{itemize}
 
 The proofs that go through them are written out in full all the same, and
-inherit \texttt{sorryAx} or an axiom from them and from nothing else.
+inherit \texttt{sorryAx} from them, or take them as a hypothesis, and depend
+on nothing else.
 \begin{itemize}
   \item From \ref{lem20}: \ref{prop7}, and through it \ref{prop9}, \ref{cor10},
     \ref{cor11}, \ref{lem13}, \ref{thm2-1}, \ref{thm2-2} and~\ref{thm3}.
@@ -3658,7 +3736,7 @@ inherit \texttt{sorryAx} or an axiom from them and from nothing else.
     \ref{lem28}, \ref{thm31} and part~2 of \ref{thm4}.  The paper writes their
     proofs ``as the proof of'' unbiased results; the Lean proofs transpose those
     arguments and do not reach \ref{lem20}.
-  \item From the axioms: \ref{thm3} and~\ref{thm31}.
+  \item Assuming \ref{prop12} or \ref{prop12-biased}: \ref{thm3} and~\ref{thm31}.
 \end{itemize}
 Since \ref{lem20} is false as printed, the assembly of \ref{prop7} will have to be
 adapted to its restatement.  Nothing waits on Mathlib;
@@ -3708,14 +3786,15 @@ N+1$ of \ref{def5-repeat}, \ref{aux-graphical}, and \ref{aux-rate-floor},
 \ref{aux-biased-rate-floor}, \ref{aux-biased-transfer}
 and~\ref{aux-biased-transfer-converse}.
 
-\medskip \noindent\textbf{No counterpart in the paper} (sixteen).
+\medskip \noindent\textbf{No counterpart in the paper} (eighteen).
 \ref{aux-trust}, \ref{aux-shift}, \ref{aux-state-along},
 \ref{aux-ladder-consensus}, \ref{aux-consensus-ladder},
 \ref{aux-ladder-nonempty}, \ref{aux-biased-ladder-nonempty},
 \ref{aux-biased-ladder-consensus}, \ref{aux-biased-ladder-steep},
 \ref{aux-measurable-hitting}, \ref{aux-holding-times}, \ref{aux-restart},
-\ref{aux-doeblin}, \ref{aux-nstep}, \ref{aux-clocks} and
-\ref{aux-noexplosion}, with the plumbing of the sample space.
+\ref{aux-doeblin}, \ref{aux-nstep}, \ref{aux-clocks},
+\ref{aux-noexplosion}, \ref{aux-jump-chain} and \ref{aux-exit-time-finite},
+with the plumbing of the sample space.
 
 \medskip \noindent\textbf{No proof departs from the paper for convenience, and
 no proof of a statement of the paper has been invented here.}

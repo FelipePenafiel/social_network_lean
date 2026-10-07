@@ -8,12 +8,15 @@ import SocialNetwork.BiasedHitting
 # Corollary 30 and Theorem 31: metastability of the biased model
 
 Corollary 30 and Theorem 31 of arXiv:2607.19651, Appendix C, from Lemmas 28 and 29 and the
-biased twin of Proposition 12, which is declared as an axiom.
+biased twin of Proposition 12, which Theorem 31 takes as a hypothesis.
 
 ## Main statements
 
 * `SocialNetwork.Bias.le_biasedCharacteristicTime` — **Corollary 30**.
-* `SocialNetwork.Bias.biasedMetastability` — **Theorem 31**, modulo the biased Proposition 12.
+* `SocialNetwork.Bias.BiasedExitTimeApproxExponential` — **Proposition 12** for the biased
+  process, the citation of [LM22], stated and not proved.
+* `SocialNetwork.Bias.biasedMetastability` — **Theorem 31**, assuming the biased
+  Proposition 12.
 -/
 
 namespace SocialNetwork
@@ -235,48 +238,53 @@ theorem biasedMax_le_of_isCharacteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {γ �
           linarith
       _ ≤ (16 / γ * Real.exp (-1) * Kc + C) * E := by nlinarith
 
+variable (N M) in
 /-- **Proposition 12 for the biased process**, the consequence for this model of Theorem 5.3
 of [LM22].
 
-**This is an axiom, not a theorem, and it is the second one this repository asks you to
-trust.**  It is the exact twin of `SocialNetwork.exitTime_approx_exponential`, over
-`Profile N M` instead of `Pressure N M`.  Appendix C never states it: it says only that "the
-proof of Theorem 31 follows exactly as the proof of Theorem 3", and the proof of Theorem 3
-runs through Proposition 12, which is stated for the unbiased process alone.
+**This is an assumption, not a theorem, and Theorem 31 takes it as the hypothesis `hLM22`.**
+It is the exact twin of `SocialNetwork.ExitTimeApproxExponential`, over `Profile N M` instead
+of `Pressure N M`.  Appendix C never states it: it says only that "the proof of Theorem 31
+follows exactly as the proof of Theorem 3", and the proof of Theorem 3 runs through
+Proposition 12, which is stated for the unbiased process alone.
 
-**One axiom cannot serve both models.**  Stated abstractly — over an arbitrary family of
-measures and an arbitrary hitting time — the statement is *inconsistent*: the zero measure
-with an empty ladder set satisfies the four assumptions vacuously and falsifies the conclusion
-at `t = 0`.  What rules that out is the strong Markov property, which is the content of [LM22]
+**One statement cannot serve both models.**  Stated abstractly — over an arbitrary family of
+measures and an arbitrary hitting time — the statement is *false*: the zero measure with an
+empty ladder set satisfies the four assumptions vacuously and falsifies the conclusion at
+`t = 0`.  What rules that out is the strong Markov property, which is the content of [LM22]
 and is not expressible here, so the statement has to be attached to a concrete process.  The
-unbiased axiom is attached to the unbiased one, and this is the price: a second thing to
-trust.  See `FOR-THE-AUTHORS.md` §1.3.
+unbiased one is attached to the unbiased process, and this is the price: a second citation
+to assume.  See `FOR-THE-AUTHORS.md` §1.3.
 
-The hypotheses are named after the equations of the paper, and `ε₁ ε₂ s₁ s₂` are functions of
-`β` for the reason recorded at the unbiased axiom. -/
-axiom biasedExitTime_approx_exponential (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
-    (hγ' : γ < 1 / ((M : ℝ) - 1)) (o : Opinion M)
-    (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ}
-    (hC : 0 < C) (hδ : 0 < δ) (hK : 0 < K) (hθ : 0 < θ)
-    (hpos : ∀ β : ℝ, β₁ ≤ β → 0 < ε₁ β ∧ 0 < ε₂ β ∧ 0 < s₁ β ∧ 0 < s₂ β)
-    (hsum : ∀ β : ℝ, β₁ ≤ β → ε₁ β + ε₂ β ≤ 1 / 2)
-    (h15 : ∀ β : ℝ, β₁ ≤ β → ∀ l : Profile N M, IsBiasedLadder γ o l →
+The four assumptions are marked with the equations of the paper, and `ε₁ ε₂ s₁ s₂` are
+functions of `β` for the reason recorded at the unbiased statement. -/
+def BiasedExitTimeApproxExponential (γ : ℝ) : Prop :=
+  2 ≤ M → 3 ≤ N → 0 < γ → γ < 1 / ((M : ℝ) - 1) →
+    ∀ (o : Opinion M) (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ},
+    0 < C → 0 < δ → 0 < K → 0 < θ →
+    (∀ β : ℝ, β₁ ≤ β → 0 < ε₁ β ∧ 0 < ε₂ β ∧ 0 < s₁ β ∧ 0 < s₂ β) →
+    (∀ β : ℝ, β₁ ≤ β → ε₁ β + ε₂ β ≤ 1 / 2) →
+    -- (15)
+    (∀ β : ℝ, β₁ ≤ β → ∀ l : Profile N M, IsBiasedLadder γ o l →
       biasedCtsPathMeasure γ β l
           {ω | biasedHittingTimeCts l (biasedConsensusSetOther N γ o) ω
             ≤ ENNReal.ofReal (s₁ β)}
-        ≤ ENNReal.ofReal (ε₁ β))
-    (h16 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedState u →
+        ≤ ENNReal.ofReal (ε₁ β)) →
+    -- (16)
+    (∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedState u →
       biasedProbHittingGT γ β u
           ({v | IsBiasedLadder γ o v} ∪ biasedConsensusSetOther N γ o)
           (ENNReal.ofReal (s₂ β))
-        ≤ ENNReal.ofReal (ε₂ β))
-    (h17 : ∀ β : ℝ, β₁ ≤ β → ∀ c : ℝ, IsBiasedCharacteristicTime (N := N) γ β o c →
-      max (s₂ β / c) (ε₂ β) ≤ C * Real.exp (-δ * β))
-    (h18 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
+        ≤ ENNReal.ofReal (ε₂ β)) →
+    -- (17)
+    (∀ β : ℝ, β₁ ≤ β → ∀ c : ℝ, IsBiasedCharacteristicTime (N := N) γ β o c →
+      max (s₂ β / c) (ε₂ β) ≤ C * Real.exp (-δ * β)) →
+    -- (18)
+    (∀ β : ℝ, β₁ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
       biasedCtsPathMeasure γ β u
           {ω | biasedHittingTimeCts u (biasedConsensusSetOther N γ o) ω
             ≤ ENNReal.ofReal (s₂ β)}
-        ≤ ENNReal.ofReal (K * Real.exp (-θ * β))) :
+        ≤ ENNReal.ofReal (K * Real.exp (-θ * β))) →
     ∃ β₀ K' : ℝ, β₁ ≤ β₀ ∧ 0 < β₀ ∧ 0 < K' ∧
       ∀ β : ℝ, β₀ ≤ β → ∀ u : Profile N M, IsBiasedConsensus γ o u →
       (∀ t : ℝ, 0 ≤ t →
@@ -292,9 +300,13 @@ axiom biasedExitTime_approx_exponential (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ}
 
 /-- **Theorem 31.**  Metastability for the biased model: for `0 < α < 1/(M-1)` there are
 `β₀, C₁ > 0` and `C₂ > 0`, depending only on `α`, `M` and `N`, such that the rescaled exit
-time from a biased consensus set is exponential of parameter one up to `C₁ β³ e^{-C₂ β}`. -/
+time from a biased consensus set is exponential of parameter one up to `C₁ β³ e^{-C₂ β}`.
+
+Proposition 12 for the biased process is the hypothesis `hLM22`: it is Theorem 5.3 of [LM22],
+which nothing in this repository proves (`SocialNetwork.Bias.BiasedExitTimeApproxExponential`).
+-/
 theorem biasedMetastability (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < γ)
-    (hγ' : γ < 1 / ((M : ℝ) - 1)) :
+    (hγ' : γ < 1 / ((M : ℝ) - 1)) (hLM22 : BiasedExitTimeApproxExponential N M γ) :
     ∃ β₀ C₁ C₂ : ℝ, 0 < β₀ ∧ 0 < C₁ ∧ 0 < C₂ ∧
       ∀ β : ℝ, β₀ ≤ β → ∀ o : Opinion M, ∀ u : Profile N M, IsBiasedConsensus γ o u →
         (∀ t : ℝ, 0 ≤ t →
@@ -360,7 +372,7 @@ theorem biasedMetastability (hM : 2 ≤ M) (hN : 3 ≤ N) {γ : ℝ} (hγ : 0 < 
     have hKpos : (0 : ℝ) < ((N ^ 2 * M : ℕ) : ℝ)
         + 16 / γ * Real.exp (-1) * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) := by positivity
     obtain ⟨b, K', -, hbpos, hK'pos, hmain⟩ :=
-      biasedExitTime_approx_exponential hM hN hγ hγ' o
+      hLM22 hM hN hγ hγ' o
         (fun β => 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β * γ / 2))
         (fun β => Cl * Real.exp (-β * γ / 2))
         (fun _ => 1) (fun β => 2 * β)

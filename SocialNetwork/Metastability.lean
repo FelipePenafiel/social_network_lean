@@ -8,13 +8,15 @@ import SocialNetwork.ConsensusExit
 # Theorem 3: metastability
 
 Corollary 15 and Theorem 3 of arXiv:2607.19651, from Lemma 14
-(`SocialNetwork.ConsensusExit`) and Proposition 12, which is Theorem 5.3 of [LM22] and is
-declared as an axiom.
+(`SocialNetwork.ConsensusExit`) and Proposition 12, which is Theorem 5.3 of [LM22] and which
+Theorem 3 takes as a hypothesis.
 
 ## Main statements
 
 * `SocialNetwork.le_characteristicTime` — **Corollary 15**.
-* `SocialNetwork.metastability` — **Theorem 3**, modulo Proposition 12.
+* `SocialNetwork.ExitTimeApproxExponential` — **Proposition 12**, the citation of [LM22],
+  stated and not proved.
+* `SocialNetwork.metastability` — **Theorem 3**, assuming Proposition 12.
 -/
 
 namespace SocialNetwork
@@ -320,50 +322,54 @@ theorem max_le_of_isCharacteristicTime (hM : 2 ≤ M) (hN : 3 ≤ N) {β : ℝ} 
     rw [hrw]
     exact mul_le_mul_of_nonneg_right (const_bounds hM hN).2.2 (Real.exp_pos _).le
 
+variable (N M) in
 /-- **Proposition 12**, the consequence for this model of Theorem 5.3 of [LM22]: under the
 four assumptions (15)–(18), the rescaled exit time from a consensus set is exponential up to
 an error `K' β³ e^{-min(δ/3, 1/2, θ) β}`, and the mean exit time barely depends on the
 starting state.
 
-**This is an axiom, not a theorem.**  It is not a result of arXiv:2607.19651: the paper
+**This is an assumption, not a theorem.**  It is not a result of arXiv:2607.19651: the paper
 derives it from Theorem 5.3 of [LM22], whose proof is a metastability argument for a general
-time-homogeneous strong Markov process.  Nothing inside this repository can discharge it, so
-it is declared rather than left as a `sorry` that looks like the others.  Everything that
-depends on it is listed separately in the CI axiom check: those results are sorry-free, and
-true modulo this one citation.
+time-homogeneous strong Markov process, and nothing in this repository proves it.  So it is
+stated as a proposition, and Theorem 3 takes it as the hypothesis `hLM22`: the citation is
+part of the statement of every result that uses it, and no result can use it without saying
+so.
 
 It is stated for *this* process on purpose.  Stated abstractly — for an arbitrary family of
-measures and an arbitrary hitting time — it would be **inconsistent**: taking the zero measure
-with an empty ladder set satisfies (15)–(18) vacuously while falsifying the conclusion at
-`t = 0`.  What rules that out is the strong Markov property, which is exactly the content of
-[LM22] and is not expressible here.  So Theorem 31 will need its own twin for the biased
-process; one axiom cannot serve both.
+measures and an arbitrary hitting time — it would be **false**: taking the zero measure with
+an empty ladder set satisfies (15)–(18) vacuously while falsifying the conclusion at `t = 0`,
+and a theorem assuming it would assume nothing it could use.  What rules that out is the
+strong Markov property, which is exactly the content of [LM22] and is not expressible here.
+So Theorem 31 needs its own twin for the biased process; one statement cannot serve both.
 
-The hypotheses are named after the equations of the paper: `h15` is (15), `h16` is (16),
-`h17` is (17) and `h18` is (18).  Unlike the paper's numbered display, `ε₁`, `ε₂`, `s₁` and
-`s₂` are *functions of* `β`: the proof of Theorem 3 instantiates them at `s₂ = 2β` and
-`ε₂ = (M+1)² N² e^{-β/((M+1)N)}`, and the constraint `ε₁ + ε₂ ≤ 1/2` holds, in the paper's
-words, only "for `β` sufficiently big".  Bound as constants ahead of `β`, as the paper's
-display reads, the hypotheses are unsatisfiable. -/
-axiom exitTime_approx_exponential (hM : 2 ≤ M) (hN : 3 ≤ N) (o : Opinion M)
-    (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ}
-    (hC : 0 < C) (hδ : 0 < δ) (hK : 0 < K) (hθ : 0 < θ)
-    (hpos : ∀ β : ℝ, β₁ ≤ β → 0 < ε₁ β ∧ 0 < ε₂ β ∧ 0 < s₁ β ∧ 0 < s₂ β)
-    (hsum : ∀ β : ℝ, β₁ ≤ β → ε₁ β + ε₂ β ≤ 1 / 2)
-    (h15 : ∀ β : ℝ, β₁ ≤ β → ∀ l : Pressure N M, IsLadder o l →
+The four assumptions are marked with the equations of the paper.  Unlike the paper's
+numbered display, `ε₁`, `ε₂`, `s₁` and `s₂` are *functions of* `β`: the proof of Theorem 3
+instantiates them at `s₂ = 2β` and `ε₂ = (M+1)² N² e^{-β/((M+1)N)}`, and the constraint
+`ε₁ + ε₂ ≤ 1/2` holds, in the paper's words, only "for `β` sufficiently big".  Bound as
+constants ahead of `β`, as the paper's display reads, the hypotheses are unsatisfiable. -/
+def ExitTimeApproxExponential : Prop :=
+  2 ≤ M → 3 ≤ N → ∀ (o : Opinion M) (ε₁ ε₂ s₁ s₂ : ℝ → ℝ) {C δ K θ β₁ : ℝ},
+    0 < C → 0 < δ → 0 < K → 0 < θ →
+    (∀ β : ℝ, β₁ ≤ β → 0 < ε₁ β ∧ 0 < ε₂ β ∧ 0 < s₁ β ∧ 0 < s₂ β) →
+    (∀ β : ℝ, β₁ ≤ β → ε₁ β + ε₂ β ≤ 1 / 2) →
+    -- (15)
+    (∀ β : ℝ, β₁ ≤ β → ∀ l : Pressure N M, IsLadder o l →
       ctsPathMeasure β l
           {ω | hittingTimeCts l (consensusSetOther N o) ω ≤ ENNReal.ofReal (s₁ β)}
-        ≤ ENNReal.ofReal (ε₁ β))
-    (h16 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Pressure N M, IsState u →
+        ≤ ENNReal.ofReal (ε₁ β)) →
+    -- (16)
+    (∀ β : ℝ, β₁ ≤ β → ∀ u : Pressure N M, IsState u →
       probHittingGT β u ({v | IsLadder o v} ∪ consensusSetOther N o)
           (ENNReal.ofReal (s₂ β))
-        ≤ ENNReal.ofReal (ε₂ β))
-    (h17 : ∀ β : ℝ, β₁ ≤ β → ∀ c : ℝ, IsCharacteristicTime (N := N) β o c →
-      max (s₂ β / c) (ε₂ β) ≤ C * Real.exp (-δ * β))
-    (h18 : ∀ β : ℝ, β₁ ≤ β → ∀ u : Pressure N M, IsConsensus o u →
+        ≤ ENNReal.ofReal (ε₂ β)) →
+    -- (17)
+    (∀ β : ℝ, β₁ ≤ β → ∀ c : ℝ, IsCharacteristicTime (N := N) β o c →
+      max (s₂ β / c) (ε₂ β) ≤ C * Real.exp (-δ * β)) →
+    -- (18)
+    (∀ β : ℝ, β₁ ≤ β → ∀ u : Pressure N M, IsConsensus o u →
       ctsPathMeasure β u
           {ω | hittingTimeCts u (consensusSetOther N o) ω ≤ ENNReal.ofReal (s₂ β)}
-        ≤ ENNReal.ofReal (K * Real.exp (-θ * β))) :
+        ≤ ENNReal.ofReal (K * Real.exp (-θ * β))) →
     ∃ β₀ K' : ℝ, β₁ ≤ β₀ ∧ 0 < β₀ ∧ 0 < K' ∧
       ∀ β : ℝ, β₀ ≤ β → ∀ u : Pressure N M, IsConsensus o u →
       (∀ t : ℝ, 0 ≤ t →
@@ -381,8 +387,10 @@ on `M` and `N`, such that for `β ≥ β₀`, every opinion `o` and every consen
 the rescaled exit time from `C^o` is exponential of parameter one up to `C₁ β³ e^{-C₂ β}`, and
 the mean exit times from two consensus states agree to the same order.
 
-This is Proposition 12 applied with the bounds of Lemmas 13 and 14. -/
-theorem metastability (hM : 2 ≤ M) (hN : 3 ≤ N) :
+This is Proposition 12 applied with the bounds of Lemmas 13 and 14, and Proposition 12 is
+the hypothesis `hLM22`: it is Theorem 5.3 of [LM22], which nothing in this repository proves
+(`SocialNetwork.ExitTimeApproxExponential`). -/
+theorem metastability (hM : 2 ≤ M) (hN : 3 ≤ N) (hLM22 : ExitTimeApproxExponential N M) :
     ∃ β₀ C₁ C₂ : ℝ, 0 < β₀ ∧ 0 < C₁ ∧ 0 < C₂ ∧ C₂ < 1 / 2 ∧
       ∀ β : ℝ, β₀ ≤ β → ∀ o : Opinion M, ∀ u : Pressure N M, IsConsensus o u →
         (∀ t : ℝ, 0 ≤ t →
@@ -455,7 +463,7 @@ theorem metastability (hM : 2 ≤ M) (hN : 3 ≤ N) :
           ≤ K' * β ^ 3 * Real.exp (-min (min ((1 / (((M + 1) * N : ℕ) : ℝ)) / 3) (1 / 2))
               (1 / (2 * ((M : ℝ) - 1))) * β) := by
     intro o
-    exact exitTime_approx_exponential hM hN o
+    exact hLM22 hM hN o
       (fun β => 2 * ((N ^ 3 * (M + 1) ^ 3 : ℕ) : ℝ) * Real.exp (-β / ((M : ℝ) - 1)))
       (fun β => (((M + 1) ^ 2 * N ^ 2 : ℕ) : ℝ) * Real.exp (-β / (((M + 1) * N : ℕ) : ℝ)))
       (fun _ => 1) (fun β => 2 * β)

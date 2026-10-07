@@ -16,7 +16,6 @@
 # Python caches, and the axiom checks CI generates at the root
 __pycache__/
 /CheckAxioms.lean
-/CheckCited.lean
 /axioms.txt
 /build.log
 /noise.log

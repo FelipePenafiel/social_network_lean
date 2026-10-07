@@ -28,10 +28,11 @@ them.
   through biased analogues of Lemmas 19 and 20 that it does not state. Proposition 26,
   Theorem 27, Lemma 28, Theorem 31 and part 2 of Theorem 4 are written from it.
 * **Proposition 12**, which is Theorem 5.3 of [LM22] rather than a result of the paper.
-  It is declared as an axiom, once for each of the two models, and Theorems 3 and 31
-  use it.
+  It is stated once for each of the two models, and Theorems 3 and 31 take it as a
+  hypothesis.
 
 The results written from these have complete Lean proofs that depend on nothing else.
+The library declares no axiom.
 [`STATUS.md`](STATUS.md) gives the status of every statement, and is regenerated and
 checked by CI.
 
@@ -43,6 +44,8 @@ argument the authors have not seen.
 
 | | |
 |---|---|
+| [`SocialNetwork/MainResults.lean`](SocialNetwork/MainResults.lean) | the main theorems of the paper as Lean states them, in one place |
+| [`SocialNetwork/Examples.lean`](SocialNetwork/Examples.lean) | the definitions on small cases, and the hypotheses of the main theorems shown to be satisfiable |
 | [`FOR-THE-AUTHORS.md`](FOR-THE-AUTHORS.md) | what formalising found in the paper: the statement that fails, the assumptions made, and the misprints and gaps |
 | [`STATUS.md`](STATUS.md) | every statement of the paper and its status, generated from the blueprint and the sources |
 | [`CONVENTIONS.md`](CONVENTIONS.md) | how the translation is written: the rules, the markers, the coordinates, the naming |
@@ -75,6 +78,7 @@ SocialNetwork/Appendix.lean   Appendix A: Proposition 7, Lemmas 19 and 20, Remar
 SocialNetwork/ContinuousTime.lean  eq. (3), the jump process, μ̃^β, Theorem 2.2
 SocialNetwork/ConsensusExit.lean   Lemma 14: leaving a consensus set (Appendix B)
 SocialNetwork/Metastability.lean   Corollary 15 and Theorem 3
+SocialNetwork/ExitTime.lean   the mean exit time from a consensus set is positive and finite
 SocialNetwork/JumpHold.lean   non-explosion for a jump-hold chain with a slow sub-family
 SocialNetwork/NonExplosion.lean    the bound λ of equation (11) on the low-pressure pairs
 SocialNetwork/Band.lean       the band of [GL24]'s Figure 2, for an arbitrary state space
@@ -92,6 +96,9 @@ SocialNetwork/BiasedConcentration.lean  Proposition 26 and Theorem 27.1, after P
 SocialNetwork/BiasedConsensusExit.lean  Lemma 29, the biased twin of Lemma 14
 SocialNetwork/BiasedHitting.lean   Lemma 28 and Theorem 27.2, the biased twins of Lemma 13 and Theorem 2.2
 SocialNetwork/BiasedMetastability.lean  Corollary 30 and Theorem 31
+SocialNetwork/BiasedExitTime.lean  the same for the biased process
+SocialNetwork/MainResults.lean     the main theorems, restated in one place
+SocialNetwork/Examples.lean   small cases, and the hypotheses of the main theorems met
 
 blueprint/src/content.tex     the blueprint: every statement of the paper, with its Lean name
 blueprint/src/packages/papergraph.py   the dependency graph of the paper's results
@@ -147,4 +154,4 @@ lake build
 
 ## Licence
 
-Apache 2.0.
+Apache 2.0; see [`LICENSE`](LICENSE).
